@@ -50,7 +50,7 @@ def cli(ctx=None, verbose=False):
 
 @cli.command()
 @click.pass_context
-@click.option('--requirements', '-r', type=str, envvar='THOTH_ADVISER_REQUIREMENTS', required=True,
+@click.option('--requirements', '-r', type=str, envvar='THOTH_ADVISER_PACKAGES', required=True,
               help="Requirements to be advised and (if requested) locked.")
 @click.option('--output', '-o', type=str, envvar='THOTH_SOLVER_OUTPUT', default='-',
               help="Output file or remote API to print results to, in case of URL a POST request is issued.")
