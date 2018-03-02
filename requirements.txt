@@ -1,4 +1,4 @@
-aenum==1.4.5
+aenum==2.1.0
 aiogremlin==3.2.6rc1
 aiohttp==2.2.5
 async-timeout==2.0.0
