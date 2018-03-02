@@ -8,7 +8,7 @@ click==6.7
 delegator.py==0.1.0
 distro==1.2.0
 goblin==2.1.0
-gremlinpython==3.2.6
+gremlinpython==3.3.1
 idna==2.6
 inflection==0.3.1
 multidict==4.1.0
