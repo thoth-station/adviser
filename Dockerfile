@@ -13,8 +13,8 @@ RUN \
 COPY ./ ${THOTH_ADVISER_TMP_DIR}
 RUN \
  cd ${THOTH_ADVISER_TMP_DIR} &&\
- python3 setup.py install &&\
+ pip3 install . &&\
  cd / &&\
  rm -rf ${THOTH_ADVISER_TMP_DIR} &&\
  unset THOTH_ADVISER_TMP_DIR &&\
- dnf clean all &&\
+ dnf clean all
