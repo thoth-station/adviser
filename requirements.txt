@@ -1,6 +1,6 @@
 aenum==1.4.5
 aiogremlin==3.2.6rc1
-aiohttp==2.2.5
+aiohttp==3.0.5
 async-timeout==2.0.0
 certifi==2018.1.18
 chardet==3.0.4
