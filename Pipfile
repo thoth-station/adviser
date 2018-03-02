@@ -8,6 +8,8 @@ name = "pypi"
 [packages]
 
 thoth-storages = "*"
+click = "*"
+thoth-analyzer = ">=0.0.3"
 
 
 [dev-packages]

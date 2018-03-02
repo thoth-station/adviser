@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "7e7009d20f007441d3fded4c5c5e92d429a1cba2482624ca263ab0ec1c5d6669"
+            "sha256": "518b5a041df3002905aefa05ebebe2cae96ef7fb110322a4b7e129149e9aec0c"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -82,6 +82,27 @@
             ],
             "version": "==3.0.4"
         },
+        "click": {
+            "hashes": [
+                "sha256:29f99fc6125fbc931b758dc053b3114e55c77a6e4c6c3a2674a2dc986016381d",
+                "sha256:f15516df478d5a56180fbf80e68f206010e6d160fc39fa508b65e035fd75130b"
+            ],
+            "version": "==6.7"
+        },
+        "delegator.py": {
+            "hashes": [
+                "sha256:58f3ea6fe36680e1d828e2e66e52844b826f186409dfee4436e42351b0e699fe",
+                "sha256:2d46966a7f484d271b09e2646eae1e9acadc4fdf2cb760c142f073e81c927d8d"
+            ],
+            "version": "==0.1.0"
+        },
+        "distro": {
+            "hashes": [
+                "sha256:49945b5696240ac95021bd4908c1ace423db3e5ecac05a85497e4b3662750766",
+                "sha256:d94370e43b676ac44fbe1ab68ca903a6147eaba3a9e8eff85b2c05556a455b76"
+            ],
+            "version": "==1.2.0"
+        },
         "goblin": {
             "hashes": [
                 "sha256:49dd165ea19530723a2ad701cd22fba60632c0b226101c14970976b27899429a",
@@ -136,6 +157,20 @@
             ],
             "version": "==4.1.0"
         },
+        "pexpect": {
+            "hashes": [
+                "sha256:6ff881b07aff0cb8ec02055670443f784434395f90c3285d2ae470f921ade52a",
+                "sha256:67b85a1565968e3d5b5e7c9283caddc90c3947a2625bed1905be27bd5a03e47d"
+            ],
+            "version": "==4.4.0"
+        },
+        "ptyprocess": {
+            "hashes": [
+                "sha256:e8c43b5eee76b2083a9badde89fd1bbce6c8942d1045146e100b7b5e014f4f1a",
+                "sha256:e64193f0047ad603b71f202332ab5527c5e52aa7c8b609704fc28c0dc20c4365"
+            ],
+            "version": "==0.5.2"
+        },
         "pyyaml": {
             "hashes": [
                 "sha256:3262c96a1ca437e7e4763e2843746588a965426550f3797a79fca9c6199c431f",
@@ -168,6 +203,13 @@
                 "sha256:105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a"
             ],
             "version": "==1.10.0"
+        },
+        "thoth-analyzer": {
+            "hashes": [
+                "sha256:b53c4f5f95e2b3c5afc5ec70948576175d910655d36e0db6029080acd233f714",
+                "sha256:0a86103a9ef062ea9c082eb5d7506470d32bf3af8c4e4fd85e96bc28dbd0b0e4"
+            ],
+            "version": "==0.0.4"
         },
         "thoth-storages": {
             "hashes": [
