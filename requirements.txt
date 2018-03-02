@@ -18,7 +18,7 @@ pyyaml==3.12
 requests==2.18.4
 six==1.10.0
 thoth-analyzer==0.0.4
-thoth-storages==0.0.3
+thoth-storages==0.0.4
 tornado==4.4.1
 urllib3==1.22
 yarl==1.1.1
