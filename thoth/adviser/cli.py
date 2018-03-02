@@ -52,11 +52,11 @@ def cli(ctx=None, verbose=False):
 @click.pass_context
 @click.option('--requirements', '-r', type=str, envvar='THOTH_ADVISER_PACKAGES', required=True,
               help="Requirements to be advised and (if requested) locked.")
-@click.option('--output', '-o', type=str, envvar='THOTH_SOLVER_OUTPUT', default='-',
+@click.option('--output', '-o', type=str, envvar='THOTH_ADVISER_OUTPUT', default='-',
               help="Output file or remote API to print results to, in case of URL a POST request is issued.")
 @click.option('--no-pretty', '-P', is_flag=True,
               help="Do not print results nicely.")
-@click.option('--packages-only', '-P', is_flag=True,
+@click.option('--packages-only', '-P', envvar='THOTH_ADVISER_PACKAGES_ONLY', is_flag=True,
               help="Advise on package level, do not use stacks.")
 def pypi(click_ctx, requirements, output=None, no_pretty=False, packages_only=False):
     """Advise package and package versions in the given stack or on solely package only."""
