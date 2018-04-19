@@ -7,24 +7,15 @@ import click
 import logging
 
 from thoth.analyzer import print_command_result
+from thoth.common import init_logging
 
 from thoth.adviser import __version__ as analyzer_version
 from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser.pypi import advise_pypi
 
+init_logging()
 
 _LOG = logging.getLogger(__name__)
-
-
-def _setup_logging(verbose):
-    """Set up Python logging based on verbosity level.
-
-    :param verbose: verbosity level
-    """
-    # TODO: move this logic to thoth-analyzer or thoth-common
-    level = logging.INFO if not verbose else logging.DEBUG
-    logger = logging.getLogger()
-    logger.setLevel(level)
 
 
 def _print_version(ctx, _, value):
@@ -45,7 +36,11 @@ def cli(ctx=None, verbose=False):
     """Thoth adviser command line interface."""
     if ctx:
         ctx.auto_envvar_prefix = 'THOTH_ADVISER'
-    _setup_logging(verbose)
+
+    if verbose:
+        _LOG.setLevel(logging.DEBUG)
+
+    _LOG.debug("Debug mode is on")
 
 
 @cli.command()
