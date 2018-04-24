@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# thoth-naming-service
+# thoth-adviser
 # Copyright(C) 2018 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
