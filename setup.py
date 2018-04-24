@@ -27,7 +27,7 @@ setup(
     long_description='Package and package stack adviser for the Thoth project',
     author='Fridolin Pokorny',
     author_email='fridolin@redhat.com',
-    license='GPLv2+',
+    license='GPLv3+',
     packages=[
         'thoth.adviser',
     ],
