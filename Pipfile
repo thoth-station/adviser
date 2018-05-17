@@ -1,17 +1,16 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
 thoth-storages = "*"
 click = "*"
 thoth-analyzer = ">=0.0.3"
 thoth-common = ">=0.0.3"
 
-
 [dev-packages]
-
+coala = "*"
+pycodestylebear = "*"
+yamllintbear = "*"
+pydocstylebear = "*"
