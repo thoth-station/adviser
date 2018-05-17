@@ -4,7 +4,10 @@ services:
 - docker
 python:
 - '3.6'
-script: true
+script:
+- pip3 install pipenv
+- pipenv install --dev
+- pipenv run coala
 env:
   matrix:
   - DOCKER_USER=fridex
