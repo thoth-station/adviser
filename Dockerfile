@@ -7,6 +7,7 @@ ENV \
 
 RUN \
  dnf update -y &&\
+ dnf install -y gcc &&\
  mkdir -p ${THOTH_ADVISER_TMP_DIR}
 
 # Install thoth-adviser itself
@@ -17,4 +18,5 @@ RUN \
  cd / &&\
  rm -rf ${THOTH_ADVISER_TMP_DIR} &&\
  unset THOTH_ADVISER_TMP_DIR &&\
+ dnf uninstall -y gcc &&\
  dnf clean all
