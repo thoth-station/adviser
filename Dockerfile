@@ -7,7 +7,7 @@ ENV \
 
 RUN \
  dnf update -y &&\
- dnf install -y gcc redhat-rpm-config &&\
+ dnf install -y gcc redhat-rpm-config python3-devel &&\
  mkdir -p ${THOTH_ADVISER_TMP_DIR}
 
 # Install thoth-adviser itself
@@ -18,5 +18,5 @@ RUN \
  cd / &&\
  rm -rf ${THOTH_ADVISER_TMP_DIR} &&\
  unset THOTH_ADVISER_TMP_DIR &&\
- dnf uninstall -y gcc redhat-rpm-config &&\
+ dnf remove -y gcc redhat-rpm-config python3-devel &&\
  dnf clean all
