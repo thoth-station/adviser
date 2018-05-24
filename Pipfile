@@ -6,8 +6,8 @@ name = "pypi"
 [packages]
 thoth-storages = "*"
 click = "*"
-thoth-analyzer = ">=0.0.3"
-thoth-common = ">=0.0.3"
+thoth-analyzer = "*"
+thoth-common = "*"
 
 [dev-packages]
 coala = "*"
