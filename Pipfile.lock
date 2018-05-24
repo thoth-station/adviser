@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "521742b0d15518f17b406b7cbdb53895a59e53e287aa936fbf5e28c6875c26ff"
+            "sha256": "491acac55e0d05b58fd0661958b0fef8048c9063f943d5ad1c784c96c2a4c265"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -286,19 +286,19 @@
         },
         "thoth-common": {
             "hashes": [
-                "sha256:4225bb0acf03bf40dfa0b8440d530e17e4ea0e1063df9aa8f0015484720fe581",
-                "sha256:c0fdeb553bc7e64c830b9dabd894dd41adcf1807a0c571709750de3d23f909e3"
+                "sha256:729d00c4e253858c07b2088b4eaf6455467636b18f8241535fd374481d5d78e4",
+                "sha256:a069378ba69a2d9036a336baae000f52281bf514414bf5d6fd5902e2a6aa808b"
             ],
             "index": "pypi",
-            "version": "==0.0.5"
+            "version": "==0.0.6"
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:44d154ba9fdfec6f4baa43dfaa6707a9893196f6c74d577dabedd53285bf4ff1",
-                "sha256:b2d2b82a975f6e011b368f087066804e4952840da424cbfac7fc49bed1e0b2ab"
+                "sha256:7c22ea563ca3679377a0d0d5ce31a03bba4d103040fa16677251f482f2cac545",
+                "sha256:c889eaf8cf98b21ab6bdf69d2c86b93efc105decdbf0e7f98db245d943f8d75d"
             ],
             "index": "pypi",
-            "version": "==0.0.28"
+            "version": "==0.0.29"
         },
         "tornado": {
             "hashes": [
