@@ -8,6 +8,8 @@ thoth-storages = "*"
 click = "*"
 thoth-analyzer = "*"
 thoth-common = "*"
+pip = "<10"
+thoth-solver = "*"
 
 [dev-packages]
 coala = "*"

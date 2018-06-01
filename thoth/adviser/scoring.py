@@ -16,11 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Compute advises on PyPI ecosystem."""
+import logging
 
-import typing
+from .enums import Ecosystem
+
+_LOGGER = logging.getLogger(__name__)
 
 
-def advise_pypi(requirements: typing.List[str], packages_only: bool) -> dict:
-    """Compute advises on PyPI ecosystem."""
-    return {}
+def score_package_version(package_name: str,
+                          package_version: str,
+                          ecosystem: Ecosystem,
+                          runtime_environment: str) -> bool:
+    """Decide whether the given package should be included in the software stack."""
+    # TODO: Check JanusGraph for stored observations
+    return True
