@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6399c792e7cedef5fa6699d819fb2eef4a41dd7d65d206f5b844c78c654c2bf4"
+            "sha256": "3f5f91b1ade546800f778b0949e2017ce5c309076f2a58ac375f6a794efa0cf7"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -128,6 +128,7 @@
                 "sha256:edd7d499685655031be5b4d33005096b6345f81eeb7ab9d2dd415db0c7bcf64e",
                 "sha256:f99a777fda569a88deea863eac2722b5e88957c4d5f4413949740da791857ac9"
             ],
+            "markers": "python_version != '3.0.*' and python_version != '3.1.*' and python_version != '3.2.*' and python_version >= '2.6'",
             "version": "==0.28.3"
         },
         "daiquiri": {
@@ -209,6 +210,7 @@
                 "sha256:d870f399fcd58a1889e93008762a3b9a27cf7ea512818fc6e689f59495648355",
                 "sha256:e9404e2e19e901121c3c5c6cffd5a8ae0d1d67919c970e3b3262231175713068"
             ],
+            "markers": "python_version >= '3.4.1'",
             "version": "==4.3.1"
         },
         "pexpect": {
@@ -299,11 +301,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:7c22ea563ca3679377a0d0d5ce31a03bba4d103040fa16677251f482f2cac545",
-                "sha256:c889eaf8cf98b21ab6bdf69d2c86b93efc105decdbf0e7f98db245d943f8d75d"
+                "sha256:0bc97506825deb0647c0e1e4363b1081bea215ce2c3ecb647cb7184c541647e8",
+                "sha256:330d5e6e3a0896fdcacec8cad008480cb715fbb8469c0c20ed0a9a3e75a5fc66"
             ],
             "index": "pypi",
-            "version": "==0.0.29"
+            "version": "==0.0.32"
         },
         "tornado": {
             "hashes": [
@@ -330,6 +332,7 @@
                 "sha256:a68ac5e15e76e7e5dd2b8f94007233e01effe3e50e8daddf69acfd81cb686baf",
                 "sha256:b5725a0bd4ba422ab0e66e89e030c806576753ea3ee08554382c14e685d117b5"
             ],
+            "markers": "python_version >= '2.6' and python_version != '3.1.*' and python_version != '3.0.*' and python_version != '3.3.*' and python_version != '3.2.*' and python_version < '4'",
             "version": "==1.23"
         },
         "uvloop": {
@@ -514,6 +517,13 @@
             ],
             "version": "==1.1.0"
         },
+        "testfixtures": {
+            "hashes": [
+                "sha256:41360bceecfdb2dff9e327a49caaff8b1b4a984ed2cff761658ec2c31e5afbd9",
+                "sha256:670ade9410b7132278209e6a2e893caf098b040c4ba4d5ea848367a9c5588728"
+            ],
+            "version": "==5.3.1"
+        },
         "unidiff": {
             "hashes": [
                 "sha256:6e7ff4be1a9cd8d72197cd15ec735260b8b95d6f9d3e6fdc8a37301b12af0b27",
@@ -526,6 +536,7 @@
                 "sha256:a68ac5e15e76e7e5dd2b8f94007233e01effe3e50e8daddf69acfd81cb686baf",
                 "sha256:b5725a0bd4ba422ab0e66e89e030c806576753ea3ee08554382c14e685d117b5"
             ],
+            "markers": "python_version >= '2.6' and python_version != '3.1.*' and python_version != '3.0.*' and python_version != '3.3.*' and python_version != '3.2.*' and python_version < '4'",
             "version": "==1.23"
         },
         "yamllint": {
