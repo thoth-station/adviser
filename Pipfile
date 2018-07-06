@@ -5,12 +5,9 @@ name = "pypi"
 
 [packages]
 thoth-storages = "*"
-click = "*"
+click = "<6.7"
 thoth-analyzer = "*"
 thoth-common = "*"
 
 [dev-packages]
-coala = "*"
-pycodestylebear = "*"
-yamllintbear = "*"
-pydocstylebear = "*"
+coala-bears = "*"
