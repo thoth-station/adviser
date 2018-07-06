@@ -72,7 +72,8 @@ def cli(ctx=None, verbose=False):
               help="Advise on package level, do not use stacks.")
 def pypi(click_ctx, requirements, output=None, no_pretty=False, packages_only=False):
     """Advise package and package versions in the given stack or on solely package only."""
-    requirements = [requirement.strip() for requirement in requirements.split('\n') if requirement]
+    requirements = [requirement.strip()
+                    for requirement in requirements.split('\n') if requirement]
 
     if not requirements:
         _LOG.error("No requirements specified, exiting")

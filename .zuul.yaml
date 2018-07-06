@@ -1,0 +1,15 @@
+- project:
+    check:
+      jobs:
+        - linters
+    gate:
+      queue: core
+      jobs:
+        - linters
+    release:
+      jobs:
+        - upload-pypi-sesheta
+    kebechet-auto-gate:
+      queue: core
+      jobs:
+        - linters
