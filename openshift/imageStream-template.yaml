@@ -20,7 +20,7 @@ metadata:
 
 objects:
   - apiVersion: v1
-    kind: Pod
+    kind: ImageStream
     metadata:
       labels:
         app: thoth-core
