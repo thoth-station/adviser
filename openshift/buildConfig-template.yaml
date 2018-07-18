@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: adviser-buildconfig
+  thoth: 0.1.0
+metadata:
+  name: adviser-buildconfig
+  annotations:
+    description: >
+      This is Thoth Adviser BuildConfig, this template is meant to be used by Jenkins, but could also be
+      used by humans...
+    openshift.io/display-name: Thoth Adviser BuildConfig
+    version: 0.3.0
+    tags: poc,thoth,ai-stacks,adviser
+    template.openshift.io/documentation-url: https://github.com/Thoth-Station
+    template.openshift.io/long-description: >
+      This is Thoth Adviser BuildConfig, this template is meant to be
+      used by Jenkins, but could also be used by humans...
+    template.openshift.io/provider-display-name: Red Hat, Inc.
+
+objects:
+  - apiVersion: v1
+    kind: BuildConfig
+    metadata:
+      labels:
+        app: thoth-core
+      name: adviser
+    spec:
+      resources:
+        limits:
+          cpu: 2000m
+          memory: 768Mi
+        requests:
+          cpu: 2000m
+          memory: 768Mi
+      output:
+        to:
+          kind: ImageStreamTag
+          name: "adviser:${IMAGE_STREAM_TAG}"
+      runPolicy: Serial
+      source:
+        git:
+          uri: ${GITHUB_URL}
+          ref: ${GITHUB_REF}
+        type: Git
+      strategy:
+        type: Source
+        sourceStrategy:
+          from:
+            kind: ImageStreamTag
+            name: python-36-centos7:latest
+          env:
+            - name: ENABLE_PIPENV
+              value: '1'
+            - name: UPGRADE_PIP_TO_LATEST
+              value: ''
+            - name: APP_FILE
+              value: 'thoth-adviser'
+      triggers:
+        - imageChange: {}
+          type: ImageChange
+
+parameters:
+  - description: Git repository for Thoth's Adviser
+    displayName: Thoth Adviser git repository
+    required: true
+    name: GITHUB_URL
+    value: 'https://github.com/thoth-station/adviser'
+
+  - description: Git repository for Thoth's Adviser
+    displayName: Thoth Adviser git reference
+    required: true
+    name: GITHUB_REF
+    value: 'master'
+
+  - description: Tag of the output ImageStream the resulting container image should go to
+    displayName: ImageStream Tag
+    required: true
+    name: IMAGE_STREAM_TAG
+    value: 'latest'

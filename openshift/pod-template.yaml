@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: adviser-pod
+  thoth: 0.1.0
+metadata:
+  name: adviser
+  annotations:
+    description: This is Thoth Core - Adviser
+    openshift.io/display-name: 'Thoth: Adviser'
+    version: 0.3.0
+    tags: poc,thoth,ai-stacks,adviser
+    template.openshift.io/documentation-url: https://github.com/Thoth-Station/
+    template.openshift.io/long-description: >
+      This template defines resources needed to run recommendation logic of Thoth to OpenShift.
+    template.openshift.io/provider-display-name: Red Hat, Inc.
+
+objects:
+  - apiVersion: v1
+    kind: Pod
+    metadata:
+      generateName: adviser-
+      labels:
+        app: thoth
+        thoth-pod: adviser
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+        - name: adviser
+          image: adviser
+          livenessProbe:
+            # Give analyzer 10 minutes to compute results, kill it if it was not able result anything.
+            tcpSocket:
+              port: 80
+            initialDelaySeconds: 600
+            failureThreshold: 1
+            periodSeconds: 10
+          env:
+            - name: THOTH_LOG_ADVISER
+              value: 'INFO'
+            # These are intentionally empty - they will be provided on pod run request.
+            - name: THOTH_ADVISER_OUTPUT
+              value: ''
+            - name: THOTH_ADVISER_REQUIREMENTS
+              value: ''
+            - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+              value: ''
+            - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
+              value: ''
+            - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+              value: ''
+          resources:
+            limits:
+              memory: '128Mi'
+              cpu: '500m'
+            requests:
+              memory: '128Mi'
+              cpu: '500m'
