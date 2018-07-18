@@ -14,6 +14,8 @@ metadata:
     template.openshift.io/long-description: >
       This template defines resources needed to run recommendation logic of Thoth to OpenShift.
     template.openshift.io/provider-display-name: Red Hat, Inc.
+    labels:
+      thoth-template: adviser
 
 objects:
   - apiVersion: v1
