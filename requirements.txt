@@ -1,3 +1,4 @@
-click
+click<6.7
 thoth-analyzer
+thoth-common
 thoth-storages
