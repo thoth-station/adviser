@@ -13,14 +13,14 @@ metadata:
     template.openshift.io/provider-display-name: Red Hat, Inc.
   labels:
     app: thoth
-    template: adviser-pod
+    template: adviser
     component: adviser
 
 objects:
   - apiVersion: v1
     kind: Pod
     metadata:
-      generateName: adviser-
+      generateName: 'adviser-'
       labels:
         app: thoth
         component: adviser
