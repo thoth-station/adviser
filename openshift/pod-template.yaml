@@ -39,18 +39,19 @@ objects:
             periodSeconds: 10
           env:
             - name: THOTH_LOG_ADVISER
-              value: 'INFO'
-            # These are intentionally empty - they will be provided on pod run request.
+              value: "${THOTH_LOG_ADVISER}"
             - name: THOTH_ADVISER_OUTPUT
-              value: ''
+              value: "${THOTH_ADVISER_OUTPUT}"
             - name: THOTH_ADVISER_REQUIREMENTS
-              value: ''
+              value: "${THOTH_ADVISER_REQUIREMENTS}"
             - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
-              value: ''
+              value: "${THOTH_ADVISER_REQUIREMENTS_LOCKED}"
             - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
-              value: ''
+              value: "${THOTH_ADVISER_REQUIREMENTS_FORMAT}"
+            - name: THOTH_ADVISER_RECOMMENDATION_TYPE
+              value: "${THOTH_ADVISER_RECOMMENDATION_TYPE}"
             - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
-              value: ''
+              value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
           resources:
             limits:
               memory: '128Mi'
@@ -58,3 +59,31 @@ objects:
             requests:
               memory: '128Mi'
               cpu: '500m'
+parameters:
+  - name: THOTH_ADVISER_OUTPUT
+    required: false
+    description: Remote where results should be send to
+  - name: THOTH_ADVISER_REQUIREMENTS
+    required: false
+    description: Raw stack requirements
+  - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+    required: false
+    description: Fully pinned down stack
+    displayName: Locked requirements
+  - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
+    required: false
+    description: Format of input
+    displayName: Requirements format
+  - name: THOTH_ADVISER_RECOMMENDATION_TYPE
+    required: false
+    description: Type of requested recommendation
+    displayName: Recommendation type
+  - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+    required: false
+    description: Runtime environment to create recommendation for
+    displayName: Runtime environment
+  - name: THOTH_LOG_ADVISER
+    required: false
+    description: Log adviser actions
+    displayName: Log adviser actions
+    value: INFO
