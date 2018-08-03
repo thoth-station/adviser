@@ -10,7 +10,7 @@ files = **.py
 language = Python
 max_line_length = 120
 editor = vim
-ignore = setup.py
+ignore = setup.py, tests/**
 file_naming_convention = snake
 
 [all.yaml]

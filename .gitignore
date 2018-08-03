@@ -1,2 +1,5 @@
 __pycache__
 *.pyc
+.cache
+thoth_adviser.egg-info/
+*.eggs/

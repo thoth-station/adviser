@@ -8,6 +8,12 @@ thoth-storages = "*"
 click = "<6.7"
 thoth-analyzer = "*"
 thoth-common = "*"
+thoth-solver = "*"
+pip = "<10"
+toml = "*"
+attrs = "*"
+requests = "*"
+beautifulsoup4 = "*"
 
 [dev-packages]
 coala-bears = "*"
