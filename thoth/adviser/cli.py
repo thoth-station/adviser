@@ -28,7 +28,8 @@ from thoth.common import init_logging
 
 from thoth.adviser import __version__ as analyzer_version
 from thoth.adviser import __title__ as analyzer_name
-from thoth.adviser.pypi import advise_pypi
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.python import advise_python
 
 init_logging()
 
@@ -68,20 +69,35 @@ def cli(ctx=None, verbose=False):
               help="Output file or remote API to print results to, in case of URL a POST request is issued.")
 @click.option('--no-pretty', '-P', is_flag=True,
               help="Do not print results nicely.")
-@click.option('--packages-only', '-P', envvar='THOTH_ADVISER_PACKAGES_ONLY', is_flag=True,
-              help="Advise on package level, do not use stacks.")
-def pypi(click_ctx, requirements, output=None, no_pretty=False, packages_only=False):
+@click.option('--runtime-environment', envvar='THOTH_ADVISER_RUNTIME_ENVIRONMENT', type=str, required=False,
+              help="Generate recommendations considering the given runtime environment.")
+@click.option('--recommendation-type', '-t', envvar='THOTH_ADVISER_RECOMMENDATION_TYPE', required=True,
+              type=click.Choice(['STABLE', 'TESTING', 'LATEST']), default='STABLE', show_default=True,
+              help="Generate recommendations respecting recommendation restriction type.")
+def pypi(click_ctx, requirements, output=None, no_pretty=False, runtime_environment=None, recommendation_type=None):
     """Advise package and package versions in the given stack or on solely package only."""
-    requirements = [requirement.strip()
-                    for requirement in requirements.split('\n') if requirement]
+    requirements = [requirement.strip() for requirement in requirements.split('\\n') if requirement]
+    for recom_type in RecommendationType:
+        if recommendation_type == recom_type.name:
+            recommendation_type = recom_type
+            break
+    else:
+        # This will not occur due to click's choice
+        raise RuntimeError
 
     if not requirements:
         _LOG.error("No requirements specified, exiting")
         sys.exit(1)
 
-    result = advise_pypi(requirements, packages_only=packages_only)
-    print_command_result(click_ctx, result,
-                         analyzer=analyzer_name, analyzer_version=analyzer_version, output=output, pretty=not no_pretty)
+    result = advise_python(requirements, recommendation_type, runtime_environment)
+    print_command_result(
+        click_ctx,
+        result,
+        analyzer=analyzer_name,
+        analyzer_version=analyzer_version,
+        output=output,
+        pretty=not no_pretty
+    )
 
 
 if __name__ == '__main__':
