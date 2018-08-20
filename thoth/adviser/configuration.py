@@ -22,13 +22,10 @@ import json
 
 import attr
 
-
-_DEFAULT_WAREHOUSE = {
-    'name': 'pypi',
-    'url': 'https://pypi.python.org/simple',
-    'verify_ssl': True,
-    'warehouse': True
-}
+# dict() for tests
+_DEFAULT_WAREHOUSES = [
+    'https://pypi.python.org/simple'
+]
 
 
 @attr.s(slots=True)
@@ -43,13 +40,11 @@ class _Configuration:
 
     @warehouses.default
     def warehouses_default(self):
-        from thoth.adviser.python.source import Source
-
-        warehouses = [dict(_DEFAULT_WAREHOUSE)]  # dict() for tests
+        warehouses = _DEFAULT_WAREHOUSES
         if 'THOTH_ADVISER_WAREHOUSES' in os.environ:
-            warehouses = json.loads(os.environ['THOTH_ADVISER_WAREHOUSES'])
+            warehouses = os.environ['THOTH_ADVISER_WAREHOUSES'].split(',')
 
-        return frozenset((Source.from_dict(warehouse) for warehouse in warehouses))
+        return warehouses
 
 
 config = _Configuration()

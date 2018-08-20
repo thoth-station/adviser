@@ -91,3 +91,7 @@ class Packages:
     def __setitem__(self, package_name: str, package_version: PackageVersion) -> None:
         """Set the given package to a value."""
         self.packages[package_name] = package_version
+
+    def __getitem__(self, item):
+        """Get the given package from section."""
+        return self.packages[item]

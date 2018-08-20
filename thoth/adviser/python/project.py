@@ -32,6 +32,7 @@ from .pipfile import Pipfile, PipfileLock
 from .package_version import PackageVersion
 from ..enums import RecommendationType
 from ..exceptions import InternalError
+from ..exceptions import NotFound
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,23 +69,36 @@ class Project:
         """Perform pipenv lock on the current state of project."""
         with cwd(self.workdir):
             self.pipfile.to_file()
-            print(self.pipfile.to_dict())
             _LOGGER.debug('Running pipenv lock')
             result = run_command('pipenv lock')
             _LOGGER.debug("pipenv stdout:\n%s", result.stdout)
             _LOGGER.debug("pipenv stderr:\n%s", result.stderr)
             self.pipfile_lock = PipfileLock.from_file(pipfile=self.pipfile)
-            print(self.pipfile_lock.to_dict())
 
     def is_direct_dependency(self, package_version: PackageVersion) -> bool:
         """Check whether the given package is a direct dependency."""
         return package_version.name in self.pipfile.packages
 
-    def exclude_package(self, package_version: PackageVersion) -> None:
-        """Exclude the given package from application stack.
+    def get_locked_package_version(self, package_name: str) -> typing.Optional[PackageVersion]:
+        """Get locked version of the package."""
+        package_version = self.pipfile_lock.dev_packages.get(package_name)
 
-        @raises
-        """
+        if not package_version:
+            package_version = self.pipfile_lock.packages.get(package_name)
+
+        return package_version
+
+    def get_package_version(self, package_name: str) -> typing.Optional[PackageVersion]:
+        """Get locked version of the package."""
+        package_version = self.pipfile.dev_packages.get(package_name)
+
+        if not package_version:
+            package_version = self.pipfile.packages.get(package_name)
+
+        return package_version
+
+    def exclude_package(self, package_version: PackageVersion) -> None:
+        """Exclude the given package from application stack."""
         if not package_version.is_locked():
             raise InternalError("Cannot exclude package not pinned down to specific version: %r", package_version)
 
@@ -196,3 +210,188 @@ class Project:
         # the observations we have and user's input.
         self.pipfile = pipfile_copy
         return report
+
+    def _check_sources(self, whitelisted_sources: list) -> list:
+        """Check sources configuration in the Pipfile and report back any issues."""
+        report = []
+        for source in self.pipfile.meta.sources.values():
+            if whitelisted_sources and source.url not in whitelisted_sources:
+                report.append({
+                    'severity': 'ERROR',
+                    'type': 'NOT-WHITELISTED',
+                    'justification': 'Provided index is not stated in the whitelisted package sources listing',
+                    'source': source.to_dict(),
+                })
+            elif not source.verify_ssl:
+                report.append({
+                    'severity': 'WARNING',
+                    'type': 'INSECURE',
+                    'justification': 'Source does not use SSL/TLS verification',
+                    'source': source.to_dict(),
+                })
+
+        return report
+
+    def _index_scan(self) -> typing.Tuple[list, dict]:
+        """Generate full report for packages given the sources configured."""
+        report = {}
+        findings = []
+        for package_version in chain(self.pipfile_lock.packages, self.pipfile_lock.dev_packages):
+            if package_version.name in report:
+                raise InternalError(f"Package {package_version.name} already present in the report")
+
+            index_report = {}
+            for source in self.pipfile.meta.sources.values():
+                try:
+                    index_report[source.name] = source.get_package_hashes(
+                        package_version.name,
+                        package_version.locked_version
+                    )
+                except NotFound as exc:
+                    _LOGGER.debug(
+                        f"Package {package_version.name} in version {package_version.version} not "
+                        f"found on index {source.name}: {str(exc)}"
+                    )
+
+            findings.extend(self._check_scan(package_version, index_report))
+            report[package_version.name] = index_report
+
+        return findings, report
+
+    def _check_scan(self, package_version: PackageVersion, index_report: dict) -> list:
+        """Find and report errors found in the index scan."""
+        """
+            pipfile_lock_sha_entry = f"sha256:{artifact_info['sha256']}"
+            artifact_info['used'] = pipfile_lock_sha_entry in package_version.hashes
+                    'excluded': bool(package_version.index) and package_version.index != source.name,
+        """
+        scan_report = []
+
+        # Holds None if the given package is not direct dependency otherwise Pipfile entry.
+        package = self.get_package_version(package_version.name)
+        if package:
+            package = package.to_pipfile()
+
+        # Prepare hashes for inspection.
+        hashes = []
+        pipenv_style_hashes = []
+        for entry in index_report.values():
+            hashes.append([item['sha256'] for item in entry])
+            pipenv_style_hashes.append([f"sha256:{item['sha256']}" for item in entry])
+
+        if not package_version.index and len(hashes) > 1:
+            # There are indexes with different artifacts present - suggest to specify index explicitly.
+            if set(chain(*hashes)) != set(hashes[0]):
+                scan_report.append({
+                    'severity': 'WARNING',
+                    'type': 'DIFFERENT-ARTIFACTS-ON-SOURCES',
+                    'justification': f'Configured sources have different artifacts '
+                                     f'available, specify explicitly source to be '
+                                     f'used',
+                    'package_locked': package_version.to_pipfile_lock(),
+                    'package': package,
+                    'sources': index_report
+                })
+                # TODO: add fixes
+
+        if package_version.index and index_report.get(package_version.index) and len(hashes) > 1:
+            # Is installed from different source - which one?
+            sources = {}
+            for artifact_hash in package_version.hashes:
+                artifact_hash = artifact_hash[len('sha256:'):]  # Remove pipenv-specific hash formatting.
+
+                for index_name, index_info in index_report.items():
+                    if index_name == package_version.index:
+                        # Skip index that is assigned to the package, we are inspecting from the other sources.
+                        continue
+
+                    artifact_entry = [
+                        (i['name'], i['sha256']) for i in index_info.values()
+                        if i['sha256'] == artifact_hash
+                    ]
+
+                    assert len(artifact_entry) < 2
+                    if artifact_entry and artifact_hash == artifact_entry[1]:
+                        if index_name not in sources:
+                            sources[index_name] = []
+
+                        sources[index_name].append({
+                            'name': artifact_entry[1],
+                            'hash': artifact_hash
+                        })
+
+            raw_package_version_hashes = [h[len('sha256:'):] for h in package_version.hashes]
+            configured_index_hashes = set(h['sha2565'] for h in index_report[package_version.index_name].values())
+            if sources and not set(raw_package_version_hashes).issubset(set(configured_index_hashes)):
+                # Source is different from the configured one.
+                scan_report.append({
+                    'severity': 'ERROR',
+                    'type': 'ARTIFACT-DIFFERENT-SOURCE',
+                    'justification': 'Artifacts are installed from different sources not respecting configuration',
+                    'source': self.pipfile.meta.sources[package_version.index_name].to_dict(),
+                    'package_locked': package_version.to_pipfile_lock(),
+                    'package': package,
+                    'sources': sources
+                })
+            elif sources:
+                # Warn about possible installation from another source.
+                scan_report.append({
+                    'severity': 'WARNING',
+                    'type': 'ARTIFACT-DIFFERENT-SOURCE',
+                    'justification': 'Artifacts can be installed from different sources not '
+                                     'respecting configuration',
+                    'source': self.pipfile.meta.sources[package_version.index_name].to_dict(),
+                    'package_locked': package_version.to_pipfile_lock(),
+                    'package': package,
+                    'sources': sources
+                })
+
+        if package_version.index and not index_report.get(package_version.index):
+            # Configured index does not provide the given package.
+            scan_report.append({
+                'severity': 'ERROR',
+                'type': 'MISSING-PACKAGE',
+                'justification': f'Source index {package_version.index} explicitly '
+                                 f'assigned to package {package_version.name} but package '
+                                 f'was not found on index (was it removed?)',
+                'source': self.pipfile.meta.sources[package_version.index].to_dict(),
+                'package_locked': package_version.to_pipfile_lock(),
+                'package': package,
+                'sources': index_report
+            })
+
+        return scan_report
+
+        # Changed hashes?
+        if set(package_version.hashes):
+            ({
+                'severity': 'ERROR',
+                'type': 'INVALID-ARTIFACT-HASH',
+                'justification': 'Package changed its digest',
+                'source': self.pipfile.meta.sources[source_name].to_dict(),
+                'package_locked': package_version.to_pipfile_lock(),
+                'package': self.get_package_version(package_version.name).to_pipfile(),
+                'digest': None
+            })
+
+        # Removed artifact from index
+        ({
+            'severity': 'WARNING',
+            'type': 'REMOVED-ARTIFACT',
+            'justification': 'Artifact was removed from source index',
+            'source': self.pipfile.meta.sources[source_name].to_dict(),
+            'package_locked': package_version.to_pipfile_lock(),
+            'package': self.get_package_version(package_version.name).to_pipfile(),
+            'digest': None
+        })
+
+        return scan_report
+
+    def check_provenance(self, whitelisted_sources: list = None) -> dict:
+        """Check provenance/origin of packages that """
+        findings, scan = self._index_scan()
+        findings.extend(self._check_sources(whitelisted_sources))
+        return {
+            'findings': findings,
+            'scan': scan
+        }

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "73648901a509add13b2522fbca8f31256237e1f1bd4c6f89fc26ce934301af70"
+            "sha256": "d1ebd5c65b9561d7db3929fbcfbcd0a9323a856b3eaa99b8bec4a7846c300bc5"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -76,6 +76,7 @@
         "boto3": {
             "hashes": [
 <<<<<<< HEAD
+<<<<<<< HEAD
                 "sha256:03067dc8ac0b16cf7ef1e016a08135c82a75e330bdbddea970e4c60ea9e4f699",
                 "sha256:061595d40ea97e4aae8beb9a2eebfe7b1851f40c3c779529d43ad4f8abe5b3d7"
 =======
@@ -109,6 +110,19 @@
             "version": "==1.10.71"
 >>>>>>> Initial python recommendation implementation
 >>>>>>> Initial python recommendation implementation
+=======
+                "sha256:440e3e3674ef9b2e4e7755344fdbf25424edbbdc2c6d4d0d3260f099a810a4f5",
+                "sha256:8cd59afafe0b314161ddab1335d877d5d70cb5b70f265db269baca7ab22e4a0f"
+            ],
+            "version": "==1.7.73"
+        },
+        "botocore": {
+            "hashes": [
+                "sha256:293d547eb1b093e20d916d8009cd66c49ac744199096001f7248163b72edbae1",
+                "sha256:9a3961a4ce49c6464d835756f9fe57550ab41a33f3b638b0e8e9d800f1e009a7"
+            ],
+            "version": "==1.10.73"
+>>>>>>> Create abstraction classes
         },
         "certifi": {
             "hashes": [
@@ -171,6 +185,7 @@
                 "sha256:fc6c20a8ac22202a779ad4c59756647be0826993d2151a03c015e76d2368ae5f"
             ],
 <<<<<<< HEAD
+<<<<<<< HEAD
             "markers": "python_version != '3.0.*' and python_version >= '2.6' and python_version != '3.1.*' and python_version != '3.2.*'",
 =======
 <<<<<<< HEAD
@@ -179,6 +194,9 @@
             "markers": "python_version != '3.1.*' and python_version >= '2.6' and python_version != '3.2.*' and python_version != '3.0.*'",
 >>>>>>> Initial python recommendation implementation
 >>>>>>> Initial python recommendation implementation
+=======
+            "markers": "python_version != '3.2.*' and python_version != '3.0.*' and python_version >= '2.6' and python_version != '3.1.*'",
+>>>>>>> Create abstraction classes
             "version": "==0.28.5"
         },
         "daiquiri": {
@@ -233,10 +251,10 @@
         },
         "hashin": {
             "hashes": [
-                "sha256:40c51ea166442889c1cedf0f909956e6ca1c4b39c28d121a9b22dc90b4b44b1d",
-                "sha256:4aaa2890d63e0eff9e1038e8a602eccbfe2eb90aa8177ff2b2db018815e2be95"
+                "sha256:2ad38507e0edbd48a08b914e888e10a241485a8275050d54f648b17ea627b33c",
+                "sha256:e841a0c55a51fb3a3b92d9aaa57e685421cc993db0f8bf5032a99871738fd636"
             ],
-            "version": "==0.13.2"
+            "version": "==0.13.3"
         },
         "idna": {
             "hashes": [
@@ -301,7 +319,7 @@
             "hashes": [
                 "sha256:3cb7b51c541d4c13df43bf254aca371d9feb4669dc6c1cf3cecb9e9360eb3cb6"
             ],
-            "markers": "python_version != '3.1' and python_version != '3.2' and python_version != '3.0' and python_version >= '2.7' and python_version != '3.3'",
+            "markers": "python_version != '3.2' and python_version != '3.1' and python_version != '3.3' and python_version >= '2.7' and python_version != '3.0'",
             "version": "==0.0.1"
         },
         "pip-tools": {
@@ -317,7 +335,7 @@
                 "sha256:2cdd29356c9e3a0cab60d1b20571de713abca031a87f4685c31fc0cab3295d19",
                 "sha256:a2774940d77fa11c1fb275c350080e75c592d1db5ff5679e0be5e566239de83a"
             ],
-            "markers": "python_version != '3.2.*' and python_version != '3.3.*' and python_version != '3.1.*' and python_version >= '2.7' and python_version != '3.0.*'",
+            "markers": "python_version != '3.0.*' and python_version != '3.1.*' and python_version >= '2.7' and python_version != '3.2.*' and python_version != '3.3.*'",
             "version": "==0.13.0"
         },
         "ptyprocess": {
@@ -462,6 +480,7 @@
                 "sha256:b5725a0bd4ba422ab0e66e89e030c806576753ea3ee08554382c14e685d117b5"
             ],
 <<<<<<< HEAD
+<<<<<<< HEAD
             "markers": "python_version < '4' and python_version != '3.0.*' and python_version != '3.2.*' and python_version != '3.1.*' and python_version != '3.3.*' and python_version >= '2.6'",
 =======
 <<<<<<< HEAD
@@ -470,6 +489,9 @@
             "markers": "python_version != '3.3.*' and python_version != '3.1.*' and python_version < '4' and python_version != '3.2.*' and python_version >= '2.6' and python_version != '3.0.*'",
 >>>>>>> Initial python recommendation implementation
 >>>>>>> Initial python recommendation implementation
+=======
+            "markers": "python_version != '3.1.*' and python_version >= '2.6' and python_version != '3.0.*' and python_version != '3.3.*' and python_version < '4' and python_version != '3.2.*'",
+>>>>>>> Create abstraction classes
             "version": "==1.23"
         },
         "uvloop": {
@@ -486,17 +508,14 @@
                 "sha256:f2ffcaa13a5e279d0b3296cd6c691df39876cc818482168a80edd3b0e5deef57"
             ],
             "version": "==0.11.2"
-<<<<<<< HEAD
-=======
         },
         "virtualenv": {
             "hashes": [
                 "sha256:2ce32cd126117ce2c539f0134eb89de91a8413a29baac49cbab3eb50e2026669",
                 "sha256:ca07b4c0b54e14a91af9f34d0919790b016923d157afda5efdde55c96718f752"
             ],
-            "markers": "python_version != '3.1.*' and python_version >= '2.7' and python_version != '3.2.*' and python_version != '3.0.*'",
+            "markers": "python_version != '3.2.*' and python_version != '3.0.*' and python_version != '3.1.*' and python_version >= '2.7'",
             "version": "==16.0.0"
->>>>>>> Initial python recommendation implementation
         },
         "voluptuous": {
             "hashes": [
@@ -521,6 +540,7 @@
                 "sha256:e072edbd1c5628c0b8f97d00cf6c9fcd6a4ee2b5ded10d463fcb6eaa066cf40c",
                 "sha256:e9a6a319c4bbfb57618f207e86a7c519ab0f637be3d2366e4cdac271577834b8"
             ],
+            "markers": "python_version >= '3.4.1'",
             "version": "==1.1.1"
         }
     },
@@ -551,6 +571,7 @@
                 "sha256:67f3886b74f8614b9696ea47eb9ce90fa808da142619e8e6da6eaf541df30e0f"
             ],
 <<<<<<< HEAD
+<<<<<<< HEAD
             "markers": "python_version != '3.0.*' and python_version != '3.2.*' and python_version != '3.1.*' and python_version != '3.3.*' and python_version >= '2.7'",
 =======
 <<<<<<< HEAD
@@ -559,6 +580,9 @@
             "markers": "python_version != '3.3.*' and python_version != '3.1.*' and python_version != '3.2.*' and python_version >= '2.7' and python_version != '3.0.*'",
 >>>>>>> Initial python recommendation implementation
 >>>>>>> Initial python recommendation implementation
+=======
+            "markers": "python_version >= '2.7' and python_version != '3.1.*' and python_version != '3.0.*' and python_version != '3.3.*' and python_version != '3.2.*'",
+>>>>>>> Create abstraction classes
             "version": "==0.6.6"
         },
         "autopep8": {
@@ -697,6 +721,13 @@
             ],
             "version": "==0.1.6"
         },
+        "flexmock": {
+            "hashes": [
+                "sha256:fe95c8727f4db73dc8f2f7b4548bffe7992440a965fefd60da291abda5352c2b"
+            ],
+            "index": "pypi",
+            "version": "==0.10.2"
+        },
         "future": {
             "hashes": [
                 "sha256:e39ced1ab767b5936646cedba8bcce582398233d6a627067d4c6a454c90cfedb"
@@ -758,6 +789,7 @@
                 "sha256:ec9ef8f4a9bc6f71eec99e1806bfa2de401650d996c59330782b89a5555c1497"
             ],
 <<<<<<< HEAD
+<<<<<<< HEAD
             "markers": "python_version != '3.0.*' and python_version != '3.2.*' and python_version != '3.1.*' and python_version != '3.3.*' and python_version >= '2.7'",
 =======
 <<<<<<< HEAD
@@ -766,6 +798,9 @@
             "markers": "python_version != '3.3.*' and python_version != '3.1.*' and python_version != '3.2.*' and python_version >= '2.7' and python_version != '3.0.*'",
 >>>>>>> Initial python recommendation implementation
 >>>>>>> Initial python recommendation implementation
+=======
+            "markers": "python_version >= '2.7' and python_version != '3.1.*' and python_version != '3.0.*' and python_version != '3.3.*' and python_version != '3.2.*'",
+>>>>>>> Create abstraction classes
             "version": "==4.3.4"
         },
         "jinja2": {
@@ -1010,6 +1045,7 @@
                 "sha256:24035999031ad5f5f75df310abe4ecbb832b6de869752dc8abe52908a6878d29",
                 "sha256:d7135e2934da57a64d9ad2d34854acc3d05075df91b6e2eddadd868ec6886573"
             ],
+            "markers": "python_version != '3.1.*' and python_version >= '2.6' and python_version != '3.0.*' and python_version != '3.3.*' and python_version < '4' and python_version != '3.2.*'",
             "version": "==0.5.1"
         },
         "sarge": {
@@ -1098,6 +1134,7 @@
                 "sha256:b5725a0bd4ba422ab0e66e89e030c806576753ea3ee08554382c14e685d117b5"
             ],
 <<<<<<< HEAD
+<<<<<<< HEAD
             "markers": "python_version < '4' and python_version != '3.0.*' and python_version != '3.2.*' and python_version != '3.1.*' and python_version != '3.3.*' and python_version >= '2.6'",
 =======
 <<<<<<< HEAD
@@ -1106,6 +1143,9 @@
             "markers": "python_version != '3.3.*' and python_version != '3.1.*' and python_version < '4' and python_version != '3.2.*' and python_version >= '2.6' and python_version != '3.0.*'",
 >>>>>>> Initial python recommendation implementation
 >>>>>>> Initial python recommendation implementation
+=======
+            "markers": "python_version != '3.1.*' and python_version >= '2.6' and python_version != '3.0.*' and python_version != '3.3.*' and python_version < '4' and python_version != '3.2.*'",
+>>>>>>> Create abstraction classes
             "version": "==1.23"
         },
         "vulture": {

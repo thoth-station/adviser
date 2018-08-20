@@ -17,8 +17,6 @@
 
 """Thoth-adviser CLI."""
 
-import sys
-
 import click
 import logging
 
@@ -47,6 +45,32 @@ def _print_version(ctx, _, value):
     ctx.exit()
 
 
+def _instantiate_project(requirements: str, requirements_locked: str, files: bool):
+    """Create Project instance based on arguments passed to CLI."""
+    if files:
+        with open(requirements, 'r') as requirements_file:
+            requirements = requirements_file.read()
+
+        with open(requirements_locked, 'r') as requirements_file:
+            requirements_locked = requirements_file.read()
+
+        del requirements_file
+    else:
+        # We we gather values from env vars, un-escape new lines.
+        requirements = requirements.replace('\\n', '\n')
+        if requirements_locked:
+            requirements_locked = requirements_locked.replace('\\n', '\n')
+
+    pipfile = Pipfile.from_string(requirements)
+    pipfile_lock = PipfileLock.from_string(requirements_locked, pipfile)
+    project = Project(
+        pipfile=pipfile,
+        pipfile_lock=pipfile_lock
+    )
+
+    return project
+
+
 @click.group()
 @click.pass_context
 @click.option('-v', '--verbose', is_flag=True, envvar='THOTH_ADVISER_DEBUG',
@@ -62,6 +86,68 @@ def cli(ctx=None, verbose=False):
         _LOGGER.setLevel(logging.DEBUG)
 
     _LOGGER.debug("Debug mode is on")
+
+
+@cli.command()
+@click.pass_context
+@click.option('--requirements', '-r', type=str, envvar='THOTH_ADVISER_REQUIREMENTS', required=True,
+              help="Pipfile to be checked for provenance.")
+@click.option('--requirements-locked', '-l', type=str, envvar='THOTH_ADVISER_REQUIREMENTS_LOCKED', required=True,
+              help="Pipenv.lock file stating currently locked packages.")
+@click.option('--output', '-o', type=str, envvar='THOTH_ADVISER_OUTPUT', default='-',
+              help="Output file or remote API to print results to, in case of URL a POST request is issued.")
+@click.option('--no-pretty', '-P', is_flag=True,
+              help="Do not print results nicely.")
+@click.option('--whitelisted-sources', '-i', type=str, required=False, envvar='THOTH_WHITELISTED_SOURCES',
+              help="A comma separated list of whitelisted simple repositories providing packages - if not "
+                   "provided, all indexes are whitelisted (example: https://pypi.org/simple/).")
+@click.option('--files', '-F', is_flag=True,
+              help="Requirements passed represent paths to files on local filesystem.")
+def provenance(click_ctx, requirements, requirements_locked=None, whitelisted_sources=None, output=None,
+               files=False, no_pretty=False):
+    """Check provenance of packages based on configuration."""
+    _LOGGER.debug("Passed arguments: %s", locals())
+
+    whitelisted_sources = whitelisted_sources.split(',') if whitelisted_sources else []
+    result = {
+        'error': None,
+        'report': {},
+        'parameters': {
+            'whitelisted_indexes': whitelisted_sources,
+        },
+        'input': {
+            'requirements': requirements,
+            'requirements_locked': requirements_locked
+        }
+    }
+    try:
+        project = _instantiate_project(requirements, requirements_locked, files)
+        report = project.check_provenance(whitelisted_sources=whitelisted_sources)
+    except ThothAdviserException as exc:
+        # TODO: we should extend exceptions so they are capable of storing more info.
+        if isinstance(exc, InternalError):
+            # Re-raise internal exceptions that shouldn't occur here.
+            raise
+
+        _LOGGER.exception("Error during checking provenance: %s", str(exc))
+        result['error'] = True
+        result['report'] = {
+            'error_type': type(exc).__name__,
+            'error': str(exc)
+        }
+    else:
+        result['error'] = False
+        result['report'] = report
+
+    print_command_result(
+        click_ctx,
+        result,
+        analyzer=analyzer_name,
+        analyzer_version=analyzer_version,
+        output=output,
+        pretty=not no_pretty
+    )
+    return result['error'] is False
 
 
 @cli.command()
@@ -90,25 +176,6 @@ def pypi(click_ctx, requirements, requirements_format=None, requirements_locked=
     """Advise package and package versions in the given stack or on solely package only."""
     _LOGGER.debug("Passed arguments: %s", locals())
 
-    if not requirements:
-        _LOGGER.error("No requirements specified, exiting")
-        sys.exit(1)
-
-    # TODO: we should handle exceptions here and report them back as errors a user can directly inspect/report.
-
-    if files:
-        with open(requirements, 'r') as requirements_file:
-            requirements = requirements_file.read()
-
-        if requirements_locked:
-            with open(requirements_locked, 'r') as requirements_locked_file:
-                requirements_locked = requirements_locked_file.read()
-    else:
-        # We we gather values from env vars, un-escape new lines.
-        requirements = requirements.replace('\\n', '\n')
-        if requirements_locked:
-            requirements_locked = requirements_locked.replace('\\n', '\n')
-
     recommendation_type = RecommendationType.by_name(recommendation_type)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
     result = {
@@ -129,12 +196,7 @@ def pypi(click_ctx, requirements, requirements_format=None, requirements_locked=
         }
     }
     try:
-        pipfile = Pipfile.parse(requirements)
-        pipfile_lock = None
-        if requirements_locked:
-            pipfile_lock = PipfileLock.parse(requirements_locked, pipfile)
-
-        project = Project(pipfile=pipfile, pipfile_lock=pipfile_lock)
+        project = _instantiate_project(requirements, requirements_locked, files)
         report = project.advise(runtime_environment, recommendation_type)
     except ThothAdviserException as exc:
         # TODO: we should extend exceptions so they are capable of storing more info.
@@ -142,12 +204,11 @@ def pypi(click_ctx, requirements, requirements_format=None, requirements_locked=
             # Re-raise internal exceptions that shouldn't occur here.
             raise
 
-        result = {
-            'error': True,
-            'report': {
-                'error_type': type(exc).__name__,
-                'error': str(exc)
-            }
+        _LOGGER.exception("Error during computing recommendation: %s", str(exc))
+        result['error'] = True
+        result['report'] = {
+            'error_type': type(exc).__name__,
+            'error': str(exc)
         }
     else:
         result['error'] = False
@@ -173,6 +234,7 @@ def pypi(click_ctx, requirements, requirements_format=None, requirements_locked=
         output=output,
         pretty=not no_pretty
     )
+    return result['error'] is False
 
 
 if __name__ == '__main__':

@@ -114,6 +114,24 @@ class PipfileMeta:
 
         return result
 
+    def get_sources_providing_package(self, package_name: str) -> list:
+        """Get all source indexes providing the given package."""
+        result = []
+        for source in self.sources.values():
+            if package_name in source.get_packages():
+                result.append(source)
+
+        return result
+
+    def get_sources_providing_package_version(self, package_name: str, package_version: str) -> list:
+        """Get all source indexes providing the given package in the specified value."""
+        result = []
+        for source in self.sources.values():
+            if source.provides_package_version(package_name, package_version):
+                result.append(source)
+
+        return result
+
 
 @attr.s(slots=True)
 class _PipfileBase:
@@ -196,8 +214,8 @@ class Pipfile(_PipfileBase):
     def from_dict(cls, dict_):
         """Retrieve instance of Pipfile from its dictionary representation."""
         _LOGGER.debug("Parsing Pipfile")
-        packages = dict_.pop('packages')
-        dev_packages = dict_.pop('dev-packages')
+        packages = dict_.pop('packages', {})
+        dev_packages = dict_.pop('dev-packages', {})
 
         # Use remaining parts - such as requires, pipenv configuration and other flags.
         meta = dict_

@@ -14,25 +14,3 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-"""Exceptions used within thoth-adviser package."""
-
-
-class ThothAdviserException(Exception):
-    """A base exception for this package."""
-
-
-class PipfileParseError(ThothAdviserException):
-    """An exception raised on invalid Pipfile or Pipfile.lock."""
-
-
-class InternalError(ThothAdviserException):
-    """An exception raised on bugs in the code base."""
-
-
-class UnsupportedConfiguration(ThothAdviserException):
-    """An exception raised on unsupported configuration by recommendation engine."""
-
-
-class NotFound(ThothAdviserException):
-    """An exception raised if the given resource was not found."""
