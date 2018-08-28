@@ -3,13 +3,13 @@
       jobs:
         - linters
     gate:
-      queue: core
+      queue: thoth-station/core
       jobs:
         - linters
     release:
       jobs:
         - upload-pypi-sesheta
     kebechet-auto-gate:
-      queue: core
+      queue: thoth-station/core
       jobs:
         - linters
