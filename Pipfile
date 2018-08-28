@@ -14,6 +14,7 @@ toml = "*"
 attrs = "*"
 requests = "*"
 beautifulsoup4 = "*"
+semantic-version = "*"
 
 [dev-packages]
 coala-bears = "*"

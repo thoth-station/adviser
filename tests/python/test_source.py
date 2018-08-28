@@ -80,8 +80,7 @@ class TestSource(AdviserTestCase):
     def test_get_package_hashes_server(self):
         pypi_index = {
             'name': 'aicoe',
-            #'url': 'https://index-aicoe.a3c1.starter-us-west-1.openshiftapps.com/fedora28/1.9/jemalloc/',
-            'url': 'https://pypi.org/simple',
+            'url': 'https://index-aicoe.a3c1.starter-us-west-1.openshiftapps.com/fedora28/1.9/jemalloc/',
             'verify_ssl': True,
             'warehouse': False
         }

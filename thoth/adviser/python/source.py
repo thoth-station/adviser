@@ -187,7 +187,7 @@ class Source:
 
     def _simple_repository_list_artifacts(self, package_name: str) -> list:
         """Parse simple repository package listing (HTML) and return artifacts present there."""
-        url = self.url + f'/{package_name}'
+        url = self.url + f'simple/{package_name}'
 
         _LOGGER.debug(f"Discovering package %r artifacts from %r", package_name, url)
         response = requests.get(url, verify=self.verify_ssl)

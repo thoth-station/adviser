@@ -22,6 +22,7 @@ import pytest
 from thoth.adviser.python.package_version import PackageVersion
 from thoth.adviser.exceptions import UnsupportedConfiguration
 from thoth.adviser.exceptions import PipfileParseError
+from thoth.adviser.exceptions import InternalError
 
 from base import AdviserTestCase
 
@@ -127,3 +128,25 @@ class TestPackageVersion(AdviserTestCase):
     def test_from_pipfile_lock_entry_error(self, package_name, package_info):
         with pytest.raises(PipfileParseError):
             PackageVersion.from_pipfile_lock_entry(package_name, package_info, develop=False)
+
+    def test_sorted(self):
+        array = []
+        for version in ('==1.0.0', '==0.1.0', '==3.0.0'):
+            array.append(PackageVersion(name='tensorflow', version=version, develop=False))
+
+        assert sorted(pv.locked_version for pv in array) == ['0.1.0', '1.0.0', '3.0.0']
+
+    def test_semver_error(self):
+        with pytest.raises(InternalError):
+            return PackageVersion(name='tensorflow', version='>1.0.0', develop=False).semantic_version
+
+    def test_version_specification(self):
+        pv = PackageVersion(name='tensorflow', version='==0.1.0', develop=False).semantic_version
+        vs = PackageVersion(name='tensorflow', version='<1.0.0', develop=False).version_specification
+        assert pv in vs
+
+        pv = PackageVersion(name='tensorflow', version='==2.1.0', develop=False).semantic_version
+        assert pv not in vs
+
+        vs = PackageVersion(name='tensorflow', version='==2.1.0', develop=False).version_specification
+        assert pv in vs

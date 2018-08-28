@@ -21,6 +21,7 @@ import logging
 from copy import copy
 
 import attr
+import semantic_version as semver
 
 from thoth.adviser.exceptions import UnsupportedConfiguration
 from thoth.adviser.exceptions import PipfileParseError
@@ -39,6 +40,24 @@ class PackageVersion:
     index = attr.ib(default=None, type=str)
     hashes = attr.ib(default=attr.Factory(list))
     markers = attr.ib(default=None, type=str)
+    _semantic_version = attr.ib(default=None, type=semver.Version)
+    _version_spec = attr.ib(default=None, type=semver.Spec)
+
+    def __eq__(self, other):
+        """Check for package-version equality."""
+        return self.name == other.name and self.version == other.version and self.hashes == other.hashes
+
+    def __lt__(self, other):
+        if self.name != other.name:
+            raise ValueError(f"Comparing package versions of different package - {self.name} and {other.name}")
+
+        return self.semantic_version < other.semantic_version
+
+    def __gt__(self, other):
+        if self.name != other.name:
+            raise ValueError(f"Comparing package versions of different package - {self.name} and {other.name}")
+
+        return self.semantic_version > other.semantic_version
 
     def is_locked(self):
         """Check if the given package is locked to a specific version."""
@@ -59,20 +78,48 @@ class PackageVersion:
         """Negate version of a locked package version."""
         if not self.is_locked():
             raise InternalError(
-                "Negating version on non-locked package {self.name} with version {self.version} is not supported"
+                f"Negating version on non-locked package {self.name} with version {self.version} is not supported"
             )
 
         self.version = '!' + self.version[1:]
 
     @property
-    def locked_version(self):
+    def locked_version(self) -> str:
         """Retrieve locked version of the package."""
         if not self.is_locked():
             raise InternalError(
-                "Requested locked version for {self.name} but package has no locked version {self.version}"
+                f"Requested locked version for {self.name} but package has no locked version {self.version}"
             )
 
         return self.version[len('=='):]
+
+    @property
+    def semantic_version(self) -> semver.Version:
+        """Get semantic version respecting version specified - package has to be locked to a specific version."""
+        if not self._semantic_version:
+            if not self.is_locked():
+                raise InternalError(
+                    f"Cannot get semantic version for not-locked package {self.name} in version {self.version}"
+                )
+
+            try:
+                self._semantic_version = semver.Version(self.locked_version)
+            except Exception as exc:
+                self._semantic_version = semver.Version.coerce(self.locked_version)
+                _LOGGER.warning(
+                    f"Cannot determine semantic version for package {self.name} in version {self.locked_version}, "
+                    f"approximated version is {self._semantic_version}: {str(exc)})"
+                )
+
+        return self._semantic_version
+
+    @property
+    def version_specification(self) -> semver.Spec:
+        """Retrieve version specification based on specified version."""
+        if not self._version_spec:
+            self._version_spec = semver.Spec(self.version)
+
+        return self._version_spec
 
     @classmethod
     def from_pipfile_lock_entry(cls, package_name: str, entry: dict, develop: bool):
