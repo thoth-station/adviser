@@ -30,6 +30,7 @@ objects:
       containers:
         - name: adviser
           image: adviser
+          command: ['thoth-adviser', 'pypi']
           livenessProbe:
             # Give analyzer 10 minutes to compute results, kill it if it was not able result anything.
             tcpSocket:
