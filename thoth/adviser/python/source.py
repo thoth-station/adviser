@@ -224,7 +224,6 @@ class Source:
 
     def _download_artifacts_sha(self, package_name: str, package_version: str) -> typing.Generator[tuple, None, None]:
         """Download the given artifact from Warehouse and compute its SHA."""
-        # TODO: uncomment once AICoE index will be fixed
         for artifact_name, artifact_url in self._simple_repository_list_artifacts(package_name):
             if not artifact_name.startswith(f"{package_name}-{package_version}"):
                 # TODO: this logic has to be improved as package version can be a suffix of another package version:
