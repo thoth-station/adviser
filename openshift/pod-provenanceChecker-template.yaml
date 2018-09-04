@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: provenance-checker
+  annotations:
+    description: This is Thoth Core - Provenance Checker
+    openshift.io/display-name: 'Thoth: Provenance Checker'
+    version: 0.1.0
+    tags: poc,thoth,ai-stacks,provenance-checker
+    template.openshift.io/documentation-url: https://github.com/Thoth-Station/
+    template.openshift.io/long-description: >
+      This template defines resources needed to run recommendation logic of Thoth to OpenShift.
+    template.openshift.io/provider-display-name: Red Hat, Inc.
+  labels:
+    app: thoth
+    template: provenance-checker
+    component: provenance-checker
+
+objects:
+  - apiVersion: v1
+    kind: Pod
+    metadata:
+      generateName: 'provenance-checker-'
+      labels:
+        app: thoth
+        component: provenance-checker
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+        - name: provenance-checker
+          image: adviser
+          livenessProbe:
+            # Give analyzer 10 minutes to compute results, kill it if it was not able result anything.
+            tcpSocket:
+              port: 80
+            initialDelaySeconds: 600
+            failureThreshold: 1
+            periodSeconds: 10
+          env:
+            - name: THOTH_LOG_PROVENANCE_CHECKER
+              value: "${THOTH_LOG_PROVENANCE_CHECKER}"
+            - name: THOTH_PROVENANCE_CHECKER_OUTPUT
+              value: "${THOTH_PROVENANCE_CHECKER_OUTPUT}"
+            - name: THOTH_PROVENANCE_CHECKER_REQUIREMENTS
+              value: "${THOTH_PROVENANCE_CHECKER_REQUIREMENTS}"
+            - name: THOTH_PROVENANCE_CHECKER_REQUIREMENTS_LOCKED
+              value: "${THOTH_PROVENANCE_CHECKER_REQUIREMENTS_LOCKED}"
+          resources:
+            limits:
+              memory: '128Mi'
+              cpu: '500m'
+            requests:
+              memory: '128Mi'
+              cpu: '500m'
+parameters:
+  - name: THOTH_PROVENANCE_CHECKER_OUTPUT
+    required: false
+    description: Remote where results should be send to
+  - name: THOTH_PROVENANCE_CHECKER_REQUIREMENTS
+    required: false
+    description: Raw stack requirements
+  - name: THOTH_PROVENANCE_CHECKER_REQUIREMENTS_LOCKED
+    required: false
+    description: Fully pinned down stack
+    displayName: Locked requirements
+  - name: THOTH_LOG_PROVENANCE_CHECKER
+    required: false
+    description: Log adviser actions
+    displayName: Log adviser actions
+    value: INFO
