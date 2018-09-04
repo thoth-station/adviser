@@ -48,12 +48,14 @@ class PackageVersion:
         return self.name == other.name and self.version == other.version and self.hashes == other.hashes
 
     def __lt__(self, other):
+        """Compare same packages based on their semantic version."""
         if self.name != other.name:
             raise ValueError(f"Comparing package versions of different package - {self.name} and {other.name}")
 
         return self.semantic_version < other.semantic_version
 
     def __gt__(self, other):
+        """Compare same packages based on their semantic version."""
         if self.name != other.name:
             raise ValueError(f"Comparing package versions of different package - {self.name} and {other.name}")
 
