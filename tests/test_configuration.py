@@ -35,7 +35,4 @@ class TestConfiguration(AdviserTestCase):
         assert len(configuration.warehouses) == 1
 
         default_warehouse = list(configuration.warehouses)[0]
-        assert isinstance(default_warehouse, Source)
-        assert default_warehouse.name == 'pypi'
-        assert default_warehouse.url == 'https://pypi.python.org/simple'
-        assert default_warehouse.verify_ssl is True
+        assert default_warehouse == 'https://pypi.python.org/simple'
