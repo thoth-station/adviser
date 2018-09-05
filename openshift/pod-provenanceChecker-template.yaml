@@ -38,14 +38,17 @@ objects:
             failureThreshold: 1
             periodSeconds: 10
           env:
-            - name: THOTH_LOG_PROVENANCE_CHECKER
-              value: "${THOTH_LOG_PROVENANCE_CHECKER}"
-            - name: THOTH_PROVENANCE_CHECKER_OUTPUT
-              value: "${THOTH_PROVENANCE_CHECKER_OUTPUT}"
-            - name: THOTH_PROVENANCE_CHECKER_REQUIREMENTS
-              value: "${THOTH_PROVENANCE_CHECKER_REQUIREMENTS}"
-            - name: THOTH_PROVENANCE_CHECKER_REQUIREMENTS_LOCKED
-              value: "${THOTH_PROVENANCE_CHECKER_REQUIREMENTS_LOCKED}"
+            - name: THOTH_LOG_ADVISER
+              value: "${THOTH_LOG_ADVISER}"
+            - name: THOTH_ADVISER_OUTPUT
+              value: "${THOTH_ADVISER_OUTPUT}"
+            - name: THOTH_ADVISER_REQUIREMENTS
+              value: "${THOTH_ADVISER_REQUIREMENTS}"
+            - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+              value: "${THOTH_ADVISER_REQUIREMENTS_LOCKED}"
+            - name: THOTH_PROVENANCE
+              # Distinguish in adviser that we want to run provenance checks rather than adviser itself.
+              value: '1'
           resources:
             limits:
               memory: '128Mi'
@@ -54,17 +57,17 @@ objects:
               memory: '128Mi'
               cpu: '500m'
 parameters:
-  - name: THOTH_PROVENANCE_CHECKER_OUTPUT
+  - name: THOTH_ADVISER_OUTPUT
     required: false
     description: Remote where results should be send to
-  - name: THOTH_PROVENANCE_CHECKER_REQUIREMENTS
+  - name: THOTH_ADVISER_REQUIREMENTS
     required: false
     description: Raw stack requirements
-  - name: THOTH_PROVENANCE_CHECKER_REQUIREMENTS_LOCKED
+  - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
     required: false
     description: Fully pinned down stack
     displayName: Locked requirements
-  - name: THOTH_LOG_PROVENANCE_CHECKER
+  - name: THOTH_LOG_ADVISER
     required: false
     description: Log adviser actions
     displayName: Log adviser actions
