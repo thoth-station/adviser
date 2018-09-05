@@ -388,7 +388,7 @@ class Project:
         return scan_report
 
     def check_provenance(self, whitelisted_sources: list = None) -> dict:
-        """Check provenance/origin of packages that """
+        """Check provenance/origin of packages that are stated in the project."""
         findings, scan = self._index_scan()
         findings.extend(self._check_sources(whitelisted_sources))
         return {
