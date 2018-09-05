@@ -61,7 +61,7 @@ class Source:
             name=dict_.pop('name'),
             url=warehouse_url,
             verify_ssl=dict_.pop('verify_ssl'),
-            warehouse=dict_.pop('warehouse', False) or warehouse_url in config.warehouses
+            warehouse=dict_.pop('warehouse', warehouse_url in config.warehouses)
         )
 
         if dict_:
@@ -187,7 +187,7 @@ class Source:
 
     def _simple_repository_list_artifacts(self, package_name: str) -> list:
         """Parse simple repository package listing (HTML) and return artifacts present there."""
-        url = self.url + f'simple/{package_name}'
+        url = self.url + '/' + package_name
 
         _LOGGER.debug(f"Discovering package %r artifacts from %r", package_name, url)
         response = requests.get(url, verify=self.verify_ssl)

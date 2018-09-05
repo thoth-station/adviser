@@ -22,10 +22,9 @@ import json
 
 import attr
 
-# dict() for tests
-_DEFAULT_WAREHOUSES = [
-    'https://pypi.python.org/simple'
-]
+_DEFAULT_WAREHOUSES = (
+    'https://pypi.python.org/simple',
+)
 
 
 @attr.s(slots=True)
