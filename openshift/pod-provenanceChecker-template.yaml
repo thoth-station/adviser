@@ -46,6 +46,9 @@ objects:
               value: "${THOTH_ADVISER_REQUIREMENTS}"
             - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
               value: "${THOTH_ADVISER_REQUIREMENTS_LOCKED}"
+            - name: THOTH_PROVENANCE
+              # Distinguish in adviser that we want to run provenance checks rather than adviser itself.
+              value: '1'
           resources:
             limits:
               memory: '128Mi'
