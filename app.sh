@@ -6,8 +6,8 @@
 
 
 if [ "$THOTH_PROVENANCE" == "1" ]; then
-	exec thoth-adviser provenance
+	exec /opt/app-root/bin/python3 thoth-adviser provenance
 else
-	exec thoth-adviser pypi
+	exec /opt/app-root/bin/python3 thoth-adviser pypi
 fi
 
