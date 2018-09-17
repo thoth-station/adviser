@@ -2,4 +2,4 @@
 
 
 __title__ = 'thoth-adviser'
-__version__ = '0.0.2'
+__version__ = "0.1.0"
