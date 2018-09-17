@@ -75,3 +75,6 @@
 * Add LICENSE and license headers
 * Use thoth's common logging
 * Add README file
+
+## Release 0.1.1 (2018-09-17T14:40:29)
+* Setuptools find_packages does not respect namespaces
