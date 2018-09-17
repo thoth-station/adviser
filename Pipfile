@@ -15,6 +15,7 @@ attrs = "*"
 requests = "*"
 beautifulsoup4 = "*"
 semantic-version = "*"
+lxml = "*"
 
 [dev-packages]
 coala-bears = "*"
