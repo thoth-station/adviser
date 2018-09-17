@@ -1,5 +1,5 @@
 import os
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
 def get_install_requires():
@@ -28,7 +28,7 @@ setup(
     author='Fridolin Pokorny',
     author_email='fridolin@redhat.com',
     license='GPLv3+',
-    packages=find_packages(),
+    packages=['thoth.adviser', 'thoth.adviser.python'],
     entry_points={
         'console_scripts': ['thoth-adviser=thoth.adviser.cli:cli']
     },
