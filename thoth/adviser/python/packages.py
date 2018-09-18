@@ -23,6 +23,7 @@ import logging
 import attr
 
 from .package_version import PackageVersion
+from thoth.adviser.exceptions import InternalError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -95,3 +96,17 @@ class Packages:
     def __getitem__(self, item):
         """Get the given package from section."""
         return self.packages[item]
+
+    def add_package_version(self, package_version: PackageVersion):
+        """Add the given package version to package list."""
+        if (package_version.develop and not self.develop) or (not package_version.develop and self.develop):
+            raise InternalError(
+                f"Adding package {package_version!r} to package listing without proper develop flag"
+            )
+
+        if package_version.name in self.packages:
+            raise InternalError(
+                f"Adding package {package_version!r} to packages, but this package is already present there"
+            )
+
+        self.packages[package_version.name] = package_version
