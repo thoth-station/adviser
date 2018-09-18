@@ -29,6 +29,7 @@ from thoth.analyzer import run_command
 from thoth.storages import GraphDatabase
 
 from .pipfile import Pipfile, PipfileLock
+from .source import Source
 from .package_version import PackageVersion
 from ..enums import RecommendationType
 from ..exceptions import InternalError
@@ -395,3 +396,37 @@ class Project:
             'findings': findings,
             'scan': scan
         }
+
+    def add_source(self, url: str, verify_ssl: bool = True, name: str = None,
+                   warehouse: bool = False, warehouse_api_url: str = None) -> Source:
+        """Add a package source (index) to the project."""
+        if name:
+            source = Source(name=name, url=url, verify_ssl=verify_ssl,
+                            warehouse=warehouse, warehouse_api_url=warehouse_api_url)
+        else:
+            # Do not provide source index name so that attrs correctly compute default based on URL.
+            source = Source(url=url, verify_ssl=verify_ssl,
+                            warehouse=warehouse, warehouse_api_url=warehouse_api_url)
+
+        self.pipfile.meta.add_source(source)
+        if self.pipfile_lock:
+            self.pipfile_lock.meta.add_source(source)
+
+        return source
+
+    def add_package(self, package_name: str, package_version: str = None, *,
+                    source: Source = None, develop: bool = False):
+        """Add the given package to project.
+
+        This method will add packages only to Pipfile, locking has to be explicitly done once package is added.
+        """
+        if source and source.name not in self.pipfile.meta.sources:
+            raise InternalError(
+                f"Adding package {package_name} to project without having source index "
+                f"{source.name} registered in the project"
+            )
+
+        package_version = PackageVersion(
+            name=package_name, version=package_version, develop=develop, index=source.name if source else None
+        )
+        self.pipfile.add_package_version(package_version)

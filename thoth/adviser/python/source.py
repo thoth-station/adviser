@@ -22,6 +22,7 @@ import re
 import typing
 import hashlib
 from functools import lru_cache
+from urllib.parse import urlparse
 
 import attr
 import requests
@@ -38,11 +39,17 @@ _LOGGER = logging.getLogger(__name__)
 class Source:
     """Representation of source (Python index) for Python packages."""
 
-    name = attr.ib(type=str)
     url = attr.ib(type=str)
     verify_ssl = attr.ib(type=bool)
-    warehouse = attr.ib(type=bool)
+    name = attr.ib(type=str)
+    warehouse = attr.ib(type=bool, default=False)
     warehouse_api_url = attr.ib(default=None, type=str)
+
+    @name.default
+    def default_name(self):
+        """Create a name for source based on url if not explicitly provided."""
+        parsed_url = urlparse(self.url)
+        return parsed_url.netloc.split('.')[0]
 
     def get_api_url(self):
         """Construct URL to Warehouse instance."""
