@@ -29,6 +29,7 @@ from thoth.adviser.exceptions import InternalError
 
 from .packages import Packages
 from .source import Source
+from .package_version import PackageVersion
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -132,6 +133,10 @@ class PipfileMeta:
 
         return result
 
+    def add_source(self, source: Source):
+        """Add the given package source."""
+        self.sources[source.name] = source
+
 
 @attr.s(slots=True)
 class _PipfileBase:
@@ -173,6 +178,13 @@ class _PipfileBase:
             requirements_file += f'{package_version.name}{package_version.version}'
 
         return requirements_file
+
+    def add_package_version(self, package_version: PackageVersion):
+        """Add the given package."""
+        if package_version.develop:
+            self.dev_packages.add_package_version(package_version)
+        else:
+            self.packages.add_package_version(package_version)
 
 
 @attr.s(slots=True)
