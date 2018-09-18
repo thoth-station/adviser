@@ -78,3 +78,6 @@
 
 ## Release 0.1.1 (2018-09-17T14:40:29)
 * Setuptools find_packages does not respect namespaces
+
+## Release 0.2.0 (2018-09-18T07:41:14)
+* Introduce add_source and add_package methods
