@@ -71,7 +71,7 @@ class Project:
         with cwd(self.workdir):
             self.pipfile.to_file()
             _LOGGER.debug('Running pipenv lock')
-            result = run_command('pipenv lock')
+            result = run_command('pipenv lock', env={'PIPENV_IGNORE_VIRTUALENVS': '1'})
             _LOGGER.debug("pipenv stdout:\n%s", result.stdout)
             _LOGGER.debug("pipenv stderr:\n%s", result.stderr)
             self.pipfile_lock = PipfileLock.from_file(pipfile=self.pipfile)
