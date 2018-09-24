@@ -408,12 +408,9 @@ class Project:
 
     def check_provenance(self, whitelisted_sources: list = None) -> dict:
         """Check provenance/origin of packages that are stated in the project."""
-        findings, scan = self._index_scan()
+        findings, _ = self._index_scan()
         findings.extend(self._check_sources(whitelisted_sources))
-        return {
-            'findings': findings,
-            'scan': scan
-        }
+        return findings
 
     def add_source(self, url: str, verify_ssl: bool = True, name: str = None,
                    warehouse: bool = False, warehouse_api_url: str = None) -> Source:
