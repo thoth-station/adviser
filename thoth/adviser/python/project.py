@@ -20,17 +20,19 @@
 import logging
 import typing
 from itertools import chain
-from copy import copy
+from copy import deepcopy
 import tempfile
 
 import attr
 from thoth.common import cwd
 from thoth.analyzer import run_command
+from thoth.analyzer import CommandError
 from thoth.storages import GraphDatabase
 
 from .pipfile import Pipfile, PipfileLock
 from .source import Source
 from .package_version import PackageVersion
+from .exceptions import UnableLock
 from ..enums import RecommendationType
 from ..exceptions import InternalError
 from ..exceptions import NotFound
@@ -71,7 +73,16 @@ class Project:
         with cwd(self.workdir):
             self.pipfile.to_file()
             _LOGGER.debug('Running pipenv lock')
-            result = run_command('pipenv lock', env={'PIPENV_IGNORE_VIRTUALENVS': '1'})
+
+            try:
+                result = run_command('pipenv lock', env={'PIPENV_IGNORE_VIRTUALENVS': '1'})
+            except CommandError as exc:
+                _LOGGER.exception(
+                    "Unable to lock application stack (return code: %d):\n%s\n",
+                    exc.return_code, exc.stdout, exc.stderr
+                )
+                raise UnableLock("Failed to perform lock") from exc
+
             _LOGGER.debug("pipenv stdout:\n%s", result.stdout)
             _LOGGER.debug("pipenv stderr:\n%s", result.stderr)
             self.pipfile_lock = PipfileLock.from_file(pipfile=self.pipfile)
@@ -193,24 +204,31 @@ class Project:
 
         report = []
         change = True
-        pipfile_copy = copy(self.pipfile)
-        while change:
-            change = False
+        pipfile_copy = deepcopy(self.pipfile)
+        try:
+            while change:
+                change = False
 
-            for package_version in chain(self.pipfile_lock.packages, self.pipfile_lock.dev_packages):
-                bad_package_report = self.is_bad_package(package_version, recommendation_type)
-                if bad_package_report:
-                    # Perform copy() to avoid changes on packages the Pipfile.lock.
-                    self.exclude_package(package_version.duplicate())
-                    report.append(bad_package_report)
-                    change = True
-                    break
-
-        # Do not touch pipfile that was provided by user. If there is any change in observations we have,
-        # the algorithm above respects these changes. Otherwise it always results with the same stack given
-        # the observations we have and user's input.
-        self.pipfile = pipfile_copy
-        return report
+                for package_version in chain(self.pipfile_lock.packages, self.pipfile_lock.dev_packages):
+                    bad_package_report = self.is_bad_package(package_version, recommendation_type)
+                    if bad_package_report:
+                        self.exclude_package(package_version.duplicate())
+                        report.append(bad_package_report)
+                        change = True
+                        break
+        except UnableLock:
+            report.append({
+                'type': 'ERROR',
+                'justification': f'Unable to create advise - not sufficient information or faulty package found for '
+                                 f'recommendation type {recommendation_type.name!r} for runtime '
+                                 f'environment {runtime_environment!r}'
+            })
+        finally:
+            # Do not touch pipfile that was provided by user. If there is any change in observations we have,
+            # the algorithm above respects these changes. Otherwise it always results with the same stack given
+            # the observations we have and user's input.
+            self.pipfile = pipfile_copy
+            return report
 
     def _check_sources(self, whitelisted_sources: list) -> list:
         """Check sources configuration in the Pipfile and report back any issues."""
