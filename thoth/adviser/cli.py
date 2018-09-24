@@ -111,7 +111,7 @@ def provenance(click_ctx, requirements, requirements_locked=None, whitelisted_so
     whitelisted_sources = whitelisted_sources.split(',') if whitelisted_sources else []
     result = {
         'error': None,
-        'report': {},
+        'report': [],
         'parameters': {
             'whitelisted_indexes': whitelisted_sources,
         },
@@ -131,10 +131,10 @@ def provenance(click_ctx, requirements, requirements_locked=None, whitelisted_so
 
         _LOGGER.exception("Error during checking provenance: %s", str(exc))
         result['error'] = True
-        result['report'] = {
-            'error_type': type(exc).__name__,
-            'error': str(exc)
-        }
+        result['report'] = [{
+            'type': 'ERROR',
+            'justification': f'{str(exc)} ({type(exc).__name__})'
+        }]
     else:
         result['error'] = False
         result['report'] = report
@@ -180,7 +180,7 @@ def pypi(click_ctx, requirements, requirements_format=None, requirements_locked=
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
     result = {
         'error': None,
-        'report': {},
+        'report': [],
         'parameters': {
             'runtime_environment': runtime_environment,
             'recommendation_type': recommendation_type.name.lower(),
@@ -206,10 +206,10 @@ def pypi(click_ctx, requirements, requirements_format=None, requirements_locked=
 
         _LOGGER.exception("Error during computing recommendation: %s", str(exc))
         result['error'] = True
-        result['report'] = {
-            'error_type': type(exc).__name__,
-            'error': str(exc)
-        }
+        result['report'] = [{
+            'justification': f'{str(exc)} ({type(exc).__name__})',
+            'type': 'ERROR',
+        }]
     else:
         result['error'] = False
         if report:
