@@ -25,3 +25,7 @@ class DirectDependencyRemoval(ThothAdviserException):
 
     Or there is no option to remove the given dependency from application stack.
     """
+
+
+class UnableLock(ThothAdviserException):
+    """Raised if trying to lock invalid application stack or resolution cannot be done."""
