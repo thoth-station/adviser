@@ -397,7 +397,6 @@ class Project:
         # Changed hashes?
         for digest in package_version.hashes:
             digest = digest[len('sha256:'):]
-            print(digest)
             for index_name, index_info in index_report.items():
                 if any(item['sha256'] == digest for item in index_info):
                     break
