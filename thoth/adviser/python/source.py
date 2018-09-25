@@ -232,6 +232,8 @@ class Source:
     def _download_artifacts_sha(self, package_name: str, package_version: str) -> typing.Generator[tuple, None, None]:
         """Download the given artifact from Warehouse and compute its SHA."""
         for artifact_name, artifact_url in self._simple_repository_list_artifacts(package_name):
+            # Convert all artifact names to lowercase - as a shortcut we simply convert everything to lowercase.
+            artifact_name.lower()
             if not artifact_name.startswith(f"{package_name}-{package_version}"):
                 # TODO: this logic has to be improved as package version can be a suffix of another package version:
                 #   mypackage-1.0.whl, mypackage-1.0.0.whl, ...

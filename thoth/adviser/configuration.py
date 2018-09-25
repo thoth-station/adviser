@@ -24,6 +24,7 @@ import attr
 
 _DEFAULT_WAREHOUSES = (
     'https://pypi.python.org/simple',
+    'https://pypi.org/simple'
 )
 
 
