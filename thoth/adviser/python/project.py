@@ -384,8 +384,8 @@ class Project:
             scan_report.append({
                 'type': 'ERROR',
                 'id': 'MISSING-PACKAGE',
-                'justification': f'Source index {package_version.index} explicitly '
-                                 f'assigned to package {package_version.name} but package '
+                'justification': f'Source index {package_version.index!r} explicitly '
+                                 f'assigned to package {package_version.name!r} but package '
                                  f'was not found on the given index - was it removed?',
                 'source': source,
                 'package_locked': package_version.to_pipfile_lock(),
