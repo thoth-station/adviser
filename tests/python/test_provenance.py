@@ -158,7 +158,7 @@ class TestProvenanceCheck(AdviserTestCase):
             }
         ]
     }])
-    def test_different_source_warning(self, index_report):
+    def test_possible_different_source_warning(self, index_report):
         # Warning that the given artifact can installed from different source.
         project = self.load_test_project(pinned_index=True)
         package_version = project.pipfile_lock.packages.get('yaspin')
@@ -170,10 +170,10 @@ class TestProvenanceCheck(AdviserTestCase):
         report = report[0]
 
         assert 'type' in report
-        assert 'WARNING' in report['type']
+        assert 'INFO' in report['type']
 
         assert 'id' in report
-        assert 'ARTIFACT-DIFFERENT-SOURCE' == report['id']
+        assert 'ARTIFACT-POSSIBLE-DIFFERENT-SOURCE' == report['id']
 
         assert 'indexes' in report
         assert ['redhat-aicoe-experiments'] == report['indexes']
