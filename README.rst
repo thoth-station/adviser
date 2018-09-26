@@ -44,6 +44,9 @@ separated list). This is to optimize traffic - instead of directly scanning
 the ``simple`` index, there will be used `JSON API
 <https://warehouse.pypa.io/api-reference/json/>`_ exposed by the Warehouse.
 
+See `Pipenv documentation <https://pipenv.readthedocs.io/en/latest/advanced/#specifying-package-indexes>`_
+for more info on how to specify package indexes.
+
 Provenance issues reported by example
 #####################################
 
