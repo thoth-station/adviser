@@ -158,7 +158,7 @@ class TestProvenanceCheck(AdviserTestCase):
             }
         ]
     }])
-    def test_possible_different_source_warning(self, index_report):
+    def test_possible_different_source_info(self, index_report):
         # Warning that the given artifact can installed from different source.
         project = self.load_test_project(pinned_index=True)
         package_version = project.pipfile_lock.packages.get('yaspin')
