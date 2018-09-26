@@ -21,7 +21,7 @@ issues found in the application stack. There are currently reported the
 following issues:
 
 1. ``ERROR``/``ARTIFACT-DIFFERENT-SOURCE`` - reported if a package/artifact **is** installed from a different package source index in comparision to the configured one
-2. ``INFO``/``ARTIFACT-DIFFERENT-SOURCE`` - reported if a package/artifact **can be** installed from a different package source index in comparision to the configured one
+2. ``INFO``/``ARTIFACT-POSSIBLE-DIFFERENT-SOURCE`` - reported if a package/artifact **can be** installed from a different package source index in comparision to the configured one
 3. ``WARNING``/``DIFFERENT-ARTIFACTS-ON-SOURCES`` - there are present different artifacts on the package source indexes and configuration does not state explicitly which package source index should be used for installing package - this warning recommends explictly stating package source index to guarantee the expected artifacts are used
 4. ``ERROR``/``MISSING-PACKAGE`` - the given package was not found on package source index (the configured one or any of other package source indexes available)
 5. ``ERROR``/``INVALID-ARTIFACT-HASH`` - the artifact hash that is used for the downloaded package was not found on the package source index - possibly the artifact has changed over time (dangerous) or was removed from the package source index
@@ -120,3 +120,26 @@ Recommendations
 ===============
 
 TBD.
+
+
+Installation and deployment
+===========================
+
+Adviser is built using OpenShift Source-to-Image and deployed
+automatically with Thoth's deployment playbooks available in the `core
+repository <https://github.com/thoth-station/core>`_.
+
+In a Thoth deployment, adviser is run based on requests comming to the
+`user API <https://github.com/thoth-station/user-api>`_ - each deployed adviser
+is run per a user request. You can run adviser locally as well by installing it
+and using its command line interface:
+
+.. code-block: console
+
+  pip3 install thoth-adviser
+  thoth-adviser --help
+  # Or use git repo directly for the latest code:
+  # pip3 install git+https://github.com/thoth-station/adviser
+
+When thoth-adviser is scheduled in a deployment, it is actually executed as a
+CLI with arguments passed via environment variables.
