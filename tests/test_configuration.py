@@ -32,7 +32,6 @@ class TestConfiguration(AdviserTestCase):
         configuration = _Configuration()
         assert 'THOTH_ADVISER_WAREHOUSES' not in os.environ
         assert configuration.warehouses is not None
-        assert len(configuration.warehouses) == 1
+        assert len(configuration.warehouses) == 2
 
-        default_warehouse = list(configuration.warehouses)[0]
-        assert default_warehouse == 'https://pypi.python.org/simple'
+        assert set(configuration.warehouses) == set(('https://pypi.python.org/simple', 'https://pypi.org/simple'))
