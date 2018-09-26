@@ -65,8 +65,8 @@ the actual artifact a user ends up with might come from a different package
 index (based on sources listing in Pipenv) without any warning reported to
 user.
 
-2. ``INFO``/``ARTIFACT-DIFFERENT-SOURCE``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2. ``INFO``/``ARTIFACT-POSSIBLE-DIFFERENT-SOURCE``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 I have configured at least two source package indexes - let's say the public
 `PyPI <https://pypi.org>`_ and Red Hat's 
@@ -134,7 +134,7 @@ In a Thoth deployment, adviser is run based on requests comming to the
 is run per a user request. You can run adviser locally as well by installing it
 and using its command line interface:
 
-.. code-block: console
+::
 
   pip3 install thoth-adviser
   thoth-adviser --help
