@@ -20,5 +20,7 @@ lxml = "*"
 [dev-packages]
 flexmock = "*"
 pytest = "*"
-pytest-cov = "*"
 pytest-timeout = "*"
+pytest-cov = "*"
+pydocstyle = "*"
+pylint = "*"

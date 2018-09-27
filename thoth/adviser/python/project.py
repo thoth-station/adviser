@@ -281,7 +281,7 @@ class Project:
             while change:
                 change = False
 
-                for package_version in chain(self.pipfile_lock.packages, self.pipfile_lock.dev_packages):
+                for package_version in self.iter_dependencies_locked(with_devel=True):
                     bad_package_report = self.is_bad_package(package_version, recommendation_type)
                     if bad_package_report:
                         self.exclude_package(package_version.duplicate())

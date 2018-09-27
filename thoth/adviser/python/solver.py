@@ -19,15 +19,21 @@
 """Definition of package resolution based on precomputed data available in graph.
 
 There are defined primitives required for offline resolution. This off-line
-resolution is done based on data aggregated in the graph database so there is no need
-to perform resolving by actually installing Python packages (as this version
-resolution is dynamic in case of Python).
+resolution is done based on data aggregated in the graph database so thereis
+no need to perform resolving by actually installing Python packages (as this
+version resolution is dynamic in case of Python).
 """
 
+import typing
+
 from thoth.storages import GraphDatabase
-from thoth.solver.python.base import ReleasesFetcher
-from thoth.solver.python.base import Solver
+from thoth.solver.solvers.base import Dependency
+from thoth.solver.solvers.base import DependencyParser
+from thoth.solver.solvers.base import ReleasesFetcher
+from thoth.solver.solvers.base import Solver
 from thoth.solver.python import PypiDependencyParser
+
+from .package_version import PackageVersion
 
 
 class GraphReleasesFetcher(ReleasesFetcher):
@@ -49,7 +55,17 @@ class GraphReleasesFetcher(ReleasesFetcher):
 
     def fetch_releases(self, package):
         """Fetch releases for the given package name."""
+        # TODO: pass index as well
         return self.graph_db.get_all_versions_python_package(package)
+
+
+class PackageVersionDependencyParser(DependencyParser):
+    """Parse an instance of PackageVersion to Dependency object needed by solver."""
+    def parse(self, dependencies: typing.List[PackageVersion]):
+        """Parse the given list of PackageVersion objects."""
+        for package_version in dependencies:
+            dependency = PypiDependencyParser.parse_python(dependency.name + dependency.version)[0]
+            yield dependency
 
 
 class PythonGraphSolver(Solver):
@@ -57,6 +73,8 @@ class PythonGraphSolver(Solver):
 
     def __init__(self, parser_kwargs: dict = None, graph_db_kwargs: dict = None, solver_kwargs: dict = None):
         """Initialize instance."""
-        super().__init__(PypiDependencyParser(**(parser_kwargs or {})),
-                         GraphReleasesFetcher(**(graph_db_kwargs or {})),
-                         **(solver_kwargs or {}))
+        super().__init__(
+            PackageVersionDependencyParser(**(parser_kwargs or {})),
+            GraphReleasesFetcher(**(graph_db_kwargs or {})),
+            **(solver_kwargs or {})
+        )
