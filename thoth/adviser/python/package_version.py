@@ -26,6 +26,7 @@ import semantic_version as semver
 from thoth.adviser.exceptions import UnsupportedConfiguration
 from thoth.adviser.exceptions import PipfileParseError
 from thoth.adviser.exceptions import InternalError
+from thoth.storages.graph import PythonPackageVersion as PackageVersionModel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -60,6 +61,18 @@ class PackageVersion:
             raise ValueError(f"Comparing package versions of different package - {self.name} and {other.name}")
 
         return self.semantic_version > other.semantic_version
+
+    @classmethod
+    def from_model(model: PackageVersionModel, *, develop: bool = False):
+        """Convert database model representation to object representation."""
+        # TODO: add markers to the graph database
+        # TODO: add hashes to the graph database
+        return cls(
+            name=model.package_name,
+            version=model.package_version,
+            develop=develop,
+            index=model.index
+        )
 
     def is_locked(self):
         """Check if the given package is locked to a specific version."""
