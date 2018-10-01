@@ -367,10 +367,11 @@ class Project:
             elif other_sources:
                 # Warn about possible installation from another source.
                 scan_report.append({
-                    'type': 'WARNING',
-                    'id': 'ARTIFACT-DIFFERENT-SOURCE',
+                    'type': 'INFO',
+                    'id': 'ARTIFACT-POSSIBLE-DIFFERENT-SOURCE',
                     'justification': f'Artifacts can be installed from different sources '
-                                     f'({",".join(other_sources.keys())}) not respecting configuration',
+                                     f'({",".join(other_sources.keys())}) not respecting configuration '
+                                     f'that expects {package_version.index!r}',
                     'source': source,
                     'package_locked': package_version.to_pipfile_lock(),
                     'package_name': package_version.name,
