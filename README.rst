@@ -14,7 +14,7 @@ There are three main goals of thoth-adviser (as of now):
 3. Check provenance of installed packages (which package source indexes are used - this is not guaranteed by pip nor Pipenv).
 
 To interact with a deployed Thoth, you can use the
-`Thamos CLI <https://github.com/thoth-station/tamos>`_.
+`Thamos CLI <https://github.com/thoth-station/thamos>`_.
 
 Provenance Checks
 =================
