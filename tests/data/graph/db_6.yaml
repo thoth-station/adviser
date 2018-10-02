@@ -1,0 +1,56 @@
+# This is YAML used for mocking graph database queries.
+#
+# The structure of stack having packages a and b - there is a dependency on c,
+# but the versions cannot be resolved.
+#
+#           a               a               a              b               b               b
+#         1.0.0           1.1.0           1.2.0          1.0.0           2.0.0           3.0.0
+#           |               |               |              |               |               |
+#           |               |               |              |               |               |
+#           c               c               c              c               c               c
+#        >2.0.0     >2.0.0,<=2.1.0      >=2.1.1         ==2.0.0         <2.1.0       <2.1.0,>5.0.0
+#
+# Resolved to:
+#   Unable to resolve (a requries c in version >1.0.0, but b requires version of )
+#
+a:
+  1.0.0:
+    depends_on:
+      package_name: c
+      version_range: '>=1.0.0'
+  1.1.0:
+    depends_on:
+      package_name: c
+      version_range: '>=1.0.0,<=2.1.0'
+  1.2.0:
+    depends_on:
+      package_name: c
+      version_range: '>=2.1.1'
+
+b:
+  1.0.0:
+    depends_on:
+      package_name: d
+      version_range: '>2.1.0,<5.0.0'
+  2.0.0:
+    depends_on:
+      package_name: d
+      version_range: '>2.1.0'
+  3.0.0:
+    depends_on:
+      package_name: d
+      version_range: '>=3.1.0'
+
+c:
+  2.0.0:
+    depends_on:
+      package_name: b
+      version_range: '>=2.0.0,<=4.1.0'
+  2.1.0:
+    depends_on:
+      package_name: b
+      version_range: '*'
+  2.2.0:
+    depends_on:
+      package_name: b
+      version_range: '==1.0.0,==2.0.0,==3.0.0'
