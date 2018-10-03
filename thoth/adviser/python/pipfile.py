@@ -300,6 +300,10 @@ class PipfileLock(_PipfileBase):
         default = {}
         dev_packages = {}
         for package_version in packages:
+            if not package_version.is_locked():
+                raise InternalError(
+                    f"Atempt to add non-locked package to the Pipfile.lock: {package_version!r}"
+                )
             if package_version.develop:
                 if package_version.name in dev_packages:
                     raise InternalError(
