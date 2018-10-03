@@ -211,7 +211,9 @@ class DependencyGraph:
         configurations = product(*(range(len(i)) for i in self.direct_dependencies.values()))
         for configuration in configurations:
             filtering_values = (operator.itemgetter(i) for i in configuration)
-            stack.append(({}, map(lambda f, v: f(v), zip(filtering_values, self.direct_dependencies.values()))))
+            extended = map(lambda f, v: f(v), zip(filtering_values, self.direct_dependencies.values()))
+            if self._is_valid_state({}, extended):
+                stack.append(({}, extended))
 
         while stack:
             state = stack.pop()
