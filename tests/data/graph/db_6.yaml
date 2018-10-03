@@ -20,21 +20,21 @@ a:
       - package_name: c
         version_range: '>=1.0.0'
         index:
-        resolved:
+        resolved: []
   1.1.0:
     index:
     depends_on:
       - package_name: c
         version_range: '>=1.0.0,<=2.1.0'
         index:
-        resolved:
+        resolved: []
   1.2.0:
     index:
     depends_on:
       - package_name: c
         version_range: '>=2.1.1'
         index:
-        resolved:
+        resolved: []
 
 b:
   1.0.0:
@@ -43,21 +43,21 @@ b:
       - package_name: d
         version_range: '>2.1.0,<5.0.0'
         index:
-        resolved:
+        resolved: []
   2.0.0:
     index:
     depends_on:
       - package_name: d
         version_range: '>2.1.0'
         index:
-        resolved:
+        resolved: []
   3.0.0:
     index:
     depends_on:
       - package_name: d
         version_range: '>=3.1.0'
         index:
-        resolved:
+        resolved: []
 
 c:
   2.0.0:
@@ -66,18 +66,18 @@ c:
       - package_name: b
         version_range: '>=2.0.0,<=4.1.0'
         index:
-        resolved:
+        resolved: []
   2.1.0:
     index:
     depends_on:
       - package_name: b
         version_range: '*'
         index:
-        resolved:
+        resolved: []
   2.2.0:
     index:
     depends_on:
       - package_name: b
         version_range: '==1.0.0,==2.0.0,==3.0.0'
         index:
-        resolved:
+        resolved: []

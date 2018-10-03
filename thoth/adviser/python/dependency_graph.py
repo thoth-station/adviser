@@ -57,7 +57,7 @@ class DependencyGraph:
     """N-ary dependency graph stored in memory."""
 
     direct_dependencies = attr.ib(type=dict)
-    _meta = attr.ib(type=PipfileMeta, default=None)
+    meta = attr.ib(type=PipfileMeta, default=None)
 
     @staticmethod
     def _prepare_direct_dependencies(solver: PythonPackageGraphSolver, project: Project,
@@ -158,7 +158,7 @@ class DependencyGraph:
 
                 source.dependencies[destination_name].append(destination)
 
-        return cls(direct_dependencies, _meta=project.pipfile.meta)
+        return cls(direct_dependencies, meta=project.pipfile.meta)
 
     @staticmethod
     def _is_final_state(state: tuple) -> bool:
@@ -207,29 +207,43 @@ class DependencyGraph:
         distribution_func = distribution_func or (lambda: True)    # Always generate all, if not stated otherwise.
         stack = deque()
 
-        # Initial configuration picks the latest versions:
+        # Initial configuration picks the latest versions first (they are last on the stack):
         configurations = product(*(range(len(i)) for i in self.direct_dependencies.values()))
         for configuration in configurations:
             filtering_values = (operator.itemgetter(i) for i in configuration)
-            extended = map(lambda f, v: f(v), zip(filtering_values, self.direct_dependencies.values()))
-            if self._is_valid_state({}, extended):
-                stack.append(({}, extended))
+            to_expand = tuple(map(lambda i: i[0](i[1]), zip(filtering_values, self.direct_dependencies.values())))
+            if self._is_valid_state({}, to_expand):
+                stack.append(({}, to_expand))
 
         while stack:
             state = stack.pop()
 
             if self._is_final_state(state):
                 if distribution_func():
-                    yield Project.from_package_versions(state[0].values(), meta=self._meta)
+                    yield Project.from_package_versions(
+                        (g.package_version for g in state[0].values()),
+                        meta=self.meta
+                    )
                 continue
 
-            configurations = product(*(range(len(i)) for i in state[1]))
+            # Construct a list of dictionaries containing mapping for each dependency (a list of transitive deps):
+            #   { package_name: List[GraphItem] }
+            transitive_dependencies = []
+            for dependency in state[1]:
+                transitive_dependencies.append(dependency.dependencies)
+
+            all_transitive_dependencies = tuple(chain.from_iterable(td.values() for td in transitive_dependencies))
+
+            configurations = product(*(range(len(i)) for i in all_transitive_dependencies))
             for configuration in configurations:
                 filtering_values = (operator.itemgetter(i) for i in configuration)
-                expanded = map(lambda f, v: f(v), zip(filtering_values, state[1]))
+                to_expand = tuple(map(lambda i: i[0](i[1]), zip(filtering_values, all_transitive_dependencies)))
 
-                if self._is_valid_state(state[0], expanded):
+                new_expanded = dict(state[0])
+                new_expanded.update({g.package_version.name: g for g in state[1]})
+
+                if self._is_valid_state(new_expanded, to_expand):
                     stack.append((
-                        dict(state[0]).update({g.package_version.name: g for g in expanded}),
-                        chain.from_iterable(g.dependencies.values() for g in expanded)
+                        new_expanded,
+                        to_expand
                     ))
