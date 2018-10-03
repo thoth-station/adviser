@@ -51,6 +51,17 @@ class PackageVersion:
     _semantic_version = attr.ib(default=None, type=semver.Version)
     _version_spec = attr.ib(default=None, type=semver.Spec)
 
+    def to_dict(self) -> dict:
+        """Create a dictionary representation of parameters (useful for later constructor calls)."""
+        return {
+            'name': self.name,
+            'version': self.version,
+            'develop': self.develop,
+            'index': self.index,
+            'hashes': self.hashes,
+            'markers': self.markers
+        }
+
     def __eq__(self, other):
         """Check for package-version equality."""
         return self.name == other.name and self.version == other.version and self.hashes == other.hashes

@@ -8,20 +8,30 @@
 #           |               |
 #           |               |
 #           b               b
-#        >=2.0.0         >3.0.0
+#        <=2.0.0         >3.0.0
 #
 # Resolved to:
 #   Unable to resolve no information about b in the given version ranges.
 #
 a:
   1.0.0:
+    index:
     depends_on:
-      package_name: b
-      version_range: '>=2.0.0'
+      - package_name: b
+        version_range: '<=2.0.0'
+        index:
+        resolved:
+          - 1.0.0
+          - 2.0.0
   1.1.0:
+    index:
     depends_on:
-      package_name: b
-      version_range: '>3.0.0'
+      - package_name: b
+        version_range: '>3.0.0'
+        index:
+        resolved:
+          - 5.0.0
 
 b:
   1.0.0:
+    index:

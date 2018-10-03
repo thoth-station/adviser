@@ -18,11 +18,22 @@
 
 """Test dependency graph construction and operations on it."""
 
+import os
 import pytest
 
 from base import AdviserTestCase
+from graph_mock import with_graph_db_mock
+from thoth.adviser.python import Project
+from thoth.adviser.python import DependencyGraph
 
 
 class TestDependencyGraph(AdviserTestCase):
-    def test_construct(self):
-        pass
+
+    @with_graph_db_mock('db_1.yaml')
+    def test_construct_project0(self, project_name: str = None):
+        project_name = project_name or 'Pipfile_project0'
+        project = Project.from_files(os.path.join(self.data_dir, 'projects', 'Pipfile_project0'))
+        dependency_graph = DependencyGraph.from_project(project)
+        from pprint import pprint
+        pprint(dependency_graph)
+        raise ValueError

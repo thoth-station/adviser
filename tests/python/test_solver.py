@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+# thoth-adviser
+# Copyright(C) 2018 Fridolin Pokorny
+#
+# This program is free software: you can redistribute it and / or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+import os
+
+import pytest
+
+from thoth.adviser.python import PythonGraphSolver
+from thoth.adviser.python import PythonPackageGraphSolver
+from thoth.adviser.python import PackageVersion
+
+from thoth.solver.solvers.base import SolverException
+
+from base import AdviserTestCase
+from graph_mock import with_graph_db_mock
+
+
+class TestSolver(AdviserTestCase):
+    @with_graph_db_mock('db_0.yaml')
+    def test_db_0_raises(self):
+        """Check that there is raised an exception if no releases were found."""
+        with pytest.raises(SolverException):
+            PythonGraphSolver().solve(
+                [PackageVersion(name='nonexisting-foo', version='==1.0.0', index=None, develop=False)],
+                graceful=False
+            )
+
+    @with_graph_db_mock('db_0.yaml')
+    def test_db_0_latest(self):
+        """Check that resolving gets always the latest version (relying on internal python logic)."""
+        assert PythonGraphSolver().solve(
+            [PackageVersion(name='a', version='*', index=None, develop=False)],
+            graceful=False
+        ) == {'a': '1.2.0'}
+
+    @with_graph_db_mock('db_0.yaml')
+    def test_db_0_all_versions(self):
+        """Check that resolving can gather all versions available in the graph database."""
+        resolved = PythonGraphSolver().solve(
+            [PackageVersion(name='a', version='*', index=None, develop=False)],
+            graceful=False,
+            all_versions=True
+        )
+        assert len(resolved) == 1
+        assert 'a' in resolved
+        assert set(resolved['a']) == {'1.0.0', '1.1.0', '1.2.0'}
+
+    @with_graph_db_mock('db_0.yaml')
+    def test_db_0_multiple(self):
+        """Check that resolving can resolve multiple Python packages."""
+        resolved = PythonGraphSolver().solve(
+            [
+                PackageVersion(name='a', version='*', index=None, develop=False),
+                PackageVersion(name='b', version='>1.0.0', index=None, develop=False),
+            ],
+            graceful=False,
+            all_versions=True
+        )
+        assert len(resolved) == 2
+        assert 'a' in resolved
+        assert set(resolved['a']) == {'1.0.0', '1.1.0', '1.2.0'}
+        assert 'b' in resolved
+        assert set(resolved['b']) == {'2.0.0', '3.0.0'}
+
+    @with_graph_db_mock('db_0.yaml')
+    def test_db_0_package_raises(self):
+        """Check that there is raised an exception if no releases were found."""
+        with pytest.raises(SolverException):
+            PythonPackageGraphSolver().solve(
+                [PackageVersion(name='nonexisting-foo', version='==1.0.0', index=None, develop=False)],
+                graceful=False
+            )
+
+    @with_graph_db_mock('db_0.yaml')
+    def test_db_0_package_latest(self):
+        """Check that resolving gets always the latest version (relying on internal python logic)."""
+        resolved = PythonPackageGraphSolver().solve(
+            [PackageVersion(name='a', version='*', index=None, develop=False)],
+            graceful=False
+        )
+        assert len(resolved) == 1
+        assert resolved['a'][0].name == 'a'
+        assert resolved['a'][0].version == '==1.2.0'
+
+    @with_graph_db_mock('db_0.yaml')
+    def test_db_0_all_package_versions(self):
+        """Check that resolving can gather all versions available in the graph database."""
+        resolved = PythonPackageGraphSolver().solve(
+            [PackageVersion(name='a', version='*', index=None, develop=False)],
+            graceful=False,
+            all_versions=True
+        )
+
+        assert len(resolved) == 1
+        assert 'a' in resolved
+        # 1.0.0, 1.1.0, 1.2.0
+        assert len(resolved['a']) == 3
+
+        assert all(package_version.name == 'a' for package_version in resolved['a'])
+        assert set(package_version.version for package_version in resolved['a']) == {
+            '==1.0.0', '==1.1.0', '==1.2.0'
+        }
+
+    @with_graph_db_mock('db_0.yaml')
+    def test_db_0_package_multiple(self):
+        """Check that resolving can resolve multiple Python packages."""
+        resolved = PythonPackageGraphSolver().solve(
+            [
+                PackageVersion(name='a', version='*', index=None, develop=False),
+                PackageVersion(name='b', version='>1.0.0', index=None, develop=False),
+            ],
+            graceful=False,
+            all_versions=True
+        )
+        assert len(resolved) == 2
+        assert 'a' in resolved
+        assert 'b' in resolved
+
+        assert all(package_version.name == 'a' for package_version in resolved['a'])
+        assert all(package_version.name == 'b' for package_version in resolved['b'])
+        assert set(package_version.version for package_version in resolved['a']) == {
+            '==1.0.0', '==1.1.0', '==1.2.0'
+        }
+        assert set(package_version.version for package_version in resolved['b']) == {
+            '==2.0.0', '==3.0.0'
+        }
+

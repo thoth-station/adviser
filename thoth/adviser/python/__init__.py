@@ -25,4 +25,6 @@ from .pipfile import PipfileLock
 from .project import Project
 from .source import Source
 from .solver import PythonGraphSolver
+from .solver import PythonPackageGraphSolver
 from .solver import GraphReleasesFetcher
+from .dependency_graph import DependencyGraph

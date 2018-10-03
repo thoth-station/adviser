@@ -204,6 +204,27 @@ class Pipfile(_PipfileBase):
         }
 
     @classmethod
+    def from_package_versions(cls, packages: typing.List[PackageVersion], meta: PipfileMeta = None):
+        """Construct Pipfile from provided PackageVersion instances."""
+        default = {}
+        dev_packages = {}
+        for package_version in packages:
+            if package_version.develop:
+                if package_version.name in dev_packages:
+                    raise InternalError(
+                        f"Atempt adding multiple packages with same name to Pipfile.lock: {package_version!r}"
+                    )
+                dev_packages[package_version.name] = package_version
+            else:
+                if package_version.name in default:
+                    raise InternalError(
+                        f"Atempt adding multiple packages with same name to Pipfile.lock: {package_version!r}"
+                    )
+                default[package_version.name] = package_version
+
+        return cls(packages=default, dev_packages=dev_packages, meta=meta)
+
+    @classmethod
     def from_file(cls, file_path: str = None):
         """Parse Pipfile file and return its Pipfile representation."""
         file_path = file_path or 'Pipfile'
@@ -271,6 +292,28 @@ class PipfileLock(_PipfileBase):
     """A Pipfile.lock representation - representation of fully pinned down stack with info such as hashes."""
 
     pipfile = attr.ib(type=Pipfile)
+
+    @classmethod
+    def from_package_versions(cls, pipfile: Pipfile, packages: typing.List[PackageVersion],
+                              meta: PipfileMeta = None):
+        """Construct Pipfile from provided PackageVersion instances."""
+        default = {}
+        dev_packages = {}
+        for package_version in packages:
+            if package_version.develop:
+                if package_version.name in dev_packages:
+                    raise InternalError(
+                        f"Atempt adding multiple packages with same name to Pipfile.lock: {package_version!r}"
+                    )
+                dev_packages[package_version.name] = package_version
+            else:
+                if package_version.name in default:
+                    raise InternalError(
+                        f"Atempt adding multiple packages with same name to Pipfile.lock: {package_version!r}"
+                    )
+                default[package_version.name] = package_version
+
+        return cls(packages=default, dev_packages=dev_packages, meta=meta, pipfile=pipfile)
 
     @classmethod
     def from_file(cls, file_path: str = None, pipfile: Pipfile = None):
