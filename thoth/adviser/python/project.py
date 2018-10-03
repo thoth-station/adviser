@@ -30,7 +30,9 @@ from thoth.analyzer import run_command
 from thoth.analyzer import CommandError
 from thoth.storages import GraphDatabase
 
-from .pipfile import Pipfile, PipfileLock
+from .pipfile import Pipfile
+from .pipfile import PipfileLock
+from .pipfile import PipfileMeta
 from .source import Source
 from .package_version import PackageVersion
 from .exceptions import UnableLock
@@ -84,7 +86,7 @@ class Project:
 
     @classmethod
     def from_package_versions(cls, packages: typing.List[PackageVersion],
-                              packages_locked: typing.List[PaclageVersion] = None,
+                              packages_locked: typing.List[PackageVersion] = None,
                               meta: PipfileMeta = None):
         """Create project from PackageVersion objects.
 

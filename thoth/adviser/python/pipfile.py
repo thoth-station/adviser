@@ -20,6 +20,7 @@
 import json
 import hashlib
 import logging
+import typing
 
 import toml
 import attr
