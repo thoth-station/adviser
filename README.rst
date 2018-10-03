@@ -7,14 +7,80 @@ thoth-adviser
 
 A recommendation engine for project `Thoth <https://github.com/thoth-station/>`_.
 
-There are three main goals of thoth-adviser (as of now):
+There are four main goals of thoth-adviser (as of now):
 
 1. Provide a library that coverts basic operations in Python ecosystem (such as operations with package index sources, project specific operations on libraries used).
 2. Provide a tool that can compute recommendations in project `Thoth <https://github.com/thoth-station/thoth>`_.
 3. Check provenance of installed packages (which package source indexes are used - this is not guaranteed by pip nor Pipenv).
+4. A tool called "Dependency Monkey" that generates all the possible software stacks for a project respecting dependency resolution.
 
 To interact with a deployed Thoth, you can use the
 `Thamos CLI <https://github.com/thoth-station/thamos>`_.
+
+Dependency Graph
+================
+
+Adviser's implementation uses internal structure called "Dependency Graph" for
+generating possible software stacks. This generation is done for:
+1. Computing recommendations by scoring computed software stacks - the stack with the highest score is the best possible software stack for an application.
+2. Generating samples of software stacks for Dependency Monkey - these stacks are validated and scored (e.g. performance index) in the `Amun <https://github.com/thoth-station/amun-api`_ service.
+
+The dependency graph is implemented as an N-ary graph. You can imagine the
+graph as a generic binary tree, except:
+1. Each node is constructed of N pakages in some specific versions (not binary nodes, but N-ary nodes).
+2. There can be cycles (thus graph and not a tree).
+
+The resolution itself can be done using two sources (see CLI help for configuration info):
+1. The graph database used in the Thoth project - this database states relevant packages in the Python ecosystem with relations between them (what dependency in what version is required with previously resolved versions using `solver <https://github.com/thoth-station/solver>`_).
+2. `PyPI <https://pypi.org>`_ (or any Python Warehouse instance) - the resolution is done against the "upstream" (ecosystem as a whole) so one can resolve any dependencies in the PyPI ecosystem and compute possible software stacks.
+
+The advantage of using Thoth's database is the fact that this database states
+observations about packages and software stacks so that the database itself can
+help with better resolution mechanism (the latet is not always the best
+choice). In this case the graph database is also helping with offline
+resolution (Python is a dynamic programming language, what dependencies will be
+installed can be determined during installation - e.g. based on operating
+system).
+
+Dependency Monkey
+=================
+
+Dependency Monkey is a functionality that allows you to generate all the
+possible software stacks for your project. Given the input (direct dependencies
+of your project), Dependency Monkey creates N-ary dependency graph (as
+described above) stating all the dependencies of your direct
+dependencies/libraries as well as dependencies of all the transitive
+dependencies in your application stack.
+
+The primary use-case for Dependnecy Monkey is to generate software stacks that
+are subsequently validated and scored in the `Amun
+<https://github.com/thoth-station/amun-api>`_ service. Simply when generating
+all the possible software stacks, we can find the best software stack for an
+application by validating it in a CI (or Amun in case of Thoth), running the
+application in the specific runtime environment (e.g. Fedora 28 with installed
+native packages - RPMs) on some specific hardware conifguration. Generating and
+scoring all the possible software stacks is, however, most often not doable in
+a reasonable time. For this purpose, Dependnecy Monkey can create a sample of
+software stacks (see the ``distribution`` and ``seed`` parameters) that can be
+taken as representatives. These representatives are scored and aggregated data
+are used for predicting the best application stack (again, generated and run
+through CI/Amun to make predictions more accurate by learning over time).
+
+Advises and Recommendations
+===========================
+
+In Thoth's terminology, advises and recommendations are the same. Based on
+aggregated knowledge stored in the graph database, provide the best application
+stack with reasoning on why the given software stack is used. There is reused
+the N-ary dependency graph implementation stated above to compute possible
+candidates of software stacks and based on data aggregated, there is performed
+scoring of software stacks based on solaly package-level data (e.g. the given
+package cannot be installed into the given runtime environment) or software
+stack information - the combination of packages cannot be assembled together or
+there were spotted issues when the some packages were used together in some
+specific versions.
+
+TBD: add more info
 
 Provenance Checks
 =================
@@ -122,12 +188,6 @@ This variable holds a comma separated list of URLs pointing to whitelisted
 package source indexes respecting
 `PEP-0503 <https://www.python.org/dev/peps/pep-0503/>`_ standard (the URL
 is with the ``/simple`` suffix).
-
-Recommendations
-===============
-
-TBD.
-
 
 Installation and deployment
 ===========================
