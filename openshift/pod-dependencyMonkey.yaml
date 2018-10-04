@@ -48,9 +48,8 @@ objects:
               value: janusgraph
             - name: THOTH_JANUSGRAPH_PORT
               value: '80'
-            - name: THOTH_DEPENDENCY_MONKEY
-              # Distinguish in adviser what we want to run (adviser, procenance-checker or dependency-monkey).
-              value: '1'
+            - name: THOTH_ADVISER_SUBCOMMAND
+              value: 'dependency-monkey'
           resources:
             limits:
               memory: '128Mi'

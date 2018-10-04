@@ -50,9 +50,8 @@ objects:
               value: janusgraph
             - name: THOTH_JANUSGRAPH_PORT
               value: '80'
-            - name: THOTH_PROVENANCE
-              # Distinguish in adviser that we want to run provenance checks rather than adviser itself.
-              value: '1'
+            - name: THOTH_ADVISER_SUBCOMMAND
+              value: 'provenance'
           resources:
             limits:
               memory: '128Mi'
