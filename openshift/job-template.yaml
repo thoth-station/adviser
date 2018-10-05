@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: adviser
+  annotations:
+    description: This is Thoth Core - Adviser
+    openshift.io/display-name: 'Thoth: Adviser'
+    version: 0.3.0
+    tags: poc,thoth,ai-stacks,adviser
+    template.openshift.io/documentation-url: https://github.com/Thoth-Station/
+    template.openshift.io/long-description: >
+      This template defines resources needed to run recommendation logic of Thoth to OpenShift.
+    template.openshift.io/provider-display-name: Red Hat, Inc.
+  labels:
+    app: thoth
+    template: adviser
+    component: adviser
+
+objects:
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      generateName: 'adviser-'
+      labels:
+        app: thoth
+        component: adviser
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            app: thoth
+            component: adviser
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          containers:
+            - name: adviser
+              image: adviser
+              livenessProbe:
+                # Give analyzer 10 minutes to compute results, kill it if it was not able result anything.
+                tcpSocket:
+                  port: 80
+                initialDelaySeconds: 600
+                failureThreshold: 1
+                periodSeconds: 10
+              env:
+                - name: THOTH_LOG_ADVISER
+                  value: "${THOTH_LOG_ADVISER}"
+                - name: THOTH_ADVISER_OUTPUT
+                  value: "${THOTH_ADVISER_OUTPUT}"
+                - name: THOTH_ADVISER_REQUIREMENTS
+                  value: "${THOTH_ADVISER_REQUIREMENTS}"
+                - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+                  value: "${THOTH_ADVISER_REQUIREMENTS_LOCKED}"
+                - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
+                  value: "${THOTH_ADVISER_REQUIREMENTS_FORMAT}"
+                - name: THOTH_ADVISER_RECOMMENDATION_TYPE
+                  value: "${THOTH_ADVISER_RECOMMENDATION_TYPE}"
+                - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+                  value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
+                - name: THOTH_JANUSGRAPH_HOST
+                  value: janusgraph
+                - name: THOTH_JANUSGRAPH_PORT
+                  value: '80'
+                - name: THOTH_ADVISER_SUBCOMMAND
+                  value: 'adviser'
+              resources:
+                limits:
+                  memory: '256Mi'
+                  cpu: '500m'
+                requests:
+                  memory: '256Mi'
+                  cpu: '500m'
+parameters:
+  - name: THOTH_ADVISER_OUTPUT
+    required: false
+    description: Remote where results should be send to
+  - name: THOTH_ADVISER_REQUIREMENTS
+    required: false
+    description: Raw stack requirements
+  - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+    required: false
+    description: Fully pinned down stack
+    displayName: Locked requirements
+  - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
+    required: false
+    description: Format of input
+    displayName: Requirements format
+  - name: THOTH_ADVISER_RECOMMENDATION_TYPE
+    required: false
+    description: Type of requested recommendation
+    displayName: Recommendation type
+  - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+    required: false
+    description: Runtime environment to create recommendation for
+    displayName: Runtime environment
+  - name: THOTH_LOG_ADVISER
+    required: false
+    description: Log adviser actions
+    displayName: Log adviser actions
+    value: INFO
