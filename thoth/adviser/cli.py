@@ -171,8 +171,8 @@ def provenance(click_ctx, requirements, requirements_locked=None, whitelisted_so
               help="Type of recommendation generated based on knowledge base.")
 @click.option('--files', '-F', is_flag=True,
               help="Requirements passed represent paths to files on local filesystem.")
-def pypi(click_ctx, requirements, requirements_format=None, requirements_locked=None,
-         recommendation_type=None, runtime_environment=None, output=None, no_pretty=False, files=False):
+def advise(click_ctx, requirements, requirements_format=None, requirements_locked=None,
+           recommendation_type=None, runtime_environment=None, output=None, no_pretty=False, files=False):
     """Advise package and package versions in the given stack or on solely package only."""
     _LOGGER.debug("Passed arguments: %s", locals())
 

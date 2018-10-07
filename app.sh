@@ -4,10 +4,18 @@
 # sub-command based on env-variables configuration.
 #
 
-
-if [ "$THOTH_PROVENANCE" == "1" ]; then
-	exec /opt/app-root/bin/python3 thoth-adviser provenance
-else
-	exec /opt/app-root/bin/python3 thoth-adviser pypi
-fi
-
+case $THOTH_ADVISER_SUBCOMMAND in
+	'provenance')
+		exec /opt/app-root/bin/python3 thoth-adviser provenance
+		;;
+	'dependency-monkey')
+		exec /opt/app-root/bin/python3 thoth-adviser dependency-monkey
+		;;
+	'adviser')
+		exec /opt/app-root/bin/python3 thoth-adviser adviser
+		;;
+	*)
+		echo "Application configuration error - no adviser subcommand specified." >&2
+		exit 1
+		;;
+esac

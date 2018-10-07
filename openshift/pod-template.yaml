@@ -56,6 +56,8 @@ objects:
               value: janusgraph
             - name: THOTH_JANUSGRAPH_PORT
               value: '80'
+            - name: THOTH_ADVISER_SUBCOMMAND
+              value: 'adviser'
           resources:
             limits:
               memory: '256Mi'
