@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: dependency-monkey
+  annotations:
+    description: This is Thoth Core - Dependency Monkey
+    openshift.io/display-name: 'Thoth: Dependency Monkey'
+    version: 0.1.0
+    tags: poc,thoth,ai-stacks,dependency-monkey
+    template.openshift.io/documentation-url: https://github.com/Thoth-Station/
+    template.openshift.io/long-description: >
+      This template defines resources needed to run recommendation logic of Thoth to OpenShift.
+    template.openshift.io/provider-display-name: Red Hat, Inc.
+  labels:
+    app: thoth
+    template: dependency-monkey
+    component: dependency-monkey
+
+objects:
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      generateName: 'dependency-monkey-'
+      labels:
+        app: thoth
+        component: dependency-monkey
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels: thoth
+          component: dependency-monkey
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          containers:
+            - name: dependency-monkey
+              image: adviser
+              livenessProbe:
+                # Give analyzer 10 minutes to compute results, kill it if it was not able result anything.
+                tcpSocket:
+                  port: 80
+                initialDelaySeconds: 600
+                failureThreshold: 1
+                periodSeconds: 10
+              env:
+                - name: THOTH_LOG_ADVISER
+                  value: "${THOTH_LOG_ADVISER}"
+                - name: THOTH_ADVISER_OUTPUT
+                  value: "${THOTH_ADVISER_OUTPUT}"
+                - name: THOTH_ADVISER_REQUIREMENTS
+                  value: "${THOTH_ADVISER_REQUIREMENTS}"
+                - name: THOTH_JANUSGRAPH_HOST
+                  value: janusgraph
+                - name: THOTH_JANUSGRAPH_PORT
+                  value: '80'
+                - name: THOTH_ADVISER_SUBCOMMAND
+                  value: 'dependency-monkey'
+              resources:
+                limits:
+                  memory: '128Mi'
+                  cpu: '500m'
+                requests:
+                  memory: '128Mi'
+                  cpu: '500m'
+parameters:
+  - name: THOTH_ADVISER_OUTPUT
+    required: false
+    description: Remote where results should be send to.
+  - name: THOTH_ADVISER_REQUIREMENTS
+    required: true
+    description: Raw stack requirements.
+  - name: THOTH_LOG_ADVISER
+    required: false
+    description: Log adviser actions.
+    value: INFO
