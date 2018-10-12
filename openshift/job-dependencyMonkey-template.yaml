@@ -28,8 +28,9 @@ objects:
       backoffLimit: 0
       template:
         metadata:
-          labels: thoth
-          component: dependency-monkey
+          labels:
+            app: thoth
+            component: dependency-monkey
         spec:
           restartPolicy: Never
           automountServiceAccountToken: false
