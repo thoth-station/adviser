@@ -57,6 +57,8 @@ objects:
                   value: '80'
                 - name: THOTH_ADVISER_SUBCOMMAND
                   value: 'dependency-monkey'
+                - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+                  value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
               resources:
                 limits:
                   memory: '128Mi'
@@ -75,3 +77,6 @@ parameters:
     required: false
     description: Log adviser actions.
     value: INFO
+  - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+    required: false
+    description: Runtime environment for which the dependency monkey should be run.
