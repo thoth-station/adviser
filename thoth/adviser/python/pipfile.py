@@ -230,11 +230,11 @@ class Pipfile(_PipfileBase):
         dev_packages = dict_.pop('dev-packages', {})
 
         # Use remaining parts - such as requires, pipenv configuration and other flags.
-        meta = dict_
+        meta = PipfileMeta.from_dict(dict_)
         return cls(
-            packages=Packages.from_pipfile(packages, develop=False),
-            dev_packages=Packages.from_pipfile(dev_packages, develop=True),
-            meta=PipfileMeta.from_dict(meta)
+            packages=Packages.from_pipfile(packages, develop=False, meta=meta),
+            dev_packages=Packages.from_pipfile(dev_packages, develop=True, meta=meta),
+            meta=meta
         )
 
     def to_dict(self) -> dict:
@@ -295,10 +295,11 @@ class PipfileLock(_PipfileBase):
     def from_dict(cls, dict_: dict, pipfile: Pipfile):
         """Construct PipfileLock class from a parsed JSON representation as stated in actual Pipfile.lock."""
         _LOGGER.debug("Parsing Pipfile.lock")
+        meta = PipfileMeta.from_dict(dict_['_meta'])
         return cls(
-            meta=PipfileMeta.from_dict(dict_['_meta']),
-            packages=Packages.from_pipfile_lock(dict_['default'], develop=False),
-            dev_packages=Packages.from_pipfile_lock(dict_['develop'], develop=True),
+            meta=meta,
+            packages=Packages.from_pipfile_lock(dict_['default'], develop=False, meta=meta),
+            dev_packages=Packages.from_pipfile_lock(dict_['develop'], develop=True, meta=meta),
             pipfile=pipfile
         )
 

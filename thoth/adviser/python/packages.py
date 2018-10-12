@@ -62,22 +62,32 @@ class Packages:
         return result
 
     @classmethod
-    def from_pipfile(cls, packages, develop):
+    def from_pipfile(cls, packages, develop, meta):
         """Parse Pipfile entry stating list of packages used."""
         _LOGGER.debug("Parsing Pipfile entry for %s packages", 'develop' if develop else 'default')
         package_version = {}
         for package_name, package_info in packages.items():
-            package_version[package_name] = PackageVersion.from_pipfile_entry(package_name, package_info, develop)
+            package_version[package_name] = PackageVersion.from_pipfile_entry(
+                package_name,
+                package_info,
+                develop,
+                meta
+            )
 
         return cls(develop=develop, packages=package_version)
 
     @classmethod
-    def from_pipfile_lock(cls, packages, develop):
+    def from_pipfile_lock(cls, packages, develop, meta):
         """Parse Pipfile.lock entry stating list of packages used."""
         _LOGGER.debug("Parsing Pipfile.lock entry for %s packages", 'develop' if develop else 'default')
         package_version = {}
         for package_name, package_info in packages.items():
-            package_version[package_name] = PackageVersion.from_pipfile_lock_entry(package_name, package_info, develop)
+            package_version[package_name] = PackageVersion.from_pipfile_lock_entry(
+                package_name,
+                package_info,
+                develop,
+                meta
+            )
 
         return cls(develop=develop, packages=package_version)
 

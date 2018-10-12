@@ -18,6 +18,7 @@
 """Representation of packages in the application stack."""
 
 import logging
+import typing
 from copy import copy
 
 import attr
@@ -26,7 +27,13 @@ import semantic_version as semver
 from thoth.adviser.exceptions import UnsupportedConfiguration
 from thoth.adviser.exceptions import PipfileParseError
 from thoth.adviser.exceptions import InternalError
+from thoth.adviser.python.source import Source
 from thoth.storages.graph import PythonPackageVersion as PackageVersionModel
+
+if typing.TYPE_CHECKING:
+    # Avoid cyclic imports.
+    from thoth.adviser.python.pipfile import PipfileMeta
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,7 +45,7 @@ class PackageVersion:
     name = attr.ib(type=str)
     version = attr.ib(type=str)
     develop = attr.ib(type=bool)
-    index = attr.ib(default=None, type=str)
+    index = attr.ib(default=None, type=Source)
     hashes = attr.ib(default=attr.Factory(list))
     markers = attr.ib(default=None, type=str)
     _semantic_version = attr.ib(default=None, type=semver.Version)
@@ -136,8 +143,30 @@ class PackageVersion:
 
         return self._version_spec
 
+    @staticmethod
+    def _get_index_from_meta(meta: 'PipenvMeta', package_name: str, index_name: typing.Optional[str]) -> str:
+        """Get the only index name present in the Pipfile.lock metadata.
+
+        If there is no index explicitly assigned to package, there is only one package source
+        index configured in the meta. Assign it to package.
+        """
+        if index_name is not None and index_name in meta.sources:
+            return meta.sources[index_name]
+        elif index_name is not None and index_name not in meta.sources:
+            raise PipfileParseError(
+                f"Configured index {index_name} for package {package_name} not found in metadata"
+            )
+        # We could also do this branch, but that can be dangerous as SHAs might differ in Pipfile.lock.
+        #
+        # elif index_name is None and len(meta.sources) == 1:
+        #    return list(meta.sources.values())[0]
+
+        # Unfortunatelly Pipenv does not explicitly assign indexes to
+        # packages, give up here with unassigned index
+        return None
+
     @classmethod
-    def from_pipfile_lock_entry(cls, package_name: str, entry: dict, develop: bool):
+    def from_pipfile_lock_entry(cls, package_name: str, entry: dict, develop: bool, meta: 'PipenvMeta'):
         """Construct PackageVersion instance from representation as stated in Pipfile.lock."""
         _LOGGER.debug("Parsing entry in Pipfile.lock for package %r: %s", package_name, entry)
         entry = dict(entry)
@@ -150,7 +179,7 @@ class PackageVersion:
         instance = cls(
             name=package_name,
             version=entry.pop('version'),
-            index=entry.pop('index', None),
+            index=cls._get_index_from_meta(meta, package_name, entry.pop('index', None)),
             hashes=entry.pop('hashes'),
             markers=entry.pop('markers', None),
             develop=develop
@@ -180,7 +209,7 @@ class PackageVersion:
             result['markers'] = self.markers
 
         if self.index:
-            result['index'] = self.index
+            result['index'] = self.index.name
 
         return {self.name: result}
 
@@ -189,7 +218,7 @@ class PackageVersion:
         _LOGGER.debug("Generating Pipfile entry for package %r", self.name)
         result = dict()
         if self.index:
-            result['index'] = self.index
+            result['index'] = self.index.name
 
         if self.markers:
             result['markers'] = self.markers
@@ -202,9 +231,13 @@ class PackageVersion:
         return {self.name: result}
 
     @classmethod
-    def from_pipfile_entry(cls, package_name: str, entry: dict, develop: bool):
+    def from_pipfile_entry(cls, package_name: str, entry: dict, develop: bool, meta: 'PipenvMeta'):
         """Construct PackageVersion instance from representation as stated in Pipfile."""
         _LOGGER.debug("Parsing entry in Pipfile for package %r: %s", package_name, entry)
+        # Pipfile holds string for a version:
+        #   thoth-storages = "1.0.0"
+        # Or a dictionary with additional configuration:
+        #   thoth-storages = {"version": "1.0.0", "index": "pypi"}
         index = None
         if isinstance(entry, str):
             package_version = entry
@@ -223,7 +256,7 @@ class PackageVersion:
         instance = cls(
             name=package_name,
             version=package_version,
-            index=index,
+            index=cls._get_index_from_meta(meta, package_name, index),
             develop=develop
         )
 

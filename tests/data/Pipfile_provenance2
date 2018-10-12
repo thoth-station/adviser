@@ -3,6 +3,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://index-aicoe.a3c1.starter-us-west-1.openshiftapps.com"
+verify_ssl = true
+name = "redhat-aicoe-experiments"
+
 [packages]
 yaspin = {version="*", index="redhat-aicoe-experiments"}
 

@@ -320,12 +320,12 @@ class Project:
         # Source for reports.
         source = None
         if package_version.index:
-            source = self.pipfile.meta.sources[package_version.index].to_dict()
+            source = package_version.index.to_dict()
 
-        if package_version.index and index_report.get(package_version.index) and len(hashes) > 1:
+        if package_version.index and index_report.get(package_version.index.name) and len(hashes) > 1:
             # Is installed from different source - which one?
             used_package_version_hashes = set(h[len('sha256:'):] for h in package_version.hashes)
-            configured_index_hashes = set(h['sha256'] for h in index_report[package_version.index])
+            configured_index_hashes = set(h['sha256'] for h in index_report[package_version.index.name])
 
             # Find other sources from which artifacts can be installed.
             other_sources = {}
@@ -333,7 +333,7 @@ class Project:
                 artifact_hash = artifact_hash[len('sha256:'):]  # Remove pipenv-specific hash formatting.
 
                 for index_name, index_info in index_report.items():
-                    if index_name == package_version.index:
+                    if index_name == package_version.index.name:
                         # Skip index that is assigned to the package, we are inspecting from the other sources.
                         continue
 
@@ -371,7 +371,7 @@ class Project:
                     'id': 'ARTIFACT-POSSIBLE-DIFFERENT-SOURCE',
                     'justification': f'Artifacts can be installed from different sources '
                                      f'({",".join(other_sources.keys())}) not respecting configuration '
-                                     f'that expects {package_version.index!r}',
+                                     f'that expects {package_version.index.name!r}',
                     'source': source,
                     'package_locked': package_version.to_pipfile_lock(),
                     'package_name': package_version.name,
@@ -380,12 +380,12 @@ class Project:
                     'sources': other_sources
                 })
 
-        if package_version.index and not index_report.get(package_version.index):
+        if package_version.index and not index_report.get(package_version.index.name):
             # Configured index does not provide the given package.
             scan_report.append({
                 'type': 'ERROR',
                 'id': 'MISSING-PACKAGE',
-                'justification': f'Source index {package_version.index!r} explicitly '
+                'justification': f'Source index {package_version.index.name!r} explicitly '
                                  f'assigned to package {package_version.name!r} but package '
                                  f'was not found on the given index - was it removed?',
                 'source': source,
