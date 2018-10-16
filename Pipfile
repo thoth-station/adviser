@@ -18,5 +18,7 @@ semantic-version = "*"
 lxml = "*"
 
 [dev-packages]
-coala-bears = "*"
 flexmock = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-timeout = "*"
