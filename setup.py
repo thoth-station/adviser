@@ -1,4 +1,5 @@
 import os
+import sys
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
@@ -28,7 +29,7 @@ class Test(TestCommand):
 
     def initialize_options(self):
         super().initialize_options()
-        self.pytest_args = ['--timeout=2', '--cov=./thoth', '--capture=no', '--verbose']
+        self.pytest_args = ['tests/', '--timeout=2', '--cov=./thoth', '--capture=no', '--verbose', '-l', '-s']
 
     def finalize_options(self):
         super().finalize_options()
@@ -53,5 +54,6 @@ setup(
         'console_scripts': ['thoth-adviser=thoth.adviser.cli:cli']
     },
     zip_safe=False,
-    install_requires=get_install_requires()
+    install_requires=get_install_requires(),
+    cmdclass={'test': Test},
 )
