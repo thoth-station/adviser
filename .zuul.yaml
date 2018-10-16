@@ -2,7 +2,7 @@
     check:
       jobs:
         - thoth-coala
-        - thoth-pyest
+        - thoth-pytest
     gate:
       queue: thoth-station/core
       jobs:
