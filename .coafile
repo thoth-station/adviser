@@ -1,20 +1,24 @@
 [all]
-bears = LineCountBear
-files = **.py, **.yaml, **.rst **.md
+bears = LineCountBear, FilenameBear
+files = **.py, **.yaml, **.rst, **.md
 ignore = **/__pycache__/**, **/__pycache__, __pycache__, __pycache__/**, **/*.pyc, *.pyc
 max_lines_per_file = 1000
+max_line_length = 120
 
 [all.python]
-bears = PycodestyleBear, PyDocStyleBear, FilenameBear
+bears = PycodestyleBear, PyDocStyleBear
 files = **.py
 language = Python
-max_line_length = 120
 editor = vim
-ignore = setup.py, tests/**
-file_naming_convention = snake
+ignore = setup.py
 
 [all.yaml]
-bears = YAMLLintBear, FilenameBear
+bears = YAMLLintBear
 files = **.yaml
+ignore = .zuul.yaml
 max_line_length = 120
-file_naming_convention = camel
+
+[zuul.yaml]
+bears = YAMLLintBear
+files = .zuul.yaml
+max_line_length = 180
