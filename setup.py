@@ -1,5 +1,6 @@
 import os
 from setuptools import setup
+from setuptools.command.test import test as TestCommand
 
 
 def get_install_requires():
@@ -18,6 +19,25 @@ def get_version():
             # dirty, remove trailing and leading chars
             return line.split(' = ')[1][1:-2]
     raise ValueError("No version identifier found")
+
+
+class Test(TestCommand):
+    user_options = [
+        ('pytest-args=', 'a', "Arguments to pass into py.test")
+    ]
+
+    def initialize_options(self):
+        super().initialize_options()
+        self.pytest_args = ['--timeout=2', '--cov=./thoth', '--capture=no', '--verbose']
+
+    def finalize_options(self):
+        super().finalize_options()
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        import pytest
+        sys.exit(pytest.main(self.pytest_args))
 
 
 setup(
