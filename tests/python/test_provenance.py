@@ -99,21 +99,21 @@ class TestProvenanceCheck(AdviserTestCase):
         'pypi': [
             {
                 'name': 'yaspin.whl',
-                'sha256': '5f6cf0a8ddf7eb8aea6f4c514427633698a684423673da8f44f6f0f303cce4a9'
-            },
-            {
-                'name': 'yaspin.whl',
-                'sha256': '74b72dd2a127da25b08dcbfabf6e495065c2a2309e415d0feac5d0e0d60fcb3e'
-            }
-        ],
-        'redhat-aicoe-experiments': [
-            {
-                'name': 'yaspin.whl',
                 'sha256': '36fdccc5e0637b5baa8892fe2c3d927782df7d504e9020f40eb2c1502518aa5a'
             },
             {
                 'name': 'yaspin.whl',
                 'sha256': '8e52bf8079a48e2a53f3dfeec9e04addb900c101d1591c85df69cf677d3237e7'
+            }
+        ],
+        'redhat-aicoe-experiments': [
+            {
+                'name': 'yaspin.whl',
+                'sha256': '5f6cf0a8ddf7eb8aea6f4c514427633698a684423673da8f44f6f0f303cce4a9'
+            },
+            {
+                'name': 'yaspin.whl',
+                'sha256': '74b72dd2a127da25b08dcbfabf6e495065c2a2309e415d0feac5d0e0d60fcb3e'
             }
         ]
     }])
@@ -135,10 +135,10 @@ class TestProvenanceCheck(AdviserTestCase):
         assert 'ARTIFACT-DIFFERENT-SOURCE' == report['id']
 
         assert 'indexes' in report
-        assert ['redhat-aicoe-experiments'] == report['indexes']
+        assert ['pypi'] == report['indexes']
 
         assert 'sources' in report
-        assert list(report['sources'].keys()) == ['redhat-aicoe-experiments']
+        assert list(report['sources'].keys()) == ['pypi']
 
     @pytest.mark.parametrize("index_report", [{
         'redhat-aicoe-experiments': [
@@ -146,15 +146,15 @@ class TestProvenanceCheck(AdviserTestCase):
                 'name': 'yaspin.whl',
                 'sha256': '36fdccc5e0637b5baa8892fe2c3d927782df7d504e9020f40eb2c1502518aa5a'
             },
+            {
+                'name': 'yaspin.whl',
+                'sha256': '8e52bf8079a48e2a53f3dfeec9e04addb900c101d1591c85df69cf677d3237e7'
+            }
         ],
         'pypi': [
             {
                 'name': 'yaspin.whl',
                 'sha256': '36fdccc5e0637b5baa8892fe2c3d927782df7d504e9020f40eb2c1502518aa5a'
-            },
-            {
-                'name': 'yaspin.whl',
-                'sha256': '8e52bf8079a48e2a53f3dfeec9e04addb900c101d1591c85df69cf677d3237e7'
             }
         ]
     }])
@@ -170,19 +170,19 @@ class TestProvenanceCheck(AdviserTestCase):
         report = report[0]
 
         assert 'type' in report
-        assert 'INFO' in report['type']
+        assert 'INFO' == report['type']
 
         assert 'id' in report
         assert 'ARTIFACT-POSSIBLE-DIFFERENT-SOURCE' == report['id']
 
         assert 'indexes' in report
-        assert ['redhat-aicoe-experiments'] == report['indexes']
+        assert ['pypi'] == report['indexes']
 
         assert 'sources' in report
-        assert list(report['sources'].keys()) == ['redhat-aicoe-experiments']
+        assert list(report['sources'].keys()) == ['pypi']
 
     @pytest.mark.parametrize("index_report", [{
-        'redhat-aicoe-experiments': [
+        'pypi': [
             {
                 'name': 'yaspin.whl',
                 'sha256': '36fdccc5e0637b5baa8892fe2c3d927782df7d504e9020f40eb2c1502518aa5a'

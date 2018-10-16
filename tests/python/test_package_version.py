@@ -20,11 +20,34 @@
 import pytest
 
 from thoth.adviser.python.package_version import PackageVersion
+from thoth.adviser.python.pipfile import PipfileMeta
 from thoth.adviser.exceptions import UnsupportedConfiguration
 from thoth.adviser.exceptions import PipfileParseError
 from thoth.adviser.exceptions import InternalError
 
 from base import AdviserTestCase
+
+# Share meta for all the sources.
+_META = PipfileMeta.from_dict({
+    "hash": {
+        "sha256": "ffd9f5a6a04f9aa6c56cbf43ceda5c41644b1d2304a6b798a654b6e421c7d23a"
+    },
+    "pipfile-spec": 6,
+    "requires": {},
+    "sources": [
+        {
+            "name": "pypi",
+            "url": "https://pypi.python.org/simple",
+            "verify_ssl": True
+        },
+        {
+            "name": "redhat-aicoe-experiments",
+            "url": "https://index-aicoe.a3c1.starter-us-west-1.openshiftapps.com",
+            "verify_ssl": True
+        }
+
+    ]
+})
 
 
 class TestPackageVersion(AdviserTestCase):
@@ -53,9 +76,23 @@ class TestPackageVersion(AdviserTestCase):
         ]
     )
     def test_from_pipfile_entry(self, package_name, package_info, expected_values, is_locked):
-        package_version = PackageVersion.from_pipfile_entry(package_name, package_info, develop=False)
+        package_version = PackageVersion.from_pipfile_entry(
+            package_name,
+            package_info,
+            develop=False,
+            meta=_META
+        )
 
         for name, value in expected_values.items():
+            if name == 'index':
+                if value is None:
+                    assert package_version.index is None
+                    continue
+
+                assert package_version.index is not None
+                package_version.index.name == value
+                continue
+
             assert getattr(package_version, name) == value,\
                 f"Expected value for {name} for instance does not match: {value}"
 
@@ -72,7 +109,7 @@ class TestPackageVersion(AdviserTestCase):
     )
     def test_from_pipfile_entry_error(self, package_name, package_info):
         with pytest.raises(UnsupportedConfiguration):
-            PackageVersion.from_pipfile_entry(package_name, package_info, develop=False)
+            PackageVersion.from_pipfile_entry(package_name, package_info, develop=False, meta=_META)
 
     @pytest.mark.parametrize(
         "package_name,package_info,expected_values",
@@ -93,9 +130,18 @@ class TestPackageVersion(AdviserTestCase):
         ]
     )
     def test_from_pipfile_lock_entry(self, package_name, package_info, expected_values):
-        package_version = PackageVersion.from_pipfile_lock_entry(package_name, package_info, develop=False)
+        package_version = PackageVersion.from_pipfile_lock_entry(
+            package_name,
+            package_info,
+            develop=False,
+            meta=_META
+        )
 
         for name, value in expected_values.items():
+            if name == 'index':
+                assert package_version.index.name == value
+                continue
+
             assert getattr(package_version, name) == value, \
                 f"Expected value {name} for locked package {package_name} does not match: {value}"
 
@@ -127,7 +173,12 @@ class TestPackageVersion(AdviserTestCase):
     )
     def test_from_pipfile_lock_entry_error(self, package_name, package_info):
         with pytest.raises(PipfileParseError):
-            PackageVersion.from_pipfile_lock_entry(package_name, package_info, develop=False)
+            PackageVersion.from_pipfile_lock_entry(
+                package_name,
+                package_info,
+                develop=False,
+                meta=_META
+            )
 
     def test_sorted(self):
         array = []
