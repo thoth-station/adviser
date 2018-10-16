@@ -115,13 +115,11 @@ def provenance(click_ctx, requirements, requirements_locked=None, whitelisted_so
         'parameters': {
             'whitelisted_indexes': whitelisted_sources,
         },
-        'input': {
-            'requirements': requirements,
-            'requirements_locked': requirements_locked
-        }
+        'input': None
     }
     try:
         project = _instantiate_project(requirements, requirements_locked, files)
+        result['input'] = project.to_dict()
         report = project.check_provenance(whitelisted_sources=whitelisted_sources)
     except ThothAdviserException as exc:
         # TODO: we should extend exceptions so they are capable of storing more info.
@@ -186,10 +184,7 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
             'recommendation_type': recommendation_type.name.lower(),
             'requirements_format': requirements_format.name.lower()
         },
-        'input': {
-            'requirements': requirements,
-            'requirements_locked': requirements_locked
-        },
+        'input': None,
         'output': {
             'requirements': None,
             'requirements_locked': None
@@ -197,6 +192,7 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
     }
     try:
         project = _instantiate_project(requirements, requirements_locked, files)
+        result['input'] = project.to_dict()
         report = project.advise(runtime_environment, recommendation_type)
     except ThothAdviserException as exc:
         # TODO: we should extend exceptions so they are capable of storing more info.

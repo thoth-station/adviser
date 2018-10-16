@@ -79,6 +79,13 @@ class Project:
 
         return cls(pipfile, pipfile_lock)
 
+    def to_dict(self):
+        """Create a dictionary representation of this project."""
+        return {
+            'requirements': self.pipfile.to_dict(),
+            'requirements_locked': self.pipfile_lock.to_dict() if self.pipfile_lock else None
+        }
+
     def pipenv_lock(self):
         """Perform pipenv lock on the current state of project."""
         with cwd(self.workdir):
