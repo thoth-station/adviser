@@ -81,3 +81,43 @@
 
 ## Release 0.2.0 (2018-09-18T07:41:14)
 * Introduce add_source and add_package methods
+
+## Release 0.3.0 (2018-10-16T16:00:21)
+* fixing coala
+* typo :/
+* using thoth zuul jobs now
+* Adjust setup.py to run testsuite correctly
+* Run testsuite using setup.py
+* Output to JSON in adviser
+* Link PackageVersion to Source index used
+* Report dict reporesentation of input instead of raw strings
+* Add missing parameters to template
+* Fix labels section in template
+* Dependency monkey is a template
+* Move dependency monkey to a job template
+* Rename adviser template to be more clear
+* Move from Pods to Jobs
+* Directly pass adviser subcommand that should be run
+* Introduce Dependency Monkey template
+* Update README file
+* Fix link to Thamos
+* Introduce method for converting model to object
+* Possible different source is info
+* Add Codacy badge
+* Fix testsuite respecting last changes
+* Link to Pipenv docs for specifying package indexes
+* Fix console figure
+* State configured index in the report message
+* Adjust reported issue id for possible different source
+* Add installation section and adjust based on review comments
+* Document provenance checks
+* Quote relevant parts of string
+* Add the current PyPI index to default warehouses
+* Make artifact names lowercase by deafult
+* Finish provenance reports
+* Report directly findings in the provenance check report
+* Adviser report should be always an array
+* Report back error if we cannot conclude on application stack
+* Ignore s2i's virtualenv in which adviser is run
+* Increase memory for adviser due to OOMs
+* Do not use command in openshift template
