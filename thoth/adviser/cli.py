@@ -212,8 +212,8 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
             # If we have something to suggest, add it to output field.
             # Do not replicate input to output without any reason.
             if requirements_format == PythonRecommendationOutput.PIPENV:
-                output_requirements = project.pipfile.to_string()
-                output_requirements_locked = project.pipfile_lock.to_string()
+                output_requirements = project.pipfile.to_dict()
+                output_requirements_locked = project.pipfile_lock.to_dict()
             else:
                 output_requirements = project.pipfile.to_requirements_file()
                 output_requirements_locked = project.pipfile_lock.to_requirements_file()
