@@ -78,11 +78,22 @@ class Project:
         with open(pipfile_path or 'Pipfile', 'r') as pipfile_file:
             pipfile = Pipfile.from_string(pipfile_file.read())
 
+        pipfile_lock = None
         if not without_pipfile_lock:
             with open(pipfile_lock_path or 'Pipfile.lock', 'r') as pipfile_lock_file:
                 pipfile_lock = PipfileLock.from_string(pipfile_lock_file.read(), pipfile)
 
         return cls(pipfile, pipfile_lock)
+
+    def to_files(self, pipfile_path: str = None, pipfile_lock_path: str = None,
+                 without_pipfile_lock: bool = False):
+        """Write the current state of project into Pipfile and Pipfile.lock files."""
+        with open(pipfile_path or 'Pipfile', 'w') as pipfile_file:
+            pipfile_file.write(self.pipfile.to_string())
+
+        if not without_pipfile_lock:
+            with open(pipfile_lock_path or 'Pipfile.lock', 'w') as pipfile_lock_file:
+                pipfile_lock_file.write(self.pipfile_lock.to_string())
 
     @classmethod
     def from_package_versions(cls, packages: typing.List[PackageVersion],

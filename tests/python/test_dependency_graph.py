@@ -34,6 +34,9 @@ class TestDependencyGraph(AdviserTestCase):
         project_name = project_name or 'Pipfile_project0'
         project = Project.from_files(os.path.join(self.data_dir, 'projects', 'Pipfile_project0'))
         dependency_graph = DependencyGraph.from_project(project)
-        from pprint import pprint
-        pprint(dependency_graph)
-        raise ValueError
+        count = 0
+        for project in dependency_graph.walk():
+            print(project.pipfile.to_dict())
+            print(project.pipfile_lock.to_dict())
+            count += 1
+        raise ValueError(f"{count}")

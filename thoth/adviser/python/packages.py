@@ -62,6 +62,27 @@ class Packages:
         return result
 
     @classmethod
+    def from_package_versions(cls, package_versions: typing.List[PackageVersion], develop: bool):
+        """Create Packages instance from a list of packages in specific versions."""
+        if not package_versions:
+            return cls(develop=develop, packages={})
+
+        package_version_map = {}
+        for package_version in package_versions:
+            if package_version.name in package_version_map:
+                raise InternalError(
+                    f"Atempt adding multiple packages with same name to Packages: {package_version!r}"
+                )
+
+            package_version_map[package_version.name] = package_version
+            if develop != package_version.develop:
+                raise InternalError(
+                    "Not all packages provided to construct Packages instance have the same develop flag set"
+                )
+
+        return cls(develop=develop, packages=package_version_map)
+
+    @classmethod
     def from_pipfile(cls, packages, develop, meta):
         """Parse Pipfile entry stating list of packages used."""
         _LOGGER.debug("Parsing Pipfile entry for %s packages", 'develop' if develop else 'default')

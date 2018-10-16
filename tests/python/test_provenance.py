@@ -35,10 +35,12 @@ class TestProvenanceCheck(AdviserTestCase):
         """
         pipfile_path = os.path.join(
             self.data_dir,
+            'pipfiles',
             'Pipfile_provenance1' if not pinned_index else 'Pipfile_provenance2'
         )
         pipfile_lock_path = os.path.join(
             self.data_dir,
+            'pipfiles',
             'Pipfile_provenance1.lock' if not pinned_index else 'Pipfile_provenance2.lock'
         )
         return Project.from_files(pipfile_path, pipfile_lock_path)

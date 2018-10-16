@@ -95,6 +95,7 @@ class DependencyGraph:
         # Place the import statement here to simplify mocks in the testsuite.
         from thoth.storages.graph.janusgraph import GraphDatabase
 
+        # TODO: parametrize solver
         graph = GraphDatabase()
         solver = PythonPackageGraphSolver(graph_db=graph)
         direct_dependencies, dependencies_map = cls._prepare_direct_dependencies(
@@ -140,7 +141,7 @@ class DependencyGraph:
                     # First time seen.
                     new_package_version = PackageVersion(
                         name=destination_name,
-                        version=destination_version,
+                        version='==' + destination_version,
                         index=destination_index,
                         hashes=[],
                         develop=source.package_version.develop
@@ -196,15 +197,15 @@ class DependencyGraph:
         return True
 
     def walk(self,
-             distribution_func: typing.Callable = None) -> typing.Generator[Project, None, None]:
+             decision_func: typing.Callable = None) -> typing.Generator[Project, None, None]:
         """Generate software stacks based on traversing the dependency graph.
 
-        @param distribution_func: function used to filter out stacks (0 - omit stack, 1 include stack),
+        @param decision_func: function used to filter out stacks (False - omit stack, True include stack),
             used for sampling avoiding generating all the possible software stacks
         @return: a generator, each item yielded value is one option of a resolved software stack
         """
         # The implementation is very lazy (using generators where possible), more lazy then the author himself...
-        distribution_func = distribution_func or (lambda: True)    # Always generate all, if not stated otherwise.
+        decision_func = decision_func or (lambda _: True)    # Always generate all, if not stated otherwise.
         stack = deque()
 
         # Initial configuration picks the latest versions first (they are last on the stack):
@@ -219,9 +220,11 @@ class DependencyGraph:
             state = stack.pop()
 
             if self._is_final_state(state):
-                if distribution_func():
+                if decision_func(state[0]):
+                    package_versions = tuple(g.package_version for g in state[0].values())
                     yield Project.from_package_versions(
-                        (g.package_version for g in state[0].values()),
+                        packages=package_versions,
+                        packages_locked=package_versions,
                         meta=self.meta
                     )
                 continue

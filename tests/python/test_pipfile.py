@@ -34,7 +34,7 @@ class TestPipfile(AdviserTestCase):
         'Pipfile_test1',
     ])
     def test_from_string(self, pipfile: str):
-        with open(os.path.join(self.data_dir, pipfile), 'r') as pipfile_file:
+        with open(os.path.join(self.data_dir, 'pipfiles', pipfile), 'r') as pipfile_file:
             content = pipfile_file.read()
 
         instance = Pipfile.from_string(content)
@@ -48,10 +48,10 @@ class TestPipfileLock(AdviserTestCase):
         'Pipfile_test1.lock',
     ])
     def test_from_string(self, pipfile_lock: str):
-        with open(os.path.join(self.data_dir, pipfile_lock), 'r') as pipfile_lock_file:
+        with open(os.path.join(self.data_dir, 'pipfiles', pipfile_lock), 'r') as pipfile_lock_file:
             content = pipfile_lock_file.read()
 
-        with open(os.path.join(self.data_dir, pipfile_lock[:-len('.lock')]), 'r') as pipfile_file:
+        with open(os.path.join(self.data_dir, 'pipfiles', pipfile_lock[:-len('.lock')]), 'r') as pipfile_file:
             pipfile_content = pipfile_file.read()
 
         pipfile_instance = Pipfile.from_string(pipfile_content)

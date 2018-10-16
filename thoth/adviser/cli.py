@@ -17,9 +17,12 @@
 
 """Thoth-adviser CLI."""
 
-import click
+import os
 import logging
+import json
 
+from amun import inspect as amun_inspect
+import click
 from thoth.analyzer import print_command_result
 from thoth.common import init_logging
 
@@ -31,6 +34,7 @@ from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser import __version__ as analyzer_version
 from thoth.adviser.python import Pipfile, PipfileLock
 from thoth.adviser.python import Project
+from thoth.adviser.python import DependencyGraph
 
 init_logging()
 
@@ -231,6 +235,46 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
         pretty=not no_pretty
     )
     return result['error'] is False
+
+
+@cli.command('dependency-monkey')
+@click.pass_context
+@click.option('--requirements', '-r', type=str, envvar='THOTH_ADVISER_REQUIREMENTS', required=True,
+              help="Requirements to be advised.")
+@click.option('--output', '-o', type=str, envvar='THOTH_ADVISER_OUTPUT',
+              help="Output directory or remote API to print results to, in case of URL a POST request is issued.")
+@click.option('--files', '-F', is_flag=True,
+              help="Requirements passed represent paths to files on local filesystem.")
+@click.option('--seed', type=int, envvar='THOTH_DEPENCENCY_MONKEY_SEED',
+              help="A seed to be used for generating software stack samples (defaults to time if omitted).")
+@click.option('--distribution', required=False, envvar='THOTH_DEPENDENCY_MONKEY_DISTRIBUTION',
+              type=click.Choice(['gauss', 'uniform']),
+              help="A distribution function that should be used for generating software stack samples; "
+                   "if omitted, all software stacks will be created.")
+@click.option('--dry-run', is_flag=True, envvar='THOTH_DEPENDENCY_MONKEY_DRY_RUN',
+              help="Do not generate software stacks, just report how many software stacks will be "
+                   "generated given the provided configuration (packages, distribution and seed).")
+@click.option('--amun-context', type=str, envvar='THOTH_AMUN_CONTEXT',
+              help="The context for Amun into which computed stacks should be placed, if present, there "
+                   "will be triggered Amun service inspections (output treated as Amun host) instead of "
+                   "raw POST requests.")
+def dependency_monkey(click_ctx, requirements: str, output: str, files: bool, seed: int = None,
+                      distribution: str = None, dry_run: bool = False, amun_context: str = None):
+    """Generate software stacks based on all valid resolutions that conform version ranges."""
+    project = Project.from_files(requirements, without_pipfile_lock=True) if files else None
+    dependency_graph = DependencyGraph.from_project(project)
+
+    if not amun_context:
+        raise NotImplemented("There is always required Amun context to be present")
+
+    amun_context = json.loads(amun_context)
+
+    for generated_project in dependency_graph.walk():
+        python_project = generated_project.to_dict()
+        amun_context['python'] = python_project
+        # The Amun context holds all the relevant information to run this job.
+        response = amun_inspect(output, **amun_context)
+        _LOGGER.info("Submitted Amun inspection: %r", response['inspection_id'])
 
 
 if __name__ == '__main__':

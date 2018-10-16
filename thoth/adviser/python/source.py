@@ -42,8 +42,8 @@ class Source:
     """Representation of source (Python index) for Python packages."""
 
     url = attr.ib(type=str)
-    verify_ssl = attr.ib(type=bool)
     name = attr.ib(type=str)
+    verify_ssl = attr.ib(type=bool, default=True)
     warehouse = attr.ib(type=bool, default=False)
     warehouse_api_url = attr.ib(default=None, type=str)
 

@@ -31,8 +31,8 @@ from thoth.adviser.exceptions import InternalError
 
 class TestProject(AdviserTestCase):
     def test_add_package(self):
-        pipfile = Pipfile.from_file(os.path.join(self.data_dir, 'Pipfile_test1'))
-        pipfile_lock = PipfileLock.from_file(os.path.join(self.data_dir, 'Pipfile_test1.lock'))
+        pipfile = Pipfile.from_file(os.path.join(self.data_dir, 'pipfiles', 'Pipfile_test1'))
+        pipfile_lock = PipfileLock.from_file(os.path.join(self.data_dir, 'pipfiles', 'Pipfile_test1.lock'))
         project = Project(pipfile=pipfile, pipfile_lock=pipfile_lock)
 
         assert 'selinon' not in project.pipfile.packages.packages
@@ -47,8 +47,8 @@ class TestProject(AdviserTestCase):
         assert 'selinon' not in project.pipfile_lock.packages.packages
 
     def test_add_package_develop(self):
-        pipfile = Pipfile.from_file(os.path.join(self.data_dir, 'Pipfile_test1'))
-        pipfile_lock = PipfileLock.from_file(os.path.join(self.data_dir, 'Pipfile_test1.lock'))
+        pipfile = Pipfile.from_file(os.path.join(self.data_dir, 'pipfiles', 'Pipfile_test1'))
+        pipfile_lock = PipfileLock.from_file(os.path.join(self.data_dir, 'pipfiles', 'Pipfile_test1.lock'))
         project = Project(pipfile=pipfile, pipfile_lock=pipfile_lock)
 
         source = Source(name='foo', url='https://foo.bar', verify_ssl=True, warehouse=False)
@@ -70,8 +70,8 @@ class TestProject(AdviserTestCase):
         assert 'selinon' not in project.pipfile_lock.dev_packages.packages
 
     def test_add_source(self):
-        pipfile = Pipfile.from_file(os.path.join(self.data_dir, 'Pipfile_test1'))
-        pipfile_lock = PipfileLock.from_file(os.path.join(self.data_dir, 'Pipfile_test1.lock'))
+        pipfile = Pipfile.from_file(os.path.join(self.data_dir, 'pipfiles', 'Pipfile_test1'))
+        pipfile_lock = PipfileLock.from_file(os.path.join(self.data_dir, 'pipfiles', 'Pipfile_test1.lock'))
         project = Project(pipfile=pipfile, pipfile_lock=pipfile_lock)
 
         source = project.add_source(url='https://foo.bar')
@@ -109,8 +109,8 @@ class TestProject(AdviserTestCase):
                 }[package_name]
 
         project = Project.from_files(
-            os.path.join(self.data_dir, 'Pipfile_test2'),
-            os.path.join(self.data_dir, 'Pipfile_test2.lock')
+            os.path.join(self.data_dir, 'pipfiles', 'Pipfile_test2'),
+            os.path.join(self.data_dir, 'pipfiles', 'Pipfile_test2.lock')
         )
 
         new_sources = {}
@@ -153,8 +153,8 @@ class TestProject(AdviserTestCase):
                 }[package_name]
 
         project = Project.from_files(
-            os.path.join(self.data_dir, 'Pipfile_test2'),
-            os.path.join(self.data_dir, 'Pipfile_test2.lock')
+            os.path.join(self.data_dir, 'pipfiles', 'Pipfile_test2'),
+            os.path.join(self.data_dir, 'pipfiles', 'Pipfile_test2.lock')
         )
 
         new_sources = {}

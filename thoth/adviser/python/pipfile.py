@@ -35,6 +35,9 @@ from .package_version import PackageVersion
 
 _LOGGER = logging.getLogger(__name__)
 
+# The default Pipfile spec number (version) stated in the Pipfile.lock.
+_DEFAULT_PIPFILE_SPEC = 6
+
 
 @attr.s(slots=True)
 class PipfileMeta:
@@ -87,7 +90,7 @@ class PipfileMeta:
             result['sources'] = sources_dict
             result['requires'] = self.requires or {}
             result['hash'] = self.hash
-            result['pipfile-spec'] = self.pipfile_spec
+            result['pipfile-spec'] = self.pipfile_spec or _DEFAULT_PIPFILE_SPEC
         else:
             result['source'] = sources_dict
             if self.pipenv:
@@ -207,23 +210,11 @@ class Pipfile(_PipfileBase):
     @classmethod
     def from_package_versions(cls, packages: typing.List[PackageVersion], meta: PipfileMeta = None):
         """Construct Pipfile from provided PackageVersion instances."""
-        default = {}
-        dev_packages = {}
-        for package_version in packages:
-            if package_version.develop:
-                if package_version.name in dev_packages:
-                    raise InternalError(
-                        f"Atempt adding multiple packages with same name to Pipfile.lock: {package_version!r}"
-                    )
-                dev_packages[package_version.name] = package_version
-            else:
-                if package_version.name in default:
-                    raise InternalError(
-                        f"Atempt adding multiple packages with same name to Pipfile.lock: {package_version!r}"
-                    )
-                default[package_version.name] = package_version
-
-        return cls(packages=default, dev_packages=dev_packages, meta=meta)
+        return cls(
+            packages=Packages.from_package_versions([pv for pv in packages if not pv.develop], develop=False),
+            dev_packages=Packages.from_package_versions([pv for pv in packages if pv.develop], develop=True),
+            meta=meta
+        )
 
     @classmethod
     def from_file(cls, file_path: str = None):
@@ -298,27 +289,12 @@ class PipfileLock(_PipfileBase):
     def from_package_versions(cls, pipfile: Pipfile, packages: typing.List[PackageVersion],
                               meta: PipfileMeta = None):
         """Construct Pipfile from provided PackageVersion instances."""
-        default = {}
-        dev_packages = {}
-        for package_version in packages:
-            if not package_version.is_locked():
-                raise InternalError(
-                    f"Atempt to add non-locked package to the Pipfile.lock: {package_version!r}"
-                )
-            if package_version.develop:
-                if package_version.name in dev_packages:
-                    raise InternalError(
-                        f"Atempt adding multiple packages with same name to Pipfile.lock: {package_version!r}"
-                    )
-                dev_packages[package_version.name] = package_version
-            else:
-                if package_version.name in default:
-                    raise InternalError(
-                        f"Atempt adding multiple packages with same name to Pipfile.lock: {package_version!r}"
-                    )
-                default[package_version.name] = package_version
-
-        return cls(packages=default, dev_packages=dev_packages, meta=meta, pipfile=pipfile)
+        return cls(
+            pipfile=pipfile,
+            packages=Packages.from_package_versions([pv for pv in packages if not pv.develop], develop=False),
+            dev_packages=Packages.from_package_versions([pv for pv in packages if pv.develop], develop=True),
+            meta=meta
+        )
 
     @classmethod
     def from_file(cls, file_path: str = None, pipfile: Pipfile = None):

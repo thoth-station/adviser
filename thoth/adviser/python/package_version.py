@@ -64,7 +64,7 @@ class PackageVersion:
 
     def __eq__(self, other):
         """Check for package-version equality."""
-        return self.name == other.name and self.version == other.version and self.index == self.index
+        return self.name == other.name and self.version == other.version and self.index.url == self.index.url
 
     def __lt__(self, other):
         """Compare same packages based on their semantic version."""
@@ -85,11 +85,12 @@ class PackageVersion:
         """Convert database model representation to object representation."""
         # TODO: add markers to the graph database
         # TODO: add hashes to the graph database
+        # TODO: we will need to add index information - later on?
         return cls(
             name=model.package_name,
             version=model.package_version,
             develop=develop,
-            index=model.index
+            index=Source(url=model.index)
         )
 
     def is_locked(self):
@@ -208,8 +209,9 @@ class PackageVersion:
         if not self.is_locked():
             raise InternalError(f"Trying to generate Pipfile.lock with packages not correctly locked: {self}")
 
-        if not self.hashes:
-            raise InternalError(f"Trying to generate Pipfile.lock without assigned hashes for package: {self}")
+        # TODO: uncomment once we will have hashes available in the graph
+        # if not self.hashes:
+        #     raise InternalError(f"Trying to generate Pipfile.lock without assigned hashes for package: {self}")
 
         result = {
             'version': self.version,
