@@ -1,5 +1,7 @@
 import os
+import sys
 from setuptools import setup
+from setuptools.command.test import test as TestCommand
 
 
 def get_install_requires():
@@ -20,6 +22,25 @@ def get_version():
     raise ValueError("No version identifier found")
 
 
+class Test(TestCommand):
+    user_options = [
+        ('pytest-args=', 'a', "Arguments to pass into py.test")
+    ]
+
+    def initialize_options(self):
+        super().initialize_options()
+        self.pytest_args = ['tests/', '--timeout=2', '--cov=./thoth', '--capture=no', '--verbose', '-l', '-s']
+
+    def finalize_options(self):
+        super().finalize_options()
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        import pytest
+        sys.exit(pytest.main(self.pytest_args))
+
+
 setup(
     name='thoth-adviser',
     version=get_version(),
@@ -33,5 +54,6 @@ setup(
         'console_scripts': ['thoth-adviser=thoth.adviser.cli:cli']
     },
     zip_safe=False,
-    install_requires=get_install_requires()
+    install_requires=get_install_requires(),
+    cmdclass={'test': Test},
 )
