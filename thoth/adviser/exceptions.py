@@ -36,3 +36,7 @@ class UnsupportedConfiguration(ThothAdviserException):
 
 class NotFound(ThothAdviserException):
     """An exception raised if the given resource was not found."""
+
+
+class VersionIdentifierError(ThothAdviserException):
+    """An exception raised if the given version identifier is not a semver identifier."""
