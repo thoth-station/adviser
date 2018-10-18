@@ -1,12 +1,12 @@
 [[source]]
-url = "https://pypi.python.org/simple"
-verify_ssl = true
-name = "pypi"
-
-[[source]]
 url = "https://index-aicoe.a3c1.starter-us-west-1.openshiftapps.com/fedora28/1.9/jemalloc"
 verify_ssl = true
 name = "redhat-aicoe-experiments"
+
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
 
 [packages]
 attrs = "*"

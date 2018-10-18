@@ -24,6 +24,7 @@ from copy import deepcopy
 import tempfile
 
 import attr
+import semantic_version as semver
 from thoth.common import cwd
 from thoth.analyzer import run_command
 from thoth.analyzer import CommandError
@@ -85,6 +86,43 @@ class Project:
             'requirements': self.pipfile.to_dict(),
             'requirements_locked': self.pipfile_lock.to_dict() if self.pipfile_lock else None
         }
+
+    def get_outdated_package_versions(self, devel: bool = True) -> dict:
+        """Get outdated packages in the lock file.
+
+        This function will check indexes configured and look for version of
+        each package. If the given package package is not latest, it will add
+        it to the resulting list with the newer version identifier found on
+        package index.
+        """
+        if not self.pipfile_lock:
+            raise InternalError("Cannot check outdated packages on not-locked application stack")
+
+        result = {}
+        for package_version in self.iter_dependencies_locked(with_devel=devel):
+            if package_version.index:
+                latest = package_version.index.get_latest_package_version(package_version.name)
+                if package_version.semantic_version != latest:
+                    result[package_version.name] = (package_version, latest)
+            else:
+                found = False
+                for index in self.pipfile_lock.meta.sources.values():
+                    try:
+                        latest = index.get_latest_package_version(package_version.name)
+                        found = True
+                    except NotFound:
+                        continue
+
+                    if package_version.semantic_version != latest:
+                        result[package_version.name] = (package_version, latest)
+
+                if not found:
+                    raise NotFound(
+                        f"Package {package_version!r} was not found on any package index"
+                        f"configured: {self.pipfile_lock.meta.to_dict()}"
+                    )
+
+        return result
 
     def pipenv_lock(self):
         """Perform pipenv lock on the current state of project."""
@@ -201,6 +239,22 @@ class Project:
             return None
 
         raise NotImplementedError  # Unreachable.
+
+    def iter_dependencies_locked(self, with_devel: bool = True):
+        """Iterate through locked dependencies of this project."""
+        if not self.pipfile_lock:
+            raise InternalError("Unable to chain locked dependencies - no Pipfile.lock provided")
+        if with_devel:
+            yield from chain(self.pipfile_lock.packages, self.pipfile_lock.dev_packages)
+        else:
+            yield from self.pipfile_lock.packages
+
+    def iter_dependencies(self, with_devel: bool = True):
+        """Iterate through direct dependencies of this project (not locked dependencies)."""
+        if with_devel:
+            yield from chain(self.pipfile.packages, self.pipfile.packages.dev_packages)
+        else:
+            yield from self.pipfile.packages
 
     def advise(self, runtime_environment: str, recommendation_type: RecommendationType) -> list:
         """Compute recommendations for the given runtime environment."""
