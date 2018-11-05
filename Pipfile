@@ -10,12 +10,12 @@ thoth-analyzer = "*"
 thoth-common = "*"
 thoth-solver = "*"
 pip = "<10"
-toml = "*"
 attrs = "*"
 requests = "*"
 beautifulsoup4 = "*"
 semantic-version = "*"
 lxml = "*"
+contoml = "*"
 
 [dev-packages]
 flexmock = "*"

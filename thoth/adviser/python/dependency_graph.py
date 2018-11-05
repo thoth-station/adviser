@@ -30,7 +30,9 @@ cycles (see caching).
 """
 
 import typing
+import logging
 from collections import deque
+from functools import reduce
 from itertools import chain
 from itertools import chain
 from itertools import product
@@ -43,6 +45,8 @@ from .pipfile import PipfileMeta
 from .project import Project
 from .solver import PythonPackageGraphSolver
 
+_LOGGER = logging.getLogger(__name__)
+
 
 @attr.s(slots=True)
 class GraphItem:
@@ -51,13 +55,32 @@ class GraphItem:
     package_version = attr.ib(type=PackageVersion)
     dependencies = attr.ib(default=attr.Factory(dict))
 
+    def is_package_version(self, package_name: str, package_version: str, index: str):
+        """Check if the given package-version entry has given attributes."""
+        return self.package_version.name == package_name and \
+               self.package_version.version == '==' + package_version and \
+               self.package_version.index == index
+    
+    def is_different_version(self, package_name: str, package_version: str, index: str):
+        """Check if same package but under a different version."""
+        return self.package_version.name == package_name and \
+               self.package_version.version != '==' + package_version and \
+               self.package_version.index == index
+
 
 @attr.s(slots=True)
 class DependencyGraph:
     """N-ary dependency graph stored in memory."""
 
     direct_dependencies = attr.ib(type=dict)
-    meta = attr.ib(type=PipfileMeta, default=None)
+    meta = attr.ib(type=PipfileMeta)
+    dependencies_map = attr.ib(type=dict)
+
+    @property
+    def stacks_estimated(self) -> int:
+        """Estimate number of sofware stacks we could end up with (the upper boundary)."""
+        # We could estimate based on traversing the tree, it would give us better, but still rough estimate.
+        return reduce(lambda a, b: a * b, (len(v) for v in self.dependencies_map.values()))
 
     @staticmethod
     def _prepare_direct_dependencies(solver: PythonPackageGraphSolver, project: Project,
@@ -66,6 +89,7 @@ class DependencyGraph:
         # TODO: Sort dependencies to have stable generations for same stacks.
         # It's important that solver preserves order in which packages were inserted.
         # This is also a requirement for running under Python3.6+!!!
+        _LOGGER.debug("Resolving direct dependencies")
         resolved_direct_dependencies = solver.solve(
             list(project.iter_dependencies(with_devel=with_devel)),
             graceful=False,
@@ -95,8 +119,8 @@ class DependencyGraph:
         # Place the import statement here to simplify mocks in the testsuite.
         from thoth.storages.graph.janusgraph import GraphDatabase
 
-        # TODO: parametrize solver
         graph = GraphDatabase()
+        graph.connect()
         solver = PythonPackageGraphSolver(graph_db=graph)
         direct_dependencies, dependencies_map = cls._prepare_direct_dependencies(
             solver,
@@ -105,8 +129,8 @@ class DependencyGraph:
         )
 
         # Now perform resolution on all the transitive dependencies.
-        # TODO: check that the graph query used breaks cyclic dependencies as expected.
-        for graph_item in chain(*direct_dependencies.values()):
+        all_direct_dependencies = list(chain(*direct_dependencies.values()))
+        for graph_item in all_direct_dependencies:
             # Example response:
             # [
             #   # Example entry:
@@ -117,18 +141,59 @@ class DependencyGraph:
             #   ],
             #    ...
             # ]
+            _LOGGER.debug(
+                "Retrieving transitive dependencies for %r in version %r from %r",
+                          graph_item.package_version.name, graph_item.package_version.locked_version,
+                          graph_item.package_version.index
+            )
             transitive_dependencies = graph.retrieve_transitive_dependencies_python(
                 graph_item.package_version.name,
                 graph_item.package_version.locked_version,
                 graph_item.package_version.index
             )
 
+            # Fast path - filter out paths that have a version of a direct
+            # dependency in it that does not correspond to the direct
+            # dependency. This way we can filter out a lot of nodes in the graph and reduce walks.
+            transitive_dependencies_to_include = []
             for entry in transitive_dependencies:
+                exclude = False
+                for idx in range(0, len(entry), 2):
+                    item = entry[idx]
+                    direct_packages_of_this = [
+                        dep for dep in all_direct_dependencies if dep.package_version.name == item['package'] and  \
+                        dep.package_version.index == None
+                    ]
+
+                    if not direct_packages_of_this:
+                        continue
+
+                    if any(dep.is_package_version(item['package'], item['version'], None)
+                           for dep in direct_packages_of_this):
+                        continue
+                    
+                    # Otherwise do not include it - cut off the un-reachable dependency graph.
+                    _LOGGER.debug(
+                        "Excluding a path due to package %s (unreachable based on direct dependencies)", item
+                    )
+                    exclude = True
+                    break
+
+                if not exclude:
+                    transitive_dependencies_to_include.append(entry)
+
+            # TODO: raise an exception if all of the paths requested to have the given dependecy - in that case we
+            # cannot satisfy the application stack
+
+            for entry in transitive_dependencies_to_include:
+                # TODO: we have captured only one layer.
+                #
                 # Name graph-query dependent results.
+                # TODO: add index
                 source_name, source_version, source_index = \
-                    entry[0]['package_name'], entry[0]['version'], entry[0]['index']
+                    entry[0]['package'], entry[0]['version'], None
                 destination_name, destination_version, destination_index = \
-                    entry[2]['package_name'], entry[2]['version'], entry[0]['index']
+                    entry[2]['package'], entry[2]['version'], None
 
                 # If this fails on key error, the returned query from graph
                 # does not preserve order of nodes visited (it should).
@@ -159,7 +224,11 @@ class DependencyGraph:
 
                 source.dependencies[destination_name].append(destination)
 
-        return cls(direct_dependencies, meta=project.pipfile.meta)
+        return cls(
+            direct_dependencies,
+            meta=project.pipfile.meta,
+            dependencies_map=dependencies_map
+        )
 
     @staticmethod
     def _is_final_state(state: tuple) -> bool:
@@ -187,7 +256,7 @@ class DependencyGraph:
                 # packages do not depend on it.
                 continue
 
-            if expanded[item.package_version.name].locked_version != item.package_version.locked_version:
+            if expanded[item.package_version.name].package_version.locked_version != item.package_version.locked_version:
                 # The previous resolution included this package in different
                 # version, we cannot include this package to the stack =>
                 # invalid software stack.
@@ -196,17 +265,18 @@ class DependencyGraph:
         # Nothing suspicious so far :)
         return True
 
-    def walk(self,
-             decision_func: typing.Callable = None) -> typing.Generator[Project, None, None]:
+    def walk(self, decision_function: typing.Callable = None) -> typing.Generator[Project, None, None]:
         """Generate software stacks based on traversing the dependency graph.
 
-        @param decision_func: function used to filter out stacks (False - omit stack, True include stack),
+        @param decision_function: function used to filter out stacks (False - omit stack, True include stack),
             used for sampling avoiding generating all the possible software stacks
         @return: a generator, each item yielded value is one option of a resolved software stack
         """
         # The implementation is very lazy (using generators where possible), more lazy then the author himself...
-        decision_func = decision_func or (lambda _: True)    # Always generate all, if not stated otherwise.
+        decision_function = decision_function or (lambda _: True)    # Always generate all, if not stated otherwise.
         stack = deque()
+
+        _LOGGER.info("Estimated number of software stacks: %d (the upper boundary)", self.stacks_estimated)
 
         # Initial configuration picks the latest versions first (they are last on the stack):
         configurations = product(*(range(len(i)) for i in self.direct_dependencies.values()))
@@ -220,17 +290,22 @@ class DependencyGraph:
             state = stack.pop()
 
             if self._is_final_state(state):
-                if decision_func(state[0]):
+                if decision_function(state[0]):
                     package_versions = tuple(g.package_version for g in state[0].values())
+                    _LOGGER.debug("Yielding newly created project from state: %r", state[0])
                     yield Project.from_package_versions(
                         packages=package_versions,
                         packages_locked=package_versions,
                         meta=self.meta
                     )
+                else:
+                    _LOGGER.debug("Decision function excluded stack %r", state[0])
+
                 continue
 
             # Construct a list of dictionaries containing mapping for each dependency (a list of transitive deps):
             #   { package_name: List[GraphItem] }
+            _LOGGER.debug("Expanding transitive dependencies for a stack candidate: %r", state)
             transitive_dependencies = []
             for dependency in state[1]:
                 transitive_dependencies.append(dependency.dependencies)
@@ -246,7 +321,10 @@ class DependencyGraph:
                 new_expanded.update({g.package_version.name: g for g in state[1]})
 
                 if self._is_valid_state(new_expanded, to_expand):
+                    _LOGGER.debug("A valid state to be expanded (%r, %r)", new_expanded, to_expand)
                     stack.append((
                         new_expanded,
                         to_expand
                     ))
+                else:
+                    _LOGGER.debug("Not a valid state (%r, %r)", new_expanded, to_expand)

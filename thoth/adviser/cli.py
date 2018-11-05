@@ -18,8 +18,10 @@
 """Thoth-adviser CLI."""
 
 import os
+import random
 import logging
 import json
+from functools import partial
 
 from amun import inspect as amun_inspect
 import click
@@ -35,6 +37,7 @@ from thoth.adviser import __version__ as analyzer_version
 from thoth.adviser.python import Pipfile, PipfileLock
 from thoth.adviser.python import Project
 from thoth.adviser.python import DependencyGraph
+from thoth.solver.solvers.base import SolverException
 
 init_logging()
 
@@ -55,10 +58,10 @@ def _instantiate_project(requirements: str, requirements_locked: str, files: boo
         with open(requirements, 'r') as requirements_file:
             requirements = requirements_file.read()
 
-        with open(requirements_locked, 'r') as requirements_file:
-            requirements_locked = requirements_file.read()
-
-        del requirements_file
+        if requirements_locked:
+            with open(requirements_locked, 'r') as requirements_file:
+                requirements_locked = requirements_file.read()
+            del requirements_file
     else:
         # We we gather values from env vars, un-escape new lines.
         requirements = requirements.replace('\\n', '\n')
@@ -66,13 +69,38 @@ def _instantiate_project(requirements: str, requirements_locked: str, files: boo
             requirements_locked = requirements_locked.replace('\\n', '\n')
 
     pipfile = Pipfile.from_string(requirements)
-    pipfile_lock = PipfileLock.from_string(requirements_locked, pipfile)
+    pipfile_lock = PipfileLock.from_string(requirements_locked, pipfile) if requirements_locked else None
     project = Project(
         pipfile=pipfile,
         pipfile_lock=pipfile_lock
     )
 
     return project
+
+
+def _dm_amun_inspect_wrapper(output: str, context: dict, generated_project: Project):
+    """A wrapper around Amun inspection call."""
+    context['python'] = generated_project.to_dict()
+    response = amun_inspect(output, context)
+    _LOGGER.info("Submitted Amun inspection: %r", response)
+    return response.inspection_id
+
+
+# Number of stacks written to the output directory.
+_stacks_written = 0
+def _dm_amun_directory_output(output: str, generated_project: Project):
+    """A wrapper for placing generated software stacks onto filesystem."""
+    global _stacks_written
+    _LOGGER.debug("Writing stack %d", _stacks_written)
+
+    path = os.path.join(output, f'{_stacks_written:05d}')
+    os.makedirs(path, exist_ok=True)
+    pipfile_path = os.path.join(path, 'Pipfile')
+    pipfile_lock_path = os.path.join(path, 'Pipfile.lock')
+
+    generated_project.to_files(pipfile_path, pipfile_lock_path)
+    _stacks_written += 1
+    return path
 
 
 @click.group()
@@ -149,7 +177,7 @@ def provenance(click_ctx, requirements, requirements_locked=None, whitelisted_so
         output=output,
         pretty=not no_pretty
     )
-    return result['error'] is False
+    return int(result['error'] is True)
 
 
 @cli.command()
@@ -234,47 +262,126 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
         output=output,
         pretty=not no_pretty
     )
-    return result['error'] is False
+    return int(result['error'] is True)
 
 
 @cli.command('dependency-monkey')
 @click.pass_context
 @click.option('--requirements', '-r', type=str, envvar='THOTH_ADVISER_REQUIREMENTS', required=True,
               help="Requirements to be advised.")
-@click.option('--output', '-o', type=str, envvar='THOTH_ADVISER_OUTPUT',
-              help="Output directory or remote API to print results to, in case of URL a POST request is issued.")
+@click.option('--stack-output', '-o', type=str, envvar='THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT', required=True,
+              help="Output directory or remote API to print results to, in case of URL a POST request "
+                   "is issued to the Amun REST API.")
+@click.option('--report-output', '-R', type=str, envvar='THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT',
+              required=False, default='-',
+              help="Output directory or remote API where reports of dependency monkey run should be posted..")
 @click.option('--files', '-F', is_flag=True,
               help="Requirements passed represent paths to files on local filesystem.")
 @click.option('--seed', type=int, envvar='THOTH_DEPENCENCY_MONKEY_SEED',
               help="A seed to be used for generating software stack samples (defaults to time if omitted).")
-@click.option('--distribution', required=False, envvar='THOTH_DEPENDENCY_MONKEY_DISTRIBUTION',
-              type=click.Choice(['gauss', 'uniform']),
-              help="A distribution function that should be used for generating software stack samples; "
+@click.option('--decision', required=False, envvar='THOTH_DEPENDENCY_MONKEY_DECISION',
+              type=click.Choice(['uniform-distribution']),
+              help="A decision function that should be used for generating software stack samples; "
                    "if omitted, all software stacks will be created.")
 @click.option('--dry-run', is_flag=True, envvar='THOTH_DEPENDENCY_MONKEY_DRY_RUN',
               help="Do not generate software stacks, just report how many software stacks will be "
-                   "generated given the provided configuration (packages, distribution and seed).")
-@click.option('--amun-context', type=str, envvar='THOTH_AMUN_CONTEXT',
-              help="The context for Amun into which computed stacks should be placed, if present, there "
-                   "will be triggered Amun service inspections (output treated as Amun host) instead of "
-                   "raw POST requests.")
-def dependency_monkey(click_ctx, requirements: str, output: str, files: bool, seed: int = None,
-                      distribution: str = None, dry_run: bool = False, amun_context: str = None):
+                   "generated given the provided configuration.")
+@click.option('--context', type=str, envvar='THOTH_AMUN_CONTEXT',
+              help="The context into which computed stacks should be placed; if omitteed, "
+                   "raw software stacks will be created. This option cannot be set when generating "
+                   "software stacks onto filesystem.")
+@click.option('--no-pretty', '-P', is_flag=True,
+              help="Do not print results nicely.")
+def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_output: str, files: bool,
+                      seed: int = None, decision: str = None, dry_run: bool = False,
+                      context: str = None, no_pretty: bool = False):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
-    project = Project.from_files(requirements, without_pipfile_lock=True) if files else None
-    dependency_graph = DependencyGraph.from_project(project)
+    project = _instantiate_project(requirements, requirements_locked=None, files=files)
 
-    if not amun_context:
-        raise NotImplemented("There is always required Amun context to be present")
+    if context:
+        try:
+            context = json.loads(context)
+        except Exception:
+            _LOGGER.exception("Failed to load Amun context that should be passed with generated stacks")
+            raise
+    else:
+        context = {}
+        _LOGGER.warning("Context to Amun API is empty")
 
-    amun_context = json.loads(amun_context)
+    if decision == 'uniform-distribution':
+        # Seed can be None or the one explicitly supplied from CLI.
+        random.seed(seed)
+        decision_function = random.uniform
+    elif decision is None:
+        if seed:
+            raise NotImplementedError("Seed provided but no decision function selected")
+        # Always consider the given software stack (generate all).
+        decision_function = lambda _: True
+    else:
+        raise NotImplementedError("The provided decision function %r is supported", decision)
 
-    for generated_project in dependency_graph.walk():
-        python_project = generated_project.to_dict()
-        amun_context['python'] = python_project
-        # The Amun context holds all the relevant information to run this job.
-        response = amun_inspect(output, **amun_context)
-        _LOGGER.info("Submitted Amun inspection: %r", response['inspection_id'])
+    if stack_output.startswith(('https://', 'http://')):
+        # Submitting to Amun
+        if context:
+            try:
+                context = json.loads(context)
+            except Exception as exc:
+                _LOGGER.error("Failed to load Amun context that should be passed with generated stacks: %s", str(exc))
+                return 1
+        else:
+            context = {}
+        output_function = partial(_dm_amun_inspect_wrapper, stack_output, context)
+    else:
+        if context:
+            _LOGGER.error("Unable to use context when writing generated projects onto filesystem")
+            return 2
+
+        if not os.path.isdir(stack_output):
+            os.makedirs(stack_output, exist_ok=True)
+
+        output_function = partial(_dm_amun_directory_output, stack_output)
+
+    result = {
+        'error': False,
+        'report': [],
+        'parameters': {
+            'requirements': project.pipfile.to_dict(),
+            'seed': seed,
+            'decision': decision,
+            'context': context,
+            'stack_output': stack_output,
+            'report_output': report_output
+        },
+        'input': None,
+        'output': []
+    }
+
+    count = 0
+    try:
+        dependency_graph = DependencyGraph.from_project(project)
+        for generated_project in dependency_graph.walk(decision_function):
+            if dry_run:
+                count += 1
+            else:
+                entry = output_function(generated_project)
+                result['output'].append(entry)
+    except SolverException as exc:
+        _LOGGER.exception("An error occurred during solving")
+        result['error'] = True
+    
+    if dry_run:
+        print(count)
+    else:
+        print_command_result(
+            click_ctx,
+            result,
+            analyzer=analyzer_name,
+            analyzer_version=analyzer_version,
+            output=report_output,
+            pretty=not no_pretty
+        )
+
+    return int(result['error'] is True)
 
 
 if __name__ == '__main__':

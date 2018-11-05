@@ -20,7 +20,7 @@
 import os
 
 import pytest
-import toml
+import contoml as toml
 
 from thoth.adviser.python.pipfile import Pipfile
 from thoth.adviser.python.pipfile import PipfileLock
@@ -39,7 +39,7 @@ class TestPipfile(AdviserTestCase):
 
         instance = Pipfile.from_string(content)
         # Sometimes toml does not preserve inline tables causing to_string() fail. However, we produce valid toml.
-        assert instance.to_dict() == toml.loads(content)
+        assert instance.to_dict() == toml.loads(content).primitive
 
 
 class TestPipfileLock(AdviserTestCase):

@@ -22,7 +22,7 @@ import hashlib
 import logging
 import typing
 
-import toml
+import contoml as toml
 import attr
 
 from thoth.adviser.exceptions import PipfileParseError
@@ -233,7 +233,7 @@ class Pipfile(_PipfileBase):
         except Exception as exc:
             raise PipfileParseError("Failed to parse provided Pipfile") from exc
 
-        return cls.from_dict(parsed)
+        return cls.from_dict(parsed.primitive)
 
     @classmethod
     def from_dict(cls, dict_):
@@ -263,7 +263,7 @@ class Pipfile(_PipfileBase):
     def to_string(self) -> str:
         """Convert representation of Pipfile to actual Pipfile file content."""
         _LOGGER.debug("Converting Pipfile to toml")
-        return toml.dumps(self.to_dict(), preserve=True)
+        return toml.dumps(self.to_dict())
 
     def to_file(self) -> None:
         """Convert the current state of Pipfile to actual Pipfile file stored in CWD."""

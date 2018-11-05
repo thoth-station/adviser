@@ -34,11 +34,16 @@ class _MockedGraphDatabase:
     """A mocked graph database using YAML files as data."""
 
     def __init__(self, database_file: str):
+        self._connect_called = False
         with open(os.path.join(AdviserTestCase.data_dir, 'graph', database_file), 'r') as db_file:
             self.db = yaml.load(db_file)
 
+    def connect(self):
+        self._connect_called = True
+
     def get_all_versions_python_package(self, package_name: str) -> typing.List[str]:
         """Get all versions for the given Python package."""
+        assert self._connect_called is True
         return list(self.db.get(package_name, {}).keys())
 
     def retrieve_transitive_dependencies_python(self, package_name: str, version: str,
@@ -46,6 +51,8 @@ class _MockedGraphDatabase:
         """Retrieve transitive dependencies for the given Python package."""
         # Cache for checking whether we have triplet (package_name, version, index) already seen
         # to avoid recursion.
+        assert self._connect_called is True
+
         seen = {}
         result = []
         queue = deque()
@@ -70,11 +77,11 @@ class _MockedGraphDatabase:
                     )
                     result.append((
                         {
-                            'package_name': package_name, 'version': package_version, 'index': index
+                            'package': package_name, 'version': package_version, 'index': index
                         },
                         {'depends_on': depends_on_entry['version_range']},
                         {
-                            'package_name': depends_on_entry['package_name'],
+                            'package': depends_on_entry['package_name'],
                             'version': version,
                             'index': depends_on_entry['index']
                         }
