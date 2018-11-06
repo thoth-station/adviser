@@ -44,7 +44,7 @@ class Source:
     url = attr.ib(type=str)
     name = attr.ib(type=str)
     verify_ssl = attr.ib(type=bool, default=True)
-    warehouse = attr.ib(type=bool, default=False)
+    warehouse = attr.ib(type=bool)
     warehouse_api_url = attr.ib(default=None, type=str)
 
     @name.default
@@ -52,6 +52,11 @@ class Source:
         """Create a name for source based on url if not explicitly provided."""
         parsed_url = urlparse(self.url)
         return parsed_url.netloc.split('.')[0]
+
+    @warehouse.default
+    def warehouse_default(self):
+        """Check if the given url is registered in default warehouses."""
+        return self.url in config.warehouses
 
     def get_api_url(self):
         """Construct URL to Warehouse instance."""
