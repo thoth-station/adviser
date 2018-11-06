@@ -21,6 +21,7 @@ import os
 import random
 import logging
 import json
+import sys
 from functools import partial
 
 from amun import inspect as amun_inspect
@@ -78,29 +79,31 @@ def _instantiate_project(requirements: str, requirements_locked: str, files: boo
     return project
 
 
-def _dm_amun_inspect_wrapper(output: str, context: dict, generated_project: Project):
+def _dm_amun_inspect_wrapper(output: str, context: dict, generated_project: Project, count: int):
     """A wrapper around Amun inspection call."""
     context['python'] = generated_project.to_dict()
     response = amun_inspect(output, context)
-    _LOGGER.info("Submitted Amun inspection: %r", response)
-    return response.inspection_id
+    _LOGGER.info("Submitted Amun inspection #%d: %r", count, response)
+    return response['inspection_id']
 
 
-# Number of stacks written to the output directory.
-_stacks_written = 0
-def _dm_amun_directory_output(output: str, generated_project: Project):
+def _dm_amun_directory_output(output: str, generated_project: Project, count: int):
     """A wrapper for placing generated software stacks onto filesystem."""
-    global _stacks_written
-    _LOGGER.debug("Writing stack %d", _stacks_written)
+    _LOGGER.debug("Writing stack %d", count)
 
-    path = os.path.join(output, f'{_stacks_written:05d}')
+    path = os.path.join(output, f'{count:05d}')
     os.makedirs(path, exist_ok=True)
     pipfile_path = os.path.join(path, 'Pipfile')
     pipfile_lock_path = os.path.join(path, 'Pipfile.lock')
 
     generated_project.to_files(pipfile_path, pipfile_lock_path)
-    _stacks_written += 1
     return path
+
+
+def _dm_stdout_output(generated_project: Project, count: int):
+    """A function called if the project should be printed to stdout as a dict."""
+    json.dump(generated_project.to_dict(), fp=sys.stdout, sort_keys=True, indent=2)
+    return None
 
 
 @click.group()
@@ -331,7 +334,10 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
         else:
             context = {}
         output_function = partial(_dm_amun_inspect_wrapper, stack_output, context)
+    elif stack_output == '-':
+        output_function = _dm_stdout_output
     else:
+        # TODO: stdout
         if context:
             _LOGGER.error("Unable to use context when writing generated projects onto filesystem")
             return 2
@@ -353,33 +359,34 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
             'report_output': report_output
         },
         'input': None,
-        'output': []
+        'output': [],
+        'count': None
     }
 
     count = 0
     try:
         dependency_graph = DependencyGraph.from_project(project)
         for generated_project in dependency_graph.walk(decision_function):
-            if dry_run:
-                count += 1
-            else:
-                entry = output_function(generated_project)
-                result['output'].append(entry)
+            count += 1
+
+            if not dry_run:
+                entry = output_function(generated_project, count=count)
+                if entry:
+                    result['output'].append(entry)
+
+        result['count'] = count
     except SolverException as exc:
         _LOGGER.exception("An error occurred during solving")
         result['error'] = True
-    
-    if dry_run:
-        print(count)
-    else:
-        print_command_result(
-            click_ctx,
-            result,
-            analyzer=analyzer_name,
-            analyzer_version=analyzer_version,
-            output=report_output,
-            pretty=not no_pretty
-        )
+
+    print_command_result(
+        click_ctx,
+        result,
+        analyzer=analyzer_name,
+        analyzer_version=analyzer_version,
+        output=report_output,
+        pretty=not no_pretty
+    )
 
     return int(result['error'] is True)
 
