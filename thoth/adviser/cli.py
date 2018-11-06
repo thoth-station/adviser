@@ -93,10 +93,9 @@ def _dm_amun_directory_output(output: str, generated_project: Project, count: in
 
     path = os.path.join(output, f'{count:05d}')
     os.makedirs(path, exist_ok=True)
-    pipfile_path = os.path.join(path, 'Pipfile')
-    pipfile_lock_path = os.path.join(path, 'Pipfile.lock')
 
-    generated_project.to_files(pipfile_path, pipfile_lock_path)
+    generated_project.to_files(os.path.join(path, 'Pipfile'), os.path.join(path, 'Pipfile.lock'))
+
     return path
 
 
@@ -104,6 +103,27 @@ def _dm_stdout_output(generated_project: Project, count: int):
     """A function called if the project should be printed to stdout as a dict."""
     json.dump(generated_project.to_dict(), fp=sys.stdout, sort_keys=True, indent=2)
     return None
+
+
+def _fill_package_digests(generated_project: Project) -> Project:
+    """Temporary fill package digests stated in Pipfile.lock."""
+    from itertools import chain
+    from thoth.adviser.configuration import config
+    from thoth.adviser.python import Source
+
+    # Pick the first warehouse for now.
+    package_index = Source(config.warehouses[0])
+    for package_version in chain(generated_project.pipfile_lock.packages,
+                                 generated_project.pipfile_lock.dev_packages):
+        scanned_hashes = package_index.get_package_hashes(
+            package_version.name,
+            package_version.locked_version
+        )
+
+        for entry in scanned_hashes:
+            package_version.hashes.append('sha256:' + entry['sha256'])
+
+    return generated_project
 
 
 @click.group()
@@ -368,6 +388,9 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
         dependency_graph = DependencyGraph.from_project(project)
         for generated_project in dependency_graph.walk(decision_function):
             count += 1
+
+            # TODO: we should pick digests of artifacts once we will have them in the graph database
+            generated_project = _fill_package_digests(generated_project)
 
             if not dry_run:
                 entry = output_function(generated_project, count=count)
