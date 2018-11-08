@@ -44,6 +44,7 @@ from .package_version import PackageVersion
 from .pipfile import PipfileMeta
 from .project import Project
 from .solver import PythonPackageGraphSolver
+from ..exceptions import ConstraintClashError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -182,8 +183,10 @@ class DependencyGraph:
                 if not exclude:
                     transitive_dependencies_to_include.append(entry)
 
-            # TODO: raise an exception if all of the paths requested to have the given dependecy - in that case we
-            # cannot satisfy the application stack
+            # There are transitive dependencies, but we were not able to construct dependency graph
+            # with given constraints (e.g. there is always dependency on protobuf, but we asked to remove protobuf).
+            if transitive_dependencies and not transitive_dependencies_to_include:
+                raise ConstraintClashError("Unable to create a dependency graph for the given set of constraints")
 
             for entry in transitive_dependencies_to_include:
                 # TODO: we have captured only one layer.
