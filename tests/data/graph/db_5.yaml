@@ -1,6 +1,6 @@
 # This is YAML used for mocking graph database queries.
 #
-# The structure of stack having packages a and b - cyclic deps on 
+# The structure of stack having packages a and b - cyclic deps on
 # of dependencies.
 #
 #           a               a               a              b               b               b

@@ -107,7 +107,7 @@ parameters:
     value: ''
   - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
     required: false
-    description: 
+    description:
       Do not generate software stacks, just report how many software stacks
       will be generated.
     value: '0'

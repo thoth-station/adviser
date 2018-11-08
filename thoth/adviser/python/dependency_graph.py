@@ -58,15 +58,15 @@ class GraphItem:
 
     def is_package_version(self, package_name: str, package_version: str, index: str):
         """Check if the given package-version entry has given attributes."""
-        return self.package_version.name == package_name and \
-               self.package_version.version == '==' + package_version and \
-               self.package_version.index == index
-    
+        return self.package_version.name == package_name and 
+            self.package_version.version == '==' + package_version and \
+            self.package_version.index == index
+
     def is_different_version(self, package_name: str, package_version: str, index: str):
         """Check if same package but under a different version."""
         return self.package_version.name == package_name and \
-               self.package_version.version != '==' + package_version and \
-               self.package_version.index == index
+            self.package_version.version != '==' + package_version and \
+            self.package_version.index == index
 
 
 @attr.s(slots=True)
@@ -144,8 +144,8 @@ class DependencyGraph:
             # ]
             _LOGGER.debug(
                 "Retrieving transitive dependencies for %r in version %r from %r",
-                          graph_item.package_version.name, graph_item.package_version.locked_version,
-                          graph_item.package_version.index
+                graph_item.package_version.name, graph_item.package_version.locked_version,
+                graph_item.package_version.index
             )
             transitive_dependencies = graph.retrieve_transitive_dependencies_python(
                 graph_item.package_version.name,
@@ -162,8 +162,8 @@ class DependencyGraph:
                 for idx in range(0, len(entry), 2):
                     item = entry[idx]
                     direct_packages_of_this = [
-                        dep for dep in all_direct_dependencies if dep.package_version.name == item['package'] and  \
-                        dep.package_version.index == None
+                        dep for dep in all_direct_dependencies if dep.package_version.name == item['package'] and \
+                        dep.package_version.index is None
                     ]
 
                     if not direct_packages_of_this:
@@ -172,7 +172,7 @@ class DependencyGraph:
                     if any(dep.is_package_version(item['package'], item['version'], None)
                            for dep in direct_packages_of_this):
                         continue
-                    
+
                     # Otherwise do not include it - cut off the un-reachable dependency graph.
                     _LOGGER.debug(
                         "Excluding a path due to package %s (unreachable based on direct dependencies)", item
@@ -259,7 +259,8 @@ class DependencyGraph:
                 # packages do not depend on it.
                 continue
 
-            if expanded[item.package_version.name].package_version.locked_version != item.package_version.locked_version:
+            if expanded[item.package_version.name].package_version.locked_version  \
+                    != item.package_version.locked_version:
                 # The previous resolution included this package in different
                 # version, we cannot include this package to the stack =>
                 # invalid software stack.
@@ -276,7 +277,11 @@ class DependencyGraph:
         @return: a generator, each item yielded value is one option of a resolved software stack
         """
         # The implementation is very lazy (using generators where possible), more lazy then the author himself...
-        decision_function = decision_function or (lambda _: True)    # Always generate all, if not stated otherwise.
+        def always_true_decision_function(_):
+            # Always generate all, if not stated otherwise.
+            return True
+
+        decision_function = decision_function or always_true_decision_function
         stack = deque()
 
         _LOGGER.info("Estimated number of software stacks: %d (the upper boundary)", self.stacks_estimated)
@@ -293,7 +298,7 @@ class DependencyGraph:
             state = stack.pop()
 
             if self._is_final_state(state):
-                if decision_function(state[0]):
+                if decision_function((graph_item.package_version for graph_item in state[0])):
                     package_versions = tuple(g.package_version for g in state[0].values())
                     _LOGGER.debug("Yielding newly created project from state: %r", state[0])
                     yield Project.from_package_versions(
