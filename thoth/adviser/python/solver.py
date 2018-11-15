@@ -57,8 +57,10 @@ class GraphReleasesFetcher(ReleasesFetcher):
 
     def fetch_releases(self, package_name: str):
         """Fetch releases for the given package name."""
-        return package_name.lower(), self.graph_db.get_all_versions_python_package(package_name)
-
+        # Make sure we have normalized names in the graph database according to PEP:
+        #   https://www.python.org/dev/peps/pep-0503/#normalized-names
+        package_name = re.sub(r"[-_.]+", "-", package_name).lower()
+        return package_name, self.graph_db.get_all_versions_python_package(package_name)
 
 class PackageVersionDependencyParser(DependencyParser):
     """Parse an instance of PackageVersion to Dependency object needed by solver."""
