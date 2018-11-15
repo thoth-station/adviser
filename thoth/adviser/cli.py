@@ -349,11 +349,12 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
                 return 1
         else:
             context = {}
+            _LOGGER.warning("Context to Amun API is empty")
+
         output_function = partial(_dm_amun_inspect_wrapper, stack_output, context)
     elif stack_output == '-':
         output_function = _dm_stdout_output
     else:
-        # TODO: stdout
         if context:
             _LOGGER.error("Unable to use context when writing generated projects onto filesystem")
             return 2
