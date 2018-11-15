@@ -79,12 +79,18 @@ def _instantiate_project(requirements: str, requirements_locked: str, files: boo
     return project
 
 
-def _dm_amun_inspect_wrapper(output: str, context: dict, generated_project: Project, count: int):
+def _dm_amun_inspect_wrapper(output: str, context: dict, generated_project: Project, count: int) -> typing.Optional[str]:
     """A wrapper around Amun inspection call."""
     context['python'] = generated_project.to_dict()
-    response = amun_inspect(output, context)
-    _LOGGER.info("Submitted Amun inspection #%d: %r", count, response)
-    return response['inspection_id']
+    try:
+        response = amun_inspect(output, **context)
+        _LOGGER.info("Submitted Amun inspection #%d: %r", count, response['inspection_id'])
+        _LOGGER.debug("Full Amun response: %s", response)
+        return response['inspection_id']
+    except Exception as exc:
+        _LOGGER.exception("Failed to submit stack to Amun analysis: %s", str(exc))
+
+    return None
 
 
 def _dm_amun_directory_output(output: str, generated_project: Project, count: int):
