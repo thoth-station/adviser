@@ -175,7 +175,7 @@ class DependencyGraph:
                         continue
 
                     # Otherwise do not include it - cut off the un-reachable dependency graph.
-                    _LOGGER.debug(
+                    _LOGGER.info(
                         "Excluding a path due to package %s (unreachable based on direct dependencies)", item
                     )
                     exclude = True
@@ -287,6 +287,7 @@ class DependencyGraph:
         stack = deque()
 
         # Initial configuration picks the latest versions first (they are last on the stack):
+        _LOGGER.info("Creating initial configurations for stack expansion")
         configurations = product(*(range(len(i)) for i in self.direct_dependencies.values()))
         for configuration in configurations:
             filtering_values = (operator.itemgetter(i) for i in configuration)
@@ -294,6 +295,7 @@ class DependencyGraph:
             if self._is_valid_state({}, to_expand):
                 stack.append(({}, to_expand))
 
+        _LOGGER.info("Computing possible stack candidates")
         while stack:
             state = stack.pop()
 
