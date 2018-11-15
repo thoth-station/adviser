@@ -123,6 +123,7 @@ class DependencyGraph:
         graph = GraphDatabase()
         graph.connect()
         solver = PythonPackageGraphSolver(graph_db=graph)
+        _LOGGER.info("Parsing and solving direct dependencies of the requested project")
         direct_dependencies, dependencies_map = cls._prepare_direct_dependencies(
             solver,
             project,
@@ -142,7 +143,7 @@ class DependencyGraph:
             #   ],
             #    ...
             # ]
-            _LOGGER.debug(
+            _LOGGER.info(
                 "Retrieving transitive dependencies for %r in version %r from %r",
                 graph_item.package_version.name, graph_item.package_version.locked_version,
                 graph_item.package_version.index
@@ -227,6 +228,7 @@ class DependencyGraph:
 
                 source.dependencies[destination_name].append(destination)
 
+        _LOGGER.info("Creating dependency graph")
         return cls(
             direct_dependencies,
             meta=project.pipfile.meta,
@@ -284,8 +286,6 @@ class DependencyGraph:
         decision_function = decision_function or always_true_decision_function
         stack = deque()
 
-        _LOGGER.info("Estimated number of software stacks: %d (the upper boundary)", self.stacks_estimated)
-
         # Initial configuration picks the latest versions first (they are last on the stack):
         configurations = product(*(range(len(i)) for i in self.direct_dependencies.values()))
         for configuration in configurations:
@@ -298,7 +298,10 @@ class DependencyGraph:
             state = stack.pop()
 
             if self._is_final_state(state):
+                _LOGGER.info("Found a new stack, asking decision function for inclusion")
                 if decision_function((graph_item.package_version for graph_item in state[0])):
+                    _LOGGER.info("Decision function included the computed stack")
+                    _LOGGER.debug("Included stack %r", state[0])
                     package_versions = tuple(g.package_version for g in state[0].values())
                     _LOGGER.debug("Yielding newly created project from state: %r", state[0])
                     yield Project.from_package_versions(
@@ -307,8 +310,8 @@ class DependencyGraph:
                         meta=self.meta
                     )
                 else:
-                    _LOGGER.debug("Decision function excluded stack %r", state[0])
-
+                    _LOGGER.info("Decision function excluded the computed stack")
+                    _LOGGER.debug("Excluded stack %r", state[0])
                 continue
 
             # Construct a list of dictionaries containing mapping for each dependency (a list of transitive deps):
