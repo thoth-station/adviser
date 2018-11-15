@@ -327,16 +327,6 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
     """Generate software stacks based on all valid resolutions that conform version ranges."""
     project = _instantiate_project(requirements, requirements_locked=None, files=files)
 
-    if context:
-        try:
-            context = json.loads(context)
-        except Exception:
-            _LOGGER.exception("Failed to load Amun context that should be passed with generated stacks")
-            raise
-    else:
-        context = {}
-        _LOGGER.warning("Context to Amun API is empty")
-
     if decision == 'uniform-distribution':
         # Seed can be None or the one explicitly supplied from CLI.
         random.seed(seed)
