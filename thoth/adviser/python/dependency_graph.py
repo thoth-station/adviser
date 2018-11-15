@@ -58,7 +58,7 @@ class GraphItem:
 
     def is_package_version(self, package_name: str, package_version: str, index: str):
         """Check if the given package-version entry has given attributes."""
-        return self.package_version.name == package_name and 
+        return self.package_version.name == package_name and \
             self.package_version.version == '==' + package_version and \
             self.package_version.index == index
 
