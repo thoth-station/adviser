@@ -44,7 +44,7 @@ from .package_version import PackageVersion
 from .pipfile import PipfileMeta
 from .project import Project
 from .solver import PythonPackageGraphSolver
-from ..exceptions import ConstraintClashError
+from .exceptions import ConstraintClashError
 
 _LOGGER = logging.getLogger(__name__)
 
