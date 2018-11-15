@@ -22,6 +22,7 @@ import random
 import logging
 import json
 import sys
+import typing
 from functools import partial
 
 from amun import inspect as amun_inspect
