@@ -411,5 +411,31 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
     return int(result['error'] is True)
 
 
+@cli.command('submit-amun')
+@click.pass_context
+@click.option('--requirements', '-r', type=str, envvar='THOTH_ADVISER_REQUIREMENTS', required=True,
+              help="Requirements to be advised.")
+@click.option('--requirements-locked', '-r', type=str, envvar='THOTH_ADVISER_REQUIREMENTS', required=True,
+              help="Requirements to be advised.")
+@click.option('--stack-output', '-o', type=str, envvar='THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT', required=True,
+              help="Output directory or remote API to print results to, in case of URL a POST request "
+                   "is issued to the Amun REST API.")
+@click.option('--files', '-F', is_flag=True,
+              help="Requirements passed represent paths to files on local filesystem.")
+@click.option('--context', type=str, envvar='THOTH_AMUN_CONTEXT',
+              help="The context into which computed stacks should be placed; if omitteed, "
+                   "raw software stacks will be created. This option cannot be set when generating "
+                   "software stacks onto filesystem.")
+@click.option('--no-pretty', '-P', is_flag=True,
+              help="Do not print results nicely.")
+def submit_amun(click_ctx, requirements: str, requirements_locked: str, stack_output: str, files: bool,
+                seed: int = None, decision: str = None, dry_run: bool = False,
+                context: str = None, no_pretty: bool = False):
+    """Submit the given project to Amun for inspection - mostly for debug purposes."""
+    project = _instantiate_project(requirements, requirements_locked=requirements_locked, files=files)
+    context = json.loads(context) if context else {}
+    inspection_id = _dm_amun_inspect_wrapper(stack_output, context, project, 0)
+
+
 if __name__ == '__main__':
     cli()
