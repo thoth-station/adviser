@@ -24,6 +24,7 @@ no need to perform resolving by actually installing Python packages (as this
 version resolution is dynamic in case of Python).
 """
 
+import re
 import typing
 
 from thoth.solver.solvers.base import Dependency
