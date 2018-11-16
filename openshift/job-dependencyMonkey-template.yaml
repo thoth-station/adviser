@@ -104,7 +104,7 @@ parameters:
     description:
       A decision function that should be used for generating software stack
       samples; if omitted, all software stacks will be created.
-    value: ''
+    value: 'all'
   - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
     required: false
     description:

@@ -15,17 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Recommendation engine for Python packages."""
+"""Decisison functions available for dependency graph."""
+
+import random
 
 
-from .packages import Packages
-from .package_version import PackageVersion
-from .pipfile import Pipfile
-from .pipfile import PipfileLock
-from .project import Project
-from .source import Source
-from .solver import PythonGraphSolver
-from .solver import PythonPackageGraphSolver
-from .solver import GraphReleasesFetcher
-from .decision import DECISISON_FUNCTIONS
-from .dependency_graph import DependencyGraph
+def random_uniform(_):
+    """Retrieve a random stack."""
+    return bool(random.getrandbits(1))
+
+
+def everything(_):
+    """Decide to include everything."""
+    return True
+
+
+DECISISON_FUNCTIONS = {
+    'random': random_uniform,
+    'all': everything
+}

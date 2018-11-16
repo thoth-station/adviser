@@ -34,6 +34,7 @@ from thoth.adviser.enums import PythonRecommendationOutput
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.exceptions import ThothAdviserException
 from thoth.adviser.exceptions import InternalError
+from thoth.adviser.python import DECISISON_FUNCTIONS
 from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser import __version__ as analyzer_version
 from thoth.adviser.python import Pipfile, PipfileLock
@@ -309,8 +310,10 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
               help="Requirements passed represent paths to files on local filesystem.")
 @click.option('--seed', type=int, envvar='THOTH_DEPENCENCY_MONKEY_SEED',
               help="A seed to be used for generating software stack samples (defaults to time if omitted).")
-@click.option('--decision', required=False, envvar='THOTH_DEPENDENCY_MONKEY_DECISION',
-              type=click.Choice(['uniform-distribution']),
+@click.option('--count', type=int, envvar='THOTH_DEPENCENCY_MONKEY_COUNT',
+              help="A seed to be used for generating software stack samples (defaults to time if omitted).")
+@click.option('--decision', required=False, envvar='THOTH_DEPENDENCY_MONKEY_DECISION', default='all',
+              type=click.Choice(list(DECISISON_FUNCTIONS.keys())),
               help="A decision function that should be used for generating software stack samples; "
                    "if omitted, all software stacks will be created.")
 @click.option('--dry-run', is_flag=True, envvar='THOTH_DEPENDENCY_MONKEY_DRY_RUN',
@@ -324,21 +327,16 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
               help="Do not print results nicely.")
 def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_output: str, files: bool,
                       seed: int = None, decision: str = None, dry_run: bool = False,
-                      context: str = None, no_pretty: bool = False):
+                      context: str = None, no_pretty: bool = False, count: int = None):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
     project = _instantiate_project(requirements, requirements_locked=None, files=files)
 
-    if decision == 'uniform-distribution':
-        # Seed can be None or the one explicitly supplied from CLI.
-        random.seed(seed)
-        decision_function = random.uniform
-    elif decision is None:
-        if seed:
-            raise NotImplementedError("Seed provided but no decision function selected")
-        # Always consider the given software stack (generate all).
-        decision_function = lambda _: True
-    else:
-        raise NotImplementedError("The provided decision function %r is supported", decision)
+    decision_function = DECISISON_FUNCTIONS[decision]
+    random.seed(seed)
+
+    if count is not None and (count <= 0):
+        _LOGGER.error("Number of stacks has to be a positive integer")
+        return 3
 
     if stack_output.startswith(('https://', 'http://')):
         # Submitting to Amun
@@ -374,28 +372,35 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
             'decision': decision,
             'context': context,
             'stack_output': stack_output,
-            'report_output': report_output
+            'report_output': report_output,
+            'files': files,
+            'dry_run': dry_run,
+            'no_pretty': no_pretty,
+            'count': count
         },
         'input': None,
         'output': [],
-        'count': None
+        'computed': None
     }
 
-    count = 0
+    computed = 0
     try:
         dependency_graph = DependencyGraph.from_project(project)
         for generated_project in dependency_graph.walk(decision_function):
-            count += 1
+            computed += 1
 
             # TODO: we should pick digests of artifacts once we will have them in the graph database
             generated_project = _fill_package_digests(generated_project)
 
             if not dry_run:
-                entry = output_function(generated_project, count=count)
+                entry = output_function(generated_project, count=computed)
                 if entry:
                     result['output'].append(entry)
 
-        result['count'] = count
+            if count is not None and computed >= count:
+                break
+
+        result['computed'] = computed
     except SolverException as exc:
         _LOGGER.exception("An error occurred during solving")
         result['error'] = True
