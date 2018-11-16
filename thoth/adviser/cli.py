@@ -308,10 +308,10 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
               help="Output directory or remote API where reports of dependency monkey run should be posted..")
 @click.option('--files', '-F', is_flag=True,
               help="Requirements passed represent paths to files on local filesystem.")
-@click.option('--seed', type=int, envvar='THOTH_DEPENCENCY_MONKEY_SEED',
+@click.option('--seed', envvar='THOTH_DEPENDENCY_MONKEY_SEED',
               help="A seed to be used for generating software stack samples (defaults to time if omitted).")
-@click.option('--count', type=int, envvar='THOTH_DEPENDENCY_MONKEY_COUNT',
-              help="A seed to be used for generating software stack samples (defaults to time if omitted).")
+@click.option('--count', envvar='THOTH_DEPENDENCY_MONKEY_COUNT',
+              help="Number of software stacks that ")
 @click.option('--decision', required=False, envvar='THOTH_DEPENDENCY_MONKEY_DECISION', default='all',
               type=click.Choice(list(DECISISON_FUNCTIONS.keys())),
               help="A decision function that should be used for generating software stack samples; "
@@ -330,6 +330,11 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
                       context: str = None, no_pretty: bool = False, count: int = None):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
     project = _instantiate_project(requirements, requirements_locked=None, files=files)
+
+    # We cannot have these as ints in click because they are optional and we cannot pass empty string as an int 
+    # as env variable.
+    if seed: seed = int(seed)
+    if count: count = int(count)
 
     decision_function = DECISISON_FUNCTIONS[decision]
     random.seed(seed)
