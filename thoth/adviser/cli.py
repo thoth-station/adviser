@@ -310,7 +310,7 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
               help="Requirements passed represent paths to files on local filesystem.")
 @click.option('--seed', type=int, envvar='THOTH_DEPENCENCY_MONKEY_SEED',
               help="A seed to be used for generating software stack samples (defaults to time if omitted).")
-@click.option('--count', type=int, envvar='THOTH_DEPENCENCY_MONKEY_COUNT',
+@click.option('--count', type=int, envvar='THOTH_DEPENDENCY_MONKEY_COUNT',
               help="A seed to be used for generating software stack samples (defaults to time if omitted).")
 @click.option('--decision', required=False, envvar='THOTH_DEPENDENCY_MONKEY_DECISION', default='all',
               type=click.Choice(list(DECISISON_FUNCTIONS.keys())),
