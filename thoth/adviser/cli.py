@@ -333,8 +333,8 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
 
     # We cannot have these as ints in click because they are optional and we cannot pass empty string as an int 
     # as env variable.
-    if seed: seed = int(seed)
-    if count: count = int(count)
+    seed = int(seed) if seed else None
+    count = int(count) if count else None
 
     decision_function = DECISISON_FUNCTIONS[decision]
     random.seed(seed)
