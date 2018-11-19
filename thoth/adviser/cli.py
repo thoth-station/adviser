@@ -40,7 +40,7 @@ from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser import __version__ as analyzer_version
 from thoth.adviser.python import Pipfile, PipfileLock
 from thoth.adviser.python import Project
-from thoth.adviser.python import DependencyGraph
+from thoth.adviser.dependency_monkey import dependency_monkey as run_dependency_monkey
 from thoth.solver.solvers.base import SolverException
 
 init_logging()
@@ -80,63 +80,6 @@ def _instantiate_project(requirements: str, requirements_locked: str, files: boo
     )
 
     return project
-
-
-def _dm_amun_inspect_wrapper(output: str, context: dict, generated_project: Project, count: int) -> typing.Optional[str]:
-    """A wrapper around Amun inspection call."""
-    context['python'] = generated_project.to_dict()
-    try:
-        response = amun_inspect(output, **context)
-        _LOGGER.info("Submitted Amun inspection #%d: %r", count, response['inspection_id'])
-        _LOGGER.debug("Full Amun response: %s", response)
-        return response['inspection_id']
-    except Exception as exc:
-        _LOGGER.exception("Failed to submit stack to Amun analysis: %s", str(exc))
-
-    return None
-
-
-def _dm_amun_directory_output(output: str, generated_project: Project, count: int):
-    """A wrapper for placing generated software stacks onto filesystem."""
-    _LOGGER.debug("Writing stack %d", count)
-
-    path = os.path.join(output, f'{count:05d}')
-    os.makedirs(path, exist_ok=True)
-
-    generated_project.to_files(os.path.join(path, 'Pipfile'), os.path.join(path, 'Pipfile.lock'))
-
-    return path
-
-
-def _dm_stdout_output(generated_project: Project, count: int):
-    """A function called if the project should be printed to stdout as a dict."""
-    json.dump(generated_project.to_dict(), fp=sys.stdout, sort_keys=True, indent=2)
-    return None
-
-
-def _fill_package_digests(generated_project: Project) -> Project:
-    """Temporary fill package digests stated in Pipfile.lock."""
-    from itertools import chain
-    from thoth.adviser.configuration import config
-    from thoth.adviser.python import Source
-
-    # Pick the first warehouse for now.
-    package_index = Source(config.warehouses[0])
-    for package_version in chain(generated_project.pipfile_lock.packages,
-                                 generated_project.pipfile_lock.dev_packages):
-        if package_version.hashes:
-            # Already filled from the last run.
-            continue
-
-        scanned_hashes = package_index.get_package_hashes(
-            package_version.name,
-            package_version.locked_version
-        )
-
-        for entry in scanned_hashes:
-            package_version.hashes.append('sha256:' + entry['sha256'])
-
-    return generated_project
 
 
 @click.group()
@@ -341,38 +284,6 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
     seed = int(seed) if seed else None
     count = int(count) if count else None
 
-    decision_function = DECISISON_FUNCTIONS[decision]
-    random.seed(seed)
-
-    if count is not None and (count <= 0):
-        _LOGGER.error("Number of stacks has to be a positive integer")
-        return 3
-
-    if stack_output.startswith(('https://', 'http://')):
-        # Submitting to Amun
-        if context:
-            try:
-                context = json.loads(context)
-            except Exception as exc:
-                _LOGGER.error("Failed to load Amun context that should be passed with generated stacks: %s", str(exc))
-                return 1
-        else:
-            context = {}
-            _LOGGER.warning("Context to Amun API is empty")
-
-        output_function = partial(_dm_amun_inspect_wrapper, stack_output, context)
-    elif stack_output == '-':
-        output_function = _dm_stdout_output
-    else:
-        if context:
-            _LOGGER.error("Unable to use context when writing generated projects onto filesystem")
-            return 2
-
-        if not os.path.isdir(stack_output):
-            os.makedirs(stack_output, exist_ok=True)
-
-        output_function = partial(_dm_amun_directory_output, stack_output)
-
     result = {
         'error': False,
         'report': [],
@@ -380,8 +291,7 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
             'requirements': project.pipfile.to_dict(),
             'seed': seed,
             'decision': decision,
-            # We reuse context later, perform deepcopy to report the one on input.
-            'context': deepcopy(context)
+            'context': deepcopy(context),  # We reuse context later, perform deepcopy to report the one on input.
             'stack_output': stack_output,
             'report_output': report_output,
             'files': files,
@@ -394,26 +304,19 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
         'computed': None
     }
 
-    computed = 0
     try:
-        dependency_graph = DependencyGraph.from_project(project)
-        for generated_project in dependency_graph.walk(decision_function):
-            computed += 1
-
-            # TODO: we should pick digests of artifacts once we will have them in the graph database
-            generated_project = _fill_package_digests(generated_project)
-
-            if not dry_run:
-                entry = output_function(generated_project, count=computed)
-                if entry:
-                    result['output'].append(entry)
-
-            if count is not None and computed >= count:
-                break
-
-        result['computed'] = computed
+        report = run_dependency_monkey(
+            project,
+            stack_output,
+            seed=seed,
+            decision=decision,
+            dry_run=dry_run,
+            context=context,
+            count=count
+        )
+        # Place report into result.
+        result.update(report)
     except SolverException as exc:
-        _LOGGER.exception("An error occurred during solving")
         result['error'] = True
 
     print_command_result(
