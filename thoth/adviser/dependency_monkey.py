@@ -92,10 +92,7 @@ def _do_dependency_monkey(project: Project, *, output_function: typing.Callable,
                           count: int = None, dry_run: bool = False) -> dict:
     """Run dependency monkey."""
     computed = 0
-    result = {
-        'output': [],
-        'computed': 0,
-    }
+    result = {'output': [], 'computed': 0}
     dependency_graph = DependencyGraph.from_project(project)
 
     for generated_project in dependency_graph.walk(decision_function):
@@ -116,7 +113,7 @@ def _do_dependency_monkey(project: Project, *, output_function: typing.Callable,
     return result
 
 
-def dependency_monkey(project: Project, output: str, *, seed: int = None, decision: str = None,
+def dependency_monkey(project: Project, output: str = None, *, seed: int = None, decision: str = None,
                       dry_run: bool = False, context: str = None, count: int = None) -> dict:
     """Run Dependency Monkey on the given stack.
 
@@ -128,6 +125,8 @@ def dependency_monkey(project: Project, output: str, *, seed: int = None, decisi
     @param context: context to be sent to Amun, if output is set to be Amun
     @param count: generate upto N stacks
     """
+    output = output or '-'  # Default to stdout if no output was provided.
+
     if decision not in DECISISON_FUNCTIONS:
         raise ValueError(f"Decision function {decision} is not known, available are: {list(DECISISON_FUNCTIONS.keys())}")
 
