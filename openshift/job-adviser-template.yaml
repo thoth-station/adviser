@@ -49,6 +49,10 @@ objects:
                   value: "${THOTH_LOG_ADVISER}"
                 - name: THOTH_ADVISER_OUTPUT
                   value: "${THOTH_ADVISER_OUTPUT}"
+                - name: THOTH_ADVISER_COUNT
+                  value: "${THOTH_ADVISER_COUNT}"
+                - name: THOTH_ADVISER_LIMIT
+                  value: "${THOTH_ADVISER_LIMIT}"
                 - name: THOTH_ADVISER_REQUIREMENTS
                   value: "${THOTH_ADVISER_REQUIREMENTS}"
                 - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
@@ -105,3 +109,13 @@ parameters:
     description: Log adviser actions
     displayName: Log adviser actions
     value: INFO
+  - name: THOTH_ADVISER_LIMIT
+    required: false
+    description: Limit number of software stacks scored.
+    displayName: Adviser limit.
+    value: INFO
+  - name: THOTH_ADVISER_COUNT
+    required: false
+    description: Number of software stacks returned in the recommendation.
+    displayName: Adviser count.
+    value: ''
