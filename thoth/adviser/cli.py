@@ -123,6 +123,10 @@ def _fill_package_digests(generated_project: Project) -> Project:
     package_index = Source(config.warehouses[0])
     for package_version in chain(generated_project.pipfile_lock.packages,
                                  generated_project.pipfile_lock.dev_packages):
+        if package_version.hashes:
+            # Already filled from the last run.
+            continue
+
         scanned_hashes = package_index.get_package_hashes(
             package_version.name,
             package_version.locked_version
