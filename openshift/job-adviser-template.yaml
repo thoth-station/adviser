@@ -68,7 +68,7 @@ objects:
                 - name: THOTH_JANUSGRAPH_PORT
                   value: '80'
                 - name: THOTH_ADVISER_SUBCOMMAND
-                  value: 'adviser'
+                  value: 'advise'
                 - name: AMUN_API_URL
                   valueFrom:
                     configMapKeyRef:
