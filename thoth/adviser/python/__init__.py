@@ -29,3 +29,5 @@ from .solver import PythonPackageGraphSolver
 from .solver import GraphReleasesFetcher
 from .decision import DECISISON_FUNCTIONS
 from .dependency_graph import DependencyGraph
+from .dependency_monkey import dependency_monkey
+from .advise import Adviser

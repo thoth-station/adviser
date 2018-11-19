@@ -40,7 +40,8 @@ from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser import __version__ as analyzer_version
 from thoth.adviser.python import Pipfile, PipfileLock
 from thoth.adviser.python import Project
-from thoth.adviser.dependency_monkey import dependency_monkey as run_dependency_monkey
+from thoth.adviser.python import Adviser
+from thoth.adviser.python import dependency_monkey as run_dependency_monkey
 from thoth.solver.solvers.base import SolverException
 
 init_logging()
@@ -176,17 +177,25 @@ def provenance(click_ctx, requirements, requirements_locked=None, whitelisted_so
               required=True,
               type=click.Choice(['stable', 'testing', 'latest']),
               help="Type of recommendation generated based on knowledge base.")
+@click.option('--count', envvar='THOTH_ADVISER_COUNT',
+              help="Number of software stacks that should be taken into account in the output.")
+@click.option('--limit', envvar='THOTH_ADVISER_LIMIT',
+              help="Number of software stacks that should be taken into account in the output.")
 @click.option('--runtime-environment', '-e', envvar='THOTH_ADVISER_RUNTIME_ENVIRONMENT', type=str,
               help="Type of recommendation generated based on knowledge base.")
 @click.option('--files', '-F', is_flag=True,
               help="Requirements passed represent paths to files on local filesystem.")
 def advise(click_ctx, requirements, requirements_format=None, requirements_locked=None,
-           recommendation_type=None, runtime_environment=None, output=None, no_pretty=False, files=False):
+           recommendation_type=None, runtime_environment=None, output=None, no_pretty=False, files=False,
+           count=None, limit=None):
     """Advise package and package versions in the given stack or on solely package only."""
     _LOGGER.debug("Passed arguments: %s", locals())
+    limit = int(limit) if limit else None
+    count = int(count) if count else None
 
     recommendation_type = RecommendationType.by_name(recommendation_type)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
+    # TODO: pass limit and count in parameters
     result = {
         'error': None,
         'report': [],
@@ -202,9 +211,15 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
         }
     }
     try:
+        # TODO: add seed and checking of decision?
         project = _instantiate_project(requirements, requirements_locked, files)
         result['input'] = project.to_dict()
-        report = project.advise(runtime_environment, recommendation_type)
+        report = Adviser.compute_on_project(
+            project,
+            recommendation_type=recommendation_type,
+            count=count,
+            limit=limit
+        )
     except ThothAdviserException as exc:
         # TODO: we should extend exceptions so they are capable of storing more info.
         if isinstance(exc, InternalError):
@@ -219,19 +234,8 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
         }]
     else:
         result['error'] = False
-        if report:
-            # If we have something to suggest, add it to output field.
-            # Do not replicate input to output without any reason.
-            if requirements_format == PythonRecommendationOutput.PIPENV:
-                output_requirements = project.pipfile.to_dict()
-                output_requirements_locked = project.pipfile_lock.to_dict()
-            else:
-                output_requirements = project.pipfile.to_requirements_file()
-                output_requirements_locked = project.pipfile_lock.to_requirements_file()
-
-            result['report'] = report
-            result['output']['requirements'] = output_requirements
-            result['output']['requirements_locked'] = output_requirements_locked
+        # Convert report to a dict so its serialized.
+        result['report'] = [(item[0], item[1].to_dict()) for item in report]
 
     print_command_result(
         click_ctx,
@@ -259,7 +263,7 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
 @click.option('--seed', envvar='THOTH_DEPENDENCY_MONKEY_SEED',
               help="A seed to be used for generating software stack samples (defaults to time if omitted).")
 @click.option('--count', envvar='THOTH_DEPENDENCY_MONKEY_COUNT',
-              help="Number of software stacks that ")
+              help="Number of software stacks that should be computed")
 @click.option('--decision', required=False, envvar='THOTH_DEPENDENCY_MONKEY_DECISION', default='all',
               type=click.Choice(list(DECISISON_FUNCTIONS.keys())),
               help="A decision function that should be used for generating software stack samples; "

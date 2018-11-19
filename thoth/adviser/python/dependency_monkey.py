@@ -49,9 +49,10 @@ def _dm_amun_directory_output(output: str, generated_project: Project, count: in
     """A wrapper for placing generated software stacks onto filesystem."""
     _LOGGER.debug("Writing stack %d", count)
 
-    path = os.path.join(output, f'{count:05d}')
+    path = os.path.join(output, f'{count:d}')
     os.makedirs(path, exist_ok=True)
 
+    _LOGGER.info("Writing project into output directory %r", path)
     generated_project.to_files(os.path.join(path, 'Pipfile'), os.path.join(path, 'Pipfile.lock'))
 
     return path
@@ -95,7 +96,7 @@ def _do_dependency_monkey(project: Project, *, output_function: typing.Callable,
     result = {'output': [], 'computed': 0}
     dependency_graph = DependencyGraph.from_project(project)
 
-    for generated_project in dependency_graph.walk(decision_function):
+    for _, generated_project in dependency_graph.walk(decision_function):
         computed += 1
 
         # TODO: we should pick digests of artifacts once we will have them in the graph database
@@ -139,7 +140,9 @@ def dependency_monkey(project: Project, output: str = None, *, seed: int = None,
 
     if output.startswith(('https://', 'http://')):
         # Submitting to Amun
+        _LOGGER.info("Stacks will be submitted to Amun at %r", output)
         if context:
+            _LOGGER.debu("Loading Amun context")
             try:
                 context = json.loads(context)
             except Exception as exc:
@@ -151,8 +154,10 @@ def dependency_monkey(project: Project, output: str = None, *, seed: int = None,
 
         output_function = partial(_dm_amun_inspect_wrapper, output, context)
     elif output == '-':
+        _LOGGER.debug("Stacks will be printed to stdout")
         output_function = _dm_stdout_output
     else:
+        _LOGGER.info("Stacks will be written to %r", output)
         if context:
             _LOGGER.error("Unable to use context when writing generated projects onto filesystem")
             return 2

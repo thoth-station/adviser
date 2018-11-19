@@ -283,7 +283,7 @@ class Project:
     def iter_dependencies(self, with_devel: bool = True):
         """Iterate through direct dependencies of this project (not locked dependencies)."""
         if with_devel:
-            yield from chain(self.pipfile.packages, self.pipfile.packages.dev_packages)
+            yield from chain(self.pipfile.packages, self.pipfile.dev_packages)
         else:
             yield from self.pipfile.packages
 

@@ -76,6 +76,7 @@ class DependencyGraph:
     direct_dependencies = attr.ib(type=dict)
     meta = attr.ib(type=PipfileMeta)
     dependencies_map = attr.ib(type=dict)
+    project = attr.ib(type=Project)
 
     @property
     def stacks_estimated(self) -> int:
@@ -231,6 +232,7 @@ class DependencyGraph:
         _LOGGER.info("Creating dependency graph")
         return cls(
             direct_dependencies,
+            project=project,
             meta=project.pipfile.meta,
             dependencies_map=dependencies_map
         )
@@ -271,7 +273,7 @@ class DependencyGraph:
         # Nothing suspicious so far :)
         return True
 
-    def walk(self, decision_function: typing.Callable = None) -> typing.Generator[Project, None, None]:
+    def walk(self, decision_function: typing.Callable = None) -> typing.Generator[tuple, None, None]:
         """Generate software stacks based on traversing the dependency graph.
 
         @param decision_function: function used to filter out stacks (False - omit stack, True include stack),
@@ -301,13 +303,14 @@ class DependencyGraph:
 
             if self._is_final_state(state):
                 _LOGGER.info("Found a new stack, asking decision function for inclusion")
-                if decision_function((graph_item.package_version for graph_item in state[0])):
-                    _LOGGER.info("Decision function included the computed stack")
+                decision_function_result =  decision_function((graph_item.package_version for graph_item in state[0]))
+                if decision_function_result:
+                    _LOGGER.info("Decision function included the computed stack - result was %r", decision_function_result)
                     _LOGGER.debug("Included stack %r", state[0])
                     package_versions = tuple(g.package_version for g in state[0].values())
                     _LOGGER.debug("Yielding newly created project from state: %r", state[0])
-                    yield Project.from_package_versions(
-                        packages=package_versions,
+                    yield decision_function_result, Project.from_package_versions(
+                        packages=list(self.project.iter_dependencies(with_devel=True)),
                         packages_locked=package_versions,
                         meta=self.meta
                     )
