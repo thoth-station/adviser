@@ -43,7 +43,7 @@ class Adviser:
     _visited = attr.ib(type=int, default=0)
 
     def _decision_function(self, packages) -> tuple:
-        """Decision function used to score stacks, the result of this function is score assigned to the given stack."""
+        """Decision function used to score stacks, the result of this function is score assigned to the given stack with reasoning."""
         # TODO: implement decision function.
         return random.random(), {'foo': 'bar'}
 
