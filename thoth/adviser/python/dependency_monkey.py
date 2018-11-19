@@ -27,6 +27,7 @@ import logging
 from thoth.adviser.python import Project
 from thoth.adviser.python import DECISISON_FUNCTIONS
 from thoth.adviser.python import DependencyGraph
+from thoth.adviser.python.helpers import fill_package_digests
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,31 +65,6 @@ def _dm_stdout_output(generated_project: Project, count: int):
     return None
 
 
-def _fill_package_digests(generated_project: Project) -> Project:
-    """Temporary fill package digests stated in Pipfile.lock."""
-    from itertools import chain
-    from thoth.adviser.configuration import config
-    from thoth.adviser.python import Source
-
-    # Pick the first warehouse for now.
-    package_index = Source(config.warehouses[0])
-    for package_version in chain(generated_project.pipfile_lock.packages,
-                                 generated_project.pipfile_lock.dev_packages):
-        if package_version.hashes:
-            # Already filled from the last run.
-            continue
-
-        scanned_hashes = package_index.get_package_hashes(
-            package_version.name,
-            package_version.locked_version
-        )
-
-        for entry in scanned_hashes:
-            package_version.hashes.append('sha256:' + entry['sha256'])
-
-    return generated_project
-
-
 def _do_dependency_monkey(project: Project, *, output_function: typing.Callable, decision_function: typing.Callable,
                           count: int = None, dry_run: bool = False) -> dict:
     """Run dependency monkey."""
@@ -100,7 +76,7 @@ def _do_dependency_monkey(project: Project, *, output_function: typing.Callable,
         computed += 1
 
         # TODO: we should pick digests of artifacts once we will have them in the graph database
-        generated_project = _fill_package_digests(generated_project)
+        generated_project = fill_package_digests(generated_project)
 
         if not dry_run:
             entry = output_function(generated_project, count=computed)

@@ -21,6 +21,7 @@
 import logging
 import heapq
 import operator
+import typing
 
 import attr
 import random
@@ -29,12 +30,14 @@ from thoth.adviser.python import Project
 from thoth.adviser.python import DECISISON_FUNCTIONS
 from thoth.adviser.python import DependencyGraph
 from thoth.adviser.enums import RecommendationType
+from thoth.adviser.python.helpers import fill_package_digests
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
 class Adviser:
+    """Implementation of adviser - the core of recommendation engine in Thoth."""
 
     recommendation_type = attr.ib(type=RecommendationType, default=RecommendationType.LATEST)
     count = attr.ib(type=int, default=None)
@@ -45,9 +48,12 @@ class Adviser:
     def _decision_function(self, packages) -> tuple:
         """Decision function used to score stacks, the result of this function is score assigned to the given stack with reasoning."""
         # TODO: implement decision function.
-        return random.random(), {'foo': 'bar'}
+        return random.random(), [{
+            'type': 'ERROR',
+            'justification': f'Unable to create advise - not sufficient information'
+        }]
 
-    def compute(self, project: Project) -> list:
+    def compute(self, project: Project) -> typing.List[Project]:
         """Compute recommendations for the given project."""
         dependency_graph = DependencyGraph.from_project(project)
 
@@ -65,15 +71,20 @@ class Adviser:
                     break
 
             # Sort computed stacks based on score and return them.
-            return [item[1] for item in sorted(self._computed_stacks_heap, key=operator.itemgetter(0))]
+            return [
+                # TODO: we should pick digests of artifacts once we will have them in the graph database
+                (item[1][0], fill_package_digests(item[1][1]))
+                for item in sorted(self._computed_stacks_heap, key=operator.itemgetter(0))
+            ]
         finally:
             self._computed_stacks_heap = []
             self._visited = 0
 
     @classmethod
     def compute_on_project(cls, project: Project, *,
+                           
                            recommendation_type: RecommendationType = RecommendationType.LATEST,
                            count: int = None,
                            limit: int = None) -> list:
-        """Compute recommendations for the given project, a syntax sugar to the compute method."""
+        """Compute recommendations for the given project, a syntax sugar for the compute method."""
         return cls(recommendation_type=recommendation_type, count=count, limit=limit).compute(project)
