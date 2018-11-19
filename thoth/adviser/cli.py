@@ -23,6 +23,7 @@ import logging
 import json
 import sys
 import typing
+from copy import deepcopy
 from functools import partial
 
 from amun import inspect as amun_inspect
@@ -379,7 +380,8 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
             'requirements': project.pipfile.to_dict(),
             'seed': seed,
             'decision': decision,
-            'context': context,
+            # We reuse context later, perform deepcopy to report the one on input.
+            'context': deepcopy(context)
             'stack_output': stack_output,
             'report_output': report_output,
             'files': files,
