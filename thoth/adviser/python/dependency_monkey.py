@@ -23,6 +23,7 @@ import os
 from functools import partial
 import typing
 import logging
+import json
 
 from thoth.adviser.python import Project
 from thoth.adviser.python import DECISISON_FUNCTIONS
@@ -118,7 +119,7 @@ def dependency_monkey(project: Project, output: str = None, *, seed: int = None,
         # Submitting to Amun
         _LOGGER.info("Stacks will be submitted to Amun at %r", output)
         if context:
-            _LOGGER.debu("Loading Amun context")
+            _LOGGER.debug("Loading Amun context")
             try:
                 context = json.loads(context)
             except Exception as exc:
