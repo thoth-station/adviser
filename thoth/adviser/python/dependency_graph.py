@@ -152,7 +152,7 @@ class DependencyGraph:
             transitive_dependencies = graph.retrieve_transitive_dependencies_python(
                 graph_item.package_version.name,
                 graph_item.package_version.locked_version,
-                graph_item.package_version.index
+                None
             )
 
             # Fast path - filter out paths that have a version of a direct
