@@ -27,18 +27,29 @@ def fill_package_digests(generated_project: Project) -> Project:
     from thoth.adviser.configuration import config
     from thoth.adviser.python import Source
 
-    # Pick the first warehouse for now.
-    package_index = Source(config.warehouses[0])
     for package_version in chain(generated_project.pipfile_lock.packages,
                                  generated_project.pipfile_lock.dev_packages):
         if package_version.hashes:
             # Already filled from the last run.
             continue
 
-        scanned_hashes = package_index.get_package_hashes(
-            package_version.name,
-            package_version.locked_version
-        )
+        if package_version.index:
+            scanned_hashes = package_version.index.get_package_hashes(
+                package_version.name,
+                package_version.locked_version
+            )
+        else:
+            for source in generated_project.pipfile.meta.sources.values():
+                try:
+                    scanned_hashes = source.get_package_hashes(
+                        package_version.name,
+                        package_version.locked_version
+                    )
+                    break
+                except Exception:
+                    continue
+            else:
+                raise ValueError("Unable to find package hashes")
 
         for entry in scanned_hashes:
             package_version.hashes.append('sha256:' + entry['sha256'])
