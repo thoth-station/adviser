@@ -25,6 +25,8 @@ import typing
 import logging
 import json
 
+from amun import inspect as amun_inspect
+
 from thoth.adviser.python import Project
 from thoth.adviser.python import DECISISON_FUNCTIONS
 from thoth.adviser.python import DependencyGraph
@@ -33,7 +35,7 @@ from thoth.adviser.python.helpers import fill_package_digests
 _LOGGER = logging.getLogger(__name__)
 
 
-def _dm_amun_inspect_wrapper(output: str, context: dict, generated_project: Project, count: int) -> typing.Optional[str]:
+def dm_amun_inspect_wrapper(output: str, context: dict, generated_project: Project, count: int) -> typing.Optional[str]:
     """A wrapper around Amun inspection call."""
     context['python'] = generated_project.to_dict()
     try:

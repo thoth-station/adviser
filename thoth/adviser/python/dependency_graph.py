@@ -264,7 +264,8 @@ class DependencyGraph:
                 continue
 
             if expanded[item.package_version.name].package_version.locked_version  \
-                    != item.package_version.locked_version:
+                    != item.package_version.locked_version or \
+                    extended[item.package_version.name].index != item.package_version.index:
                 # The previous resolution included this package in different
                 # version, we cannot include this package to the stack =>
                 # invalid software stack.

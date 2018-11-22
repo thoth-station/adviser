@@ -71,11 +71,12 @@ class Adviser:
                     break
 
             # Sort computed stacks based on score and return them.
-            return [
+            result = [
                 # TODO: we should pick digests of artifacts once we will have them in the graph database
                 (item[1][0], fill_package_digests(item[1][1]))
                 for item in sorted(self._computed_stacks_heap, key=operator.itemgetter(0))
             ]
+            return result
         finally:
             self._computed_stacks_heap = []
             self._visited = 0

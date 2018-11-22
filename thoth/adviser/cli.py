@@ -26,7 +26,6 @@ import typing
 from copy import deepcopy
 from functools import partial
 
-from amun import inspect as amun_inspect
 import click
 from thoth.analyzer import print_command_result
 from thoth.common import init_logging
@@ -42,6 +41,7 @@ from thoth.adviser.python import Pipfile, PipfileLock
 from thoth.adviser.python import Project
 from thoth.adviser.python import Adviser
 from thoth.adviser.python import dependency_monkey as run_dependency_monkey
+from thoth.adviser.python.dependency_monkey import dm_amun_inspect_wrapper
 from thoth.solver.solvers.base import SolverException
 
 init_logging()
@@ -358,7 +358,7 @@ def submit_amun(click_ctx, requirements: str, requirements_locked: str, stack_ou
     """Submit the given project to Amun for inspection - mostly for debug purposes."""
     project = _instantiate_project(requirements, requirements_locked=requirements_locked, files=files)
     context = json.loads(context) if context else {}
-    inspection_id = _dm_amun_inspect_wrapper(stack_output, context, project, 0)
+    inspection_id = dm_amun_inspect_wrapper(stack_output, context, project, 0)
 
 
 if __name__ == '__main__':
