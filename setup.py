@@ -22,6 +22,10 @@ def get_version():
     raise ValueError("No version identifier found")
 
 
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
+
 class Test(TestCommand):
     user_options = [
         ('pytest-args=', 'a', "Arguments to pass into py.test")
@@ -45,7 +49,7 @@ setup(
     name='thoth-adviser',
     version=get_version(),
     description='Package and package stack adviser for the Thoth project',
-    long_description='Package and package stack adviser for the Thoth project',
+    long_description=read('README.rst'),
     author='Fridolin Pokorny',
     author_email='fridolin@redhat.com',
     license='GPLv3+',
