@@ -63,6 +63,7 @@ class GraphReleasesFetcher(ReleasesFetcher):
         package_name = re.sub(r"[-_.]+", "-", package_name).lower()
         return package_name, self.graph_db.get_all_versions_python_package(package_name)
 
+
 class PackageVersionDependencyParser(DependencyParser):
     """Parse an instance of PackageVersion to Dependency object needed by solver."""
 

@@ -101,14 +101,16 @@ def dependency_monkey(project: Project, output: str = None, *, seed: int = None,
     @param output: output (Amun API, directory or '-' for stdout) where stacks should be written to
     @param seed: a seed to be used in case of random stack generation
     @param decision: decision function to be used
-    @param dry_run: do not perform actual writing to output, just run the dependency monkey and report back computed stacks
+    @param dry_run: do not perform actual writing to output, just run the dependency monkey report back computed stacks
     @param context: context to be sent to Amun, if output is set to be Amun
     @param count: generate upto N stacks
     """
     output = output or '-'  # Default to stdout if no output was provided.
 
     if decision not in DECISISON_FUNCTIONS:
-        raise ValueError(f"Decision function {decision} is not known, available are: {list(DECISISON_FUNCTIONS.keys())}")
+        raise ValueError(
+            f"Decision function {decision} is not known, available are: {list(DECISISON_FUNCTIONS.keys())}"
+        )
 
     decision_function = DECISISON_FUNCTIONS[decision]
     random.seed(seed)

@@ -57,7 +57,7 @@ class Adviser:
         """Compute recommendations for the given project."""
         dependency_graph = DependencyGraph.from_project(project)
 
-        try: 
+        try:
             for decision_function_result, generated_project in dependency_graph.walk(self._decision_function):
                 score, reasoning = decision_function_result
                 self._visited += 1
@@ -83,7 +83,6 @@ class Adviser:
 
     @classmethod
     def compute_on_project(cls, project: Project, *,
-                           
                            recommendation_type: RecommendationType = RecommendationType.LATEST,
                            count: int = None,
                            limit: int = None) -> list:

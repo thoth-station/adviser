@@ -164,8 +164,8 @@ class DependencyGraph:
                 for idx in range(0, len(entry), 2):
                     item = entry[idx]
                     direct_packages_of_this = [
-                        dep for dep in all_direct_dependencies if dep.package_version.name == item['package'] and \
-                        dep.package_version.index is None
+                        dep for dep in all_direct_dependencies if dep.package_version.name == item['package'] \
+                            and dep.package_version.index is None
                     ]
 
                     if not direct_packages_of_this:
@@ -304,9 +304,11 @@ class DependencyGraph:
 
             if self._is_final_state(state):
                 _LOGGER.info("Found a new stack, asking decision function for inclusion")
-                decision_function_result =  decision_function((graph_item.package_version for graph_item in state[0]))
+                decision_function_result = decision_function((graph_item.package_version for graph_item in state[0]))
                 if decision_function_result:
-                    _LOGGER.info("Decision function included the computed stack - result was %r", decision_function_result)
+                    _LOGGER.info(
+                        "Decision function included the computed stack - result was %r", decision_function_result
+                    )
                     _LOGGER.debug("Included stack %r", state[0])
                     package_versions = tuple(g.package_version for g in state[0].values())
                     _LOGGER.debug("Yielding newly created project from state: %r", state[0])
