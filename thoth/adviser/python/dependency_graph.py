@@ -164,8 +164,8 @@ class DependencyGraph:
                 for idx in range(0, len(entry), 2):
                     item = entry[idx]
                     direct_packages_of_this = [
-                        dep for dep in all_direct_dependencies if dep.package_version.name == item['package'] \
-                            and dep.package_version.index is None
+                        dep for dep in all_direct_dependencies if dep.package_version.name == item['package']
+                        and dep.package_version.index is None
                     ]
 
                     if not direct_packages_of_this:
