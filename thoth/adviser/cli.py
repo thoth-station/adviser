@@ -228,10 +228,22 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
 
         _LOGGER.exception("Error during computing recommendation: %s", str(exc))
         result['error'] = True
-        result['report'] = [{
-            'justification': f'{str(exc)} ({type(exc).__name__})',
-            'type': 'ERROR',
-        }]
+        result['report'] = [(
+            -1.0,
+            [{
+                'justification': f'{str(exc)} ({type(exc).__name__})',
+                'type': 'ERROR',
+            }]
+        )]
+    except SolverException as exc:
+        result['error'] = True
+        result['report'] = [(
+            -1.0,
+            [{
+                'justification': str(exc),
+                'type': 'ERROR'
+            }]
+        )]
     else:
         result['error'] = False
         # Convert report to a dict so its serialized.
