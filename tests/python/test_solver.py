@@ -21,8 +21,7 @@ import pytest
 
 from thoth.adviser.python import PythonGraphSolver
 from thoth.adviser.python import PythonPackageGraphSolver
-from thoth.adviser.python import PackageVersion
-
+from thoth.python import PackageVersion
 from thoth.solver.solvers.base import SolverException
 
 from base import AdviserTestCase

@@ -19,13 +19,13 @@
 """Helper functions and utilities."""
 
 from thoth.python import Project
+from thoth.python import Source
 
 
 def fill_package_digests(generated_project: Project) -> Project:
     """Temporary fill package digests stated in Pipfile.lock."""
     from itertools import chain
     from thoth.adviser.configuration import config
-    from thoth.adviser.python import Source
 
     for package_version in chain(generated_project.pipfile_lock.packages,
                                  generated_project.pipfile_lock.dev_packages):

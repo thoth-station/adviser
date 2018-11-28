@@ -20,9 +20,9 @@ from base import AdviserTestCase
 
 import pytest
 
-from thoth.adviser.python import Project
-from thoth.adviser.python import Pipfile
-from thoth.adviser.python import PipfileLock
+from thoth.python import Project
+from thoth.python import Pipfile
+from thoth.python import PipfileLock
 from thoth.adviser.exceptions import InternalError
 
 

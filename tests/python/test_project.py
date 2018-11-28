@@ -22,10 +22,10 @@ import attr
 import pytest
 import semantic_version as semver
 
-from thoth.adviser.python import Project
-from thoth.adviser.python import Source
-from thoth.adviser.python import Pipfile
-from thoth.adviser.python import PipfileLock
+from thoth.python import Project
+from thoth.python import Source
+from thoth.python import Pipfile
+from thoth.python import PipfileLock
 from thoth.adviser.exceptions import InternalError
 
 

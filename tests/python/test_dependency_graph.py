@@ -23,8 +23,8 @@ import pytest
 
 from base import AdviserTestCase
 from graph_mock import with_graph_db_mock
-from thoth.adviser.python import Project
 from thoth.adviser.python import DependencyGraph
+from thoth.python import Project
 
 
 class TestDependencyGraph(AdviserTestCase):
