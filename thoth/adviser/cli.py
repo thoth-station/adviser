@@ -40,7 +40,7 @@ from thoth.adviser import __version__ as analyzer_version
 from thoth.adviser.python import Adviser
 from thoth.adviser.python import dependency_monkey as run_dependency_monkey
 from thoth.adviser.python.dependency_monkey import dm_amun_inspect_wrapper
-from thoth.solver.solvers.base import SolverException
+from thoth.solver.python.base import SolverException
 from thoth.python import Pipfile
 from thoth.python import PipfileLock
 from thoth.python import Project
@@ -230,20 +230,20 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
         _LOGGER.exception("Error during computing recommendation: %s", str(exc))
         result['error'] = True
         result['report'] = [(
-            -1.0,
             [{
-                'justification': f'{str(exc)} ({type(exc).__name__})',
+                'justification': f'{str(exc)}',
                 'type': 'ERROR',
-            }]
+            }],
+            None
         )]
     except SolverException as exc:
         result['error'] = True
         result['report'] = [(
-            -1.0,
             [{
                 'justification': str(exc),
                 'type': 'ERROR'
-            }]
+            }],
+            None
         )]
     else:
         result['error'] = False

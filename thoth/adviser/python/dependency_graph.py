@@ -41,6 +41,7 @@ import operator
 import attr
 from thoth.python import PackageVersion
 from thoth.python import PipfileMeta
+from thoth.python import Source
 from thoth.python import Project
 
 from .solver import PythonPackageGraphSolver
@@ -56,11 +57,10 @@ class GraphItem:
     package_version = attr.ib(type=PackageVersion)
     dependencies = attr.ib(default=attr.Factory(dict))
 
-    def is_package_version(self, package_name: str, package_version: str, index: str):
+    def is_package_version_no_index(self, package_name: str, package_version: str):
         """Check if the given package-version entry has given attributes."""
         return self.package_version.name == package_name and \
-            self.package_version.version == '==' + package_version and \
-            self.package_version.index == index
+            self.package_version.version == '==' + package_version
 
     def is_different_version(self, package_name: str, package_version: str, index: str):
         """Check if same package but under a different version."""
@@ -141,7 +141,7 @@ class DependencyGraph:
             _LOGGER.info(
                 "Retrieving transitive dependencies for %r in version %r from %r",
                 graph_item.package_version.name, graph_item.package_version.locked_version,
-                graph_item.package_version.index
+                graph_item.package_version.index.url
             )
             transitive_dependencies = graph.retrieve_transitive_dependencies_python(
                 graph_item.package_version.name,
@@ -159,14 +159,13 @@ class DependencyGraph:
                     item = entry[idx]
                     direct_packages_of_this = [
                         dep for dep in all_direct_dependencies if dep.package_version.name == item['package']
-                        and dep.package_version.index is item['index']
                     ]
 
                     if not direct_packages_of_this:
                         continue
 
-                    if any(dep.is_package_version(item['package'], item['version'], item['index'])
-                           for dep in direct_packages_of_this):
+                    is_direct = (dep.is_package_version_no_index(item['package'], item['version']) for dep in direct_packages_of_this)
+                    if any(is_direct):
                         continue
 
                     # Otherwise do not include it - cut off the un-reachable dependency graph.
@@ -188,11 +187,10 @@ class DependencyGraph:
                 # TODO: we have captured only one layer.
                 #
                 # Name graph-query dependent results.
-                # TODO: add index
                 source_name, source_version, source_index = \
-                    entry[0]['package'], entry[0]['version'], None
+                    entry[0]['package'], entry[0]['version'], entry[0]['index_url']
                 destination_name, destination_version, destination_index = \
-                    entry[2]['package'], entry[2]['version'], None
+                    entry[2]['package'], entry[2]['version'], entry[2]['index_url']
 
                 # If this fails on key error, the returned query from graph
                 # does not preserve order of nodes visited (it should).
@@ -206,7 +204,7 @@ class DependencyGraph:
                     new_package_version = PackageVersion(
                         name=destination_name,
                         version='==' + destination_version,
-                        index=destination_index,
+                        index=Source(destination_index),
                         hashes=[],
                         develop=source.package_version.develop
                     )

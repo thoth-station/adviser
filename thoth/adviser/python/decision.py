@@ -22,12 +22,12 @@ import random
 
 def random_uniform(_):
     """Retrieve a random stack."""
-    return bool(random.getrandbits(1))
+    return bool(random.getrandbits(1)), []
 
 
 def everything(_):
     """Decide to include everything."""
-    return True
+    return True, []
 
 
 DECISISON_FUNCTIONS = {

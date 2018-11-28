@@ -27,13 +27,14 @@ version resolution is dynamic in case of Python).
 import re
 import typing
 
-from thoth.solver.solvers.base import Dependency
-from thoth.solver.solvers.base import DependencyParser
-from thoth.solver.solvers.base import ReleasesFetcher
-from thoth.solver.solvers.base import Solver
-from thoth.solver.python import PypiDependencyParser
-from thoth.solver.solvers.base import SolverException
+from thoth.solver.python.base import Dependency
+from thoth.solver.python.base import DependencyParser
+from thoth.solver.python.base import ReleasesFetcher
+from thoth.solver.python.base import Solver
+from thoth.solver.python import PythonDependencyParser
+from thoth.solver.python.base import SolverException
 from thoth.python import PackageVersion
+from thoth.python import Source
 
 
 class GraphReleasesFetcher(ReleasesFetcher):
@@ -70,7 +71,7 @@ class PackageVersionDependencyParser(DependencyParser):
         """Parse the given list of PackageVersion objects."""
         for package_version in dependencies:
             version = package_version.version if package_version.version != '*' else ''
-            dependency = PypiDependencyParser.parse_python(package_version.name + version)
+            dependency = PythonDependencyParser.parse_python(package_version.name + version)
             yield dependency
 
 
@@ -123,9 +124,10 @@ class PythonPackageGraphSolver:
             if all_versions:
                 result[attributes['name']] = []
 
-            for version in list(resolved.values())[0] if all_versions else resolved.values():
+            for version, index_url in list(resolved.values())[0] if all_versions else resolved.values():
                 # We only change version attribute that will be the resolved one.
                 attributes['version'] = '==' + version
+                attributes['index'] = Source(index_url)
                 if all_versions:
                     result[attributes['name']].append(PackageVersion(**attributes))
                 else:
@@ -143,8 +145,9 @@ class PythonPackageGraphSolver:
                 original_package = dependencies_map.pop(package_name)
                 attributes = original_package.to_dict()
                 result_versions = []
-                for version in versions if all_versions else [versions]:
+                for version, index_url in versions if all_versions else [versions]:
                     attributes['version'] = '==' + version
+                    attributes['index'] = Source(index_url)
                     result_versions.append(PackageVersion(**attributes))
                 result[attributes['name']] = result_versions
 

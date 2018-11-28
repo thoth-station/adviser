@@ -26,7 +26,7 @@ import typing
 import attr
 import random
 
-from thoth.solver.solvers.base import SolverException
+from thoth.solver.python.base import SolverException
 from thoth.python import Project
 from thoth.adviser.python import DECISISON_FUNCTIONS
 from thoth.adviser.python import DEFAULT_DECISION_FUNCTION
