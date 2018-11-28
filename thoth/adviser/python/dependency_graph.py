@@ -39,10 +39,10 @@ from itertools import product
 import operator
 
 import attr
+from thoth.python import PackageVersion
+from thoth.python import PipfileMeta
+from thoth.python import Project
 
-from .package_version import PackageVersion
-from .pipfile import PipfileMeta
-from .project import Project
 from .solver import PythonPackageGraphSolver
 from .exceptions import ConstraintClashError
 
@@ -77,12 +77,6 @@ class DependencyGraph:
     meta = attr.ib(type=PipfileMeta)
     dependencies_map = attr.ib(type=dict)
     project = attr.ib(type=Project)
-
-    @property
-    def stacks_estimated(self) -> int:
-        """Estimate number of sofware stacks we could end up with (the upper boundary)."""
-        # We could estimate based on traversing the tree, it would give us better, but still rough estimate.
-        return reduce(lambda a, b: a * b, (len(v) for v in self.dependencies_map.values()))
 
     @staticmethod
     def _prepare_direct_dependencies(solver: PythonPackageGraphSolver, project: Project,
@@ -165,13 +159,13 @@ class DependencyGraph:
                     item = entry[idx]
                     direct_packages_of_this = [
                         dep for dep in all_direct_dependencies if dep.package_version.name == item['package']
-                        and dep.package_version.index is None
+                        and dep.package_version.index is item['index']
                     ]
 
                     if not direct_packages_of_this:
                         continue
 
-                    if any(dep.is_package_version(item['package'], item['version'], None)
+                    if any(dep.is_package_version(item['package'], item['version'], item['index'])
                            for dep in direct_packages_of_this):
                         continue
 

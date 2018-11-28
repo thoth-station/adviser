@@ -34,3 +34,5 @@ DECISISON_FUNCTIONS = {
     'random': random_uniform,
     'all': everything
 }
+
+DEFAULT_DECISION_FUNCTION = everything

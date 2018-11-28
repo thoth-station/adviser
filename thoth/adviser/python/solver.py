@@ -33,8 +33,7 @@ from thoth.solver.solvers.base import ReleasesFetcher
 from thoth.solver.solvers.base import Solver
 from thoth.solver.python import PypiDependencyParser
 from thoth.solver.solvers.base import SolverException
-
-from .package_version import PackageVersion
+from thoth.python import PackageVersion
 
 
 class GraphReleasesFetcher(ReleasesFetcher):

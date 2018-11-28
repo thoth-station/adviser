@@ -26,8 +26,10 @@ import typing
 import attr
 import random
 
-from thoth.adviser.python import Project
+from thoth.solver.solvers.base import SolverException
+from thoth.python import Project
 from thoth.adviser.python import DECISISON_FUNCTIONS
+from thoth.adviser.python import DEFAULT_DECISION_FUNCTION
 from thoth.adviser.python import DependencyGraph
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.python.helpers import fill_package_digests
@@ -45,23 +47,13 @@ class Adviser:
     _computed_stacks_heap = attr.ib(type=list, default=attr.Factory(list))
     _visited = attr.ib(type=int, default=0)
 
-    def _decision_function(self, packages) -> tuple:
-        """Decision function used to score stacks.
-
-        The result of this function is score assigned to the given stack with reasoning.
-        """
-        # TODO: implement decision function.
-        return random.random(), [{
-            'type': 'ERROR',
-            'justification': f'Unable to create advise - not sufficient information'
-        }]
-
-    def compute(self, project: Project) -> typing.List[Project]:
+    def compute(self, project: Project, decision_function: typing.Callable = None) -> typing.List[Project]:
         """Compute recommendations for the given project."""
+        decision_function = decision_function or DEFAULT_DECISION_FUNCTION
         dependency_graph = DependencyGraph.from_project(project)
 
         try:
-            for decision_function_result, generated_project in dependency_graph.walk(self._decision_function):
+            for decision_function_result, generated_project in dependency_graph.walk(decision_function):
                 score, reasoning = decision_function_result
                 self._visited += 1
 
@@ -86,8 +78,10 @@ class Adviser:
 
     @classmethod
     def compute_on_project(cls, project: Project, *,
+                           decision_function: typing.Callable = None,
                            recommendation_type: RecommendationType = RecommendationType.LATEST,
                            count: int = None,
                            limit: int = None) -> list:
         """Compute recommendations for the given project, a syntax sugar for the compute method."""
-        return cls(recommendation_type=recommendation_type, count=count, limit=limit).compute(project)
+        instance = cls(recommendation_type=recommendation_type, count=count, limit=limit)
+        return instance.compute(project, decision_function)

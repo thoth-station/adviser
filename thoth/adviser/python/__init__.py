@@ -18,16 +18,11 @@
 """Recommendation engine for Python packages."""
 
 
-from .packages import Packages
-from .package_version import PackageVersion
-from .pipfile import Pipfile
-from .pipfile import PipfileLock
-from .project import Project
-from .source import Source
 from .solver import PythonGraphSolver
 from .solver import PythonPackageGraphSolver
 from .solver import GraphReleasesFetcher
 from .decision import DECISISON_FUNCTIONS
+from .decision import DEFAULT_DECISION_FUNCTION
 from .dependency_graph import DependencyGraph
 from .dependency_monkey import dependency_monkey
 from .advise import Adviser

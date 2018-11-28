@@ -27,7 +27,7 @@ import json
 
 from amun import inspect as amun_inspect
 
-from thoth.adviser.python import Project
+from thoth.python import Project
 from thoth.adviser.python import DECISISON_FUNCTIONS
 from thoth.adviser.python import DependencyGraph
 from thoth.adviser.python.helpers import fill_package_digests

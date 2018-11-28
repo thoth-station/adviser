@@ -18,7 +18,7 @@
 
 """Helper functions and utilities."""
 
-from thoth.adviser.python import Project
+from thoth.python import Project
 
 
 def fill_package_digests(generated_project: Project) -> Project:
