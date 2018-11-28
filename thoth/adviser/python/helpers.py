@@ -18,15 +18,17 @@
 
 """Helper functions and utilities."""
 
+from itertools import chain
+
+from thoth.adviser.configuration import config
+from thoth.storages import GraphDatabase
+
 from thoth.python import Project
 from thoth.python import Source
 
 
 def fill_package_digests(generated_project: Project) -> Project:
     """Temporary fill package digests stated in Pipfile.lock."""
-    from itertools import chain
-    from thoth.adviser.configuration import config
-
     for package_version in chain(generated_project.pipfile_lock.packages,
                                  generated_project.pipfile_lock.dev_packages):
         if package_version.hashes:
@@ -53,5 +55,29 @@ def fill_package_digests(generated_project: Project) -> Project:
 
         for entry in scanned_hashes:
             package_version.hashes.append('sha256:' + entry['sha256'])
+
+    return generated_project
+
+
+def fill_package_digests_from_graph(generated_project: Project, graph: GraphDatabase = None) -> Project:
+    """Fill package digests stated in Pipfile.lock from graph database."""
+    if not graph:
+        graph = GraphDatabase()
+        graph.connect()
+
+    for package_version in chain(generated_project.pipfile_lock.packages,
+                                 generated_project.pipfile_lock.dev_packages):
+        if package_version.hashes:
+            # Already filled from the last run.
+            continue
+        
+        digests = graph.get_python_package_version_hashes_sha256(
+            package_version.name,
+            package_version.locked_version,
+            package_version.index.url
+        )
+
+        for digest in digests:
+            package_version.hashes.append('sha256:' + digest)
 
     return generated_project

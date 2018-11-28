@@ -77,9 +77,7 @@ def _do_dependency_monkey(project: Project, *, output_function: typing.Callable,
 
     for _, generated_project in dependency_graph.walk(decision_function):
         computed += 1
-
-        # TODO: we should pick digests of artifacts once we will have them in the graph database
-        generated_project = fill_package_digests(generated_project)
+        generated_project = fill_package_digests_from_graph(generated_project)
 
         if not dry_run:
             entry = output_function(generated_project, count=computed)

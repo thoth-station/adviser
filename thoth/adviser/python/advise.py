@@ -32,7 +32,7 @@ from thoth.adviser.python import DECISISON_FUNCTIONS
 from thoth.adviser.python import DEFAULT_DECISION_FUNCTION
 from thoth.adviser.python import DependencyGraph
 from thoth.adviser.enums import RecommendationType
-from thoth.adviser.python.helpers import fill_package_digests
+from thoth.adviser.python.helpers import fill_package_digests_from_graph
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ class Adviser:
             # Sort computed stacks based on score and return them.
             result = [
                 # TODO: we should pick digests of artifacts once we will have them in the graph database
-                (item[1][0], fill_package_digests(item[1][1]))
+                (item[1][0], fill_package_digests_from_graph(item[1][1]))
                 for item in sorted(self._computed_stacks_heap, key=operator.itemgetter(0))
             ]
             return result
