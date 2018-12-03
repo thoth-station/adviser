@@ -102,11 +102,16 @@ class DependencyGraph:
                 if package_version.name not in direct_dependencies_map:
                     direct_dependencies_map[package_version.name] = {}
 
-                direct_dependencies_map[package_version.name][package_version.locked_version] = graph_item
-                dependencies_map[package_name].append(graph_item)
+                if package_version.locked_version not in direct_dependencies_map[package_version.name]:
+                    direct_dependencies_map[package_version.name][package_version.locked_version] = {}
+
+                if package_version.index.url not in direct_dependencies_map[package_version.name][package_version.locked_version]:
+                    # TODO: if devel and default have same packages
+                    direct_dependencies_map[package_version.name][package_version.locked_version][package_version.index.url] = graph_item
+                    dependencies_map[package_name].append(graph_item)
 
         # dependencies_map maps package_name to a list of GraphItem objects
-        # direct_dependencies_map maps package_name,package_version to GraphItem object
+        # direct_dependencies_map maps package_name,package_version,index_url to GraphItem object
         return dependencies_map, direct_dependencies_map
 
     @classmethod
@@ -127,6 +132,9 @@ class DependencyGraph:
 
         # Now perform resolution on all the transitive dependencies.
         all_direct_dependencies = list(chain(*direct_dependencies.values()))
+        all_dependencies = list(all_direct_dependencies)
+        # Mapping of source_name -> destination name, destination version, destination index to preserve duplicates.
+        source_dependencies = {}
         for graph_item in all_direct_dependencies:
             # Example response:
             # [
@@ -140,13 +148,14 @@ class DependencyGraph:
             # ]
             _LOGGER.info(
                 "Retrieving transitive dependencies for %r in version %r from %r",
-                graph_item.package_version.name, graph_item.package_version.locked_version,
+                graph_item.package_version.name,
+                graph_item.package_version.locked_version,
                 graph_item.package_version.index.url
             )
             transitive_dependencies = graph.retrieve_transitive_dependencies_python(
                 graph_item.package_version.name,
                 graph_item.package_version.locked_version,
-                None
+                graph_item.package_version.index.url
             )
 
             # Fast path - filter out paths that have a version of a direct
@@ -194,10 +203,10 @@ class DependencyGraph:
 
                 # If this fails on key error, the returned query from graph
                 # does not preserve order of nodes visited (it should).
-                source = dependencies_map[source_name][source_version]
+                source = dependencies_map[source_name][source_version][source_index]
 
                 # TODO: same package name on different index?
-                destination = dependencies_map.get(destination_name, {}).get(destination_version)
+                destination = dependencies_map.get(destination_name, {}).get(destination_version, {}).get(destination_index)
 
                 if not destination:
                     # First time seen.
@@ -214,12 +223,34 @@ class DependencyGraph:
                     if destination_name not in dependencies_map:
                         dependencies_map[destination_name] = {}
 
-                    dependencies_map[destination_name][destination_version] = destination
+                    if destination_version not in dependencies_map[destination_name]:
+                        dependencies_map[destination_name][destination_version] = {}
 
-                if destination_name not in source.dependencies:
-                    source.dependencies[destination_name] = []
+                    dependencies_map[destination_name][destination_version][destination_index] = destination
+                    all_dependencies.append(destination)
 
-                source.dependencies[destination_name].append(destination)
+                if source_name not in source_dependencies:
+                    source_dependencies[source_name] = {}
+
+                if destination_name not in source_dependencies[source_name]:
+                    source_dependencies[source_name][destination_name] = {}
+
+                if destination_version not in source_dependencies[source_name][destination_name]:
+                    source_dependencies[source_name][destination_name][destination_version] = {}
+
+                if destination_index not in source_dependencies[source_name][destination_name][destination_version]:
+                    source_dependencies[source_name][destination_name][destination_version][destination_index] = destination
+
+        for package in all_dependencies:
+            if package.package_version.name in source_dependencies:
+                for dependency_name, dependency_versions in source_dependencies[package.package_version.name].items():
+                    for dependency_version, dependency_urls in dependency_versions.items():
+                        for dependency_url in dependency_urls:
+                            if dependency_name not in package.dependencies:
+                                package.dependencies[dependency_name] = []
+
+                            dependency = dependencies_map[dependency_name][dependency_version][dependency_url]
+                            package.dependencies[dependency_name].append(dependency)
 
         _LOGGER.info("Creating dependency graph")
         return cls(
@@ -238,7 +269,7 @@ class DependencyGraph:
             if item.package_version.name not in expanded:
                 return False
 
-            if item.package_version.locked_version != expanded[item.package_version.name].locked_version:
+            if item.package_version.locked_version != expanded[item.package_version.name].package_version.locked_version:
                 # It's not final state and it is not a valid state as well -
                 # this can occur in case of cyclic deps.
                 return False
@@ -257,7 +288,7 @@ class DependencyGraph:
 
             if expanded[item.package_version.name].package_version.locked_version  \
                     != item.package_version.locked_version or \
-                    extended[item.package_version.name].index != item.package_version.index:
+                    expanded[item.package_version.name].package_version.index != item.package_version.index:
                 # The previous resolution included this package in different
                 # version, we cannot include this package to the stack =>
                 # invalid software stack.
@@ -339,3 +370,4 @@ class DependencyGraph:
                     ))
                 else:
                     _LOGGER.debug("Not a valid state (%r, %r)", new_expanded, to_expand)
+            

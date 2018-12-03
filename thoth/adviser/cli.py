@@ -186,9 +186,11 @@ def provenance(click_ctx, requirements, requirements_locked=None, whitelisted_so
               help="Type of recommendation generated based on knowledge base.")
 @click.option('--files', '-F', is_flag=True,
               help="Requirements passed represent paths to files on local filesystem.")
+@click.option('--dry-run', is_flag=True,
+              help="Do not output generated stacks, output just stack count.")
 def advise(click_ctx, requirements, requirements_format=None, requirements_locked=None,
            recommendation_type=None, runtime_environment=None, output=None, no_pretty=False, files=False,
-           count=None, limit=None):
+           count=None, limit=None, dry_run=False):
     """Advise package and package versions in the given stack or on solely package only."""
     _LOGGER.debug("Passed arguments: %s", locals())
     limit = int(limit) if limit else None
@@ -203,7 +205,11 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
         'parameters': {
             'runtime_environment': runtime_environment,
             'recommendation_type': recommendation_type.name.lower(),
-            'requirements_format': requirements_format.name.lower()
+            'requirements_format': requirements_format.name.lower(),
+            'limit': limit,
+            'count': count,
+            'dry_run': dry_run,
+            'no_pretty': no_pretty
         },
         'input': None,
         'output': {
@@ -219,7 +225,8 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
             project,
             recommendation_type=recommendation_type,
             count=count,
-            limit=limit
+            limit=limit,
+            dry_run=dry_run
         )
     except ThothAdviserException as exc:
         # TODO: we should extend exceptions so they are capable of storing more info.
@@ -248,7 +255,10 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
     else:
         result['error'] = False
         # Convert report to a dict so its serialized.
-        result['report'] = [(item[0], item[1].to_dict()) for item in report]
+        if not dry_run:
+            result['report'] = [(item[0], item[1].to_dict()) for item in report]
+        else:
+            result['report'] = report
 
     print_command_result(
         click_ctx,

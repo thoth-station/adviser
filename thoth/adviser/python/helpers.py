@@ -19,12 +19,15 @@
 """Helper functions and utilities."""
 
 from itertools import chain
+import logging
 
 from thoth.adviser.configuration import config
 from thoth.storages import GraphDatabase
 
 from thoth.python import Project
 from thoth.python import Source
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def fill_package_digests(generated_project: Project) -> Project:
@@ -61,6 +64,8 @@ def fill_package_digests(generated_project: Project) -> Project:
 
 def fill_package_digests_from_graph(generated_project: Project, graph: GraphDatabase = None) -> Project:
     """Fill package digests stated in Pipfile.lock from graph database."""
+    return generated_project
+
     if not graph:
         graph = GraphDatabase()
         graph.connect()
@@ -71,6 +76,11 @@ def fill_package_digests_from_graph(generated_project: Project, graph: GraphData
             # Already filled from the last run.
             continue
         
+        _LOGGER.info(
+            "Retrieving package digests from graph database for package %r in version %r from index %r",
+            package_version.name, package_version.locked_version, package_version.index.url
+        )
+
         digests = graph.get_python_package_version_hashes_sha256(
             package_version.name,
             package_version.locked_version,
