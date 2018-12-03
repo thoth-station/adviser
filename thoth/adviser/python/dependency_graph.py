@@ -43,6 +43,7 @@ from thoth.python import PackageVersion
 from thoth.python.pipfile import PipfileMeta
 from thoth.python import Source
 from thoth.python import Project
+from thoth.solver.python.base import SolverException
 
 from .solver import PythonPackageGraphSolver
 from .exceptions import ConstraintClashError
@@ -96,6 +97,14 @@ class DependencyGraph:
         dependencies_map = {}
         for package_name, package_versions in resolved_direct_dependencies.items():
             dependencies_map[package_name] = []
+
+            if not package_versions:
+                # This means that there were found versions in the graph
+                # database but none was matching the given version range.
+                raise SolverException(
+                    f"No matching versions found for package {package_name!r}"
+                )
+
             for package_version in package_versions:
                 graph_item = GraphItem(package_version=package_version)
 
