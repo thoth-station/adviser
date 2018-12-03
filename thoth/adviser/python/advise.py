@@ -89,9 +89,9 @@ class Adviser:
             # Sort computed stacks based on score and return them.
             result = (item.get_entries() for item in sorted(self._computed_stacks_heap))
             _LOGGER.info("Filling package digests to software stacks")
-            #result = sorted(
-            #    [(item[0], fill_package_digests_from_graph(item[1])) for item in result], key=operator.itemgetter(0)
-            #)
+            result = sorted(
+                [(item[0], fill_package_digests_from_graph(item[1])) for item in result], key=operator.itemgetter(0)
+            )
             result = [(item[0], fill_package_digests_from_graph(item[1])) for item in result]
             return result
         finally:

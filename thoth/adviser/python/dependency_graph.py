@@ -40,7 +40,7 @@ import operator
 
 import attr
 from thoth.python import PackageVersion
-from thoth.python import PipfileMeta
+from thoth.python.pipfile import PipfileMeta
 from thoth.python import Source
 from thoth.python import Project
 
@@ -232,18 +232,21 @@ class DependencyGraph:
                 if source_name not in source_dependencies:
                     source_dependencies[source_name] = {}
 
+                if source_version not in source_dependencies[source_name]:
+                    source_dependencies[source_name][source_version] = {}
+
                 if destination_name not in source_dependencies[source_name]:
-                    source_dependencies[source_name][destination_name] = {}
+                    source_dependencies[source_name][source_version][destination_name] = {}
 
-                if destination_version not in source_dependencies[source_name][destination_name]:
-                    source_dependencies[source_name][destination_name][destination_version] = {}
+                if destination_version not in source_dependencies[source_name][source_version][destination_name]:
+                    source_dependencies[source_name][source_version][destination_name][destination_version] = {}
 
-                if destination_index not in source_dependencies[source_name][destination_name][destination_version]:
-                    source_dependencies[source_name][destination_name][destination_version][destination_index] = destination
+                if destination_index not in source_dependencies[source_name][source_version][destination_name][destination_version]:
+                    source_dependencies[source_name][source_version][destination_name][destination_version][destination_index] = destination
 
         for package in all_dependencies:
-            if package.package_version.name in source_dependencies:
-                for dependency_name, dependency_versions in source_dependencies[package.package_version.name].items():
+            if package.package_version.name in source_dependencies and package.package_version.locked_version in source_dependencies[name]:
+                for dependency_name, dependency_versions in source_dependencies[package.package_version.name][package.package_version.locked_version].items():
                     for dependency_version, dependency_urls in dependency_versions.items():
                         for dependency_url in dependency_urls:
                             if dependency_name not in package.dependencies:

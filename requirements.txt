@@ -1,4 +1,8 @@
+attrs
 click<6.7
+contoml
 thoth-analyzer
 thoth-common
+thoth-solver
+thoth-storages
 thoth-storages

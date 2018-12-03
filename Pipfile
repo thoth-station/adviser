@@ -4,18 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-thoth-storages = "*"
 click = "<6.7"
 thoth-analyzer = "*"
 thoth-common = "*"
 thoth-solver = "*"
-pip = "<10"
-attrs = "*"
-requests = "*"
-beautifulsoup4 = "*"
 semantic-version = "*"
-lxml = "*"
 contoml = "*"
+thoth-storages = "*"
+thoth-python = "*"
 
 [dev-packages]
 flexmock = "*"
