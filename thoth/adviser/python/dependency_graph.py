@@ -244,7 +244,7 @@ class DependencyGraph:
                 if source_version not in source_dependencies[source_name]:
                     source_dependencies[source_name][source_version] = {}
 
-                if destination_name not in source_dependencies[source_name]:
+                if destination_name not in source_dependencies[source_name][source_version]:
                     source_dependencies[source_name][source_version][destination_name] = {}
 
                 if destination_version not in source_dependencies[source_name][source_version][destination_name]:
@@ -254,7 +254,7 @@ class DependencyGraph:
                     source_dependencies[source_name][source_version][destination_name][destination_version][destination_index] = destination
 
         for package in all_dependencies:
-            if package.package_version.name in source_dependencies and package.package_version.locked_version in source_dependencies[name]:
+            if package.package_version.name in source_dependencies and package.package_version.locked_version in source_dependencies[package.package_version.name]:
                 for dependency_name, dependency_versions in source_dependencies[package.package_version.name][package.package_version.locked_version].items():
                     for dependency_version, dependency_urls in dependency_versions.items():
                         for dependency_url in dependency_urls:
