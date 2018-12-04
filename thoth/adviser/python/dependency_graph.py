@@ -342,7 +342,7 @@ class DependencyGraph:
                 decision_function_result = decision_function((graph_item.package_version for graph_item in state[0]))
                 if decision_function_result:
                     _LOGGER.info(
-                        "Decision function included the computed stack - result was %r", decision_function_result
+                        "Decision function included the computed stack - result was %r", decision_function_result[0]
                     )
                     _LOGGER.debug("Included stack %r", state[0])
                     package_versions = tuple(g.package_version for g in state[0].values())
