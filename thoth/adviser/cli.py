@@ -286,7 +286,7 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
 @click.option('--seed', envvar='THOTH_DEPENDENCY_MONKEY_SEED',
               help="A seed to be used for generating software stack samples (defaults to time if omitted).")
 @click.option('--count', envvar='THOTH_DEPENDENCY_MONKEY_COUNT',
-              help="Number of software stacks that should be computed")
+              help="Number of software stacks that should be computed.")
 @click.option('--decision', required=False, envvar='THOTH_DEPENDENCY_MONKEY_DECISION', default='all',
               type=click.Choice(list(DECISISON_FUNCTIONS.keys())),
               help="A decision function that should be used for generating software stack samples; "

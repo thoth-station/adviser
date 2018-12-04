@@ -131,7 +131,7 @@ def dependency_monkey(project: Project, output: str = None, *, seed: int = None,
             context = {}
             _LOGGER.warning("Context to Amun API is empty")
 
-        output_function = partial(_dm_amun_inspect_wrapper, output, context)
+        output_function = partial(dm_amun_inspect_wrapper, output, context)
     elif output == '-':
         _LOGGER.debug("Stacks will be printed to stdout")
         output_function = _dm_stdout_output
