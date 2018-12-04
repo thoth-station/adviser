@@ -64,8 +64,6 @@ def fill_package_digests(generated_project: Project) -> Project:
 
 def fill_package_digests_from_graph(generated_project: Project, graph: GraphDatabase = None) -> Project:
     """Fill package digests stated in Pipfile.lock from graph database."""
-    return generated_project
-
     if not graph:
         graph = GraphDatabase()
         graph.connect()

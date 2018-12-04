@@ -30,7 +30,7 @@ from amun import inspect as amun_inspect
 from thoth.python import Project
 from thoth.adviser.python import DECISISON_FUNCTIONS
 from thoth.adviser.python import DependencyGraph
-from thoth.adviser.python.helpers import fill_package_digests
+from thoth.adviser.python.helpers import fill_package_digests_from_graph
 
 _LOGGER = logging.getLogger(__name__)
 
