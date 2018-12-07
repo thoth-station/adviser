@@ -202,59 +202,61 @@ class DependencyGraph:
                 raise ConstraintClashError("Unable to create a dependency graph for the given set of constraints")
 
             for entry in transitive_dependencies_to_include:
-                # TODO: we have captured only one layer.
-                #
                 # Name graph-query dependent results.
-                source_name, source_version, source_index = \
-                    entry[0]['package'], entry[0]['version'], entry[0]['index_url']
-                destination_name, destination_version, destination_index = \
-                    entry[2]['package'], entry[2]['version'], entry[2]['index_url']
+                for idx in range(1, len(entry), 2):
+                    # The idx corresponds to "depends_on" that is in the middle of source and target package.
+                    source_idx = idx - 1
+                    dest_idx = idx + 1
 
-                # If this fails on key error, the returned query from graph
-                # does not preserve order of nodes visited (it should).
-                source = dependencies_map[source_name][source_version][source_index]
+                    source_name, source_version, source_index = \
+                        entry[source_idx]['package'], entry[source_idx]['version'], entry[source_idx]['index_url']
+                    destination_name, destination_version, destination_index = \
+                        entry[dest_idx]['package'], entry[dest_idx]['version'], entry[dest_idx]['index_url']
 
-                destination = dependencies_map.get(destination_name, {}).get(destination_version, {}).get(destination_index)
+                    # If this fails on key error, the returned query from graph
+                    # does not preserve order of nodes visited (it should).
+                    source = dependencies_map[source_name][source_version][source_index]
+                    destination = dependencies_map.get(destination_name, {}).get(destination_version, {}).get(destination_index)
 
-                if not destination:
-                    # First time seen.
-                    new_package_version = PackageVersion(
-                        name=destination_name,
-                        version='==' + destination_version,
-                        index=Source(destination_index),
-                        hashes=[],
-                        develop=source.package_version.develop
-                    )
+                    if not destination:
+                        # First time seen.
+                        new_package_version = PackageVersion(
+                            name=destination_name,
+                            version='==' + destination_version,
+                            index=Source(destination_index),
+                            hashes=[],
+                            develop=source.package_version.develop
+                        )
 
-                    destination = GraphItem(package_version=new_package_version)
+                        destination = GraphItem(package_version=new_package_version)
 
-                    if destination_name not in dependencies_map:
-                        dependencies_map[destination_name] = {}
+                        if destination_name not in dependencies_map:
+                            dependencies_map[destination_name] = {}
 
-                    if destination_version not in dependencies_map[destination_name]:
-                        dependencies_map[destination_name][destination_version] = {}
+                        if destination_version not in dependencies_map[destination_name]:
+                            dependencies_map[destination_name][destination_version] = {}
 
-                    dependencies_map[destination_name][destination_version][destination_index] = destination
-                    all_dependencies.append(destination)
+                        dependencies_map[destination_name][destination_version][destination_index] = destination
+                        all_dependencies.append(destination)
 
-                if source_name not in source_dependencies:
-                    source_dependencies[source_name] = {}
+                    if source_name not in source_dependencies:
+                        source_dependencies[source_name] = {}
 
-                it = source_dependencies[source_name]
-                if source_version not in it:
-                    it[source_version] = {}
+                    it = source_dependencies[source_name]
+                    if source_version not in it:
+                        it[source_version] = {}
 
-                it = it[source_version]
-                if destination_name not in it:
-                    it[destination_name] = {}
+                    it = it[source_version]
+                    if destination_name not in it:
+                        it[destination_name] = {}
 
-                it = it[destination_name]
-                if destination_version not in it:
-                    it[destination_version] = {}
+                    it = it[destination_name]
+                    if destination_version not in it:
+                        it[destination_version] = {}
 
-                it = it[destination_version]
-                if destination_index not in it:
-                    it[destination_index] = destination
+                    it = it[destination_version]
+                    if destination_index not in it:
+                        it[destination_index] = destination
 
         for package in all_dependencies:
             if package.package_version.name not in source_dependencies or \
