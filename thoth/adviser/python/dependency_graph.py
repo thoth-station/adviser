@@ -214,7 +214,6 @@ class DependencyGraph:
                 # does not preserve order of nodes visited (it should).
                 source = dependencies_map[source_name][source_version][source_index]
 
-                # TODO: same package name on different index?
                 destination = dependencies_map.get(destination_name, {}).get(destination_version, {}).get(destination_index)
 
                 if not destination:
@@ -241,28 +240,36 @@ class DependencyGraph:
                 if source_name not in source_dependencies:
                     source_dependencies[source_name] = {}
 
-                if source_version not in source_dependencies[source_name]:
-                    source_dependencies[source_name][source_version] = {}
+                it = source_dependencies[source_name]
+                if source_version not in it:
+                    it[source_version] = {}
 
-                if destination_name not in source_dependencies[source_name][source_version]:
-                    source_dependencies[source_name][source_version][destination_name] = {}
+                it = it[source_version]
+                if destination_name not in it:
+                    it[destination_name] = {}
 
-                if destination_version not in source_dependencies[source_name][source_version][destination_name]:
-                    source_dependencies[source_name][source_version][destination_name][destination_version] = {}
+                it = it[destination_name]
+                if destination_version not in it:
+                    it[destination_version] = {}
 
-                if destination_index not in source_dependencies[source_name][source_version][destination_name][destination_version]:
-                    source_dependencies[source_name][source_version][destination_name][destination_version][destination_index] = destination
+                it = it[destination_version]
+                if destination_index not in it:
+                    it[destination_index] = destination
 
         for package in all_dependencies:
-            if package.package_version.name in source_dependencies and package.package_version.locked_version in source_dependencies[package.package_version.name]:
-                for dependency_name, dependency_versions in source_dependencies[package.package_version.name][package.package_version.locked_version].items():
-                    for dependency_version, dependency_urls in dependency_versions.items():
-                        for dependency_url in dependency_urls:
-                            if dependency_name not in package.dependencies:
-                                package.dependencies[dependency_name] = []
+            if package.package_version.name not in source_dependencies or \
+                    package.package_version.locked_version not in source_dependencies[package.package_version.name]:
+                continue
 
-                            dependency = dependencies_map[dependency_name][dependency_version][dependency_url]
-                            package.dependencies[dependency_name].append(dependency)
+            package_deps = source_dependencies[package.package_version.name][package.package_version.locked_version]
+            for dependency_name, dependency_versions in package_deps.items():
+                for dependency_version, dependency_urls in dependency_versions.items():
+                    for dependency_url in dependency_urls:
+                        if dependency_name not in package.dependencies:
+                            package.dependencies[dependency_name] = []
+
+                        dependency = dependencies_map[dependency_name][dependency_version][dependency_url]
+                        package.dependencies[dependency_name].append(dependency)
 
         _LOGGER.info("Creating dependency graph")
         return cls(
