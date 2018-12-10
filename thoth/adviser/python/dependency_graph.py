@@ -125,6 +125,12 @@ class DependencyGraph:
         return dependencies_map, direct_dependencies_map
 
     @classmethod
+    def _cut_off_dependencies(cls, graph: GraphDatabase, transitive_paths: typing.List[dict]) -> typing.List[dict]:
+        """Cut off paths that have not relevant dependencies - dependencies we don't want to include in the stack."""
+        _LOGGER.debug("Cutting off not relevant paths")
+        return transitive_paths
+
+    @classmethod
     def from_project(cls, graph: GraphDatabase, project: Project, with_devel: bool = False):
         """Construct a dependency graph from a project."""
         # Place the import statement here to simplify mocks in the testsuite.
@@ -141,6 +147,9 @@ class DependencyGraph:
         all_dependencies = list(all_direct_dependencies)
         # Mapping of source_name -> destination name, destination version, destination index to preserve duplicates.
         source_dependencies = {}
+        # All paths that should be included for computed stacks.
+        all_transitive_dependencies_to_include = []
+
         for graph_item in all_direct_dependencies:
             # Example response:
             # [
@@ -197,63 +206,67 @@ class DependencyGraph:
             # with given constraints (e.g. there is always dependency on protobuf, but we asked to remove protobuf).
             if transitive_dependencies and not transitive_dependencies_to_include:
                 raise ConstraintClashError("Unable to create a dependency graph for the given set of constraints")
+            
+            all_transitive_dependencies_to_include.extend(transitive_dependencies)
 
-            for entry in transitive_dependencies_to_include:
-                # Name graph-query dependent results.
-                for idx in range(1, len(entry), 2):
-                    # The idx corresponds to "depends_on" that is in the middle of source and target package.
-                    source_idx = idx - 1
-                    dest_idx = idx + 1
+        all_transitive_dependencies_to_include = cls._cut_off_dependencies(graph, all_transitive_dependencies_to_include)
 
-                    source_name, source_version, source_index = \
-                        entry[source_idx]['package'], entry[source_idx]['version'], entry[source_idx]['index_url']
-                    destination_name, destination_version, destination_index = \
-                        entry[dest_idx]['package'], entry[dest_idx]['version'], entry[dest_idx]['index_url']
+        for entry in all_transitive_dependencies_to_include:
+            # Name graph-query dependent results.
+            for idx in range(1, len(entry), 2):
+                # The idx corresponds to "depends_on" that is in the middle of source and target package.
+                source_idx = idx - 1
+                dest_idx = idx + 1
 
-                    # If this fails on key error, the returned query from graph
-                    # does not preserve order of nodes visited (it should).
-                    source = dependencies_map[source_name][source_version][source_index]
-                    destination = dependencies_map.get(destination_name, {}).get(destination_version, {}).get(destination_index)
+                source_name, source_version, source_index = \
+                    entry[source_idx]['package'], entry[source_idx]['version'], entry[source_idx]['index_url']
+                destination_name, destination_version, destination_index = \
+                    entry[dest_idx]['package'], entry[dest_idx]['version'], entry[dest_idx]['index_url']
 
-                    if not destination:
-                        # First time seen.
-                        new_package_version = PackageVersion(
-                            name=destination_name,
-                            version='==' + destination_version,
-                            index=Source(destination_index),
-                            hashes=[],
-                            develop=source.package_version.develop
-                        )
+                # If this fails on key error, the returned query from graph
+                # does not preserve order of nodes visited (it should).
+                source = dependencies_map[source_name][source_version][source_index]
+                destination = dependencies_map.get(destination_name, {}).get(destination_version, {}).get(destination_index)
 
-                        destination = GraphItem(package_version=new_package_version)
+                if not destination:
+                    # First time seen.
+                    new_package_version = PackageVersion(
+                        name=destination_name,
+                        version='==' + destination_version,
+                        index=Source(destination_index),
+                        hashes=[],
+                        develop=source.package_version.develop
+                    )
 
-                        if destination_name not in dependencies_map:
-                            dependencies_map[destination_name] = {}
+                    destination = GraphItem(package_version=new_package_version)
 
-                        if destination_version not in dependencies_map[destination_name]:
-                            dependencies_map[destination_name][destination_version] = {}
+                    if destination_name not in dependencies_map:
+                        dependencies_map[destination_name] = {}
 
-                        dependencies_map[destination_name][destination_version][destination_index] = destination
-                        all_dependencies.append(destination)
+                    if destination_version not in dependencies_map[destination_name]:
+                        dependencies_map[destination_name][destination_version] = {}
 
-                    if source_name not in source_dependencies:
-                        source_dependencies[source_name] = {}
+                    dependencies_map[destination_name][destination_version][destination_index] = destination
+                    all_dependencies.append(destination)
 
-                    it = source_dependencies[source_name]
-                    if source_version not in it:
-                        it[source_version] = {}
+                if source_name not in source_dependencies:
+                    source_dependencies[source_name] = {}
 
-                    it = it[source_version]
-                    if destination_name not in it:
-                        it[destination_name] = {}
+                it = source_dependencies[source_name]
+                if source_version not in it:
+                    it[source_version] = {}
 
-                    it = it[destination_name]
-                    if destination_version not in it:
-                        it[destination_version] = {}
+                it = it[source_version]
+                if destination_name not in it:
+                    it[destination_name] = {}
 
-                    it = it[destination_version]
-                    if destination_index not in it:
-                        it[destination_index] = destination
+                it = it[destination_name]
+                if destination_version not in it:
+                    it[destination_version] = {}
+
+                it = it[destination_version]
+                if destination_index not in it:
+                    it[destination_index] = destination
 
         for package in all_dependencies:
             if package.package_version.name not in source_dependencies or \
