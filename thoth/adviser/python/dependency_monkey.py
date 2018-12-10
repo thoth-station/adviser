@@ -28,9 +28,12 @@ import json
 from amun import inspect as amun_inspect
 
 from thoth.python import Project
-from thoth.adviser.python import DECISISON_FUNCTIONS
+from thoth.adviser import RuntimeEnvironment
 from thoth.adviser.python import DependencyGraph
 from thoth.adviser.python.helpers import fill_package_digests_from_graph
+from thoth.storages import GraphDatabase
+
+from .decision import DecisionFunction
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,13 +71,13 @@ def _dm_stdout_output(generated_project: Project, count: int):
     return None
 
 
-def _do_dependency_monkey(project: Project, *, output_function: typing.Callable, decision_function: typing.Callable,
-                          count: int = None, dry_run: bool = False) -> dict:
+def _do_dependency_monkey(project: Project, graph: GraphDatabase, *, output_function: typing.Callable,
+                          decision_function: typing.Callable, count: int = None, dry_run: bool = False) -> dict:
     """Run dependency monkey."""
+    dependency_graph = DependencyGraph.from_project(graph, project)
+
     computed = 0
     result = {'output': [], 'computed': 0}
-    dependency_graph = DependencyGraph.from_project(project)
-
     for _, generated_project in dependency_graph.walk(decision_function):
         computed += 1
         generated_project = fill_package_digests_from_graph(generated_project)
@@ -91,26 +94,30 @@ def _do_dependency_monkey(project: Project, *, output_function: typing.Callable,
     return result
 
 
-def dependency_monkey(project: Project, output: str = None, *, seed: int = None, decision: str = None,
-                      dry_run: bool = False, context: str = None, count: int = None) -> dict:
+def dependency_monkey(project: Project, output: str = None, *, seed: int = None, decision_function_name: str = None,
+                      dry_run: bool = False, context: str = None, count: int = None,
+                      runtime_environment: RuntimeEnvironment = None) -> dict:
     """Run Dependency Monkey on the given stack.
 
     @param project: a Python project to be used for generating software stacks (lockfile is not needed)
     @param output: output (Amun API, directory or '-' for stdout) where stacks should be written to
     @param seed: a seed to be used in case of random stack generation
-    @param decision: decision function to be used
+    @param decision_function_name: decision function to be used
     @param dry_run: do not perform actual writing to output, just run the dependency monkey report back computed stacks
     @param context: context to be sent to Amun, if output is set to be Amun
+    @param runtime_environment: targeted runtime environment used in dependency monkey runs
     @param count: generate upto N stacks
     """
     output = output or '-'  # Default to stdout if no output was provided.
 
-    if decision not in DECISISON_FUNCTIONS:
-        raise ValueError(
-            f"Decision function {decision} is not known, available are: {list(DECISISON_FUNCTIONS.keys())}"
-        )
+    graph = GraphDatabase()
+    graph.connect()
 
-    decision_function = DECISISON_FUNCTIONS[decision]
+    decision_function = DecisionFunction.get_decision_function(
+        graph,
+        decision,
+        RuntimeEnvironment.from_dict(runtime_environment or {})
+    )
     random.seed(seed)
 
     if count is not None and (count <= 0):
@@ -148,6 +155,7 @@ def dependency_monkey(project: Project, output: str = None, *, seed: int = None,
 
     return _do_dependency_monkey(
         project,
+        graph=graph,
         dry_run=dry_run,
         decision_function=decision_function,
         count=count,

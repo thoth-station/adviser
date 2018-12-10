@@ -44,6 +44,7 @@ from thoth.python.pipfile import PipfileMeta
 from thoth.python import Source
 from thoth.python import Project
 from thoth.solver.python.base import SolverException
+from thoth.storages import GraphDatabase
 
 from .solver import PythonPackageGraphSolver
 from .exceptions import ConstraintClashError
@@ -124,13 +125,9 @@ class DependencyGraph:
         return dependencies_map, direct_dependencies_map
 
     @classmethod
-    def from_project(cls, project: Project, with_devel: bool = False):
+    def from_project(cls, graph: GraphDatabase, project: Project, with_devel: bool = False):
         """Construct a dependency graph from a project."""
         # Place the import statement here to simplify mocks in the testsuite.
-        from thoth.storages.graph.janusgraph import GraphDatabase
-
-        graph = GraphDatabase()
-        graph.connect()
         solver = PythonPackageGraphSolver(graph_db=graph)
         _LOGGER.info("Parsing and solving direct dependencies of the requested project")
         direct_dependencies, dependencies_map = cls._prepare_direct_dependencies(

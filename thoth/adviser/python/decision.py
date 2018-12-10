@@ -15,24 +15,48 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Decisison functions available for dependency graph."""
+"""Decisison functions available for dependency monkey."""
 
 import random
+import typing
+
+import attr
+
+from thoth.storages import GraphDatabase
+from thoth.adviser import RuntimeEnvironment
+from thoth.adviser.exceptions import InternalError
+from thoth.python import PackageVersion
 
 
-def random_uniform(_):
-    """Retrieve a random stack."""
-    return random.getrandbits(1), []
+@attr.s(slots=True)
+class DecisionFunction:
+    """Decide which stacks should be executed in a dependency monkey run."""
+
+    graph = attr.ib(type=GraphDatabase)
+    runtime_environment = attr.ib(type=RuntimeEnvironment)
+
+    def random_uniform(self, _: typing.Sequence[PackageVersion]):
+        """Retrieve a random stack."""
+        return random.getrandbits(1), None
 
 
-def everything(_):
-    """Decide to include everything."""
-    return 1.0, []
+    def everything(self, _: typing.Sequence[PackageVersion]):
+        """Decide to include everything."""
+        return 1.0, None
+
+    @classmethod
+    def get_decision_function(cls, graph: GraphDatabase, decision_function_name: str, runtime_environment: RuntimeEnvironment) -> typing.Callable:
+        """Get decision function based on its name - return a bound method to self instance."""
+
+        instance = cls(graph=graph, runtime_environment=runtime_environment)
+
+        if decision_function_name == 'random':
+            return instance.random_uniform
+        elif decision_function_name == 'all':
+            return instance.everything
+
+        raise InternalError(f"Unknown decision function requested to be used - {decision_function_name}")
 
 
-DECISISON_FUNCTIONS = {
-    'random': random_uniform,
-    'all': everything
-}
-
-DEFAULT_DECISION_FUNCTION = everything
+DECISISON_FUNCTIONS = frozenset(('random', 'all'))
+DEFAULT_DECISION_FUNCTION = 'all'

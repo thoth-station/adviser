@@ -35,6 +35,7 @@ from thoth.adviser.enums import RecommendationType
 from thoth.adviser.exceptions import ThothAdviserException
 from thoth.adviser.exceptions import InternalError
 from thoth.adviser.python import DECISISON_FUNCTIONS
+from thoth.adviser.runtime_environment import RuntimeEnvironment
 from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser import __version__ as analyzer_version
 from thoth.adviser.python import Adviser
@@ -221,8 +222,10 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
         # TODO: add seed and checking of decision?
         project = _instantiate_project(requirements, requirements_locked, files)
         result['input'] = project.to_dict()
+        runtime_environment = RuntimeEnvironment.from_dict(runtime_environment or {})
         report = Adviser.compute_on_project(
             project,
+            runtime_environment=runtime_environment,
             recommendation_type=recommendation_type,
             count=count,
             limit=limit,
@@ -288,7 +291,7 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
 @click.option('--count', envvar='THOTH_DEPENDENCY_MONKEY_COUNT',
               help="Number of software stacks that should be computed.")
 @click.option('--decision', required=False, envvar='THOTH_DEPENDENCY_MONKEY_DECISION', default='all',
-              type=click.Choice(list(DECISISON_FUNCTIONS.keys())),
+              type=click.Choice(DECISISON_FUNCTIONS),
               help="A decision function that should be used for generating software stack samples; "
                    "if omitted, all software stacks will be created.")
 @click.option('--dry-run', is_flag=True, envvar='THOTH_DEPENDENCY_MONKEY_DRY_RUN',
@@ -298,11 +301,14 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
               help="The context into which computed stacks should be placed; if omitteed, "
                    "raw software stacks will be created. This option cannot be set when generating "
                    "software stacks onto filesystem.")
+@click.option('--runtime-environment', '-e', envvar='THOTH_ADVISER_RUNTIME_ENVIRONMENT', type=str,
+              help="Runtime environment that is used for verifying stacks.")
 @click.option('--no-pretty', '-P', is_flag=True,
               help="Do not print results nicely.")
 def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_output: str, files: bool,
                       seed: int = None, decision: str = None, dry_run: bool = False,
-                      context: str = None, no_pretty: bool = False, count: int = None):
+                      context: str = None, no_pretty: bool = False, count: int = None,
+                      runtime_environment: dict = None):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
     project = _instantiate_project(requirements, requirements_locked=None, files=files)
 
@@ -316,6 +322,7 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
         'report': [],
         'parameters': {
             'requirements': project.pipfile.to_dict(),
+            'runtime_environment': runtime_environment,
             'seed': seed,
             'decision': decision,
             'context': deepcopy(context),  # We reuse context later, perform deepcopy to report the one on input.
@@ -336,10 +343,11 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
             project,
             stack_output,
             seed=seed,
-            decision=decision,
+            decision_function_name=decision,
             dry_run=dry_run,
             context=context,
-            count=count
+            count=count,
+            runtime_environment=runtime_environment
         )
         # Place report into result.
         result.update(report)

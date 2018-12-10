@@ -26,6 +26,7 @@ import typing
 import attr
 import random
 
+from thoth.adviser import RuntimeEnvironment
 from thoth.solver.python.base import SolverException
 from thoth.python import Project
 from thoth.adviser.python import DECISISON_FUNCTIONS
@@ -33,10 +34,16 @@ from thoth.adviser.python import DEFAULT_DECISION_FUNCTION
 from thoth.adviser.python import DependencyGraph
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.python.helpers import fill_package_digests_from_graph
+from thoth.storages import GraphDatabase
+
+from .scoring import Scoring
+
 
 _LOGGER = logging.getLogger(__name__)
 
 class HeapEntry:
+    """An advise with score stored on heap."""
+
     __slots__ = ['score', 'reasoning', 'generated_project']
 
     def __init__(self, score: float, reasoning: list, generated_project: Project):
@@ -55,19 +62,17 @@ class HeapEntry:
 class Adviser:
     """Implementation of adviser - the core of recommendation engine in Thoth."""
 
-    recommendation_type = attr.ib(type=RecommendationType, default=RecommendationType.LATEST)
     count = attr.ib(type=int, default=None)
     limit = attr.ib(type=int, default=None)
-    _computed_stacks_heap = attr.ib(type=list, default=attr.Factory(list))
+    _computed_stacks_heap = attr.ib(type=RuntimeEnvironment, default=attr.Factory(list))
     _visited = attr.ib(type=int, default=0)
 
-    def compute(self, project: Project, decision_function: typing.Callable = None, dry_run: bool = False) -> typing.List[Project]:
+    def compute(self, graph: GraphDatabase, project: Project, scoring_function: typing.Callable, dry_run: bool = False) -> typing.List[Project]:
         """Compute recommendations for the given project."""
-        decision_function = decision_function or DEFAULT_DECISION_FUNCTION
-        dependency_graph = DependencyGraph.from_project(project)
+        dependency_graph = DependencyGraph.from_project(graph, project)
 
         try:
-            for decision_function_result, generated_project in dependency_graph.walk(decision_function):
+            for decision_function_result, generated_project in dependency_graph.walk(scoring_function):
                 score, reasoning = decision_function_result
                 self._visited += 1
 
@@ -87,11 +92,8 @@ class Adviser:
                 return self._visited
 
             # Sort computed stacks based on score and return them.
-            result = (item.get_entries() for item in sorted(self._computed_stacks_heap))
+            result = (item.get_entries() for item in sorted(self._computed_stacks_heap, reverse=True))
             _LOGGER.info("Filling package digests to software stacks")
-            result = sorted(
-                [(item[0], fill_package_digests_from_graph(item[1])) for item in result], key=operator.itemgetter(0)
-            )
             result = [(item[0], fill_package_digests_from_graph(item[1])) for item in result]
             return result
         finally:
@@ -100,11 +102,23 @@ class Adviser:
 
     @classmethod
     def compute_on_project(cls, project: Project, *,
-                           decision_function: typing.Callable = None,
-                           recommendation_type: RecommendationType = RecommendationType.LATEST,
+                           runtime_environment: RuntimeEnvironment,
+                           recommendation_type: RecommendationType,
                            count: int = None,
                            limit: int = None,
                            dry_run: bool = False) -> list:
         """Compute recommendations for the given project, a syntax sugar for the compute method."""
-        instance = cls(recommendation_type=recommendation_type, count=count, limit=limit)
-        return instance.compute(project, decision_function, dry_run=dry_run)
+        instance = cls(
+            count=count,
+            limit=limit,
+        )
+
+        graph = GraphDatabase()
+        graph.connect()
+
+        scoring_function = Scoring.get_scoring_function(
+            graph=graph,
+            runtime_environment=runtime_environment,
+            recommendation_type=recommendation_type
+        )
+        return instance.compute(graph, project, scoring_function, dry_run=dry_run)

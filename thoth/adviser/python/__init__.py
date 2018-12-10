@@ -26,3 +26,5 @@ from .decision import DEFAULT_DECISION_FUNCTION
 from .dependency_graph import DependencyGraph
 from .dependency_monkey import dependency_monkey
 from .advise import Adviser
+from .decision import DecisionFunction
+from .scoring import Scoring
