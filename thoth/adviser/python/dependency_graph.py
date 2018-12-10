@@ -346,7 +346,7 @@ class DependencyGraph:
             if self._is_final_state(state):
                 _LOGGER.info("Found a new stack, asking decision function for inclusion")
                 decision_function_result = decision_function((graph_item.package_version for graph_item in state[0]))
-                if decision_function_result:
+                if decision_function_result[0]:
                     _LOGGER.info(
                         "Decision function included the computed stack - result was %r", decision_function_result[0]
                     )
