@@ -401,4 +401,3 @@ class DependencyGraph:
                     ))
                 else:
                     _LOGGER.debug("Not a valid state (%r, %r)", new_expanded, to_expand)
-            

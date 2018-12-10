@@ -53,10 +53,6 @@ class Scoring:
             _LOGGER.info("Using scoring function with experimental testing stacks")
             return instance.testing_scoring_function
 
-        if recommendation_type == RecommendationType.PERFORMANCE:
-            _LOGGER.info("Using performance based scoring function")
-            return instance.performance_scoring_function
-
         raise InternalError(f"No scoring function defined for recommendation type {recommendation_type}")
 
     def stable_scoring_function(self, packages: typing.Sequence[PackageVersion]) -> typing.Tuple[float, list]:
