@@ -193,7 +193,7 @@ class DependencyGraph:
                         continue
 
                     # Otherwise do not include it - cut off the un-reachable dependency graph.
-                    _LOGGER.info(
+                    _LOGGER.debug(
                         "Excluding a path due to package %s (unreachable based on direct dependencies)", item
                     )
                     exclude = True
