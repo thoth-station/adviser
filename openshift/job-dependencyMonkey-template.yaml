@@ -24,6 +24,7 @@ objects:
       labels:
         app: thoth
         component: dependency-monkey
+        mark: cleanup
     spec:
       backoffLimit: 0
       template:
@@ -31,6 +32,7 @@ objects:
           labels:
             app: thoth
             component: dependency-monkey
+            mark: cleanup
         spec:
           restartPolicy: Never
           automountServiceAccountToken: false
