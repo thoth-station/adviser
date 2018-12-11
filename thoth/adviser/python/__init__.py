@@ -28,3 +28,4 @@ from .dependency_monkey import dependency_monkey
 from .advise import Adviser
 from .decision import DecisionFunction
 from .scoring import Scoring
+from .digests_fetcher import GraphDigestsFetcher

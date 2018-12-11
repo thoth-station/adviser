@@ -44,6 +44,7 @@ from thoth.adviser.python.dependency_monkey import dm_amun_inspect_wrapper
 from thoth.solver.python.base import SolverException
 from thoth.python import Pipfile
 from thoth.python import PipfileLock
+from thoth.adviser.python import GraphDigestsFetcher
 from thoth.python import Project
 
 init_logging()
@@ -134,7 +135,10 @@ def provenance(click_ctx, requirements, requirements_locked=None, whitelisted_so
     try:
         project = _instantiate_project(requirements, requirements_locked, files)
         result['input'] = project.to_dict()
-        report = project.check_provenance(whitelisted_sources=whitelisted_sources)
+        report = project.check_provenance(
+            whitelisted_sources=whitelisted_sources,
+            digests_fetcher=GraphDigestsFetcher()
+        )
     except ThothAdviserException as exc:
         # TODO: we should extend exceptions so they are capable of storing more info.
         if isinstance(exc, InternalError):
