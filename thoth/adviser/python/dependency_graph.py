@@ -107,6 +107,9 @@ class DependencyGraph:
                 )
 
             for package_version in package_versions:
+                if direct_dependencies_map.get(package_version.name, {}).get(package_version.locked_version, {}).get(package_version.index.url):
+                    continue
+
                 graph_item = GraphItem(package_version=package_version)
 
                 if package_version.name not in direct_dependencies_map:
