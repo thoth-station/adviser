@@ -21,3 +21,6 @@ pytest-cov = "*"
 pydocstyle = "*"
 pylint = "*"
 mock = "*"
+
+[requires]
+python_version = "3.6"
