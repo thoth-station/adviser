@@ -32,8 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def fill_package_digests(generated_project: Project) -> Project:
     """Temporary fill package digests stated in Pipfile.lock."""
-    for package_version in chain(generated_project.pipfile_lock.packages,
-                                 generated_project.pipfile_lock.dev_packages):
+    for package_version in generated_project.iter_dependencies_locked(with_devel=True):
         if package_version.hashes:
             # Already filled from the last run.
             continue
@@ -68,8 +67,7 @@ def fill_package_digests_from_graph(generated_project: Project, graph: GraphData
         graph = GraphDatabase()
         graph.connect()
 
-    for package_version in chain(generated_project.pipfile_lock.packages,
-                                 generated_project.pipfile_lock.dev_packages):
+    for package_version in generated_project.iter_dependencies_locked(with_devel=True):
         if package_version.hashes:
             # Already filled from the last run.
             continue
@@ -84,6 +82,12 @@ def fill_package_digests_from_graph(generated_project: Project, graph: GraphData
             package_version.locked_version,
             package_version.index.url
         )
+
+        if not digests:
+            _LOGGER.warning(
+                "No hashes found for package %r in version %r from index %r",
+                package_version.name, package_version.locked_version, package_version.index.url
+            )
 
         for digest in digests:
             package_version.hashes.append('sha256:' + digest)
