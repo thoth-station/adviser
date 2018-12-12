@@ -207,7 +207,7 @@ class DependencyGraph:
             if transitive_dependencies and not transitive_dependencies_to_include:
                 raise ConstraintClashError("Unable to create a dependency graph for the given set of constraints")
             
-            all_transitive_dependencies_to_include.extend(transitive_dependencies)
+            all_transitive_dependencies_to_include.extend(transitive_dependencies_to_include)
 
         all_transitive_dependencies_to_include = cls._cut_off_dependencies(graph, all_transitive_dependencies_to_include)
 
