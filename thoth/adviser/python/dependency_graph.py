@@ -366,10 +366,13 @@ class DependencyGraph:
                     _LOGGER.debug("Included stack %r", state[0])
                     package_versions = tuple(g.package_version for g in state[0].values())
                     _LOGGER.debug("Yielding newly created project from state: %r", state[0])
+                    # Discard original sources so they are filled correctly from packages.
+                    pipfile_meta = self.meta.to_dict()
+                    pipfile_meta['sources'] = {}
                     yield decision_function_result, Project.from_package_versions(
                         packages=list(self.project.iter_dependencies(with_devel=True)),
                         packages_locked=package_versions,
-                        meta=self.meta
+                        meta=PipfileMeta.from_dict(pipfile_meta)
                     )
                 else:
                     _LOGGER.info("Decision function excluded the computed stack")
