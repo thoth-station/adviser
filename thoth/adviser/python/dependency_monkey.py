@@ -116,7 +116,7 @@ def dependency_monkey(project: Project, output: str = None, *, seed: int = None,
     decision_function = DecisionFunction.get_decision_function(
         graph,
         decision_function_name,
-        RuntimeEnvironment.from_dict(runtime_environment or {})
+        runtime_environment
     )
     random.seed(seed)
 

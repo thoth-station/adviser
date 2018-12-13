@@ -201,9 +201,13 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
     limit = int(limit) if limit else None
     count = int(count) if count else None
 
+    if runtime_environment:
+        runtime_environment = json.loads(runtime_environment)
+    else:
+        runtime_environment = {}
+
     recommendation_type = RecommendationType.by_name(recommendation_type)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
-    # TODO: pass limit and count in parameters
     result = {
         'error': None,
         'report': [],
@@ -217,16 +221,13 @@ def advise(click_ctx, requirements, requirements_format=None, requirements_locke
             'no_pretty': no_pretty
         },
         'input': None,
-        'output': {
-            'requirements': None,
-            'requirements_locked': None
-        }
     }
+
+    runtime_environment = RuntimeEnvironment.from_dict(runtime_environment)
+
     try:
-        # TODO: add seed and checking of decision?
         project = _instantiate_project(requirements, requirements_locked, files)
         result['input'] = project.to_dict()
-        runtime_environment = RuntimeEnvironment.from_dict(runtime_environment or {})
         report = Adviser.compute_on_project(
             project,
             runtime_environment=runtime_environment,
@@ -321,6 +322,11 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
     seed = int(seed) if seed else None
     count = int(count) if count else None
 
+    if runtime_environment:
+        runtime_environment = json.loads(runtime_environment)
+    else:
+        runtime_environment = {}
+
     result = {
         'error': False,
         'report': [],
@@ -341,6 +347,8 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
         'output': [],
         'computed': None
     }
+
+    runtime_environment = RuntimeEnvironment.from_dict(runtime_environment)
 
     try:
         report = run_dependency_monkey(
