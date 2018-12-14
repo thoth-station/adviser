@@ -45,7 +45,7 @@ class RuntimeEnvironment:
 
     def to_dict(self):
         """Convert runtime environment object representation to a dict."""
-        return {
-            'cpu_model': self.cpu_model,
-            'cpu_family': self.cpu_family
-        }
+        result = {}
+        for attribute, value in self.__dict__.items():
+            if value is not None:
+                result[attribute] = value
