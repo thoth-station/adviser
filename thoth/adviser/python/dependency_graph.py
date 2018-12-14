@@ -347,19 +347,12 @@ class DependencyGraph:
         # Nothing suspicious so far :)
         return True
 
-    def walk(self, decision_function: typing.Callable = None) -> typing.Generator[tuple, None, None]:
+    def walk(self, decision_function: typing.Callable) -> typing.Generator[tuple, None, None]:
         """Generate software stacks based on traversing the dependency graph.
 
-        @param decision_function: function used to filter out stacks (False - omit stack, True include stack),
-            used for sampling avoiding generating all the possible software stacks
+        @param decision_function: function used to filter out stacks
         @return: a generator, each item yielded value is one option of a resolved software stack
         """
-        # The implementation is very lazy (using generators where possible), more lazy then the author himself...
-        def always_true_decision_function(_):
-            # Always generate all, if not stated otherwise.
-            return True
-
-        decision_function = decision_function or always_true_decision_function
         stack = deque()
 
         # Initial configuration picks the latest versions first (they are last on the stack):
