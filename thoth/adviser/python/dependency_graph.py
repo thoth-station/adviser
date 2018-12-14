@@ -29,6 +29,8 @@ but as there can be cyclic deps in the Python ecosystem, we need to consider
 cycles (see caching).
 """
 
+import os
+import pickle
 import typing
 import logging
 from collections import deque
@@ -136,6 +138,12 @@ class DependencyGraph:
     @classmethod
     def from_project(cls, graph: GraphDatabase, project: Project, with_devel: bool = False):
         """Construct a dependency graph from a project."""
+        # Load from a dump if user requested it.
+        if os.getenv('THOTH_ADVISER_FILEDUMP') and os.path.isfile(os.getenv('THOTH_ADVISER_FILEDUMP')):
+            _LOGGER.warning("Loading file dump %r as per user request", os.getenv('THOTH_ADVISER_FILEDUMP'))
+            with open(os.getenv('THOTH_ADVISER_FILEDUMP'), 'rb') as file_dump:
+                return pickle.load(file_dump)
+
         # Place the import statement here to simplify mocks in the testsuite.
         solver = PythonPackageGraphSolver(graph_db=graph)
         _LOGGER.info("Parsing and solving direct dependencies of the requested project")
@@ -287,12 +295,20 @@ class DependencyGraph:
                         package.dependencies[dependency_name].append(dependency)
 
         _LOGGER.info("Creating dependency graph")
-        return cls(
+        instance = cls(
             direct_dependencies,
             project=project,
             meta=project.pipfile.meta,
             dependencies_map=dependencies_map
         )
+
+        # Store in a dump if user requested it.
+        if os.getenv('THOTH_ADVISER_FILEDUMP'):
+            _LOGGER.warning("Storing file dump as per user request")
+            with open(os.getenv('THOTH_ADVISER_FILEDUMP'), 'wb') as file_dump:
+                return pickle.dump(instance, file_dump)
+
+        return instance
 
     @staticmethod
     def _is_final_state(state: tuple) -> bool:
@@ -361,7 +377,7 @@ class DependencyGraph:
 
             if self._is_final_state(state):
                 _LOGGER.info("Found a new stack, asking decision function for inclusion")
-                decision_function_result = decision_function((graph_item.package_version for graph_item in state[0]))
+                decision_function_result = decision_function((graph_item.package_version for graph_item in state[0].values()))
                 if decision_function_result[0]:
                     _LOGGER.info(
                         "Decision function included the computed stack - result was %r", decision_function_result[0]

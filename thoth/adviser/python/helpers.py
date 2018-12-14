@@ -18,6 +18,7 @@
 
 """Helper functions and utilities."""
 
+import os
 from itertools import chain
 import logging
 
@@ -63,6 +64,10 @@ def fill_package_digests(generated_project: Project) -> Project:
 
 def fill_package_digests_from_graph(generated_project: Project, graph: GraphDatabase = None) -> Project:
     """Fill package digests stated in Pipfile.lock from graph database."""
+    if bool(os.getenv('THOTH_ADVISER_NO_DIGESTS', 0)):
+        _LOGGER.warning("No digests will be provided as per user request")
+        return generated_project
+
     if not graph:
         graph = GraphDatabase()
         graph.connect()
