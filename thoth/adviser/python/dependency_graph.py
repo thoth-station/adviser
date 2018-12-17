@@ -329,7 +329,7 @@ class DependencyGraph:
         if os.getenv('THOTH_ADVISER_FILEDUMP'):
             _LOGGER.warning("Storing file dump as per user request")
             with open(os.getenv('THOTH_ADVISER_FILEDUMP'), 'wb') as file_dump:
-                return pickle.dump(instance, file_dump)
+                pickle.dump(instance, file_dump)
 
         return instance
 
@@ -370,6 +370,22 @@ class DependencyGraph:
         # Nothing suspicious so far :)
         return True
 
+    def _construct_direct_dependencies(self, package_versions):
+        """Get direct dependencies as they were stated in the original project.
+
+        This is needed as we are recommending cross-index, we need to explicitly adjust the original set of direct
+        dependencies and construct it from the new resolved set of dependencies.
+        """
+        direct_dependencies = []
+
+        for package_version in package_versions:
+            if package_version.develop and self.project.pipfile.dev_packages.get(package_version.name):
+                direct_dependencies.append(package_version)
+            elif not package_version.develop and self.project.pipfile.packages.get(package_version.name):
+                direct_dependencies.append(package_version)
+
+        return direct_dependencies
+
     def walk(self, decision_function: typing.Callable) -> typing.Generator[tuple, None, None]:
         """Generate software stacks based on traversing the dependency graph.
 
@@ -405,7 +421,7 @@ class DependencyGraph:
                     pipfile_meta = self.meta.to_dict()
                     pipfile_meta['sources'] = {}
                     yield decision_function_result, Project.from_package_versions(
-                        packages=list(self.project.iter_dependencies(with_devel=True)),
+                        packages=self._construct_direct_dependencies(package_versions),
                         packages_locked=package_versions,
                         meta=PipfileMeta.from_dict(pipfile_meta)
                     )
