@@ -135,6 +135,17 @@ class DependencyGraph:
         _LOGGER.debug("Cutting off not relevant paths")
         return transitive_paths
 
+    @staticmethod
+    def _get_python_package_tuples(ids_map: typing.Dict[int, tuple], graph: GraphDatabase, python_package_ids: typing.Set[int]) -> None:
+        """Retrieve tuples representing package name, package version and index url for the given set of ids."""
+        seen_ids = set(ids_map.keys())
+        unseen_ids = python_package_ids - seen_ids
+
+        _LOGGER.info("Retrieving package tuples for transitive dependencies (count: %d)", len(unseen_ids))
+        package_tuples = graph.get_python_package_tuples(unseen_ids)
+        for python_package_id, package_tuple in package_tuples.items():
+            ids_map[python_package_id] = package_tuple
+
     @classmethod
     def from_project(cls, graph: GraphDatabase, project: Project, with_devel: bool = False):
         """Construct a dependency graph from a project."""
@@ -153,6 +164,8 @@ class DependencyGraph:
             with_devel=with_devel
         )
 
+        # Map id of packages to their tuple representation.
+        package_tuples_map = dict()
         # Now perform resolution on all the transitive dependencies.
         all_direct_dependencies = list(chain(*direct_dependencies.values()))
         all_dependencies = list(all_direct_dependencies)
@@ -162,16 +175,6 @@ class DependencyGraph:
         all_transitive_dependencies_to_include = []
 
         for graph_item in all_direct_dependencies:
-            # Example response:
-            # [
-            #   # Example entry:
-            #   [
-            #     {'package': 'tensorflow', 'version': '1.1.0', index='..'},
-            #     {'depends_on': '>=1.11.0'},
-            #     {'package': 'numpy', 'version': '1.14.2', index='..'}
-            #   ],
-            #    ...
-            # ]
             _LOGGER.info(
                 "Retrieving transitive dependencies for %r in version %r from %r",
                 graph_item.package_version.name,
@@ -184,34 +187,40 @@ class DependencyGraph:
                 graph_item.package_version.index.url
             )
 
+            cls._get_python_package_tuples(package_tuples_map, graph, set(chain(chain(*transitive_dependencies))))
+
             # Fast path - filter out paths that have a version of a direct
             # dependency in it that does not correspond to the direct
             # dependency. This way we can filter out a lot of nodes in the graph and reduce walks.
             transitive_dependencies_to_include = []
             for entry in transitive_dependencies:
                 exclude = False
+                new_entry = []
                 for idx in range(0, len(entry), 2):
                     item = entry[idx]
+                    item = package_tuples_map[item]
+                    package, version, index_url = item[0], item[1], item[2]
+                    new_entry.append((package, version, index_url))
                     direct_packages_of_this = [
-                        dep for dep in all_direct_dependencies if dep.package_version.name == item['package']
+                        dep for dep in all_direct_dependencies if dep.package_version.name == package
                     ]
 
                     if not direct_packages_of_this:
                         continue
 
-                    is_direct = (dep.is_package_version_no_index(item['package'], item['version']) for dep in direct_packages_of_this)
+                    is_direct = (dep.is_package_version_no_index(package, version) for dep in direct_packages_of_this)
                     if any(is_direct):
                         continue
 
                     # Otherwise do not include it - cut off the un-reachable dependency graph.
                     _LOGGER.debug(
-                        "Excluding a path due to package %s (unreachable based on direct dependencies)", item
+                        "Excluding a path due to package %s (unreachable based on direct dependencies)", (package, version, index_url)
                     )
                     exclude = True
                     break
 
                 if not exclude:
-                    transitive_dependencies_to_include.append(entry)
+                    transitive_dependencies_to_include.append(new_entry)
 
             # There are transitive dependencies, but we were not able to construct dependency graph
             # with given constraints (e.g. there is always dependency on protobuf, but we asked to remove protobuf).
@@ -224,15 +233,19 @@ class DependencyGraph:
 
         for entry in all_transitive_dependencies_to_include:
             # Name graph-query dependent results.
-            for idx in range(1, len(entry), 2):
+            for idx in range(0, len(entry) - 1):
                 # The idx corresponds to "depends_on" that is in the middle of source and target package.
-                source_idx = idx - 1
+                if len(entry) == 1:
+                    # Dependency is a direct dependency without any own dependencies. 
+                    continue
+
+                source_idx = idx
                 dest_idx = idx + 1
 
                 source_name, source_version, source_index = \
-                    entry[source_idx]['package'], entry[source_idx]['version'], entry[source_idx]['index_url']
+                    entry[source_idx][0], entry[source_idx][1], entry[source_idx][2]
                 destination_name, destination_version, destination_index = \
-                    entry[dest_idx]['package'], entry[dest_idx]['version'], entry[dest_idx]['index_url']
+                    entry[dest_idx][0], entry[dest_idx][1], entry[dest_idx][2]
 
                 # If this fails on key error, the returned query from graph
                 # does not preserve order of nodes visited (it should).
