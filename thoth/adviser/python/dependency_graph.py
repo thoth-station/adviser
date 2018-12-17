@@ -234,11 +234,6 @@ class DependencyGraph:
         for entry in all_transitive_dependencies_to_include:
             # Name graph-query dependent results.
             for idx in range(0, len(entry) - 1):
-                # The idx corresponds to "depends_on" that is in the middle of source and target package.
-                if len(entry) == 1:
-                    # Dependency is a direct dependency without any own dependencies. 
-                    continue
-
                 source_idx = idx
                 dest_idx = idx + 1
 
