@@ -82,6 +82,19 @@ class DependencyGraph:
     dependencies_map = attr.ib(type=dict)
     project = attr.ib(type=Project)
 
+    @property
+    def stacks_estimated(self) -> int:
+        """Estimate number of sofware stacks we could end up with (the upper boundary)."""
+        # We could estimate based on traversing the tree, it would give us better, but still rough estimate.
+        dependencies = {}
+        for dependency_name, dependency_versions in self.dependencies_map.items():
+            dependencies_total = 0
+            for dependency_urls in dependency_versions.values():
+                dependencies_total += len(dependency_urls)
+            dependencies[dependency_name] = dependencies_total
+
+        return reduce(lambda a, b: a * b, dependencies.values())
+
     @staticmethod
     def _prepare_direct_dependencies(solver: PythonPackageGraphSolver, project: Project,
                                      with_devel: bool) -> typing.List[typing.List[GraphItem]]:
@@ -309,6 +322,8 @@ class DependencyGraph:
             meta=project.pipfile.meta,
             dependencies_map=dependencies_map
         )
+
+        _LOGGER.info("Number of stacks estimated - %d (upper boundary)", instance.stacks_estimated)
 
         # Store in a dump if user requested it.
         if os.getenv('THOTH_ADVISER_FILEDUMP'):
