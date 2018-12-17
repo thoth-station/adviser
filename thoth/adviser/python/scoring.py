@@ -56,11 +56,9 @@ class Scoring:
 
         raise InternalError(f"No scoring function defined for recommendation type {recommendation_type}")
 
-    def _performance_scoring(self, packages: typing.Sequence[PackageVersion]) -> typing.Tuple[float, list]:
+    def _performance_scoring(self, packages: typing.List[tuple]) -> typing.Tuple[float, list]:
         """Score the given stack based on performance."""
         # TODO: filter out packages that do not have impact on performance
-        packages = [package.to_tuple() for package in packages]
-
         _LOGGER.info("Obtaining performance index for stack")
         performance_index = self.graph.compute_python_package_version_avg_performance(
             packages,
@@ -75,6 +73,7 @@ class Scoring:
 
     def stable_scoring_function(self, packages: typing.Sequence[PackageVersion]) -> typing.Tuple[float, list]:
         """Scoring function used for scoring stacks based on stability."""
+        packages = [package.to_tuple_locked() for package in packages]
         return self._performance_scoring(packages)
 
     def testing_scoring_function(self, packages: typing.Sequence[PackageVersion]) -> typing.Tuple[float, list]:
