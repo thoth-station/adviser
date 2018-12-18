@@ -20,7 +20,7 @@
 import os
 
 from thoth.adviser.configuration import _Configuration
-from thoth.adviser.python.source import Source
+from thoth.python import Source
 
 from base import AdviserTestCase
 
@@ -30,8 +30,10 @@ class TestConfiguration(AdviserTestCase):
 
     def test_default(self):
         configuration = _Configuration()
-        assert 'THOTH_ADVISER_WAREHOUSES' not in os.environ
+        assert "THOTH_ADVISER_WAREHOUSES" not in os.environ
         assert configuration.warehouses is not None
         assert len(configuration.warehouses) == 2
 
-        assert set(configuration.warehouses) == set(('https://pypi.python.org/simple', 'https://pypi.org/simple'))
+        assert set(configuration.warehouses) == set(
+            ("https://pypi.python.org/simple", "https://pypi.org/simple")
+        )

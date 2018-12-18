@@ -7,16 +7,16 @@
 #
 a:
   1.0.0:
-    index:
+    - index_url: index1
   1.1.0:
-    index:
+    - index_url: index1
   1.2.0:
-    index:
+    - index_url: index2
 
 b:
   1.0.0:
-    index:
+    - index_url: index1
   2.0.0:
-    index:
+    - index_url: index1
   3.0.0:
-    index:
+    - index_url: index2

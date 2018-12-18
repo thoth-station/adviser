@@ -19,22 +19,29 @@
 """Test dependency graph construction and operations on it."""
 
 import os
-import pytest
 
 from base import AdviserTestCase
-from graph_mock import with_graph_db_mock
+from graph_mock import MockedGraphDatabase
 from thoth.adviser.python import DependencyGraph
 from thoth.python import Project
 
 
 class TestDependencyGraph(AdviserTestCase):
+    def always_true(self, _):
+        return True, [{"foo": "bar"}]
 
-    @with_graph_db_mock('db_1.yaml')
-    def test_construct_project0(self, project_name: str = None):
-        project_name = project_name or 'Pipfile_project0'
-        project = Project.from_files(os.path.join(self.data_dir, 'projects', 'Pipfile_project0'))
-        dependency_graph = DependencyGraph.from_project(project)
+    def test_construct_project0(self):
+        graph = MockedGraphDatabase("db_1.yaml")
+        project = Project.from_files(
+            os.path.join(self.data_dir, "projects", "Pipfile_project0")
+        )
+
+        dependency_graph = DependencyGraph.from_project(graph, project)
         count = 0
-        for project in dependency_graph.walk():
+        for reasoning, generated_project in dependency_graph.walk(self.always_true):
+            assert isinstance(generated_project, Project)
+            assert isinstance(reasoning, tuple)
+            assert reasoning == (True, [{"foo": "bar"}])
             count += 1
-        raise ValueError(f"{count}")
+
+        assert count == 9

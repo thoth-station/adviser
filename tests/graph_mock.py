@@ -19,41 +19,43 @@
 
 import os
 import typing
-from functools import wraps
 from collections import deque
 
 import yaml
-import mock
-
 from base import AdviserTestCase
 
-from thoth.storages.graph import GraphDatabase
 
-
-class _MockedGraphDatabase:
+class MockedGraphDatabase:
     """A mocked graph database using YAML files as data."""
 
     def __init__(self, database_file: str):
-        self._connect_called = False
-        with open(os.path.join(AdviserTestCase.data_dir, 'graph', database_file), 'r') as db_file:
+        with open(
+            os.path.join(AdviserTestCase.data_dir, "graph", database_file), "r"
+        ) as db_file:
             self.db = yaml.load(db_file)
+        # A map mapping package id to its tuples - this map can be used after the retrieve
+        # transitive_dependencies_python call which fills this dict.
+        self._id_map = {}
+        self._reverse_id_map = {}
 
     def connect(self):
-        self._connect_called = True
+        pass
 
-    def get_all_versions_python_package(self, package_name: str) -> typing.List[str]:
+    def get_all_versions_python_package(self, package_name: str) -> typing.List[tuple]:
         """Get all versions for the given Python package."""
-        assert self._connect_called is True
-        return list(self.db.get(package_name, {}).keys())
+        result = []
+        for version, info in self.db.get(package_name, {}).items():
+            for entry in info:
+                result.append((version, entry["index_url"]))
 
-    def retrieve_transitive_dependencies_python(self, package_name: str, version: str,
-                                                index: str) -> typing.List[list]:
+        return result
+
+    def retrieve_transitive_dependencies_python(
+        self, package_name: str, version: str, index: str
+    ) -> typing.List[list]:
         """Retrieve transitive dependencies for the given Python package."""
         # Cache for checking whether we have triplet (package_name, version, index) already seen
         # to avoid recursion.
-        assert self._connect_called is True
-
-        seen = {}
         result = []
         queue = deque()
         queue.append((package_name, version, index))
@@ -62,42 +64,61 @@ class _MockedGraphDatabase:
             package_name, package_version, index = queue.pop()
 
             if package_name not in self.db:
-                raise ValueError(f"The given package {package_name!r} is not present in the database")
+                raise ValueError(
+                    f"The given package {package_name!r} is not present in the database"
+                )
 
-            version_entry = self.db[package_name].get(version)
-            if not version_entry:
+            info_entry = self.db[package_name].get(version)
+            if not info_entry:
                 raise ValueError(
                     f"The given package {package_name!r} has no record in the database for version {version!r}"
                 )
 
-            for depends_on_entry in version_entry.get('depends_on', []):
-                for version in depends_on_entry['resolved']:
-                    queue.append(
-                        [depends_on_entry['package_name'], version, depends_on_entry['index']]
-                    )
-                    result.append((
-                        {
-                            'package': package_name, 'version': package_version, 'index': index
-                        },
-                        {'depends_on': depends_on_entry['version_range']},
-                        {
-                            'package': depends_on_entry['package_name'],
-                            'version': version,
-                            'index': depends_on_entry['index']
-                        }
-                    ))
+            for version_entry in info_entry:
+                for depends_on_entry in version_entry.get("depends_on", []):
+                    for version in depends_on_entry["resolved"]:
+                        queue.append(
+                            [
+                                depends_on_entry["package_name"],
+                                version,
+                                depends_on_entry["index_url"],
+                            ]
+                        )
+
+                        source = (package_name, package_version, index)
+                        if source in self._reverse_id_map:
+                            source_id = self._reverse_id_map[source]
+                        else:
+                            source_id = id(source)
+                            self._id_map[source_id] = source
+                            self._reverse_id_map[source] = source_id
+
+                        destination = (
+                            depends_on_entry["package_name"],
+                            version,
+                            depends_on_entry["index_url"],
+                        )
+                        if destination in self._reverse_id_map:
+                            destination_id = self._reverse_id_map[destination]
+                        else:
+                            destination_id = id(destination)
+                            self._id_map[destination_id] = destination
+                            self._reverse_id_map[destination] = destination_id
+
+                        result.append((source_id, destination_id))
 
         return result
 
+    def get_python_package_tuples(
+        self, python_package_node_ids: typing.Set[int]
+    ) -> typing.Dict[int, tuple]:
+        result = {}
+        for python_package_id in python_package_node_ids:
+            package_tuple = self._id_map.get(python_package_id)
+            if package_tuple is None:
+                raise ValueError(
+                    f"The given id {python_package_id} was never retrieved from the graph"
+                )
+            result[python_package_id] = package_tuple
 
-def with_graph_db_mock(database_file: str) -> typing.Callable:
-    """A wrapper for mocking responses from the database."""
-    def wrapped(func: typing.Callable) -> typing.Callable:
-        def wrapper(*args, **kwargs):
-            with mock.patch('thoth.storages.graph.janusgraph.GraphDatabase') as MockClass:
-                MockClass.return_value = _MockedGraphDatabase(database_file)
-                return func(*args, **kwargs)
-
-        return wrapper
-
-    return wrapped
+        return result

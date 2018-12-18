@@ -1,0 +1,10 @@
+[[source]]
+url = "http://thoth-station.ninja/simple"
+verify_ssl = true
+name = "thoth-station"
+
+[packages]
+a = "*"
+b = "*"
+
+[dev-packages]
