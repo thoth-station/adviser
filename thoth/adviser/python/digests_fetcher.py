@@ -42,9 +42,11 @@ class GraphDigestsFetcher(DigestsFetcherBase):
         _LOGGER.debug(
             "Querying graph database for digests for package %r in version %r",
             package_name,
-            package_version
+            package_version,
         )
-        query_result = self.graph.get_all_python_package_version_hashes_sha256(package_name, package_version)
+        query_result = self.graph.get_all_python_package_version_hashes_sha256(
+            package_name, package_version
+        )
 
         result = {}
         for index_url, digest in query_result:
@@ -56,6 +58,6 @@ class GraphDigestsFetcher(DigestsFetcherBase):
             result[index_url].add(digest)
 
         for index_url, digests in result.items():
-            result[index_url] = [{'sha256': digest} for digest in digests]
+            result[index_url] = [{"sha256": digest} for digest in digests]
 
         return result

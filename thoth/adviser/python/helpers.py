@@ -40,15 +40,13 @@ def fill_package_digests(generated_project: Project) -> Project:
 
         if package_version.index:
             scanned_hashes = package_version.index.get_package_hashes(
-                package_version.name,
-                package_version.locked_version
+                package_version.name, package_version.locked_version
             )
         else:
             for source in generated_project.pipfile.meta.sources.values():
                 try:
                     scanned_hashes = source.get_package_hashes(
-                        package_version.name,
-                        package_version.locked_version
+                        package_version.name, package_version.locked_version
                     )
                     break
                 except Exception:
@@ -57,14 +55,16 @@ def fill_package_digests(generated_project: Project) -> Project:
                 raise ValueError("Unable to find package hashes")
 
         for entry in scanned_hashes:
-            package_version.hashes.append('sha256:' + entry['sha256'])
+            package_version.hashes.append("sha256:" + entry["sha256"])
 
     return generated_project
 
 
-def fill_package_digests_from_graph(generated_project: Project, graph: GraphDatabase = None) -> Project:
+def fill_package_digests_from_graph(
+    generated_project: Project, graph: GraphDatabase = None
+) -> Project:
     """Fill package digests stated in Pipfile.lock from graph database."""
-    if bool(os.getenv('THOTH_ADVISER_NO_DIGESTS', 0)):
+    if bool(os.getenv("THOTH_ADVISER_NO_DIGESTS", 0)):
         _LOGGER.warning("No digests will be provided as per user request")
         return generated_project
 
@@ -76,25 +76,29 @@ def fill_package_digests_from_graph(generated_project: Project, graph: GraphData
         if package_version.hashes:
             # Already filled from the last run.
             continue
-        
+
         _LOGGER.info(
             "Retrieving package digests from graph database for package %r in version %r from index %r",
-            package_version.name, package_version.locked_version, package_version.index.url
+            package_version.name,
+            package_version.locked_version,
+            package_version.index.url,
         )
 
         digests = graph.get_python_package_version_hashes_sha256(
             package_version.name,
             package_version.locked_version,
-            package_version.index.url
+            package_version.index.url,
         )
 
         if not digests:
             _LOGGER.warning(
                 "No hashes found for package %r in version %r from index %r",
-                package_version.name, package_version.locked_version, package_version.index.url
+                package_version.name,
+                package_version.locked_version,
+                package_version.index.url,
             )
 
         for digest in digests:
-            package_version.hashes.append('sha256:' + digest)
+            package_version.hashes.append("sha256:" + digest)
 
     return generated_project

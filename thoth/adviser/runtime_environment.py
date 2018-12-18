@@ -34,8 +34,8 @@ class RuntimeEnvironment:
         dict_ = dict(dict_)
 
         instance = cls(
-            cpu_family=dict_.pop('cpu_family', None),
-            cpu_model=dict_.pop('cpu_model', None)
+            cpu_family=dict_.pop("cpu_family", None),
+            cpu_model=dict_.pop("cpu_model", None),
         )
 
         if dict_:

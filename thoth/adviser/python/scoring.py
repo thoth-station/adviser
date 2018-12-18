@@ -42,7 +42,12 @@ class Scoring:
     runtime_environment = attr.ib(type=RuntimeEnvironment)
 
     @classmethod
-    def get_scoring_function(cls, graph: GraphDatabase, recommendation_type: RecommendationType, runtime_environment: RuntimeEnvironment) -> typing.Callable:
+    def get_scoring_function(
+        cls,
+        graph: GraphDatabase,
+        recommendation_type: RecommendationType,
+        runtime_environment: RuntimeEnvironment,
+    ) -> typing.Callable:
         """Retrieve a bound method to an instance keeping connected adapter to a graph database with runtime information."""
         instance = cls(graph=graph, runtime_environment=runtime_environment)
 
@@ -54,21 +59,26 @@ class Scoring:
             _LOGGER.info("Using scoring function with experimental testing stacks")
             return instance.testing_scoring_function
 
-        raise InternalError(f"No scoring function defined for recommendation type {recommendation_type}")
+        raise InternalError(
+            f"No scoring function defined for recommendation type {recommendation_type}"
+        )
 
-    def _performance_scoring(self, packages: typing.List[tuple]) -> typing.Tuple[typing.Optional[float], list]:
+    def _performance_scoring(
+        self, packages: typing.List[tuple]
+    ) -> typing.Tuple[typing.Optional[float], list]:
         """Score the given stack based on performance."""
         # TODO: filter out packages that do not have impact on performance
         _LOGGER.info("Obtaining performance index for stack")
         performance_index = self.graph.compute_python_package_version_avg_performance(
-            packages,
-            hardware_specs=self.runtime_environment.to_dict()
+            packages, hardware_specs=self.runtime_environment.to_dict()
         )
 
         _LOGGER.info("Performance index for stack: %f", performance_index)
-        return performance_index, [{'Performance index': performance_index}]
+        return performance_index, [{"Performance index": performance_index}]
 
-    def stable_scoring_function(self, packages: typing.Sequence[PackageVersion]) -> typing.Tuple[typing.Optional[float], list]:
+    def stable_scoring_function(
+        self, packages: typing.Sequence[PackageVersion]
+    ) -> typing.Tuple[typing.Optional[float], list]:
         """Scoring function used for scoring stacks based on stability."""
         packages = [package.to_tuple_locked() for package in packages]
         score, reasoning = self._performance_scoring(packages)
@@ -78,6 +88,8 @@ class Scoring:
 
         return None, []
 
-    def testing_scoring_function(self, packages: typing.Sequence[PackageVersion]) -> typing.Tuple[typing.Optional[float], list]:
+    def testing_scoring_function(
+        self, packages: typing.Sequence[PackageVersion]
+    ) -> typing.Tuple[typing.Optional[float], list]:
         """Experimental software stacks scoring."""
         raise NotImplementedError

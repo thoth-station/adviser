@@ -70,36 +70,47 @@ class PackageVersionDependencyParser(DependencyParser):
     def parse(self, dependencies: typing.List[PackageVersion]):
         """Parse the given list of PackageVersion objects."""
         for package_version in dependencies:
-            version = package_version.version if package_version.version != '*' else ''
-            dependency = PythonDependencyParser.parse_python(package_version.name + version)
+            version = package_version.version if package_version.version != "*" else ""
+            dependency = PythonDependencyParser.parse_python(
+                package_version.name + version
+            )
             yield dependency
 
 
 class PythonGraphSolver(Solver):
     """Solve Python dependencies based on data available in the graph database."""
 
-    def __init__(self, *, parser_kwargs: dict = None, graph_db=None, solver_kwargs: dict = None):
+    def __init__(
+        self, *, parser_kwargs: dict = None, graph_db=None, solver_kwargs: dict = None
+    ):
         """Initialize instance."""
         super().__init__(
             PackageVersionDependencyParser(**(parser_kwargs or {})),
             GraphReleasesFetcher(graph_db),
-            **(solver_kwargs or {})
+            **(solver_kwargs or {}),
         )
 
 
 class PythonPackageGraphSolver:
     """A wrapper to manipulate with Python packages using pure PackageVersion object interface."""
 
-    def __init__(self, parser_kwargs: dict = None, graph_db: dict = None, solver_kwargs: dict = None):
+    def __init__(
+        self,
+        parser_kwargs: dict = None,
+        graph_db: dict = None,
+        solver_kwargs: dict = None,
+    ):
         """Get instance of the graph solver."""
         self._solver = PythonGraphSolver(
-            parser_kwargs=parser_kwargs,
-            graph_db=graph_db,
-            solver_kwargs=solver_kwargs
+            parser_kwargs=parser_kwargs, graph_db=graph_db, solver_kwargs=solver_kwargs
         )
 
-    def solve(self, dependencies: typing.List[PackageVersion], graceful: bool = True,
-              all_versions: bool = False) -> typing.List[PackageVersion]:
+    def solve(
+        self,
+        dependencies: typing.List[PackageVersion],
+        graceful: bool = True,
+        all_versions: bool = False,
+    ) -> typing.List[PackageVersion]:
         """Solve the given dependencies and return object representation of packages."""
         # A fast path - if there is only one package we can directly rely on solving.
         # If there are multiple packages to be solved, construct a dictionary to optimize to
@@ -109,7 +120,9 @@ class PythonPackageGraphSolver:
         # resulting values is a list, otherwise string directly.
         result = {}
         if len(dependencies) <= 1:
-            resolved = self._solver.solve(dependencies, graceful=graceful, all_versions=all_versions)
+            resolved = self._solver.solve(
+                dependencies, graceful=graceful, all_versions=all_versions
+            )
 
             if not resolved:
                 return resolved
@@ -122,21 +135,27 @@ class PythonPackageGraphSolver:
 
             attributes = dependencies[0].to_dict()
             if all_versions:
-                result[attributes['name']] = []
+                result[attributes["name"]] = []
 
-            for version, index_url in list(resolved.values())[0] if all_versions else resolved.values():
+            for version, index_url in (
+                list(resolved.values())[0] if all_versions else resolved.values()
+            ):
                 # We only change version attribute that will be the resolved one.
-                attributes['version'] = '==' + version
-                attributes['index'] = Source(index_url)
+                attributes["version"] = "==" + version
+                attributes["index"] = Source(index_url)
                 if all_versions:
-                    result[attributes['name']].append(PackageVersion(**attributes))
+                    result[attributes["name"]].append(PackageVersion(**attributes))
                 else:
-                    result[attributes['name']] = [PackageVersion(**attributes)]
+                    result[attributes["name"]] = [PackageVersion(**attributes)]
         else:
             # First, construct the map for checking packages.
-            dependencies_map = {dependency.name: dependency for dependency in dependencies}
+            dependencies_map = {
+                dependency.name: dependency for dependency in dependencies
+            }
 
-            resolved = self._solver.solve(dependencies, graceful=graceful, all_versions=all_versions)
+            resolved = self._solver.solve(
+                dependencies, graceful=graceful, all_versions=all_versions
+            )
             if not resolved:
                 return resolved
 
@@ -146,9 +165,9 @@ class PythonPackageGraphSolver:
                 attributes = original_package.to_dict()
                 result_versions = []
                 for version, index_url in versions if all_versions else [versions]:
-                    attributes['version'] = '==' + version
-                    attributes['index'] = Source(index_url)
+                    attributes["version"] = "==" + version
+                    attributes["index"] = Source(index_url)
                     result_versions.append(PackageVersion(**attributes))
-                result[attributes['name']] = result_versions
+                result[attributes["name"]] = result_versions
 
         return result

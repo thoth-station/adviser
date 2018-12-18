@@ -39,24 +39,30 @@ class DecisionFunction:
         """Retrieve a random stack."""
         return random.getrandbits(1), None
 
-
     def everything(self, _: typing.Sequence[PackageVersion]):
         """Decide to include everything."""
         return 1.0, None
 
     @classmethod
-    def get_decision_function(cls, graph: GraphDatabase, decision_function_name: str, runtime_environment: RuntimeEnvironment) -> typing.Callable:
+    def get_decision_function(
+        cls,
+        graph: GraphDatabase,
+        decision_function_name: str,
+        runtime_environment: RuntimeEnvironment,
+    ) -> typing.Callable:
         """Get decision function based on its name - return a bound method to self instance."""
 
         instance = cls(graph=graph, runtime_environment=runtime_environment)
 
-        if decision_function_name == 'random':
+        if decision_function_name == "random":
             return instance.random_uniform
-        elif decision_function_name == 'all':
+        elif decision_function_name == "all":
             return instance.everything
 
-        raise InternalError(f"Unknown decision function requested to be used - {decision_function_name}")
+        raise InternalError(
+            f"Unknown decision function requested to be used - {decision_function_name}"
+        )
 
 
-DECISISON_FUNCTIONS = frozenset(('random', 'all'))
-DEFAULT_DECISION_FUNCTION = 'all'
+DECISISON_FUNCTIONS = frozenset(("random", "all"))
+DEFAULT_DECISION_FUNCTION = "all"
