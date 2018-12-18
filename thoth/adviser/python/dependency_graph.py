@@ -245,7 +245,6 @@ class DependencyGraph:
         all_transitive_dependencies_to_include = cls._cut_off_dependencies(graph, all_transitive_dependencies_to_include)
 
         for entry in all_transitive_dependencies_to_include:
-            # Name graph-query dependent results.
             for idx in range(0, len(entry) - 1):
                 source_idx = idx
                 dest_idx = idx + 1

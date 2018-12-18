@@ -66,7 +66,7 @@ def _dm_amun_directory_output(output: str, generated_project: Project, count: in
     return path
 
 
-def _dm_stdout_output(generated_project: Project, count: int):
+def _dm_stdout_output(generated_project: Project, _: int):
     """A function called if the project should be printed to stdout as a dict."""
     json.dump(generated_project.to_dict(), fp=sys.stdout, sort_keys=True, indent=2)
     return None

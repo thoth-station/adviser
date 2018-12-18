@@ -56,7 +56,7 @@ class Scoring:
 
         raise InternalError(f"No scoring function defined for recommendation type {recommendation_type}")
 
-    def _performance_scoring(self, packages: typing.List[tuple]) -> typing.Tuple[float, list]:
+    def _performance_scoring(self, packages: typing.List[tuple]) -> typing.Tuple[typing.Optional[float], list]:
         """Score the given stack based on performance."""
         # TODO: filter out packages that do not have impact on performance
         _LOGGER.info("Obtaining performance index for stack")
@@ -65,17 +65,19 @@ class Scoring:
             hardware_specs=self.runtime_environment.to_dict()
         )
 
-        _LOGGER.info("Perfomance index for stack: %f", performance_index)
-        if math.isnan(performance_index):
-            return None, []
-
+        _LOGGER.info("Performance index for stack: %f", performance_index)
         return performance_index, [{'Performance index': performance_index}]
 
-    def stable_scoring_function(self, packages: typing.Sequence[PackageVersion]) -> typing.Tuple[float, list]:
+    def stable_scoring_function(self, packages: typing.Sequence[PackageVersion]) -> typing.Tuple[typing.Optional[float], list]:
         """Scoring function used for scoring stacks based on stability."""
         packages = [package.to_tuple_locked() for package in packages]
-        return self._performance_scoring(packages)
+        score, reasoning = self._performance_scoring(packages)
 
-    def testing_scoring_function(self, packages: typing.Sequence[PackageVersion]) -> typing.Tuple[float, list]:
-        """Expecimental software stacks scoring."""
+        if not math.isnan(score) and score > 0.0:
+            return score, reasoning
+
+        return None, []
+
+    def testing_scoring_function(self, packages: typing.Sequence[PackageVersion]) -> typing.Tuple[typing.Optional[float], list]:
+        """Experimental software stacks scoring."""
         raise NotImplementedError

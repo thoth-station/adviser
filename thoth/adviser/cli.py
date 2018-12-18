@@ -60,7 +60,7 @@ def _print_version(ctx, _, value):
     ctx.exit()
 
 
-def _instantiate_project(requirements: str, requirements_locked: str, files: bool):
+def _instantiate_project(requirements: str, requirements_locked: typing.Optional[str], files: bool):
     """Create Project instance based on arguments passed to CLI."""
     if files:
         with open(requirements, 'r') as requirements_file:
@@ -329,7 +329,6 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
 
     result = {
         'error': False,
-        'report': [],
         'parameters': {
             'requirements': project.pipfile.to_dict(),
             'runtime_environment': runtime_environment,
@@ -363,7 +362,7 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
         )
         # Place report into result.
         result.update(report)
-    except SolverException as exc:
+    except SolverException:
         result['error'] = True
 
     print_command_result(
@@ -379,7 +378,6 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
 
 
 @cli.command('submit-amun')
-@click.pass_context
 @click.option('--requirements', '-r', type=str, envvar='THOTH_ADVISER_REQUIREMENTS', required=True,
               help="Requirements to be advised.")
 @click.option('--requirements-locked', '-r', type=str, envvar='THOTH_ADVISER_REQUIREMENTS', required=True,
@@ -393,15 +391,12 @@ def dependency_monkey(click_ctx, requirements: str, stack_output: str, report_ou
               help="The context into which computed stacks should be placed; if omitteed, "
                    "raw software stacks will be created. This option cannot be set when generating "
                    "software stacks onto filesystem.")
-@click.option('--no-pretty', '-P', is_flag=True,
-              help="Do not print results nicely.")
-def submit_amun(click_ctx, requirements: str, requirements_locked: str, stack_output: str, files: bool,
-                seed: int = None, decision: str = None, dry_run: bool = False,
-                context: str = None, no_pretty: bool = False):
+def submit_amun(requirements: str, requirements_locked: str, stack_output: str, files: bool, context: str = None):
     """Submit the given project to Amun for inspection - mostly for debug purposes."""
     project = _instantiate_project(requirements, requirements_locked=requirements_locked, files=files)
     context = json.loads(context) if context else {}
     inspection_id = dm_amun_inspect_wrapper(stack_output, context, project, 0)
+    print(inspection_id)
 
 
 if __name__ == '__main__':
