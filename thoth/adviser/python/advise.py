@@ -20,17 +20,12 @@
 
 import logging
 import heapq
-import operator
 import typing
 
 import attr
-import random
 
 from thoth.adviser import RuntimeEnvironment
-from thoth.solver.python.base import SolverException
 from thoth.python import Project
-from thoth.adviser.python import DECISISON_FUNCTIONS
-from thoth.adviser.python import DEFAULT_DECISION_FUNCTION
 from thoth.adviser.python import DependencyGraph
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.python.helpers import fill_package_digests_from_graph
@@ -65,6 +60,9 @@ class Adviser:
 
     count = attr.ib(type=int, default=None)
     limit = attr.ib(type=int, default=None)
+    recommendation_type = attr.ib(
+        type=RecommendationType, default=RecommendationType.STABLE
+    )
     _computed_stacks_heap = attr.ib(type=RuntimeEnvironment, default=attr.Factory(list))
     _visited = attr.ib(type=int, default=0)
 
@@ -74,7 +72,7 @@ class Adviser:
         project: Project,
         scoring_function: typing.Callable,
         dry_run: bool = False,
-    ) -> typing.List[Project]:
+    ) -> typing.Union[typing.List[Project], int]:
         """Compute recommendations for the given project."""
         dependency_graph = DependencyGraph.from_project(graph, project)
 
@@ -83,6 +81,7 @@ class Adviser:
                 scoring_function
             ):
                 score, reasoning = decision_function_result
+                reasoning.append({'score': score})
                 self._visited += 1
 
                 if dry_run:
@@ -104,6 +103,7 @@ class Adviser:
                 return self._visited
 
             # Sort computed stacks based on score and return them.
+            # TODO: heap pop (?)
             result = (
                 item.get_entries()
                 for item in sorted(self._computed_stacks_heap, reverse=True)
@@ -129,7 +129,9 @@ class Adviser:
         dry_run: bool = False
     ) -> list:
         """Compute recommendations for the given project, a syntax sugar for the compute method."""
-        instance = cls(count=count, limit=limit)
+        instance = cls(
+            count=count, limit=limit, recommendation_type=recommendation_type
+        )
 
         graph = GraphDatabase()
         graph.connect()
@@ -138,5 +140,6 @@ class Adviser:
             graph=graph,
             runtime_environment=runtime_environment,
             recommendation_type=recommendation_type,
+            python_version=project.python_version,
         )
         return instance.compute(graph, project, scoring_function, dry_run=dry_run)

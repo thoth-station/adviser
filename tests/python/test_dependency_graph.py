@@ -38,10 +38,20 @@ class TestDependencyGraph(AdviserTestCase):
 
         dependency_graph = DependencyGraph.from_project(graph, project)
         count = 0
+        stacks = set()
         for reasoning, generated_project in dependency_graph.walk(self.always_true):
             assert isinstance(generated_project, Project)
+            generated_project = generated_project.to_dict()
+            pipfile_lock = generated_project['requirements_locked']
+            stack = tuple((k, v['version'], v['index']) for k, v in pipfile_lock['default'].items())
+            assert stack not in stacks
+            stacks.add(stack)
+
+            assert not pipfile_lock['develop']
+
             assert isinstance(reasoning, tuple)
             assert reasoning == (True, [{"foo": "bar"}])
             count += 1
 
-        assert count == 9
+        # 7 stacks for a/b, 8 stacks for b/d => 56 as they do not interfere
+        assert count == 56

@@ -17,9 +17,9 @@
 
 """Scoring functions used when computing advises."""
 
-import math
 import typing
 import logging
+import math
 
 import attr
 
@@ -28,8 +28,6 @@ from thoth.adviser.exceptions import InternalError
 from thoth.adviser import RuntimeEnvironment
 from thoth.storages import GraphDatabase
 from thoth.python import PackageVersion
-
-from .decision import DEFAULT_DECISION_FUNCTION
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,6 +38,11 @@ class Scoring:
 
     graph = attr.ib(type=GraphDatabase)
     runtime_environment = attr.ib(type=RuntimeEnvironment)
+    python_version = attr.ib(type=str)
+    _counter = attr.ib(type=int, default=0)
+
+    _CVE_PENALIZATION = 0.1
+    _PERFORMANCE_PENALIZATION = 0.2
 
     @classmethod
     def get_scoring_function(
@@ -47,9 +50,14 @@ class Scoring:
         graph: GraphDatabase,
         recommendation_type: RecommendationType,
         runtime_environment: RuntimeEnvironment,
+        python_version: str,
     ) -> typing.Callable:
         """Retrieve a bound method to an instance keeping connected adapter to a graph database with runtime information."""
-        instance = cls(graph=graph, runtime_environment=runtime_environment)
+        instance = cls(
+            graph=graph,
+            runtime_environment=runtime_environment,
+            python_version=python_version,
+        )
 
         if recommendation_type == RecommendationType.STABLE:
             _LOGGER.info("Using scoring function obtaining stable software stacks")
@@ -59,13 +67,17 @@ class Scoring:
             _LOGGER.info("Using scoring function with experimental testing stacks")
             return instance.testing_scoring_function
 
+        if recommendation_type == RecommendationType.LATEST:
+            _LOGGER.info("Using scoring function that will generate latest stacks")
+            return instance.latest_scoring_function
+
         raise InternalError(
             f"No scoring function defined for recommendation type {recommendation_type}"
         )
 
     def _performance_scoring(
         self, packages: typing.List[tuple]
-    ) -> typing.Tuple[typing.Optional[float], list]:
+    ) -> typing.Tuple[float, list]:
         """Score the given stack based on performance."""
         # TODO: filter out packages that do not have impact on performance
         _LOGGER.info("Obtaining performance index for stack")
@@ -74,22 +86,57 @@ class Scoring:
         )
 
         _LOGGER.info("Performance index for stack: %f", performance_index)
-        return performance_index, [{"Performance index": performance_index}]
+
+        if math.isnan(performance_index):
+            return 0.0, []
+
+        score = (1.0 - performance_index) * self._PERFORMANCE_PENALIZATION
+        return score, [{"performance": performance_index}]
+
+    def _cve_scoring(self, packages: typing.List[tuple]) -> typing.Tuple[float, list]:
+        """Scoring against CVE database."""
+        report = []
+        for package in packages:
+            cves = self.graph.get_python_cve_records(package[0], packages[1])
+            if cves:
+                report.append(cves)
+
+        score = 0.0 if not report else self._CVE_PENALIZATION * len(report)
+        return score, report
 
     def stable_scoring_function(
         self, packages: typing.Sequence[PackageVersion]
-    ) -> typing.Tuple[typing.Optional[float], list]:
+    ) -> typing.Tuple[float, list]:
         """Scoring function used for scoring stacks based on stability."""
-        packages = [package.to_tuple_locked() for package in packages]
-        score, reasoning = self._performance_scoring(packages)
+        package_tuples = [package.to_tuple_locked() for package in packages]
+        reasoning = []
+        score = 0.0
 
-        if not math.isnan(score) and score > 0.0:
-            return score, reasoning
+        scoring, scoring_reasoning = self._performance_scoring(package_tuples)
+        score += scoring
+        reasoning.extend(scoring_reasoning)
 
-        return None, []
+        """
+        _LOGGER.info("Scoring...")
+        scoring, scoring_reasoning = self._cve_scoring(package_tuples)
+        score += scoring
+        reasoning.extend(scoring_reasoning)
+        _LOGGER.info("Finished scoring...")
+        """
+
+        return score, reasoning
 
     def testing_scoring_function(
         self, packages: typing.Sequence[PackageVersion]
     ) -> typing.Tuple[typing.Optional[float], list]:
         """Experimental software stacks scoring."""
         raise NotImplementedError
+
+    def latest_scoring_function(
+        self, _: typing.Sequence[PackageVersion]
+    ) -> typing.Tuple[typing.Optional[float], list]:
+        """Get latest software stacks."""
+        # As we preserve order in which software stacks are generated, we just return a positive score. As software
+        # stacks get generated, we just append them to the resulting list in the adviser report.
+        self._counter += 1
+        return 1.0, [{"Latest stack": self._counter}]

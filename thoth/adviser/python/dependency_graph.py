@@ -36,7 +36,6 @@ import logging
 from collections import deque
 from functools import reduce
 from itertools import chain
-from itertools import chain
 from itertools import product
 import operator
 
@@ -165,11 +164,53 @@ class DependencyGraph:
 
     @classmethod
     def _cut_off_dependencies(
-        cls, graph: GraphDatabase, transitive_paths: typing.List[dict]
+        cls,
+        graph: GraphDatabase,
+        transitive_paths: typing.List[dict],
+        core_packages: typing.Dict[str, dict],
+        allow_prereleases: bool,
     ) -> typing.List[dict]:
         """Cut off paths that have not relevant dependencies - dependencies we don't want to include in the stack."""
-        _LOGGER.debug("Cutting off not relevant paths")
-        return transitive_paths
+        result = []
+        for core_package_name, versions in core_packages.items():
+            if not versions:
+                continue
+
+            versions = [
+                (PackageVersion.parse_semantic_version(version), version)
+                for version in versions.keys()
+            ]
+            # Always pick the latest for now, later ask for observations.
+            version = sorted(versions, key=operator.itemgetter(0), reverse=True)[0]
+            index_url = core_packages[core_package_name][version[1]]
+            core_packages[core_package_name] = {version[1]: index_url}
+
+        for path in transitive_paths:
+            include_path = True
+            for package_tuple in path:
+
+                if package_tuple[0] in core_packages.keys() and (
+                    package_tuple[1] not in core_packages[package_tuple[0]]
+                    or package_tuple[2]
+                    not in core_packages[package_tuple[0]][package_tuple[1]]
+                ):
+                    _LOGGER.debug("Excluding the given stack due to core package %r", package_tuple)
+                    include_path = False
+                    break
+
+                if not allow_prereleases:
+                    semantic_version = PackageVersion.parse_semantic_version(
+                        package_tuple[1]
+                    )
+                    if semantic_version.build or semantic_version.prerelease:
+                        _LOGGER.debug("Excluding path with package %r as pre-releases were disabled", package_tuple)
+                        include_path = False
+                        break
+
+            if include_path:
+                result.append(path)
+
+        return result
 
     @staticmethod
     def _get_python_package_tuples(
@@ -181,7 +222,7 @@ class DependencyGraph:
         seen_ids = set(ids_map.keys())
         unseen_ids = python_package_ids - seen_ids
 
-        _LOGGER.info(
+        _LOGGER.debug(
             "Retrieving package tuples for transitive dependencies (count: %d)",
             len(unseen_ids),
         )
@@ -221,9 +262,13 @@ class DependencyGraph:
         source_dependencies = {}
         # All paths that should be included for computed stacks.
         all_transitive_dependencies_to_include = []
+        # Core python packages as pip, setuptools, six - we need to reduce the amount of software stacks
+        # generated, pick the most suitable ones when cutting off. These packages are also pre-analyzed by our init-job.
+        core_packages = dict.fromkeys(("pip", "setuptools", "six"), {})
 
+        _LOGGER.info("Retrieving transitive dependencies of direct dependencies")
         for graph_item in all_direct_dependencies:
-            _LOGGER.info(
+            _LOGGER.debug(
                 "Retrieving transitive dependencies for %r in version %r from %r",
                 graph_item.package_version.name,
                 graph_item.package_version.locked_version,
@@ -246,10 +291,16 @@ class DependencyGraph:
             for entry in transitive_dependencies:
                 exclude = False
                 new_entry = []
-                for idx in range(0, len(entry), 2):
+                for idx in range(0, len(entry)):
                     item = entry[idx]
                     item = package_tuples_map[item]
                     package, version, index_url = item[0], item[1], item[2]
+
+                    if package in core_packages.keys():
+                        if version not in core_packages[package]:
+                            core_packages[package][version] = []
+                        core_packages[package][version].append(index_url)
+
                     new_entry.append((package, version, index_url))
                     direct_packages_of_this = [
                         dep
@@ -289,10 +340,15 @@ class DependencyGraph:
                 transitive_dependencies_to_include
             )
 
+        _LOGGER.info("Cutting off unwanted dependencies")
         all_transitive_dependencies_to_include = cls._cut_off_dependencies(
-            graph, all_transitive_dependencies_to_include
+            graph,
+            all_transitive_dependencies_to_include,
+            core_packages,
+            project.prereleases_allowed,
         )
 
+        _LOGGER.info("Creating in-memory hierarchical structures")
         for entry in all_transitive_dependencies_to_include:
             for idx in range(0, len(entry) - 1):
                 source_idx = idx
@@ -505,7 +561,7 @@ class DependencyGraph:
                 decision_function_result = decision_function(
                     (graph_item.package_version for graph_item in state[0].values())
                 )
-                if decision_function_result[0]:
+                if decision_function_result[0] is not False:
                     _LOGGER.info(
                         "Decision function included the computed stack - result was %r",
                         decision_function_result[0],

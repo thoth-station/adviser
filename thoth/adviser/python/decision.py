@@ -35,13 +35,15 @@ class DecisionFunction:
     graph = attr.ib(type=GraphDatabase)
     runtime_environment = attr.ib(type=RuntimeEnvironment)
 
-    def random_uniform(self, _: typing.Sequence[PackageVersion]):
+    @staticmethod
+    def random_uniform(_: typing.Sequence[PackageVersion]):
         """Retrieve a random stack."""
-        return random.getrandbits(1), None
+        return random.getrandbits(1), []
 
-    def everything(self, _: typing.Sequence[PackageVersion]):
+    @staticmethod
+    def everything(_: typing.Sequence[PackageVersion]):
         """Decide to include everything."""
-        return 1.0, None
+        return 1.0, []
 
     @classmethod
     def get_decision_function(
