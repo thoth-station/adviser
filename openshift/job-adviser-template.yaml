@@ -24,6 +24,7 @@ objects:
       labels:
         app: thoth
         component: adviser
+        mark: cleanup
     spec:
       backoffLimit: 0
       template:
@@ -31,6 +32,7 @@ objects:
           labels:
             app: thoth
             component: adviser
+            mark: cleanup
         spec:
           restartPolicy: Never
           automountServiceAccountToken: false
@@ -49,6 +51,10 @@ objects:
                   value: "${THOTH_LOG_ADVISER}"
                 - name: THOTH_ADVISER_OUTPUT
                   value: "${THOTH_ADVISER_OUTPUT}"
+                - name: THOTH_ADVISER_COUNT
+                  value: "${THOTH_ADVISER_COUNT}"
+                - name: THOTH_ADVISER_LIMIT
+                  value: "${THOTH_ADVISER_LIMIT}"
                 - name: THOTH_ADVISER_REQUIREMENTS
                   value: "${THOTH_ADVISER_REQUIREMENTS}"
                 - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
@@ -62,9 +68,14 @@ objects:
                 - name: THOTH_JANUSGRAPH_HOST
                   value: janusgraph
                 - name: THOTH_JANUSGRAPH_PORT
-                  value: '80'
+                  value: '8182'
                 - name: THOTH_ADVISER_SUBCOMMAND
-                  value: 'adviser'
+                  value: 'advise'
+                - name: AMUN_API_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: amun-api-url
+                      name: thoth
               resources:
                 limits:
                   memory: '256Mi'
@@ -100,3 +111,13 @@ parameters:
     description: Log adviser actions
     displayName: Log adviser actions
     value: INFO
+  - name: THOTH_ADVISER_LIMIT
+    required: false
+    description: Limit number of software stacks scored.
+    displayName: Adviser limit.
+    value: INFO
+  - name: THOTH_ADVISER_COUNT
+    required: false
+    description: Number of software stacks returned in the recommendation.
+    displayName: Adviser count.
+    value: ''

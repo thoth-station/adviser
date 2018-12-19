@@ -25,22 +25,28 @@ from thoth.adviser.enums import Ecosystem
 
 
 def test_recommendation_type_enum():
-    assert RecommendationType.by_name('stable') == RecommendationType.STABLE
-    assert RecommendationType.by_name('testing') == RecommendationType.TESTING
-    assert RecommendationType.by_name('latest') == RecommendationType.LATEST
+    assert RecommendationType.by_name("stable") == RecommendationType.STABLE
+    assert RecommendationType.by_name("testing") == RecommendationType.TESTING
+    assert RecommendationType.by_name("latest") == RecommendationType.LATEST
 
     with pytest.raises(ValueError):
-        RecommendationType.by_name('unknown')
+        RecommendationType.by_name("unknown")
 
     assert len(RecommendationType) == 3
 
 
 def test_python_recommendation_output_enum():
-    assert PythonRecommendationOutput.by_name('pipenv') == PythonRecommendationOutput.PIPENV
-    assert PythonRecommendationOutput.by_name('requirements') == PythonRecommendationOutput.REQUIREMENTS
+    assert (
+        PythonRecommendationOutput.by_name("pipenv")
+        == PythonRecommendationOutput.PIPENV
+    )
+    assert (
+        PythonRecommendationOutput.by_name("requirements")
+        == PythonRecommendationOutput.REQUIREMENTS
+    )
     assert len(PythonRecommendationOutput) == 2
 
 
 def test_ecosystem_enum():
-    assert Ecosystem.by_name('python') == Ecosystem.PYTHON
+    assert Ecosystem.by_name("python") == Ecosystem.PYTHON
     assert len(Ecosystem) == 1

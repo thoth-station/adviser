@@ -42,6 +42,19 @@ resolution (Python is a dynamic programming language, what dependencies will be
 installed can be determined during installation - e.g. based on operating
 system).
 
+
+Development of Dependency Graph
+###############################
+
+If you are a developer and would like to speed up your work, dependency graph
+has a capability to be pickled onto disk and loaded back into memory on demand.
+To control this behavior you can use ``THOTH_ADVISER_FILEDUMP`` environment
+variable stating file into which the constructed graph should be deserialized
+(in case of this file does not exist) or loaded into back into memory (if file
+exists). Besides that, you can also supply environment variable
+``THOTH_ADVISER_NO_DIGESTS`` set to ``1`` if you do not care about package
+hashes in resulting Pipfile.lock files.
+
 Dependency Monkey
 =================
 

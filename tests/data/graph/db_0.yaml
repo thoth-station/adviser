@@ -1,0 +1,22 @@
+# This is YAML used for mocking graph database queries.
+#
+# The structure of stack having packages a and b (no cyclic deps, no layer of dependencies):
+#
+#           a               a               a              b               b               b
+#         1.0.0           1.1.0           1.2.0          1.0.0           2.0.0           3.0.0
+#
+a:
+  1.0.0:
+    - index_url: index1
+  1.1.0:
+    - index_url: index1
+  1.2.0:
+    - index_url: index2
+
+b:
+  1.0.0:
+    - index_url: index1
+  2.0.0:
+    - index_url: index1
+  3.0.0:
+    - index_url: index2

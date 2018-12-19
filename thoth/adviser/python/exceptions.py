@@ -29,3 +29,7 @@ class DirectDependencyRemoval(ThothAdviserException):
 
 class UnableLock(ThothAdviserException):
     """Raised if trying to lock invalid application stack or resolution cannot be done."""
+
+
+class ConstraintClashError(ThothAdviserException):
+    """An exception raised if there is a clash with constraints (see dependency graph for more info)."""

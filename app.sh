@@ -11,8 +11,8 @@ case $THOTH_ADVISER_SUBCOMMAND in
 	'dependency-monkey')
 		exec /opt/app-root/bin/python3 thoth-adviser dependency-monkey
 		;;
-	'adviser')
-		exec /opt/app-root/bin/python3 thoth-adviser adviser
+	'advise')
+		exec /opt/app-root/bin/python3 thoth-adviser advise
 		;;
 	*)
 		echo "Application configuration error - no adviser subcommand specified." >&2
