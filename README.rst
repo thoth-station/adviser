@@ -79,6 +79,9 @@ taken as representatives. These representatives are scored and aggregated data
 are used for predicting the best application stack (again, generated and run
 through CI/Amun to make predictions more accurate by learning over time).
 
+See `Dependency Monkey design document for more info
+<https://github.com/thoth-station/adviser/blob/master/docs/dependency_monkey.md>`_.
+
 Advises and Recommendations
 ===========================
 
