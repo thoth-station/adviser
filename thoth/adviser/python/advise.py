@@ -96,7 +96,7 @@ class Adviser:
                 else:
                     heapq.heappush(self._computed_stacks_heap, heap_entry)
 
-                if self.limit is not None and self._visited >= self.count:
+                if self.limit is not None and self._visited >= self.limit:
                     _LOGGER.info("Reached graph traversal limit (%s), stopping dependency graph traversal", self.limit)
                     break
 
