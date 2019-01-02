@@ -17,35 +17,30 @@
 
 """Thoth-adviser CLI."""
 
-import os
-import random
-import logging
 import json
-import sys
+import logging
 import typing
 from copy import deepcopy
-from functools import partial
 
 import click
-from thoth.analyzer import print_command_result
-from thoth.common import init_logging
-
-from thoth.adviser.enums import PythonRecommendationOutput
-from thoth.adviser.enums import RecommendationType
-from thoth.adviser.exceptions import ThothAdviserException
-from thoth.adviser.exceptions import InternalError
-from thoth.adviser.python import DECISISON_FUNCTIONS
-from thoth.adviser.runtime_environment import RuntimeEnvironment
 from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser import __version__ as analyzer_version
+from thoth.adviser.enums import PythonRecommendationOutput
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.exceptions import InternalError
+from thoth.adviser.exceptions import ThothAdviserException
 from thoth.adviser.python import Adviser
+from thoth.adviser.python import DECISISON_FUNCTIONS
+from thoth.adviser.python import GraphDigestsFetcher
 from thoth.adviser.python import dependency_monkey as run_dependency_monkey
 from thoth.adviser.python.dependency_monkey import dm_amun_inspect_wrapper
-from thoth.solver.python.base import SolverException
+from thoth.adviser.runtime_environment import RuntimeEnvironment
+from thoth.analyzer import print_command_result
+from thoth.common import init_logging
 from thoth.python import Pipfile
 from thoth.python import PipfileLock
-from thoth.adviser.python import GraphDigestsFetcher
 from thoth.python import Project
+from thoth.solver.python.base import SolverException
 
 init_logging()
 
