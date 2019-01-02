@@ -53,7 +53,6 @@ class DecisionFunction:
         runtime_environment: RuntimeEnvironment,
     ) -> typing.Callable:
         """Get decision function based on its name - return a bound method to self instance."""
-
         instance = cls(graph=graph, runtime_environment=runtime_environment)
 
         if decision_function_name == "random":

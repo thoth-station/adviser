@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+"""Representation of a runtime environment with serialization/deserialization methods."""
+
 import logging
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,7 +26,7 @@ class RuntimeEnvironment:
     """Representation of a runtime environment."""
 
     def __init__(self, *, cpu_family: int = None, cpu_model: int = None):
-        """Construct a runtime environmnet representative."""
+        """Construct a runtime environment representative."""
         self.cpu_family = cpu_family
         self.cpu_model = cpu_model
 

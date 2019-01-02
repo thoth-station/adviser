@@ -52,7 +52,7 @@ class Scoring:
         runtime_environment: RuntimeEnvironment,
         python_version: str,
     ) -> typing.Callable:
-        """Retrieve a bound method to an instance keeping connected adapter to a graph database with runtime information."""
+        """Get a bound method keeping connected adapter to a graph database with runtime information."""
         instance = cls(
             graph=graph,
             runtime_environment=runtime_environment,
