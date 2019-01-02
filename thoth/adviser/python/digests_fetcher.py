@@ -31,6 +31,7 @@ class GraphDigestsFetcher(DigestsFetcherBase):
     """Fetch digests from the graph database."""
 
     def __init__(self, graph: GraphDatabase = None):
+        """Initialize graph digests fetcher."""
         if not graph:
             graph = GraphDatabase()
             graph.connect()

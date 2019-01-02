@@ -43,14 +43,17 @@ class HeapEntry:
     __slots__ = ["score", "reasoning", "generated_project"]
 
     def __init__(self, score: float, reasoning: list, generated_project: Project):
+        """Initialize heap entry item."""
         self.score = score
         self.reasoning = reasoning
         self.generated_project = generated_project
 
     def __gt__(self, other):
+        """Compare heap entries based on score."""
         return self.score > other.score
 
     def get_entries(self) -> tuple:
+        """Get heap entry items."""
         return self.reasoning, self.generated_project
 
 
