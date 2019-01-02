@@ -3,3 +3,4 @@ __pycache__
 .cache
 thoth_adviser.egg-info/
 *.eggs/
+.coverage
