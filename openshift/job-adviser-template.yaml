@@ -115,9 +115,9 @@ parameters:
     required: false
     description: Limit number of software stacks scored.
     displayName: Adviser limit.
-    value: INFO
+    value: '500'
   - name: THOTH_ADVISER_COUNT
     required: false
     description: Number of software stacks returned in the recommendation.
     displayName: Adviser count.
-    value: ''
+    value: '1'
