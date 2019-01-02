@@ -40,10 +40,10 @@ objects:
             - name: adviser
               image: adviser
               livenessProbe:
-                # Give analyzer 10 minutes to compute results, kill it if it was not able result anything.
+                # Give analyzer 30 minutes to compute results, kill it if it was not able result anything.
                 tcpSocket:
                   port: 80
-                initialDelaySeconds: 600
+                initialDelaySeconds: 1800
                 failureThreshold: 1
                 periodSeconds: 10
               env:
@@ -78,10 +78,10 @@ objects:
                       name: thoth
               resources:
                 limits:
-                  memory: '256Mi'
+                  memory: '512Mi'
                   cpu: '500m'
                 requests:
-                  memory: '256Mi'
+                  memory: '512Mi'
                   cpu: '500m'
 parameters:
   - name: THOTH_ADVISER_OUTPUT
