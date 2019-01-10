@@ -20,7 +20,7 @@ objects:
   - apiVersion: batch/v1
     kind: Job
     metadata:
-      generateName: 'adviser-'
+      name: ${THOTH_ADVISER_JOB_ID}
       labels:
         app: thoth
         component: adviser
@@ -84,6 +84,10 @@ objects:
                   memory: '512Mi'
                   cpu: '500m'
 parameters:
+  - name: THOTH_ADVISER_JOB_ID
+    required: true
+    description: A unique dentifier of adviser job.
+    displayName: Adviser id
   - name: THOTH_ADVISER_OUTPUT
     required: false
     description: Remote where results should be send to

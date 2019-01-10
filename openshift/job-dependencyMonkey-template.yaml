@@ -20,7 +20,7 @@ objects:
   - apiVersion: batch/v1
     kind: Job
     metadata:
-      generateName: 'dependency-monkey-'
+      name: ${THOTH_DEPENDENCY_MONKEY_JOB_ID}
       labels:
         app: thoth
         component: dependency-monkey
@@ -83,6 +83,10 @@ objects:
                   memory: '128Mi'
                   cpu: '500m'
 parameters:
+  - name: THOTH_DEPENDENCY_MONKEY_JOB_ID
+    required: true
+    description: A unique identifier of dependency monkey job run.
+    displayName: Dependency monkey job id
   - name: THOTH_ADVISER_REQUIREMENTS
     required: true
     description: Raw stack requirements.
