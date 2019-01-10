@@ -20,7 +20,7 @@ objects:
   - apiVersion: batch/v1
     kind: Job
     metadata:
-      generateName: 'provenance-checker-'
+      name: ${THOTH_PROVENANCE_CHECKER_JOB_ID}
       labels:
         app: thoth
         component: provenance-checker
@@ -69,18 +69,22 @@ objects:
                   memory: '128Mi'
                   cpu: '500m'
 parameters:
+  - name: THOTH_PROVENANCE_CHECKER_JOB_ID
+    required: true
+    description: A unique identifier of provenance-checker job.
+    displayName: Provenance checker id
   - name: THOTH_ADVISER_OUTPUT
     required: false
-    description: Remote where results should be send to
+    description: Remote where results should be send to.
   - name: THOTH_ADVISER_REQUIREMENTS
     required: false
-    description: Raw stack requirements
+    description: Raw stack requirements.
   - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
     required: false
-    description: Fully pinned down stack
+    description: Fully pinned down stack.
     displayName: Locked requirements
   - name: THOTH_LOG_ADVISER
     required: false
-    description: Log adviser actions
+    description: Log adviser actions.
     displayName: Log adviser actions
     value: INFO
