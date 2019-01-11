@@ -77,11 +77,11 @@ objects:
                   value: "${THOTH_AMUN_CONTEXT}"
               resources:
                 limits:
-                  memory: '128Mi'
-                  cpu: '500m'
+                  memory: '8Gi'
+                  cpu: 1
                 requests:
-                  memory: '128Mi'
-                  cpu: '500m'
+                  memory: '8Gi'
+                  cpu: 1
 parameters:
   - name: THOTH_DEPENDENCY_MONKEY_JOB_ID
     required: true
