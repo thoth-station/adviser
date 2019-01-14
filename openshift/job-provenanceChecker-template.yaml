@@ -55,6 +55,8 @@ objects:
                   value: "${THOTH_ADVISER_REQUIREMENTS}"
                 - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
                   value: "${THOTH_ADVISER_REQUIREMENTS_LOCKED}"
+                - name: THOTH_WHITELISTED_SOURCES
+                  value: "${THOTH_WHITELISTED_SOURCES}"
                 - name: THOTH_JANUSGRAPH_HOST
                   value: janusgraph
                 - name: THOTH_JANUSGRAPH_PORT
@@ -73,6 +75,10 @@ parameters:
     required: true
     description: A unique identifier of provenance-checker job.
     displayName: Provenance checker id
+  - name: THOTH_WHITELISTED_SOURCES
+    required: false
+    description: A comma separated values of URLs to whitelisted sources.
+    displayName: Whitelisted sources
   - name: THOTH_ADVISER_OUTPUT
     required: false
     description: Remote where results should be send to.
