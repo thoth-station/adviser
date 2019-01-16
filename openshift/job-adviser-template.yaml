@@ -71,11 +71,6 @@ objects:
                   value: '8182'
                 - name: THOTH_ADVISER_SUBCOMMAND
                   value: 'advise'
-                - name: AMUN_API_URL
-                  valueFrom:
-                    configMapKeyRef:
-                      key: amun-api-url
-                      name: thoth
               resources:
                 limits:
                   memory: '512Mi'
