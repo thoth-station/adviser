@@ -133,20 +133,23 @@ class PythonPackageGraphSolver:
                     f"Multiple packages resolved for one dependency {dependencies[0]!r}: {resolved!r}"
                 )
 
-            attributes = dependencies[0].to_dict()
             if all_versions:
-                result[attributes["name"]] = []
+                result[dependencies[0].name] = []
 
             for version, index_url in (
                 list(resolved.values())[0] if all_versions else resolved.values()
             ):
                 # We only change version attribute that will be the resolved one.
-                attributes["version"] = "==" + version
-                attributes["index"] = Source(index_url)
+                package_version = PackageVersion(
+                    name=dependencies[0].name,
+                    version='==' + version,
+                    index=Source(index_url),
+                    develop=dependencies[0].develop,
+                )
                 if all_versions:
-                    result[attributes["name"]].append(PackageVersion(**attributes))
+                    result[package_version.name].append(package_version)
                 else:
-                    result[attributes["name"]] = [PackageVersion(**attributes)]
+                    result[package_version.name] = [package_version]
         else:
             # First, construct the map for checking packages.
             dependencies_map = {
@@ -162,12 +165,16 @@ class PythonPackageGraphSolver:
             for package_name, versions in resolved.items():
                 # If this pop fails, it means that the package name has changed over the resolution.
                 original_package = dependencies_map.pop(package_name)
-                attributes = original_package.to_dict()
                 result_versions = []
                 for version, index_url in versions if all_versions else [versions]:
-                    attributes["version"] = "==" + version
-                    attributes["index"] = Source(index_url)
-                    result_versions.append(PackageVersion(**attributes))
-                result[attributes["name"]] = result_versions
+                    result_versions.append(
+                        PackageVersion(
+                            name=original_package.name,
+                            version='==' + version,
+                            index=Source(index_url),
+                            develop=original_package.develop,
+                        )
+                    )
+                result[original_package.name] = result_versions
 
         return result
