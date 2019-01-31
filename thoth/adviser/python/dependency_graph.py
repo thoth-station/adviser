@@ -194,7 +194,7 @@ class DependencyGraph:
             include_path = True
             for package_tuple in path:
                 if allowed_indexes and package_tuple[2] not in allowed_indexes:
-                    _LOGGER.warning("Excluding path with package %r - index not in allowed indexes", package_tuple)
+                    _LOGGER.debug("Excluding path with package %r - index not in allowed indexes", package_tuple)
                     include_path = False
                     break
 
