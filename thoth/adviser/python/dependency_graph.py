@@ -168,7 +168,8 @@ class DependencyGraph:
         graph: GraphDatabase,
         transitive_paths: typing.List[dict],
         core_packages: typing.Dict[str, dict],
-        allow_prereleases: bool,
+        project: Project,
+        restrict_indexes: bool
     ) -> typing.List[dict]:
         """Cut off paths that have not relevant dependencies - dependencies we don't want to include in the stack."""
         result = []
@@ -185,9 +186,17 @@ class DependencyGraph:
             index_url = core_packages[core_package_name][version[1]]
             core_packages[core_package_name] = {version[1]: index_url}
 
+        allowed_indexes = None
+        if restrict_indexes and project.pipfile.meta.sources:
+            allowed_indexes = set(source.url for source in project.pipfile.meta.sources.values())
+
         for path in transitive_paths:
             include_path = True
             for package_tuple in path:
+                if allowed_indexes and package_tuple[2] not in allowed_indexes:
+                    _LOGGER.warning("Excluding path with package %r - index not in allowed indexes", package_tuple)
+                    include_path = False
+                    break
 
                 if package_tuple[0] in core_packages.keys() and (
                     package_tuple[1] not in core_packages[package_tuple[0]]
@@ -198,7 +207,7 @@ class DependencyGraph:
                     include_path = False
                     break
 
-                if not allow_prereleases:
+                if not project.prereleases_allowed:
                     semantic_version = PackageVersion.parse_semantic_version(
                         package_tuple[1]
                     )
@@ -232,9 +241,12 @@ class DependencyGraph:
 
     @classmethod
     def from_project(
-        cls, graph: GraphDatabase, project: Project, with_devel: bool = False
+        cls, graph: GraphDatabase, project: Project, with_devel: bool = False, restrict_indexes: bool = True
     ):
-        """Construct a dependency graph from a project."""
+        """Construct a dependency graph from a project.
+
+        The restrict indexes flag states whether there should be used indexes only as configured from project metadata.
+        """
         # Load from a dump if user requested it.
         if os.getenv("THOTH_ADVISER_FILEDUMP") and os.path.isfile(
             os.getenv("THOTH_ADVISER_FILEDUMP")
@@ -345,7 +357,8 @@ class DependencyGraph:
             graph,
             all_transitive_dependencies_to_include,
             core_packages,
-            project.prereleases_allowed,
+            project,
+            restrict_indexes
         )
 
         _LOGGER.info("Creating in-memory hierarchical structures")

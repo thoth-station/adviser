@@ -77,7 +77,7 @@ class Adviser:
         dry_run: bool = False,
     ) -> typing.Union[typing.List[Project], int]:
         """Compute recommendations for the given project."""
-        dependency_graph = DependencyGraph.from_project(graph, project)
+        dependency_graph = DependencyGraph.from_project(graph, project, restrict_indexes=False)
 
         try:
             for decision_function_result, generated_project in dependency_graph.walk(
