@@ -24,6 +24,8 @@ objects:
       labels:
         app: thoth
         component: adviser
+        operator: graph-sync
+        task: adviser
         mark: cleanup
     spec:
       backoffLimit: 0
