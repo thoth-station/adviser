@@ -94,7 +94,7 @@ def _do_dependency_monkey(
     result = {"output": [], "computed": 0}
     for _, generated_project in dependency_graph.walk(decision_function):
         computed += 1
-        generated_project = fill_package_digests_from_graph(generated_project)
+        generated_project = fill_package_digests_from_graph(generated_project, graph)
 
         if not dry_run:
             entry = output_function(generated_project, count=computed)
