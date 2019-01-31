@@ -114,7 +114,7 @@ class Adviser:
             )
             _LOGGER.info("Filling package digests to software stacks")
             result = [
-                (item[0], fill_package_digests_from_graph(item[1])) for item in result
+                (item[0], fill_package_digests_from_graph(item[1], graph)) for item in result
             ]
             return result
         finally:
