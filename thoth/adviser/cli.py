@@ -253,12 +253,13 @@ def provenance(
 @click.option(
     "--count",
     envvar="THOTH_ADVISER_COUNT",
-    help="Number of software stacks that should be taken into account in the output.",
+    help="Number of software stacks shown in the output.",
 )
 @click.option(
     "--limit",
     envvar="THOTH_ADVISER_LIMIT",
-    help="Number of software stacks that should be taken into account in the output.",
+    help="Number of software stacks that should be taken into account (stop after reaching the limit).",
+
 )
 @click.option(
     "--runtime-environment",

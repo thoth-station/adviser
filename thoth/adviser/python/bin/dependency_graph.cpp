@@ -17,45 +17,64 @@
  */
 
 #include <iostream>
-#include <utility>
-#include <stack>
-#include <vector>
-#include <unistd.h>
 #include <limits>
+#include <unistd.h>
 
 #include "dependency_graph.h"
+#include "stack_item.h"
 
+/*
+ * Declaration of static constants.
+ */
 const unsigned DependencyGraph::STREAM_STOP = std::numeric_limits<unsigned>::max();
 const unsigned DependencyGraph::STREAM_DELIMITER = DependencyGraph::STREAM_STOP - 1;
-
 
 /*
  * Walk dependency graph and generate application stacks. The value returned is a flag signalizing whether
  * there are more stacks to be produced.
  */
 bool DependencyGraph::walk(){
-    // Remove from the last run.
-    /*
-    if (this->is_valid_state()) {
-        traversal_stack_item_t * item = this->traversal_stack_toppop();
-        this->delete_item(item);
-    }
-
     while (this->traversal_stack.size() > 0 && ! this->is_final_state())
         this->expand_state();
 
-    if (this->traversal_stack.size() > 0) {
-        traversal_stack_item_t * item = this->traversal_stack.top();
-        return item->first->data();
+    if (this->traversal_stack.size() != 0) {
+        // The top of the traversal stack holds a stack in a final state, write it to the output stack stream.
+        auto stack_item = this->traversal_stack_toppop();
+        this->write_stack_item(stack_item);
+        delete stack_item;
     }
-    */
 
-    // We don't have any states to traverse left. Return NULL.
-    //write(this->write_pipe_fd, &(DependencyGraph::STREAM_DELIMITER), sizeof(unsigned));
-    //write(this->write_pipe_fd, &(DependencyGraph::STREAM_STOP), sizeof(unsigned));
-    return false;
+    // Is there anything more to compute?
+    bool is_end = this->traversal_stack.size() == 0;
+    if (is_end)
+        write(this->write_fd, &(DependencyGraph::STREAM_STOP), sizeof(DependencyGraph::STREAM_STOP));
+
+    return ! is_end;
 }
 
+/*
+ * Compute cartesian product on vector of vectors. Used to compute all the possible combinations for done during
+ * resolution. The callee is responsible for freeing allocated vectors in the (pre-allocated) output vector passed as a pointer.
+ */
+void DependencyGraph::cartesian_product(std::vector<std::vector<package_t> *> * output_vector, const std::vector<std::vector<package_t>> & v) {
+    long long reminder;
+    long long quot;
+    long long total_size = 1LL;
+
+    for (auto it: v)
+        total_size *= it.size();
+
+    for (long long n = 0 ; n < total_size; ++n) {
+        std::vector<package_t> * u = new std::vector<package_t>();
+        quot = n;
+        for(long long i = v.size() - 1 ; 0 <= i ; --i) {
+            reminder = quot % v[i].size();
+            quot = quot / v[i].size();
+            u->push_back(v[i][reminder]);
+        }
+        output_vector->push_back(u);
+    }
+}
 
 /*
  * Export for ctypes.
@@ -70,11 +89,27 @@ extern "C" {
     }
 
     size_t get_item_size() {
-        return sizeof(unsigned);
+        return sizeof(package_t);
     }
 
-    DependencyGraph * DependencyGraph_new(unsigned * direct_dependencies, unsigned ** dependencies_list, unsigned * dependency_types, std::size_t size, int write_pipe_fd) {
-        auto graph = new DependencyGraph(direct_dependencies, dependencies_list, dependency_types, size, write_pipe_fd);
+    DependencyGraph * DependencyGraph_new(
+            package_t * direct_dependencies,
+            std::size_t direct_dependencies_size,
+            package_t ** dependencies_list,
+            std::size_t dependencies_list_size,
+            package_type_t * dependency_types,
+            std::size_t size,
+            int write_fd
+    ) {
+        auto graph = new DependencyGraph(
+            direct_dependencies,
+            direct_dependencies_size,
+            dependencies_list,
+            dependencies_list_size,
+            dependency_types,
+            size,
+            write_fd
+        );
         return graph;
     }
 

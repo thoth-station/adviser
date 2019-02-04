@@ -36,12 +36,12 @@ class DecisionFunction:
     runtime_environment = attr.ib(type=RuntimeEnvironment)
 
     @staticmethod
-    def random_uniform(_: typing.Sequence[PackageVersion]):
+    def random_uniform(_: typing.List[tuple]):
         """Retrieve a random stack."""
         return random.getrandbits(1), []
 
     @staticmethod
-    def everything(_: typing.Sequence[PackageVersion]):
+    def everything(_: typing.List[tuple]):
         """Decide to include everything."""
         return 1.0, []
 

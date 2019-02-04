@@ -11,11 +11,10 @@ clean:
 .PHONY:
 debug: clean
 	g++ -std=c++17 -Wall -pedantic -O0 -ggdb -c -fPIC -o dependency_graph.o dependency_graph.cpp
-	g++ -shared -Wl,-soname,dependency_graph.so -o dependency_graph.so dependency_graph.o
+	g++ -shared -Wl,-soname,libdependency_graph.so -o libdependency_graph.so dependency_graph.o
 
 dependency_graph.o: dependency_graph.cpp
 	g++ -std=c++17 -Wall -pedantic -c -fPIC -o $@ $^
 
 libdependency_graph.so: dependency_graph.o
 	g++ -shared -Wl,-soname,dependency_graph.so -o $@ $^
-

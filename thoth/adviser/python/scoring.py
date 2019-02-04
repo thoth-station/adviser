@@ -105,14 +105,13 @@ class Scoring:
         return score, report
 
     def stable_scoring_function(
-        self, packages: typing.Sequence[PackageVersion]
+        self, packages: typing.List[tuple]
     ) -> typing.Tuple[float, list]:
         """Scoring function used for scoring stacks based on stability."""
-        package_tuples = [package.to_tuple_locked() for package in packages]
         reasoning = []
         score = 0.0
 
-        scoring, scoring_reasoning = self._performance_scoring(package_tuples)
+        scoring, scoring_reasoning = self._performance_scoring(packages)
         score += scoring
         reasoning.extend(scoring_reasoning)
 
@@ -127,13 +126,13 @@ class Scoring:
         return score, reasoning
 
     def testing_scoring_function(
-        self, packages: typing.Sequence[PackageVersion]
+        self, packages: typing.List[tuple]
     ) -> typing.Tuple[typing.Optional[float], list]:
         """Experimental software stacks scoring."""
         raise NotImplementedError
 
     def latest_scoring_function(
-        self, _: typing.Sequence[PackageVersion]
+        self, _: typing.List[tuple]
     ) -> typing.Tuple[typing.Optional[float], list]:
         """Get latest software stacks."""
         # As we preserve order in which software stacks are generated, we just return a positive score. As software

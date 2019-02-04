@@ -33,64 +33,43 @@ import os
 import pickle
 import typing
 import logging
-from collections import deque
 from functools import reduce
 from itertools import chain
-from itertools import product
 import operator
 
 import attr
 from thoth.python import PackageVersion
 from thoth.python.pipfile import PipfileMeta
-from thoth.python import Source
 from thoth.python import Project
+from thoth.python import Source
 from thoth.solver.python.base import SolverException
 from thoth.storages import GraphDatabase
 
 from .solver import PythonPackageGraphSolver
 from .exceptions import ConstraintClashError
+from .bin import LibDependencyGraph
 
 _LOGGER = logging.getLogger(__name__)
-
-
-@attr.s(slots=True)
-class GraphItem:
-    """Extend PackageVersion with a link to resolved dependencies of the given package version."""
-
-    package_version = attr.ib(type=PackageVersion)
-    dependencies = attr.ib(default=attr.Factory(dict))
-
-    def is_package_version_no_index(self, package_name: str, package_version: str):
-        """Check if the given package-version entry has given attributes."""
-        return (
-            self.package_version.name == package_name
-            and self.package_version.version == "==" + package_version
-        )
-
-    def is_different_version(self, package_name: str, package_version: str, index: str):
-        """Check if same package but under a different version."""
-        return (
-            self.package_version.name == package_name
-            and self.package_version.version != "==" + package_version
-            and self.package_version.index == index
-        )
 
 
 @attr.s(slots=True)
 class DependencyGraph:
     """N-ary dependency graph stored in memory."""
 
-    direct_dependencies = attr.ib(type=dict)
-    meta = attr.ib(type=PipfileMeta)
     dependencies_map = attr.ib(type=dict)
+    meta = attr.ib(type=PipfileMeta)
+    full_dependencies_map = attr.ib(type=dict)
     project = attr.ib(type=Project)
+    # A list of package tuples (package name, package version, index url) forming paths based on versions.
+    paths = attr.ib(type=list)
+    direct_dependencies = attr.ib(type=typing.List[PackageVersion])
 
     @property
     def stacks_estimated(self) -> int:
         """Estimate number of sofware stacks we could end up with (the upper boundary)."""
         # We could estimate based on traversing the tree, it would give us better, but still rough estimate.
         dependencies = {}
-        for dependency_name, dependency_versions in self.dependencies_map.items():
+        for dependency_name, dependency_versions in self.full_dependencies_map.items():
             dependencies_total = 0
             for dependency_urls in dependency_versions.values():
                 dependencies_total += len(dependency_urls)
@@ -99,11 +78,58 @@ class DependencyGraph:
         return reduce(lambda a, b: a * b, dependencies.values())
 
     @staticmethod
+    def _is_package_version_no_index(package_version: PackageVersion, name: str, version: str):
+        """Check if the given package-version entry has given attributes."""
+        return package_version.name == name and package_version.version == "==" + version
+
+    @staticmethod
+    def create_package_version_record(full_dependencies_map: dict, package_version: PackageVersion) -> None:
+        version = package_version.locked_version
+        if (
+            full_dependencies_map.get(package_version.name, {})
+            .get(version, {})
+            .get(package_version.index.url)
+        ):
+            return
+
+        if package_version.name not in full_dependencies_map:
+            full_dependencies_map[package_version.name] = {}
+
+        it = full_dependencies_map[package_version.name]
+        if version not in it:
+            it[version] = {}
+
+        it = it[version]
+        if package_version.index.url not in it:
+            it[package_version.index.url] = package_version
+
+    @staticmethod
+    def create_package_version_holder(full_dependencies_map: dict, package_tuple: tuple) -> None:
+        package_name, package_version, package_index_url = package_tuple
+        if (
+            full_dependencies_map.get(package_name, {})
+            .get(package_version, {})
+            .get(package_index_url)
+        ):
+            return
+
+        if package_name not in full_dependencies_map:
+            full_dependencies_map[package_name] = {}
+
+        it = full_dependencies_map[package_name]
+        if package_version not in it:
+            it[package_version] = {}
+
+        it = it[package_version]
+        if package_index_url not in it:
+            # We mark it exists.
+            it[package_index_url] = True
+
+    @classmethod
     def _prepare_direct_dependencies(
-        solver: PythonPackageGraphSolver, project: Project, with_devel: bool
-    ) -> typing.List[typing.List[GraphItem]]:
+        cls, solver: PythonPackageGraphSolver, project: Project, with_devel: bool
+    ) -> tuple:
         """Resolve all the direct dependencies based on the resolution and data available in the graph."""
-        # TODO: Sort dependencies to have stable generations for same stacks.
         # It's important that solver preserves order in which packages were inserted.
         # This is also a requirement for running under Python3.6+!!!
         _LOGGER.debug("Resolving direct dependencies")
@@ -113,7 +139,7 @@ class DependencyGraph:
             all_versions=True,
         )
 
-        direct_dependencies_map = {}
+        full_dependencies_map = {}
         dependencies_map = {}
         for package_name, package_versions in resolved_direct_dependencies.items():
             dependencies_map[package_name] = []
@@ -126,47 +152,20 @@ class DependencyGraph:
                 )
 
             for package_version in package_versions:
-                if (
-                    direct_dependencies_map.get(package_version.name, {})
-                    .get(package_version.locked_version, {})
-                    .get(package_version.index.url)
-                ):
-                    continue
+                cls.create_package_version_record(full_dependencies_map, package_version)
+                dependencies_map[package_name].append(package_version)
 
-                graph_item = GraphItem(package_version=package_version)
 
-                if package_version.name not in direct_dependencies_map:
-                    direct_dependencies_map[package_version.name] = {}
-
-                if (
-                    package_version.locked_version
-                    not in direct_dependencies_map[package_version.name]
-                ):
-                    direct_dependencies_map[package_version.name][
-                        package_version.locked_version
-                    ] = {}
-
-                if (
-                    package_version.index.url
-                    not in direct_dependencies_map[package_version.name][
-                        package_version.locked_version
-                    ]
-                ):
-                    # TODO: if devel and default have same packages
-                    direct_dependencies_map[package_version.name][
-                        package_version.locked_version
-                    ][package_version.index.url] = graph_item
-                    dependencies_map[package_name].append(graph_item)
-
-        # dependencies_map maps package_name to a list of GraphItem objects
-        # direct_dependencies_map maps package_name,package_version,index_url to GraphItem object
-        return dependencies_map, direct_dependencies_map
+        # dependencies_map maps package_name to a list of PackageVersion objects
+        # full_dependencies_map maps package_name, package_version, index_url to a PackageVersion object;
+        # full_dependencies_map is used to discard duplicates
+        return dependencies_map, full_dependencies_map
 
     @classmethod
     def _cut_off_dependencies(
         cls,
         graph: GraphDatabase,
-        transitive_paths: typing.List[dict],
+        transitive_paths: typing.List[list],
         core_packages: typing.Dict[str, dict],
         allow_prereleases: bool,
     ) -> typing.List[dict]:
@@ -222,10 +221,7 @@ class DependencyGraph:
         seen_ids = set(ids_map.keys())
         unseen_ids = python_package_ids - seen_ids
 
-        _LOGGER.debug(
-            "Retrieving package tuples for transitive dependencies (count: %d)",
-            len(unseen_ids),
-        )
+        _LOGGER.debug("Retrieving package tuples for transitive dependencies (count: %d)", len(unseen_ids))
         package_tuples = graph.get_python_package_tuples(unseen_ids)
         for python_package_id, package_tuple in package_tuples.items():
             ids_map[python_package_id] = package_tuple
@@ -249,17 +245,14 @@ class DependencyGraph:
         # Place the import statement here to simplify mocks in the testsuite.
         solver = PythonPackageGraphSolver(graph_db=graph)
         _LOGGER.info("Parsing and solving direct dependencies of the requested project")
-        direct_dependencies, dependencies_map = cls._prepare_direct_dependencies(
+        dependencies_map, full_dependencies_map = cls._prepare_direct_dependencies(
             solver, project, with_devel=with_devel
         )
 
         # Map id of packages to their tuple representation.
         package_tuples_map = dict()
-        # Now perform resolution on all the transitive dependencies.
-        all_direct_dependencies = list(chain(*direct_dependencies.values()))
-        all_dependencies = list(all_direct_dependencies)
-        # Mapping of source_name -> destination name, destination version, destination index to preserve duplicates.
-        source_dependencies = {}
+        # All the direct dependencies (a list of PackageVersion).
+        all_direct_dependencies = list(chain(*dependencies_map.values()))
         # All paths that should be included for computed stacks.
         all_transitive_dependencies_to_include = []
         # Core python packages as pip, setuptools, six - we need to reduce the amount of software stacks
@@ -267,17 +260,17 @@ class DependencyGraph:
         core_packages = dict.fromkeys(("pip", "setuptools", "six"), {})
 
         _LOGGER.info("Retrieving transitive dependencies of direct dependencies")
-        for graph_item in all_direct_dependencies:
+        for package_version in all_direct_dependencies:
             _LOGGER.debug(
                 "Retrieving transitive dependencies for %r in version %r from %r",
-                graph_item.package_version.name,
-                graph_item.package_version.locked_version,
-                graph_item.package_version.index.url,
+                package_version.name,
+                package_version.locked_version,
+                package_version.index.url,
             )
             transitive_dependencies = graph.retrieve_transitive_dependencies_python(
-                graph_item.package_version.name,
-                graph_item.package_version.locked_version,
-                graph_item.package_version.index.url,
+                package_version.name,
+                package_version.locked_version,
+                package_version.index.url,
             )
 
             cls._get_python_package_tuples(
@@ -305,14 +298,14 @@ class DependencyGraph:
                     direct_packages_of_this = [
                         dep
                         for dep in all_direct_dependencies
-                        if dep.package_version.name == package
+                        if dep.name == package
                     ]
 
                     if not direct_packages_of_this:
                         continue
 
                     is_direct = (
-                        dep.is_package_version_no_index(package, version)
+                        cls._is_package_version_no_index(dep, package, version)
                         for dep in direct_packages_of_this
                     )
                     if any(is_direct):
@@ -348,107 +341,18 @@ class DependencyGraph:
             project.prereleases_allowed,
         )
 
-        _LOGGER.info("Creating in-memory hierarchical structures")
         for entry in all_transitive_dependencies_to_include:
-            for idx in range(0, len(entry) - 1):
-                source_idx = idx
-                dest_idx = idx + 1
-
-                source_name, source_version, source_index = (
-                    entry[source_idx][0],
-                    entry[source_idx][1],
-                    entry[source_idx][2],
-                )
-                destination_name, destination_version, destination_index = (
-                    entry[dest_idx][0],
-                    entry[dest_idx][1],
-                    entry[dest_idx][2],
-                )
-
-                # If this fails on key error, the returned query from graph
-                # does not preserve order of nodes visited (it should).
-                source = dependencies_map[source_name][source_version][source_index]
-                destination = (
-                    dependencies_map.get(destination_name, {})
-                    .get(destination_version, {})
-                    .get(destination_index)
-                )
-
-                if not destination:
-                    # First time seen.
-                    new_package_version = PackageVersion(
-                        name=destination_name,
-                        version="==" + destination_version,
-                        index=Source(destination_index),
-                        hashes=[],
-                        develop=source.package_version.develop,
-                    )
-
-                    destination = GraphItem(package_version=new_package_version)
-
-                    if destination_name not in dependencies_map:
-                        dependencies_map[destination_name] = {}
-
-                    if destination_version not in dependencies_map[destination_name]:
-                        dependencies_map[destination_name][destination_version] = {}
-
-                    dependencies_map[destination_name][destination_version][
-                        destination_index
-                    ] = destination
-                    all_dependencies.append(destination)
-
-                if source_name not in source_dependencies:
-                    source_dependencies[source_name] = {}
-
-                it = source_dependencies[source_name]
-                if source_version not in it:
-                    it[source_version] = {}
-
-                it = it[source_version]
-                if destination_name not in it:
-                    it[destination_name] = {}
-
-                it = it[destination_name]
-                if destination_version not in it:
-                    it[destination_version] = {}
-
-                it = it[destination_version]
-                if destination_index not in it:
-                    it[destination_index] = destination
-
-        for package in all_dependencies:
-            if (
-                package.package_version.name not in source_dependencies
-                or package.package_version.locked_version
-                not in source_dependencies[package.package_version.name]
-            ):
-                continue
-
-            package_deps = source_dependencies[package.package_version.name][
-                package.package_version.locked_version
-            ]
-            for dependency_name, dependency_versions in package_deps.items():
-                for dependency_version, dependency_urls in dependency_versions.items():
-                    for dependency_url in dependency_urls:
-                        if dependency_name not in package.dependencies:
-                            package.dependencies[dependency_name] = []
-
-                        dependency = dependencies_map[dependency_name][
-                            dependency_version
-                        ][dependency_url]
-                        package.dependencies[dependency_name].append(dependency)
+            for package_tuple in entry:
+                cls.create_package_version_holder(full_dependencies_map, package_tuple)
 
         _LOGGER.info("Creating dependency graph")
         instance = cls(
-            direct_dependencies,
+            dependencies_map,
             project=project,
             meta=project.pipfile.meta,
-            dependencies_map=dependencies_map,
-        )
-
-        _LOGGER.info(
-            "Number of stacks estimated - %d (upper boundary)",
-            instance.stacks_estimated,
+            full_dependencies_map=full_dependencies_map,
+            paths=all_transitive_dependencies_to_include,
+            direct_dependencies=all_direct_dependencies,
         )
 
         # Store in a dump if user requested it.
@@ -458,51 +362,6 @@ class DependencyGraph:
                 pickle.dump(instance, file_dump)
 
         return instance
-
-    @staticmethod
-    def _is_final_state(state: tuple) -> bool:
-        """Check if the given configuration in the traversal is final - meaning all dependencies were satisfied."""
-        expanded, to_expand = state[0], state[1]
-
-        for item in to_expand:
-            if item.package_version.name not in expanded:
-                return False
-
-            if (
-                item.package_version.locked_version
-                != expanded[item.package_version.name].package_version.locked_version
-            ):
-                # It's not final state and it is not a valid state as well -
-                # this can occur in case of cyclic deps.
-                return False
-
-        return True
-
-    @staticmethod
-    def _is_valid_state(
-        expanded: typing.Dict[str, GraphItem], new_expanded: typing.List[GraphItem]
-    ) -> bool:
-        """Check if the given configuration is valid (not necessary final); meaning itrespects resolution."""
-        for item in new_expanded:
-            if item.package_version.name not in expanded:
-                # This package was not seen in the application stack =>
-                # whatever version it will be installed in is OK as other
-                # packages do not depend on it.
-                continue
-
-            if (
-                expanded[item.package_version.name].package_version.locked_version
-                != item.package_version.locked_version
-                or expanded[item.package_version.name].package_version.index
-                != item.package_version.index
-            ):
-                # The previous resolution included this package in different
-                # version, we cannot include this package to the stack =>
-                # invalid software stack.
-                return False
-
-        # Nothing suspicious so far :)
-        return True
 
     def _construct_direct_dependencies(self, package_versions):
         """Get direct dependencies as they were stated in the original project.
@@ -524,6 +383,83 @@ class DependencyGraph:
 
         return direct_dependencies
 
+    def _construct_libdependency_graph_kwargs(self):
+        """Construct keyword arguments to be passed to the libdependency graph implementation."""
+        direct_dependencies = []
+        dependency_types = []
+        dependency_types_seen = {}
+        context = []
+        reverse_context = {}
+        show_packages = bool(int(os.getenv("THOTH_ADVISER_SHOW_PACKAGES", 0)))
+        for package_name, package_versions in self.full_dependencies_map.items():
+            if show_packages:
+                count = sum(len(s.values()) for s in package_versions.values())
+                _LOGGER.info("Package %r: %d", package_name, count)
+
+            for version, package_indexes in package_versions.items():
+                for index_url, package_version in package_indexes.items():
+                    if isinstance(package_version, PackageVersion):
+                        # Direct dependency.
+                        direct_dependencies.append(len(context))
+                        package_tuple = package_version.name, package_version.locked_version, package_version.index.url
+                    else:
+                        # Indirect dependency.
+                        package_tuple = package_name, version, index_url
+
+                    reverse_context[package_tuple] = len(context)
+                    context.append(package_tuple)
+                    if show_packages:
+                        _LOGGER.info("Package: %s", context[-1])
+
+                    if package_name not in dependency_types_seen:
+                        dependency_types_seen[package_name] = len(dependency_types_seen)
+
+                    dependency_types.append(dependency_types_seen[package_name])
+
+        dependencies_list = []
+        for entry in self.paths:
+            for idx in range(len(entry) - 1):
+                source = reverse_context[(entry[idx][0], entry[idx][1], entry[idx][2])]
+                destination = reverse_context[(entry[idx + 1][0], entry[idx + 1][1], entry[idx + 1][2])]
+                dependencies_list.append((source, destination))
+
+        dependencies_list = list(dict.fromkeys(dependencies_list).keys())
+        return context, {
+            "direct_dependencies": direct_dependencies,
+            "dependencies_list": dependencies_list,
+            "dependency_types": dependency_types
+        }
+
+    def _reconstruct_stack(self, context: list, stack: list) -> list:
+        """Reconstruct the stack based on results from libdependency graph walks."""
+        result = []
+        for item in stack:
+            package_entry = context[item]
+            result.append(package_entry)
+
+        return result
+
+    def _create_package_versions(self, stack: typing.List[tuple]) -> typing.List[PackageVersion]:
+        """Create package versions out of package tuples.
+
+        We cache constructed objects in the context so we instantiate them only once.
+        """
+        result = []
+        for package_tuple in stack:
+            entry = self.full_dependencies_map[package_tuple[0]][package_tuple[1]][package_tuple[2]]
+            if not isinstance(entry, PackageVersion):
+                entry = PackageVersion(
+                    name=package_tuple[0],
+                    version="==" + package_tuple[1],
+                    index=Source(package_tuple[2]),
+                    develop=False
+                )
+                self.full_dependencies_map[package_tuple[0]][package_tuple[1]][package_tuple[2]] = entry
+
+            result.append(entry)
+
+        return result
+
     def walk(
         self, decision_function: typing.Callable
     ) -> typing.Generator[tuple, None, None]:
@@ -532,92 +468,30 @@ class DependencyGraph:
         @param decision_function: function used to filter out stacks
         @return: a generator, each item yielded value is one option of a resolved software stack
         """
-        stack = deque()
+        _LOGGER.info("Computing possible stack candidates, estimated stacks count: %d", self.stacks_estimated)
+        context, libdependency_kwargs = self._construct_libdependency_graph_kwargs()
 
-        # Initial configuration picks the latest versions first (they are last on the stack):
-        _LOGGER.info("Creating initial configurations for stack expansion")
-        configurations = product(
-            *(range(len(i)) for i in self.direct_dependencies.values())
-        )
-        for configuration in configurations:
-            filtering_values = (operator.itemgetter(i) for i in configuration)
-            to_expand = tuple(
-                map(
-                    lambda i: i[0](i[1]),
-                    zip(filtering_values, self.direct_dependencies.values()),
-                )
-            )
-            if self._is_valid_state({}, to_expand):
-                stack.append(({}, to_expand))
+        libdependency_graph = LibDependencyGraph(**libdependency_kwargs)
+        for stack_identifiers in libdependency_graph.walk():
+            stack = self._reconstruct_stack(context, stack_identifiers)
 
-        _LOGGER.info("Computing possible stack candidates")
-        while stack:
-            state = stack.pop()
-
-            if self._is_final_state(state):
+            _LOGGER.info("Found a new stack, asking decision function for inclusion")
+            decision_function_result = decision_function(stack)
+            if decision_function_result[0] is not False:
                 _LOGGER.info(
-                    "Found a new stack, asking decision function for inclusion"
+                    "Decision function included the computed stack - result was %r",
+                    decision_function_result[0],
                 )
-                decision_function_result = decision_function(
-                    (graph_item.package_version for graph_item in state[0].values())
+                package_versions = self._create_package_versions(stack)
+                _LOGGER.debug("Included stack, yielding it: %r", stack)
+                # Discard original sources so they are filled correctly from packages.
+                pipfile_meta = self.meta.to_dict()
+                pipfile_meta["sources"] = {}
+                yield decision_function_result, Project.from_package_versions(
+                    packages=self._construct_direct_dependencies(package_versions),
+                    packages_locked=package_versions,
+                    meta=PipfileMeta.from_dict(pipfile_meta),
                 )
-                if decision_function_result[0] is not False:
-                    _LOGGER.info(
-                        "Decision function included the computed stack - result was %r",
-                        decision_function_result[0],
-                    )
-                    _LOGGER.debug("Included stack %r", state[0])
-                    package_versions = tuple(
-                        g.package_version for g in state[0].values()
-                    )
-                    _LOGGER.debug(
-                        "Yielding newly created project from state: %r", state[0]
-                    )
-                    # Discard original sources so they are filled correctly from packages.
-                    pipfile_meta = self.meta.to_dict()
-                    pipfile_meta["sources"] = {}
-                    yield decision_function_result, Project.from_package_versions(
-                        packages=self._construct_direct_dependencies(package_versions),
-                        packages_locked=package_versions,
-                        meta=PipfileMeta.from_dict(pipfile_meta),
-                    )
-                else:
-                    _LOGGER.info("Decision function excluded the computed stack")
-                    _LOGGER.debug("Excluded stack %r", state[0])
-                continue
-
-            # Construct a list of dictionaries containing mapping for each dependency (a list of transitive deps):
-            #   { package_name: List[GraphItem] }
-            _LOGGER.debug(
-                "Expanding transitive dependencies for a stack candidate: %r", state
-            )
-            transitive_dependencies = []
-            for dependency in state[1]:
-                transitive_dependencies.append(dependency.dependencies)
-
-            all_transitive_dependencies = tuple(
-                chain.from_iterable(td.values() for td in transitive_dependencies)
-            )
-
-            configurations = product(
-                *(range(len(i)) for i in all_transitive_dependencies)
-            )
-            for configuration in configurations:
-                filtering_values = (operator.itemgetter(i) for i in configuration)
-                to_expand = tuple(
-                    map(
-                        lambda i: i[0](i[1]),
-                        zip(filtering_values, all_transitive_dependencies),
-                    )
-                )
-
-                new_expanded = dict(state[0])
-                new_expanded.update({g.package_version.name: g for g in state[1]})
-
-                if self._is_valid_state(new_expanded, to_expand):
-                    _LOGGER.debug(
-                        "A valid state to be expanded (%r, %r)", new_expanded, to_expand
-                    )
-                    stack.append((new_expanded, to_expand))
-                else:
-                    _LOGGER.debug("Not a valid state (%r, %r)", new_expanded, to_expand)
+            else:
+                _LOGGER.info("Decision function excluded the computed stack")
+                _LOGGER.debug("Excluded stack %r", stack)
