@@ -22,6 +22,7 @@
 #include <vector>
 #include <stack>
 #include <utility>
+#include <limits>
 
 /*
  * The traversal stack item stores a tuple - already expanded nodes in the graph and nodes that should
@@ -35,9 +36,11 @@ typedef std::stack<traversal_stack_item_t *> traversal_stack_t;
  */
 class DependencyGraph {
   public:
-    unsigned * walk(void);
-    DependencyGraph(unsigned * direct_dependencies, unsigned ** dependencies_list, unsigned * dependency_types, std::size_t size);
+    bool walk(void);
+    DependencyGraph(unsigned * direct_dependencies, unsigned ** dependencies_list, unsigned * dependency_types, std::size_t size, int write_pipe_fd);
     ~DependencyGraph();
+    static const unsigned STREAM_STOP;
+    static const unsigned STREAM_DELIMITER;
 
   private:
     bool is_valid_state();
@@ -50,6 +53,7 @@ class DependencyGraph {
     unsigned ** dependencies_list;
     unsigned * dependency_types;
     std::size_t size;
+    int write_pipe_fd;
     traversal_stack_t traversal_stack;
 };
 
@@ -77,11 +81,12 @@ class DependencyGraph {
  * Means package 0 and 2 (index 0 and 2) are of a same type (type 0 - e.g. numpy) so they cannot be installed at
  * the same time. Package 1 is of type 1, it can be installed with package 0 and 2 at the same time.
  */
-DependencyGraph::DependencyGraph(unsigned * direct_dependencies, unsigned ** dependencies_list, unsigned * dependency_types, std::size_t size) {
+DependencyGraph::DependencyGraph(unsigned * direct_dependencies, unsigned ** dependencies_list, unsigned * dependency_types, std::size_t size, int write_pipe_fd) {
     this->direct_dependencies = direct_dependencies;
     this->dependencies_list = dependencies_list;
     this->dependency_types = dependency_types;
     this->size = size;
+    this->write_pipe_fd = write_pipe_fd;
 
     // TODO: expand the initial configuration
     // [[1, 2, 3], [2, 3, 4], [5, 6, 7]]

@@ -20,15 +20,22 @@
 #include <utility>
 #include <stack>
 #include <vector>
+#include <unistd.h>
+#include <limits>
 
 #include "dependency_graph.h"
 
+const unsigned DependencyGraph::STREAM_STOP = std::numeric_limits<unsigned>::max();
+const unsigned DependencyGraph::STREAM_DELIMITER = DependencyGraph::STREAM_STOP - 1;
+
+
 /*
- * Walk dependency graph and generate application stacks. The value returned is owned by DependencyGraph
- * implementation and it is responsible for cleaning it.
+ * Walk dependency graph and generate application stacks. The value returned is a flag signalizing whether
+ * there are more stacks to be produced.
  */
-unsigned * DependencyGraph::walk(){
+bool DependencyGraph::walk(){
     // Remove from the last run.
+    /*
     if (this->is_valid_state()) {
         traversal_stack_item_t * item = this->traversal_stack_toppop();
         this->delete_item(item);
@@ -41,9 +48,12 @@ unsigned * DependencyGraph::walk(){
         traversal_stack_item_t * item = this->traversal_stack.top();
         return item->first->data();
     }
+    */
 
     // We don't have any states to traverse left. Return NULL.
-    return nullptr;
+    //write(this->write_pipe_fd, &(DependencyGraph::STREAM_DELIMITER), sizeof(unsigned));
+    //write(this->write_pipe_fd, &(DependencyGraph::STREAM_STOP), sizeof(unsigned));
+    return false;
 }
 
 
@@ -51,13 +61,30 @@ unsigned * DependencyGraph::walk(){
  * Export for ctypes.
  */
 extern "C" {
-    DependencyGraph * DependencyGraph_new(unsigned * direct_dependencies, unsigned ** dependencies_list, unsigned * dependency_types, std::size_t size) {
-        auto graph = new DependencyGraph(direct_dependencies, dependencies_list, dependency_types, size);
+    unsigned get_stream_delimiter() {
+        return DependencyGraph::STREAM_DELIMITER;
+    }
+
+    unsigned get_stream_stop() {
+        return DependencyGraph::STREAM_STOP;
+    }
+
+    size_t get_item_size() {
+        return sizeof(unsigned);
+    }
+
+    DependencyGraph * DependencyGraph_new(unsigned * direct_dependencies, unsigned ** dependencies_list, unsigned * dependency_types, std::size_t size, int write_pipe_fd) {
+        auto graph = new DependencyGraph(direct_dependencies, dependencies_list, dependency_types, size, write_pipe_fd);
         return graph;
     }
 
-    unsigned * DependencyGraph_walk(DependencyGraph * graph){
+    bool DependencyGraph_walk(DependencyGraph * graph){
 	    return graph->walk();
+    }
+
+    void DependencyGraph_walk_all(DependencyGraph * graph){
+        while (graph->walk())
+            ;
     }
 
     void DependencyGraph_delete(DependencyGraph * graph) {
