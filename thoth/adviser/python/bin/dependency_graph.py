@@ -125,7 +125,7 @@ class DependencyGraph:
             # Return to callee to report error in case of exceptions.
             os.close(write_pipe_fd)
 
-        _LOGGER.debug("Stack producer ended, closing pipe")
+        _LOGGER.debug("Stack producer ended, pipe closed")
         sys.exit(0)
 
     def walk(self) -> typing.List[int]:
@@ -134,7 +134,13 @@ class DependencyGraph:
             stack_dependencies = []
             _LOGGER.debug("Reading from pipe, item size: %d", self._ITEM_SIZE)
             while True:
-                item = int.from_bytes(self.read_pipe.read(self._ITEM_SIZE), byteorder=sys.byteorder)
+                item = self.read_pipe.read(self._ITEM_SIZE)
+
+                if not item:
+                    _LOGGER.debug("Reached end of stack stream, finishing walk")
+                    return None
+
+                item = int.from_bytes(item, byteorder=sys.byteorder)
 
                 if item == self.STREAM_DELIMITER:
                     _LOGGER.debug("Reached stack delimiter, yielding stack")
