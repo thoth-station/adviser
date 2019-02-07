@@ -409,7 +409,7 @@ class DependencyGraph:
                     reverse_context[package_tuple] = len(context)
                     context.append(package_tuple)
                     if show_packages:
-                        _LOGGER.info("Package: %s", context[-1])
+                        _LOGGER.info("\t%s", context[-1])
 
                     if package_name not in dependency_types_seen:
                         dependency_types_seen[package_name] = len(dependency_types_seen)

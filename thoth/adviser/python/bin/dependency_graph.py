@@ -91,7 +91,7 @@ class DependencyGraph:
             self._stack_producer(
                 direct_dependencies, dependencies_list, dependency_types, write_fd
             )
-            _LOGGER.error("Stack producer exited, this code has to be unreachable")
+            _LOGGER.error("Stack producer exited abnormally, this code has to be unreachable")
             sys.exit(1)
         else:
             self.read_pipe = os.fdopen(read_fd, "rb")
@@ -152,7 +152,15 @@ class DependencyGraph:
             # Return to callee to report error in case of exceptions.
             os.close(write_fd)
 
-        _LOGGER.debug("Stack producer ended, pipe closed")
+        # This is a really dirty hack, but it is required. We need to wait for parent to finish as queries to the
+        # JanusGraph are done in async coroutines. If the stack producer process finishes sooner, we get stuck in the
+        # event loop which is halted due to SIGCHILD signal. Obviously, child cannot wait for parent in
+        # waitpid call (in a POSIX compliant way), so we send SIGSTOP to self (stack producer process) and wait
+        # for parent to finish passively so we are out of OS process scheduler. Once the parent finishes
+        # we finish as well as we receive SIGTERM.
+        _LOGGER.debug("Waiting passively for parent")
+        os.kill(os.getpid(), signal.SIGSTOP)
+        _LOGGER.info("Stack producer ended")
         sys.exit(0)
 
     def walk(self) -> typing.Generator[typing.List[int], None, None]:
