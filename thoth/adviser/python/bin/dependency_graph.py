@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+"""An adapter implementation for talking to libdependency_graph.so (C/C++ implementation of dependency graph)."""
+
 import os
 import sys
 import typing
