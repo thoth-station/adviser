@@ -226,3 +226,41 @@ and using its command line interface:
 
 When thoth-adviser is scheduled in a deployment, it is actually executed as a
 CLI with arguments passed via environment variables.
+
+libdependency_graph.so
+======================
+
+The adviser implementation uses a library written in C/C++ that can effectively
+produce software stacks for scoring (adviser) or for inspection jobs
+(dependency monkey). This library is present in the
+``thoth/adviser/python/bin`` directory. You can find all the relevant files
+(``Makefile``, ``Dockerfile``) to build this library. The repository is by
+default shipped with an ``*.so`` file (the file produced by ``Makefile``) and
+subsequently loaded by the adviser implementation using Python's ctypes. This
+library is executed as a standalone process which writes stacks into a pipe
+from which they are consumed in the main adviser's Python process and
+scored/submitted to Amun for inspections.
+
+To build this library on your own, you can use ``make``:
+
+::
+
+   make
+
+Also make sure the C++ STL ABI is compatible when you are deploying adviser,
+otherwise you can encounter issues like the following:
+
+::
+
+  OSError: /lib64/libstdc++.so.6: version `CXXABI_1.3.8' not found (required by /opt/app-root/src/thoth/adviser/python/bin/libdependency_graph.so)
+
+To target this issue, there was created a containerized build, which can be
+done using:
+
+::
+
+  make container-build
+
+This build will produce the ``libdependency_graph.so`` file in a container (use
+base image you would like to be compatible with) and copied to host for use.
+
