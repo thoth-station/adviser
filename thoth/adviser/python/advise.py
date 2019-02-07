@@ -106,6 +106,7 @@ class Adviser:
             if dry_run:
                 return self._visited
 
+            _LOGGER.info("Scored %d stacks in total", self._visited)
             # Sort computed stacks based on score and return them.
             # TODO: heap pop (?)
             result = (
