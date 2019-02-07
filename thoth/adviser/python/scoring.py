@@ -80,7 +80,7 @@ class Scoring:
     ) -> typing.Tuple[float, list]:
         """Score the given stack based on performance."""
         # TODO: filter out packages that do not have impact on performance
-        _LOGGER.info("Obtaining performance index for stack")
+        _LOGGER.debug("Obtaining performance index for stack")
         performance_index = self.graph.compute_python_package_version_avg_performance(
             packages, hardware_specs=self.runtime_environment.to_dict()
         )
