@@ -160,7 +160,7 @@ class DependencyGraph:
         # waitpid call (in a POSIX compliant way), so we send SIGSTOP to self (stack producer process) and wait
         # for parent to finish passively so we are out of OS process scheduler. Once the parent finishes
         # we finish as well as we receive SIGTERM.
-        _LOGGER.debug("Waiting passively for parent")
+        _LOGGER.debug("Generation of stacks has finished, waiting passively for parent")
         os.kill(os.getpid(), signal.SIGSTOP)
         _LOGGER.info("Stack producer ended")
         sys.exit(0)

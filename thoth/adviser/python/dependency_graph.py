@@ -17,16 +17,9 @@
 
 """In-memory N-ary dependency graph used for traversing software stacks.
 
-As number of possible software stacks can be really huge, let's construct
-N-ary dependency graph in-memory and traverse it to generate software stacks.
-These software stacks are used in dependency-monkey (see seed randomly
-selecting possible software stacks) as well as in recommendations where this
-dependency graph is traversed to generate possible software stacks that are
-subsequently scored.
-
-A node in this graph is PackageVersion. The graph can be seen as N-ary tree,
-but as there can be cyclic deps in the Python ecosystem, we need to consider
-cycles (see caching).
+This implementation is talking to the LibDependencyGraph (which talks to C/C++
+implementation). The aim of this implementation is to prepare arguments for
+C/C++ implementation and call the scoring routines.
 """
 
 import os
@@ -409,7 +402,7 @@ class DependencyGraph:
                     reverse_context[package_tuple] = len(context)
                     context.append(package_tuple)
                     if show_packages:
-                        _LOGGER.info("\t%s", context[-1])
+                        _LOGGER.info("\t%r from %s", context[-1][1], context[-1][2])
 
                     if package_name not in dependency_types_seen:
                         dependency_types_seen[package_name] = len(dependency_types_seen)
