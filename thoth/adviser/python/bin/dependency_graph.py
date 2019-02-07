@@ -25,6 +25,7 @@ import ctypes
 import signal
 
 from thoth.common import init_logging
+from .exceptions import PrematureStreamEndError
 
 init_logging()
 
@@ -83,10 +84,12 @@ class DependencyGraph:
     ):
         """Construct dependency graph.
 
+
         Create a dependency graph by propagating arguments down to library. The arguments need to be first converted
         into C-type specific ones to have correct values in the C/C++ implementation..
         """
         read_fd, write_fd = os.pipe()
+
         pid = os.fork()
         if pid == 0:
             os.close(read_fd)
@@ -173,8 +176,7 @@ class DependencyGraph:
             item = self.read_pipe.read(self._ITEM_SIZE)
 
             if not item:
-                _LOGGER.error("Reached end of stack stream prematurely")
-                return
+                raise PrematureStreamEndError("Reached end of stream prematurely")
 
             item = int.from_bytes(item, byteorder=sys.byteorder)
 

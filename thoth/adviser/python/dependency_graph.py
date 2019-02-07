@@ -41,6 +41,7 @@ from thoth.storages import GraphDatabase
 from .solver import PythonPackageGraphSolver
 from .exceptions import ConstraintClashError
 from .bin import LibDependencyGraph
+from .bin import PrematureStreamEndError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -464,27 +465,30 @@ class DependencyGraph:
         _LOGGER.info("Computing possible stack candidates, estimated stacks count: %d", self.stacks_estimated)
         context, libdependency_kwargs = self._construct_libdependency_graph_kwargs()
 
-        libdependency_graph = LibDependencyGraph(**libdependency_kwargs)
-        for stack_identifiers in libdependency_graph.walk():
-            stack = self._reconstruct_stack(context, stack_identifiers)
+        try:
+            libdependency_graph = LibDependencyGraph(**libdependency_kwargs)
+            for stack_identifiers in libdependency_graph.walk():
+                stack = self._reconstruct_stack(context, stack_identifiers)
 
-            _LOGGER.info("Found a new stack, asking decision function for inclusion")
-            decision_function_result = decision_function(stack)
-            if decision_function_result[0] is not False:
-                _LOGGER.info(
-                    "Decision function included the computed stack - result was %r",
-                    decision_function_result[0],
-                )
-                package_versions = self._create_package_versions(stack)
-                _LOGGER.debug("Included stack, yielding it: %r", stack)
-                # Discard original sources so they are filled correctly from packages.
-                pipfile_meta = self.meta.to_dict()
-                pipfile_meta["sources"] = {}
-                yield decision_function_result, Project.from_package_versions(
-                    packages=self._construct_direct_dependencies(package_versions),
-                    packages_locked=package_versions,
-                    meta=PipfileMeta.from_dict(pipfile_meta),
-                )
-            else:
-                _LOGGER.info("Decision function excluded the computed stack")
-                _LOGGER.debug("Excluded stack %r", stack)
+                _LOGGER.info("Found a new stack, asking decision function for inclusion")
+                decision_function_result = decision_function(stack)
+                if decision_function_result[0] is not False:
+                    _LOGGER.info(
+                        "Decision function included the computed stack - result was %r",
+                        decision_function_result[0],
+                    )
+                    package_versions = self._create_package_versions(stack)
+                    _LOGGER.debug("Included stack, yielding it: %r", stack)
+                    # Discard original sources so they are filled correctly from packages.
+                    pipfile_meta = self.meta.to_dict()
+                    pipfile_meta["sources"] = {}
+                    yield decision_function_result, Project.from_package_versions(
+                        packages=self._construct_direct_dependencies(package_versions),
+                        packages_locked=package_versions,
+                        meta=PipfileMeta.from_dict(pipfile_meta),
+                    )
+                else:
+                    _LOGGER.info("Decision function excluded the computed stack")
+                    _LOGGER.debug("Excluded stack %r", stack)
+        except PrematureStreamEndError:
+            _LOGGER.warning("Stack stream was closed prematurely (OOM?)")
