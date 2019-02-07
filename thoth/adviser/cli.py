@@ -110,6 +110,7 @@ def cli(ctx=None, verbose=False):
         _LOGGER.setLevel(logging.DEBUG)
 
     _LOGGER.debug("Debug mode is on")
+    _LOGGER.info("Version: %s", analyzer_version)
 
 
 @cli.command()
