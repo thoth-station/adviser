@@ -326,7 +326,7 @@ def advise(
     try:
         project = _instantiate_project(requirements, requirements_locked, files)
         result["input"] = project.to_dict()
-        report, stack_info = Adviser.compute_on_project(
+        stack_info, report = Adviser.compute_on_project(
             project,
             runtime_environment=runtime_environment,
             recommendation_type=recommendation_type,
