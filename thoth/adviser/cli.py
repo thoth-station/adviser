@@ -326,7 +326,7 @@ def advise(
     try:
         project = _instantiate_project(requirements, requirements_locked, files)
         result["input"] = project.to_dict()
-        report = Adviser.compute_on_project(
+        report, stack_info = Adviser.compute_on_project(
             project,
             runtime_environment=runtime_environment,
             recommendation_type=recommendation_type,
@@ -351,6 +351,7 @@ def advise(
         # Convert report to a dict so its serialized.
         if not dry_run:
             result["report"] = [(item[0], item[1].to_dict()) for item in report]
+            result["stack_info"] = stack_info
         else:
             result["report"] = report
 
