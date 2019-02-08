@@ -40,8 +40,9 @@ class Scoring:
     runtime_environment = attr.ib(type=RuntimeEnvironment)
     python_version = attr.ib(type=str)
     _counter = attr.ib(type=int, default=0)
+    _report_generic = attr.ib(type=set, default=attr.Factory(set))
 
-    _CVE_PENALIZATION = 0.1
+    _CVE_PENALIZATION = -0.1
     _PERFORMANCE_PENALIZATION = 0.2
 
     @classmethod
@@ -75,6 +76,10 @@ class Scoring:
             f"No scoring function defined for recommendation type {recommendation_type}"
         )
 
+    def get_generic_reports(self) -> list:
+        """Get a generic report which is generic for the application stack."""
+        return list(dict(item) for item in self._report_generic)
+
     def _performance_scoring(
         self, packages: typing.List[tuple]
     ) -> typing.Tuple[float, list]:
@@ -97,11 +102,26 @@ class Scoring:
         """Scoring against CVE database."""
         report = []
         for package in packages:
-            cves = self.graph.get_python_cve_records(package[0], packages[1])
-            if cves:
-                report.append(cves)
+            cves = self.graph.get_python_cve_records(package[0], package[1])
+            for cve_record in cves:
+                cve_record.update({
+                    "type": "WARNING",
+                    "package": package[0],
+                    "version": package[1],
+                    "version_range": cve_record["version_range"],
+                    "justification": "Found a CVE for the package",
+                })
+                report.append(cve_record)
+                # Add for the complete listing for user information.
+                cve_record = dict(cve_record)
+                cve_record.pop("version")
+                cve_record['justification'] = f"Resolution of package {package[0]!r} can lead to a version with CVE"
+                self._report_generic.add(tuple(cve_record.items()))
 
-        score = 0.0 if not report else self._CVE_PENALIZATION * len(report)
+        cve_count = len(report)
+        _LOGGER.info("Found %d CVE%s in the application stack", cve_count, 's' if cve_count != 1 else '')
+        score = 0.0 if not report else self._CVE_PENALIZATION * cve_count
+
         return score, report
 
     def stable_scoring_function(
@@ -115,13 +135,9 @@ class Scoring:
         score += scoring
         reasoning.extend(scoring_reasoning)
 
-        """
-        _LOGGER.info("Scoring...")
-        scoring, scoring_reasoning = self._cve_scoring(package_tuples)
+        scoring, scoring_reasoning = self._cve_scoring(packages)
         score += scoring
         reasoning.extend(scoring_reasoning)
-        _LOGGER.info("Finished scoring...")
-        """
 
         return score, reasoning
 
