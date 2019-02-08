@@ -40,3 +40,7 @@ class NotFound(ThothAdviserException):
 
 class VersionIdentifierError(ThothAdviserException):
     """An exception raised if the given version identifier is not a semver identifier."""
+
+
+class UserConfigError(ThothAdviserException):
+    """Raised on invalid user configuration file."""

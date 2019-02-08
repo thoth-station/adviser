@@ -36,6 +36,10 @@ class _ExtendedEnum(Enum):
                 list(cls.__members__.values()),
             ) from exc
 
+    def __repr__(self):
+        """Override for use with attrs."""
+        return f"'{self.name}'"
+
 
 class RecommendationType(_ExtendedEnum):
     """Recommendation generation respecting constraints on package-version level observations."""
@@ -50,9 +54,3 @@ class PythonRecommendationOutput(_ExtendedEnum):
 
     PIPENV = auto()
     REQUIREMENTS = auto()
-
-
-class Ecosystem(_ExtendedEnum):
-    """Ecosystem known to recommendation engine."""
-
-    PYTHON = auto()

@@ -29,7 +29,7 @@ import json
 from amun import inspect as amun_inspect
 
 from thoth.python import Project
-from thoth.adviser import RuntimeEnvironment
+from thoth.adviser.config import ConfigEntry
 from thoth.adviser.python import DependencyGraph
 from thoth.adviser.python.helpers import fill_package_digests_from_graph
 from thoth.storages import GraphDatabase
@@ -117,7 +117,7 @@ def dependency_monkey(
     dry_run: bool = False,
     context: str = None,
     count: int = None,
-    runtime_environment: RuntimeEnvironment = None,
+    configuration: ConfigEntry = None,
 ) -> dict:
     """Run Dependency Monkey on the given stack.
 
@@ -127,7 +127,7 @@ def dependency_monkey(
     @param decision_function_name: decision function to be used
     @param dry_run: do not perform actual writing to output, just run the dependency monkey report back computed stacks
     @param context: context to be sent to Amun, if output is set to be Amun
-    @param runtime_environment: targeted runtime environment used in dependency monkey runs
+    @param configuration: hardware and software requirements for dependency monkey
     @param count: generate upto N stacks
     """
     output = output or "-"  # Default to stdout if no output was provided.
@@ -136,7 +136,7 @@ def dependency_monkey(
     graph.connect()
 
     decision_function = DecisionFunction.get_decision_function(
-        graph, decision_function_name, runtime_environment
+        graph, decision_function_name, configuration
     )
     random.seed(seed)
 

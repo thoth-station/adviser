@@ -24,7 +24,7 @@ import typing
 
 import attr
 
-from thoth.adviser import RuntimeEnvironment
+from thoth.adviser.config import ConfigEntry
 from thoth.python import Project
 from thoth.adviser.python import DependencyGraph
 from thoth.adviser.enums import RecommendationType
@@ -66,7 +66,7 @@ class Adviser:
     recommendation_type = attr.ib(
         type=RecommendationType, default=RecommendationType.STABLE
     )
-    _computed_stacks_heap = attr.ib(type=RuntimeEnvironment, default=attr.Factory(list))
+    _computed_stacks_heap = attr.ib(type=ConfigEntry, default=attr.Factory(list))
     _visited = attr.ib(type=int, default=0)
 
     def compute(
@@ -127,7 +127,7 @@ class Adviser:
         cls,
         project: Project,
         *,
-        runtime_environment: RuntimeEnvironment,
+        configuration: ConfigEntry,
         recommendation_type: RecommendationType,
         count: int = None,
         limit: int = None,
@@ -143,7 +143,7 @@ class Adviser:
 
         scoring_function = Scoring.get_scoring_function(
             graph=graph,
-            runtime_environment=runtime_environment,
+            configuration=configuration,
             recommendation_type=recommendation_type,
             python_version=project.python_version,
         )

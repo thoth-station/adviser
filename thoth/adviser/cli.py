@@ -25,16 +25,17 @@ from copy import deepcopy
 import click
 from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser import __version__ as analyzer_version
-from thoth.adviser.enums import PythonRecommendationOutput
-from thoth.adviser.enums import RecommendationType
+from thoth.adviser.config import UserConfig
+from thoth.adviser.config import ConfigEntry
 from thoth.adviser.exceptions import InternalError
 from thoth.adviser.exceptions import ThothAdviserException
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.enums import PythonRecommendationOutput
 from thoth.adviser.python import Adviser
 from thoth.adviser.python import DECISISON_FUNCTIONS
 from thoth.adviser.python import GraphDigestsFetcher
 from thoth.adviser.python import dependency_monkey as run_dependency_monkey
 from thoth.adviser.python.dependency_monkey import dm_amun_inspect_wrapper
-from thoth.adviser.runtime_environment import RuntimeEnvironment
 from thoth.analyzer import print_command_result
 from thoth.common import init_logging
 from thoth.python import Pipfile
@@ -234,15 +235,6 @@ def provenance(
     help="The output format of requirements that are computed based on recommendations.",
 )
 @click.option(
-    "--output",
-    "-o",
-    type=str,
-    envvar="THOTH_ADVISER_OUTPUT",
-    default="-",
-    help="Output file or remote API to print results to, in case of URL a POST request is issued.",
-)
-@click.option("--no-pretty", "-P", is_flag=True, help="Do not print results nicely.")
-@click.option(
     "--recommendation-type",
     "-t",
     envvar="THOTH_ADVISER_RECOMMENDATION_TYPE",
@@ -252,6 +244,15 @@ def provenance(
     help="Type of recommendation generated based on knowledge base.",
 )
 @click.option(
+    "--output",
+    "-o",
+    type=str,
+    envvar="THOTH_ADVISER_OUTPUT",
+    default="-",
+    help="Output file or remote API to print results to, in case of URL a POST request is issued.",
+)
+@click.option("--no-pretty", "-P", is_flag=True, help="Do not print results nicely.")
+@click.option(
     "--count",
     envvar="THOTH_ADVISER_COUNT",
     help="Number of software stacks shown in the output.",
@@ -260,14 +261,13 @@ def provenance(
     "--limit",
     envvar="THOTH_ADVISER_LIMIT",
     help="Number of software stacks that should be taken into account (stop after reaching the limit).",
-
 )
 @click.option(
-    "--runtime-environment",
-    "-e",
-    envvar="THOTH_ADVISER_RUNTIME_ENVIRONMENT",
+    "--configuration",
+    "-c",
+    envvar="THOTH_ADVISER_CONFIGURATION",
     type=str,
-    help="Type of recommendation generated based on knowledge base.",
+    help="User configuration for recommendations.",
 )
 @click.option(
     "--files",
@@ -283,10 +283,10 @@ def provenance(
 def advise(
     click_ctx,
     requirements,
-    requirements_format=None,
     requirements_locked=None,
     recommendation_type=None,
-    runtime_environment=None,
+    configuration=None,
+    requirements_format=None,
     output=None,
     no_pretty=False,
     files=False,
@@ -299,20 +299,17 @@ def advise(
     limit = int(limit) if limit else None
     count = int(count) if count else None
 
-    if runtime_environment:
-        runtime_environment = json.loads(runtime_environment)
-    else:
-        runtime_environment = {}
-
+    configuration = UserConfig.load(configuration)
     recommendation_type = RecommendationType.by_name(recommendation_type)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
+
     result = {
         "error": None,
         "report": [],
         "parameters": {
-            "runtime_environment": runtime_environment,
-            "recommendation_type": recommendation_type.name.lower(),
-            "requirements_format": requirements_format.name.lower(),
+            "configuration": configuration.to_dict(),
+            "recommendation_type": recommendation_type,
+            "requirements_format": requirements_format,
             "limit": limit,
             "count": count,
             "dry_run": dry_run,
@@ -321,14 +318,12 @@ def advise(
         "input": None,
     }
 
-    runtime_environment = RuntimeEnvironment.from_dict(runtime_environment)
-
     try:
         project = _instantiate_project(requirements, requirements_locked, files)
         result["input"] = project.to_dict()
         report = Adviser.compute_on_project(
             project,
-            runtime_environment=runtime_environment,
+            configuration=configuration,
             recommendation_type=recommendation_type,
             count=count,
             limit=limit,
@@ -434,11 +429,11 @@ def advise(
     "software stacks onto filesystem.",
 )
 @click.option(
-    "--runtime-environment",
-    "-e",
-    envvar="THOTH_ADVISER_RUNTIME_ENVIRONMENT",
+    "--configuration",
+    "-c",
+    envvar="THOTH_ADVISER_CONFIGURATION",
     type=str,
-    help="Runtime environment that is used for verifying stacks.",
+    help="Configuration of environment (hardware and software).",
 )
 @click.option("--no-pretty", "-P", is_flag=True, help="Do not print results nicely.")
 def dependency_monkey(
@@ -453,7 +448,7 @@ def dependency_monkey(
     context: str = None,
     no_pretty: bool = False,
     count: int = None,
-    runtime_environment: dict = None,
+    configuration: dict = None,
 ):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
     project = _instantiate_project(requirements, requirements_locked=None, files=files)
@@ -463,16 +458,13 @@ def dependency_monkey(
     seed = int(seed) if seed else None
     count = int(count) if count else None
 
-    if runtime_environment:
-        runtime_environment = json.loads(runtime_environment)
-    else:
-        runtime_environment = {}
+    configuration = ConfigEntry.from_dict(json.loads(configuration) if configuration else {})
 
     result = {
         "error": False,
         "parameters": {
             "requirements": project.pipfile.to_dict(),
-            "runtime_environment": runtime_environment,
+            "configuration": configuration.to_dict(),
             "seed": seed,
             "decision": decision,
             "context": deepcopy(
@@ -490,8 +482,6 @@ def dependency_monkey(
         "computed": None,
     }
 
-    runtime_environment = RuntimeEnvironment.from_dict(runtime_environment)
-
     try:
         report = run_dependency_monkey(
             project,
@@ -501,7 +491,7 @@ def dependency_monkey(
             dry_run=dry_run,
             context=context,
             count=count,
-            runtime_environment=runtime_environment,
+            configuration=configuration,
         )
         # Place report into result.
         result.update(report)

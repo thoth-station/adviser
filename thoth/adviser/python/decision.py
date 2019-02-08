@@ -23,9 +23,8 @@ import typing
 import attr
 
 from thoth.storages import GraphDatabase
-from thoth.adviser import RuntimeEnvironment
+from thoth.adviser.config import ConfigEntry
 from thoth.adviser.exceptions import InternalError
-from thoth.python import PackageVersion
 
 
 @attr.s(slots=True)
@@ -33,7 +32,7 @@ class DecisionFunction:
     """Decide which stacks should be executed in a dependency monkey run."""
 
     graph = attr.ib(type=GraphDatabase)
-    runtime_environment = attr.ib(type=RuntimeEnvironment)
+    configuration = attr.ib(type=ConfigEntry)
 
     @staticmethod
     def random_uniform(_: typing.List[tuple]):
@@ -50,10 +49,10 @@ class DecisionFunction:
         cls,
         graph: GraphDatabase,
         decision_function_name: str,
-        runtime_environment: RuntimeEnvironment,
+        configuration: ConfigEntry,
     ) -> typing.Callable:
         """Get decision function based on its name - return a bound method to self instance."""
-        instance = cls(graph=graph, runtime_environment=runtime_environment)
+        instance = cls(graph=graph, configuration=configuration)
 
         if decision_function_name == "random":
             return instance.random_uniform

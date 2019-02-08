@@ -23,9 +23,9 @@ import math
 
 import attr
 
-from thoth.adviser import RecommendationType
+from thoth.adviser.enums import RecommendationType
 from thoth.adviser.exceptions import InternalError
-from thoth.adviser import RuntimeEnvironment
+from thoth.adviser.config import ConfigEntry
 from thoth.storages import GraphDatabase
 from thoth.python import PackageVersion
 
@@ -37,7 +37,7 @@ class Scoring:
     """Scoring functions used for computing advises."""
 
     graph = attr.ib(type=GraphDatabase)
-    runtime_environment = attr.ib(type=RuntimeEnvironment)
+    configuration = attr.ib(type=ConfigEntry)
     python_version = attr.ib(type=str)
     _counter = attr.ib(type=int, default=0)
 
@@ -49,13 +49,13 @@ class Scoring:
         cls,
         graph: GraphDatabase,
         recommendation_type: RecommendationType,
-        runtime_environment: RuntimeEnvironment,
+        configuration: ConfigEntry,
         python_version: str,
     ) -> typing.Callable:
         """Get a bound method keeping connected adapter to a graph database with runtime information."""
         instance = cls(
             graph=graph,
-            runtime_environment=runtime_environment,
+            configuration=configuration,
             python_version=python_version,
         )
 
@@ -82,7 +82,7 @@ class Scoring:
         # TODO: filter out packages that do not have impact on performance
         _LOGGER.debug("Obtaining performance index for stack")
         performance_index = self.graph.compute_python_package_version_avg_performance(
-            packages, hardware_specs=self.runtime_environment.to_dict()
+            packages, hardware_specs=self.configuration.harware_information.to_dict()
         )
 
         _LOGGER.info("Performance index for stack: %f", performance_index)
