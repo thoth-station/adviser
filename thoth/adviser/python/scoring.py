@@ -40,45 +40,32 @@ class Scoring:
     runtime_environment = attr.ib(type=RuntimeEnvironment)
     python_version = attr.ib(type=str)
     _counter = attr.ib(type=int, default=0)
-    _report_generic = attr.ib(type=set, default=attr.Factory(set))
+    _stack_info = attr.ib(type=set, default=attr.Factory(set))
 
     _CVE_PENALIZATION = -0.1
     _PERFORMANCE_PENALIZATION = 0.2
 
-    @classmethod
-    def get_scoring_function(
-        cls,
-        graph: GraphDatabase,
-        recommendation_type: RecommendationType,
-        runtime_environment: RuntimeEnvironment,
-        python_version: str,
-    ) -> typing.Callable:
+    def get_scoring_function(self, recommendation_type: RecommendationType) -> typing.Callable:
         """Get a bound method keeping connected adapter to a graph database with runtime information."""
-        instance = cls(
-            graph=graph,
-            runtime_environment=runtime_environment,
-            python_version=python_version,
-        )
-
         if recommendation_type == RecommendationType.STABLE:
             _LOGGER.info("Using scoring function obtaining stable software stacks")
-            return instance.stable_scoring_function
+            return self.stable_scoring_function
 
         if recommendation_type == RecommendationType.TESTING:
             _LOGGER.info("Using scoring function with experimental testing stacks")
-            return instance.testing_scoring_function
+            return self.testing_scoring_function
 
         if recommendation_type == RecommendationType.LATEST:
             _LOGGER.info("Using scoring function that will generate latest stacks")
-            return instance.latest_scoring_function
+            return self.latest_scoring_function
 
         raise InternalError(
             f"No scoring function defined for recommendation type {recommendation_type}"
         )
 
-    def get_generic_reports(self) -> list:
+    def get_stack_info(self) -> list:
         """Get a generic report which is generic for the application stack."""
-        return list(dict(item) for item in self._report_generic)
+        return list(dict(item) for item in self._stack_info)
 
     def _performance_scoring(
         self, packages: typing.List[tuple]
@@ -116,7 +103,7 @@ class Scoring:
                 cve_record = dict(cve_record)
                 cve_record.pop("version")
                 cve_record['justification'] = f"Resolution of package {package[0]!r} can lead to a version with CVE"
-                self._report_generic.add(tuple(cve_record.items()))
+                self._stack_info.add(tuple(cve_record.items()))
 
         cve_count = len(report)
         _LOGGER.info("Found %d CVE%s in the application stack", cve_count, 's' if cve_count != 1 else '')

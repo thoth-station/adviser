@@ -132,19 +132,17 @@ class Adviser:
         count: int = None,
         limit: int = None,
         dry_run: bool = False
-    ) -> list:
+    ) -> tuple:
         """Compute recommendations for the given project, a syntax sugar for the compute method."""
-        instance = cls(
-            count=count, limit=limit, recommendation_type=recommendation_type
-        )
+        instance = cls(count=count, limit=limit, recommendation_type=recommendation_type)
 
         graph = GraphDatabase()
         graph.connect()
 
-        scoring_function = Scoring.get_scoring_function(
+        scoring = Scoring(
             graph=graph,
             runtime_environment=runtime_environment,
-            recommendation_type=recommendation_type,
             python_version=project.python_version,
         )
-        return instance.compute(graph, project, scoring_function, dry_run=dry_run)
+        report = instance.compute(graph, project, scoring.get_scoring_function(recommendation_type), dry_run=dry_run)
+        return scoring.get_stack_info(), report
