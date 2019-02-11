@@ -24,7 +24,7 @@ import typing
 
 import attr
 
-from thoth.adviser import RuntimeEnvironment
+from thoth.common import RuntimeEnvironment
 from thoth.python import Project
 from thoth.adviser.python import DependencyGraph
 from thoth.adviser.enums import RecommendationType

@@ -25,9 +25,8 @@ import attr
 
 from thoth.adviser import RecommendationType
 from thoth.adviser.exceptions import InternalError
-from thoth.adviser import RuntimeEnvironment
+from thoth.common import RuntimeEnvironment
 from thoth.storages import GraphDatabase
-from thoth.python import PackageVersion
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -73,8 +72,10 @@ class Scoring:
         """Score the given stack based on performance."""
         # TODO: filter out packages that do not have impact on performance
         _LOGGER.debug("Obtaining performance index for stack")
+        hardware = self.runtime_environment.hardware.to_dict()
+        # TODO: add operating system and cuda/python version to the query
         performance_index = self.graph.compute_python_package_version_avg_performance(
-            packages, hardware_specs=self.runtime_environment.to_dict()
+            packages, hardware_specs=hardware
         )
 
         _LOGGER.info("Performance index for stack: %f", performance_index)

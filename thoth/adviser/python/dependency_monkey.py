@@ -29,9 +29,9 @@ import json
 from amun import inspect as amun_inspect
 
 from thoth.python import Project
-from thoth.adviser import RuntimeEnvironment
 from thoth.adviser.python import DependencyGraph
 from thoth.adviser.python.helpers import fill_package_digests_from_graph
+from thoth.common import RuntimeEnvironment
 from thoth.storages import GraphDatabase
 
 from .decision import DecisionFunction
