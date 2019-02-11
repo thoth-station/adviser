@@ -574,7 +574,7 @@ def submit_amun(
     )
     context = json.loads(context) if context else {}
     inspection_id = dm_amun_inspect_wrapper(stack_output, context, project, 0)
-    print(inspection_id)
+    click.echo(inspection_id)
 
 
 if __name__ == "__main__":
