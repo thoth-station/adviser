@@ -81,6 +81,7 @@ def _dm_stdout_output(generated_project: Project, count: int):
 def _do_dependency_monkey(
     project: Project,
     graph: GraphDatabase,
+    runtime_environment: RuntimeEnvironment,
     *,
     output_function: typing.Callable,
     decision_function: typing.Callable,
@@ -88,7 +89,7 @@ def _do_dependency_monkey(
     dry_run: bool = False,
 ) -> dict:
     """Run dependency monkey."""
-    dependency_graph = DependencyGraph.from_project(graph, project, restrict_indexes=True)
+    dependency_graph = DependencyGraph.from_project(graph, project, runtime_environment, restrict_indexes=True)
 
     computed = 0
     result = {"output": [], "computed": 0}
@@ -181,6 +182,7 @@ def dependency_monkey(
     return _do_dependency_monkey(
         project,
         graph=graph,
+        runtime_environment=runtime_environment,
         dry_run=dry_run,
         decision_function=decision_function,
         count=count,

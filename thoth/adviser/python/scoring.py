@@ -72,7 +72,7 @@ class Scoring:
         """Score the given stack based on performance."""
         # TODO: filter out packages that do not have impact on performance
         _LOGGER.debug("Obtaining performance index for stack")
-        hardware = self.runtime_environment.hardware.to_dict()
+        hardware = self.runtime_environment.hardware.to_dict(without_none=True)
         # TODO: add operating system and cuda/python version to the query
         performance_index = self.graph.compute_python_package_version_avg_performance(
             packages, hardware_specs=hardware
