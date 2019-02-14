@@ -37,6 +37,7 @@ from thoth.python import Project
 from thoth.python import Source
 from thoth.solver.python.base import SolverException
 from thoth.storages import GraphDatabase
+from thoth.common import RuntimeEnvironment
 
 from .solver import PythonPackageGraphSolver
 from .exceptions import ConstraintClashError
@@ -121,7 +122,11 @@ class DependencyGraph:
 
     @classmethod
     def _prepare_direct_dependencies(
-        cls, solver: PythonPackageGraphSolver, project: Project, with_devel: bool
+        cls,
+        solver: PythonPackageGraphSolver,
+        project: Project,
+        *,
+        with_devel: bool
     ) -> tuple:
         """Resolve all the direct dependencies based on the resolution and data available in the graph."""
         # It's important that solver preserves order in which packages were inserted.
@@ -148,7 +153,6 @@ class DependencyGraph:
             for package_version in package_versions:
                 cls.create_package_version_record(full_dependencies_map, package_version)
                 dependencies_map[package_name].append(package_version)
-
 
         # dependencies_map maps package_name to a list of PackageVersion objects
         # full_dependencies_map maps package_name, package_version, index_url to a PackageVersion object;
@@ -231,7 +235,13 @@ class DependencyGraph:
 
     @classmethod
     def from_project(
-        cls, graph: GraphDatabase, project: Project, with_devel: bool = False, restrict_indexes: bool = True
+        cls,
+        graph: GraphDatabase,
+        project: Project,
+        runtime_environment: RuntimeEnvironment,
+        *,
+        with_devel: bool = False,
+        restrict_indexes: bool = True
     ):
         """Construct a dependency graph from a project.
 
@@ -249,7 +259,7 @@ class DependencyGraph:
                 return pickle.load(file_dump)
 
         # Place the import statement here to simplify mocks in the testsuite.
-        solver = PythonPackageGraphSolver(graph_db=graph)
+        solver = PythonPackageGraphSolver(graph_db=graph, runtime_environment=runtime_environment)
         _LOGGER.info("Parsing and solving direct dependencies of the requested project")
         dependencies_map, full_dependencies_map = cls._prepare_direct_dependencies(
             solver, project, with_devel=with_devel

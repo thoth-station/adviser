@@ -34,9 +34,9 @@ from thoth.adviser.python import DECISISON_FUNCTIONS
 from thoth.adviser.python import GraphDigestsFetcher
 from thoth.adviser.python import dependency_monkey as run_dependency_monkey
 from thoth.adviser.python.dependency_monkey import dm_amun_inspect_wrapper
-from thoth.adviser.runtime_environment import RuntimeEnvironment
 from thoth.analyzer import print_command_result
 from thoth.common import init_logging
+from thoth.common import RuntimeEnvironment
 from thoth.python import Pipfile
 from thoth.python import PipfileLock
 from thoth.python import Project
@@ -267,7 +267,7 @@ def provenance(
     "-e",
     envvar="THOTH_ADVISER_RUNTIME_ENVIRONMENT",
     type=str,
-    help="Type of recommendation generated based on knowledge base.",
+    help="Runtime environment specification (file or directly JSON) to describe target environment.",
 )
 @click.option(
     "--files",
@@ -299,18 +299,14 @@ def advise(
     limit = int(limit) if limit else None
     count = int(count) if count else None
 
-    if runtime_environment:
-        runtime_environment = json.loads(runtime_environment)
-    else:
-        runtime_environment = {}
-
+    runtime_environment = RuntimeEnvironment.load(runtime_environment)
     recommendation_type = RecommendationType.by_name(recommendation_type)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
     result = {
         "error": None,
         "report": [],
         "parameters": {
-            "runtime_environment": runtime_environment,
+            "runtime_environment": runtime_environment.to_dict(),
             "recommendation_type": recommendation_type.name.lower(),
             "requirements_format": requirements_format.name.lower(),
             "limit": limit,
@@ -320,8 +316,6 @@ def advise(
         },
         "input": None,
     }
-
-    runtime_environment = RuntimeEnvironment.from_dict(runtime_environment)
 
     try:
         project = _instantiate_project(requirements, requirements_locked, files)
@@ -439,7 +433,7 @@ def advise(
     "-e",
     envvar="THOTH_ADVISER_RUNTIME_ENVIRONMENT",
     type=str,
-    help="Runtime environment that is used for verifying stacks.",
+    help="Runtime environment specification (file or directly JSON) to describe target environment.",
 )
 @click.option("--no-pretty", "-P", is_flag=True, help="Do not print results nicely.")
 def dependency_monkey(
@@ -463,17 +457,13 @@ def dependency_monkey(
     # cannot pass empty string as an int as env variable.
     seed = int(seed) if seed else None
     count = int(count) if count else None
-
-    if runtime_environment:
-        runtime_environment = json.loads(runtime_environment)
-    else:
-        runtime_environment = {}
+    runtime_environment = RuntimeEnvironment.load(runtime_environment)
 
     result = {
         "error": False,
         "parameters": {
             "requirements": project.pipfile.to_dict(),
-            "runtime_environment": runtime_environment,
+            "runtime_environment": runtime_environment.to_dict(),
             "seed": seed,
             "decision": decision,
             "context": deepcopy(
@@ -490,8 +480,6 @@ def dependency_monkey(
         "output": [],
         "computed": None,
     }
-
-    runtime_environment = RuntimeEnvironment.from_dict(runtime_environment)
 
     try:
         report = run_dependency_monkey(
