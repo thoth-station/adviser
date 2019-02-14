@@ -25,6 +25,8 @@ objects:
         app: thoth
         component: provenance-checker
         mark: cleanup
+        operator: graph-sync
+        task: package-extract
     spec:
       backoffLimit: 0
       template:
