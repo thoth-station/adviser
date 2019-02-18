@@ -24,7 +24,7 @@ import typing
 
 import attr
 
-from thoth.adviser import RuntimeEnvironment
+from thoth.common import RuntimeEnvironment
 from thoth.python import Project
 from thoth.adviser.python import DependencyGraph
 from thoth.adviser.enums import RecommendationType
@@ -73,11 +73,12 @@ class Adviser:
         self,
         graph: GraphDatabase,
         project: Project,
+        runtime_environment: RuntimeEnvironment,
         scoring_function: typing.Callable,
         dry_run: bool = False,
     ) -> typing.Union[typing.List[Project], int]:
         """Compute recommendations for the given project."""
-        dependency_graph = DependencyGraph.from_project(graph, project, restrict_indexes=False)
+        dependency_graph = DependencyGraph.from_project(graph, project, runtime_environment, restrict_indexes=False)
 
         try:
             for decision_function_result, generated_project in dependency_graph.walk(
@@ -144,5 +145,11 @@ class Adviser:
             runtime_environment=runtime_environment,
             python_version=project.python_version,
         )
-        report = instance.compute(graph, project, scoring.get_scoring_function(recommendation_type), dry_run=dry_run)
+        report = instance.compute(
+            graph,
+            project,
+            runtime_environment,
+            scoring.get_scoring_function(recommendation_type),
+            dry_run=dry_run
+        )
         return scoring.get_stack_info(), report

@@ -26,7 +26,7 @@ version resolution is dynamic in case of Python).
 import re
 import typing
 
-from thoth.solver.python.base import Dependency
+from thoth.common import RuntimeEnvironment
 from thoth.solver.python.base import DependencyParser
 from thoth.solver.python.base import ReleasesFetcher
 from thoth.solver.python.base import Solver
@@ -39,10 +39,11 @@ from thoth.python import Source
 class GraphReleasesFetcher(ReleasesFetcher):
     """Fetch releases for packages from the graph database."""
 
-    def __init__(self, graph_db=None):
+    def __init__(self, runtime_environment: RuntimeEnvironment = None, graph_db=None):
         """Initialize graph release fetcher."""
         super().__init__()
         self._graph_db = graph_db
+        self.runtime_environment = runtime_environment or RuntimeEnvironment.from_dict({})
 
     @property
     def graph_db(self):
@@ -59,8 +60,16 @@ class GraphReleasesFetcher(ReleasesFetcher):
         """Fetch releases for the given package name."""
         # Make sure we have normalized names in the graph database according to PEP:
         #   https://www.python.org/dev/peps/pep-0503/#normalized-names
-        package_name = re.sub(r"[-_.]+", "-", package_name).lower()
-        return package_name, self.graph_db.get_all_versions_python_package(package_name)
+        package_name = Source.normalize_package_name(package_name)
+        # We hard-code without error to true here as we do not use this query in any other way.
+        result = self.graph_db.get_all_versions_python_package(
+            package_name,
+            os_name=self.runtime_environment.operating_system.name,
+            os_version=self.runtime_environment.operating_system.version,
+            python_version=self.runtime_environment.python_version,
+            without_error=True,
+        )
+        return package_name, result
 
 
 class PackageVersionDependencyParser(DependencyParser):
@@ -80,12 +89,12 @@ class PythonGraphSolver(Solver):
     """Solve Python dependencies based on data available in the graph database."""
 
     def __init__(
-        self, *, parser_kwargs: dict = None, graph_db=None, solver_kwargs: dict = None
+        self, *, parser_kwargs: dict = None, graph_db=None, runtime_environment=None, solver_kwargs: dict = None
     ):
         """Initialize instance."""
         super().__init__(
             PackageVersionDependencyParser(**(parser_kwargs or {})),
-            GraphReleasesFetcher(graph_db),
+            GraphReleasesFetcher(graph_db=graph_db, runtime_environment=runtime_environment),
             **(solver_kwargs or {}),
         )
 
@@ -95,13 +104,18 @@ class PythonPackageGraphSolver:
 
     def __init__(
         self,
+        *,
         parser_kwargs: dict = None,
         graph_db: dict = None,
         solver_kwargs: dict = None,
+        runtime_environment: RuntimeEnvironment = None,
     ):
         """Get instance of the graph solver."""
         self._solver = PythonGraphSolver(
-            parser_kwargs=parser_kwargs, graph_db=graph_db, solver_kwargs=solver_kwargs
+            parser_kwargs=parser_kwargs,
+            graph_db=graph_db,
+            solver_kwargs=solver_kwargs,
+            runtime_environment=runtime_environment
         )
 
     def solve(

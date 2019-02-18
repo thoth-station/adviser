@@ -23,9 +23,8 @@ import typing
 import attr
 
 from thoth.storages import GraphDatabase
-from thoth.adviser import RuntimeEnvironment
+from thoth.common import RuntimeEnvironment
 from thoth.adviser.exceptions import InternalError
-from thoth.python import PackageVersion
 
 
 @attr.s(slots=True)
