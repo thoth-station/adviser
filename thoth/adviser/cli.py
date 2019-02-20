@@ -101,7 +101,13 @@ def _instantiate_project(
     expose_value=False,
     help="Print adviser version and exit.",
 )
-def cli(ctx=None, verbose=False):
+@click.option(
+    "--metadata",
+    type=str,
+    envvar="THOTH_ADVISER_METADATA",
+    help="Metadata in a form of a JSON which are used for carrying additional context in Thoth deployment."
+)
+def cli(ctx=None, verbose=False, metadata=None):
     """Thoth adviser command line interface."""
     if ctx:
         ctx.auto_envvar_prefix = "THOTH_ADVISER"
@@ -111,6 +117,9 @@ def cli(ctx=None, verbose=False):
 
     _LOGGER.debug("Debug mode is on")
     _LOGGER.info("Version: %s", analyzer_version)
+
+    # This value is unused here, but is reported from click context.
+    metadata = metadata
 
 
 @cli.command()
