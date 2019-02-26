@@ -73,6 +73,21 @@ objects:
                   value: '8182'
                 - name: THOTH_ADVISER_SUBCOMMAND
                   value: 'advise'
+                - name: PROMETHEUS_PUSHGATEWAY_HOST
+                  valueFrom:
+                    configMapKeyRef:
+                      key: prometheus-pushgateway-host
+                      name: thoth
+                - name: PROMETHEUS_PUSHGATEWAY_PORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: thoth
+                      key: prometheus-pushgateway-port
+                - name: SENTRY_DSN
+                  valueFrom:
+                    secretKeyRef:
+                      name: thoth
+                      key: sentry-dsn
               resources:
                 limits:
                   memory: '512Mi'
