@@ -59,10 +59,6 @@ objects:
                   value: "${THOTH_ADVISER_REQUIREMENTS_LOCKED}"
                 - name: THOTH_WHITELISTED_SOURCES
                   value: "${THOTH_WHITELISTED_SOURCES}"
-                - name: THOTH_JANUSGRAPH_HOST
-                  value: janusgraph
-                - name: THOTH_JANUSGRAPH_PORT
-                  value: '80'
                 - name: THOTH_ADVISER_SUBCOMMAND
                   value: 'provenance'
                 - name: PROMETHEUS_PUSHGATEWAY_HOST

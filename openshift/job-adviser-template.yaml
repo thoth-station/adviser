@@ -67,10 +67,6 @@ objects:
                   value: "${THOTH_ADVISER_RECOMMENDATION_TYPE}"
                 - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
                   value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
-                - name: THOTH_JANUSGRAPH_HOST
-                  value: janusgraph
-                - name: THOTH_JANUSGRAPH_PORT
-                  value: '8182'
                 - name: THOTH_ADVISER_SUBCOMMAND
                   value: 'advise'
                 - name: PROMETHEUS_PUSHGATEWAY_HOST
