@@ -75,6 +75,21 @@ objects:
                   value: "${THOTH_DEPENDENCY_MONKEY_COUNT}"
                 - name: THOTH_AMUN_CONTEXT
                   value: "${THOTH_AMUN_CONTEXT}"
+                - name: PROMETHEUS_PUSHGATEWAY_HOST
+                  valueFrom:
+                    configMapKeyRef:
+                      key: prometheus-pushgateway-host
+                      name: thoth
+                - name: PROMETHEUS_PUSHGATEWAY_PORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: thoth
+                      key: prometheus-pushgateway-port
+                - name: SENTRY_DSN
+                  valueFrom:
+                    secretKeyRef:
+                      name: thoth
+                      key: sentry-dsn
               resources:
                 limits:
                   memory: '8Gi'
