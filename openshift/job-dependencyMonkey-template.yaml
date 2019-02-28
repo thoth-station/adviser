@@ -51,10 +51,6 @@ objects:
                   value: "${THOTH_LOG_ADVISER}"
                 - name: THOTH_ADVISER_REQUIREMENTS
                   value: "${THOTH_ADVISER_REQUIREMENTS}"
-                - name: THOTH_JANUSGRAPH_HOST
-                  value: janusgraph
-                - name: THOTH_JANUSGRAPH_PORT
-                  value: '80'
                 - name: THOTH_ADVISER_SUBCOMMAND
                   value: 'dependency-monkey'
                 - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
