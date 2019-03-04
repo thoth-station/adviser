@@ -288,10 +288,13 @@ class DependencyGraph:
                 package_version.locked_version,
                 package_version.index.url,
             )
-
-            cls._get_python_package_tuples(
-                package_tuples_map, graph, set(chain(chain(*transitive_dependencies)))
-            )
+            # We need to explicitly iterate over these results as gremlin-python wraps result into Path object
+            # which does not support advanced indexing like 0::2.
+            ids = set()
+            for entry in transitive_dependencies:
+                for idx in range(0, len(entry), 2):
+                    ids.add(entry[idx])
+            cls._get_python_package_tuples(package_tuples_map, graph, ids)
 
             # Fast path - filter out paths that have a version of a direct
             # dependency in it that does not correspond to the direct
@@ -300,10 +303,23 @@ class DependencyGraph:
             for entry in transitive_dependencies:
                 exclude = False
                 new_entry = []
-                for idx in range(0, len(entry)):
+                for idx in range(0, len(entry), 2):
                     item = entry[idx]
+                    solver_error = False  # Can be leaf dependency in dependency graph.
+                    if len(entry) > idx + 1:
+                        solver_error = entry[idx + 1]
+
                     item = package_tuples_map[item]
                     package, version, index_url = item[0], item[1], item[2]
+
+                    if solver_error:
+                        item = package_tuples_map[entry[idx + 2]]
+                        _LOGGER.info(
+                            "Excluding a path due to package %s: unable to install in the given environment",
+                            item
+                        )
+                        exclude = True
+                        break
 
                     if package in core_packages.keys():
                         if version not in core_packages[package]:
@@ -329,8 +345,8 @@ class DependencyGraph:
 
                     # Otherwise do not include it - cut off the un-reachable dependency graph.
                     _LOGGER.debug(
-                        "Excluding a path due to package %s (unreachable based on direct dependencies)",
-                        (package, version, index_url),
+                        "Excluding a path due to package %s: unreachable based on direct dependencies",
+                        item
                     )
                     exclude = True
                     break
