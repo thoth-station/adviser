@@ -227,6 +227,25 @@ and using its command line interface:
 When thoth-adviser is scheduled in a deployment, it is actually executed as a
 CLI with arguments passed via environment variables.
 
+Running adviser locally
+=======================
+
+Often it is useful to run adviser locally to experiment or verify your changes in implementation. You can do so easily by running:
+
+.. code-block:: console
+
+  $ pipenv install
+  $ PYTHONPATH=. JANUSGRAPH_SERVICE_HOST=janusgraph.test.thoth-station.ninja pipenv run ./thoth-adviser --help
+
+This command will set `janusgraph.test.thoth-station.ninja` (JanusGraph deployed in test environment) as your source for advises and information for resolver to correctly resovle dependencies. Feel free to use `a local JanusGraph instance <https://github.com/thoth-station/janusgraph-thoth-config#running-janusgraph-instance-locally>`_ if it suits your needs. Also, follow the developer's guide to get `more information about developer's setup <https://github.com/thoth-station/thoth/blob/master/docs/developers_guide.rst>`_ .
+
+As adviser is very memory intense application, it is recommended to run it in a container with memory limit set for large application stacks. To do so, use `s2i` utility to build the container and then run it as show below:
+
+.. code-block:: console
+
+  $ s2i build . centos/python-36-centos7 thoth-adviser
+  $ docker run -m 8G -e THOTH_ADVISER_SUBCOMMAND=advise -e JANUSGRAPH_SERVICE_HOST=janusgraph.test.thoth-station.ninja thoth-adviser
+
 libdependency_graph.so
 ======================
 
