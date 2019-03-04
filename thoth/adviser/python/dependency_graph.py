@@ -79,6 +79,7 @@ class DependencyGraph:
 
     @staticmethod
     def create_package_version_record(full_dependencies_map: dict, package_version: PackageVersion) -> None:
+        """Create a record of a Python package in dependencies map."""
         version = package_version.locked_version
         if (
             full_dependencies_map.get(package_version.name, {})
@@ -100,6 +101,7 @@ class DependencyGraph:
 
     @staticmethod
     def create_package_version_holder(full_dependencies_map: dict, package_tuple: tuple) -> None:
+        """Mark the given package as known to Thoth, let it instantiate lazily."""
         package_name, package_version, package_index_url = package_tuple
         if (
             full_dependencies_map.get(package_name, {})

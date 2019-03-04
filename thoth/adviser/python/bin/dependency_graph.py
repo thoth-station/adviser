@@ -84,7 +84,6 @@ class DependencyGraph:
     ):
         """Construct dependency graph.
 
-
         Create a dependency graph by propagating arguments down to library. The arguments need to be first converted
         into C-type specific ones to have correct values in the C/C++ implementation..
         """
