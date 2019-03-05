@@ -107,7 +107,9 @@ class Scoring:
                 self._stack_info.add(tuple(cve_record.items()))
 
         cve_count = len(report)
-        _LOGGER.info("Found %d CVE%s in the application stack", cve_count, 's' if cve_count != 1 else '')
+        if cve_count > 0:
+            _LOGGER.info("Found %d CVE%s in the application stack", cve_count, 's' if cve_count != 1 else '')
+
         score = 0.0 if not report else self._CVE_PENALIZATION * cve_count
 
         return score, report
