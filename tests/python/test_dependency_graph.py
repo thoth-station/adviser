@@ -37,18 +37,26 @@ class TestDependencyGraph(AdviserTestCase):
             os.path.join(self.data_dir, "projects", "Pipfile_project0")
         )
 
-        dependency_graph = DependencyGraph.from_project(graph, project, runtime_environment=RuntimeEnvironment.from_dict({}), restrict_indexes=False)
+        dependency_graph = DependencyGraph.from_project(
+            graph,
+            project,
+            runtime_environment=RuntimeEnvironment.from_dict({}),
+            restrict_indexes=False,
+        )
         count = 0
         stacks = set()
         for reasoning, generated_project in dependency_graph.walk(self.always_true):
             assert isinstance(generated_project, Project)
             generated_project = generated_project.to_dict()
-            pipfile_lock = generated_project['requirements_locked']
-            stack = tuple((k, v['version'], v['index']) for k, v in pipfile_lock['default'].items())
+            pipfile_lock = generated_project["requirements_locked"]
+            stack = tuple(
+                (k, v["version"], v["index"])
+                for k, v in pipfile_lock["default"].items()
+            )
             assert stack not in stacks
             stacks.add(stack)
 
-            assert not pipfile_lock['develop']
+            assert not pipfile_lock["develop"]
 
             assert isinstance(reasoning, tuple)
             assert reasoning == (True, [{"foo": "bar"}])

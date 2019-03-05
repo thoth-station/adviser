@@ -42,12 +42,12 @@ class MockedGraphDatabase:
         pass
 
     def get_all_versions_python_package(
-            self,
-            package_name: str,
-            os_name: str = None,
-            os_version: str = None,
-            python_version: str = None,
-            without_error: bool = True
+        self,
+        package_name: str,
+        os_name: str = None,
+        os_version: str = None,
+        python_version: str = None,
+        without_error: bool = True,
     ) -> typing.List[tuple]:
         """Get all versions for the given Python package."""
         result = []

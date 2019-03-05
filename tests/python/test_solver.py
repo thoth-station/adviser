@@ -1,4 +1,4 @@
-    #!/usr/bin/env python3
+#!/usr/bin/env python3
 # thoth-adviser
 # Copyright(C) 2018, 2019 Fridolin Pokorny
 #
@@ -161,11 +161,16 @@ class TestSolver(AdviserTestCase):
     def test_db_0_multiple_times_error(self, graph):
         """Check that resolving can resolve multiple Python packages."""
         from thoth.solver.python.base import SolverException
+
         with pytest.raises(SolverException):
             PythonPackageGraphSolver(graph_db=graph).solve(
                 [
-                    PackageVersion(name="a", version="<=1.2.0", index=None, develop=False),
-                    PackageVersion(name="a", version=">1.0.0", index=None, develop=False),
+                    PackageVersion(
+                        name="a", version="<=1.2.0", index=None, develop=False
+                    ),
+                    PackageVersion(
+                        name="a", version=">1.0.0", index=None, develop=False
+                    ),
                 ],
                 graceful=False,
                 all_versions=True,
