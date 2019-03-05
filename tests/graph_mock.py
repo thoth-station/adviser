@@ -41,7 +41,14 @@ class MockedGraphDatabase:
     def connect(self):
         pass
 
-    def get_all_versions_python_package(self, package_name: str) -> typing.List[tuple]:
+    def get_all_versions_python_package(
+            self,
+            package_name: str,
+            os_name: str = None,
+            os_version: str = None,
+            python_version: str = None,
+            without_error: bool = True
+    ) -> typing.List[tuple]:
         """Get all versions for the given Python package."""
         result = []
         for version, info in self.db.get(package_name, {}).items():
@@ -105,7 +112,7 @@ class MockedGraphDatabase:
                             self._id_map[destination_id] = destination
                             self._reverse_id_map[destination] = destination_id
 
-                        result.append((source_id, destination_id))
+                        result.append((source_id, False, destination_id))
 
         return result
 

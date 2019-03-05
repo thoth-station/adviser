@@ -24,6 +24,7 @@ from base import AdviserTestCase
 from graph_mock import MockedGraphDatabase
 from thoth.adviser.python import DependencyGraph
 from thoth.python import Project
+from thoth.common import RuntimeEnvironment
 
 
 class TestDependencyGraph(AdviserTestCase):
@@ -36,7 +37,7 @@ class TestDependencyGraph(AdviserTestCase):
             os.path.join(self.data_dir, "projects", "Pipfile_project0")
         )
 
-        dependency_graph = DependencyGraph.from_project(graph, project)
+        dependency_graph = DependencyGraph.from_project(graph, project, runtime_environment=RuntimeEnvironment.from_dict({}), restrict_indexes=False)
         count = 0
         stacks = set()
         for reasoning, generated_project in dependency_graph.walk(self.always_true):
