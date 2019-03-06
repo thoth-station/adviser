@@ -81,7 +81,7 @@ class Scoring:
         for package_tuple, performance_impact_score in packages_perfomance_impact.items():
             if performance_impact_score is None:
                 _LOGGER.warning(
-                    "Package %r has no record on Isis, assuming positively its performance impact",
+                    "Package %r has no record on Isis, assuming its positive performance impact",
                     package_tuple
                 )
                 result.append(package_tuple)
