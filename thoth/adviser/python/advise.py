@@ -78,14 +78,16 @@ class Adviser:
         dry_run: bool = False,
     ) -> typing.Union[typing.List[Project], int]:
         """Compute recommendations for the given project."""
-        dependency_graph = DependencyGraph.from_project(graph, project, runtime_environment, restrict_indexes=False)
+        dependency_graph = DependencyGraph.from_project(
+            graph, project, runtime_environment, restrict_indexes=False
+        )
 
         try:
             for decision_function_result, generated_project in dependency_graph.walk(
                 scoring_function
             ):
                 score, reasoning = decision_function_result
-                reasoning.append({'score': score})
+                reasoning.append({"score": score})
                 self._visited += 1
 
                 if dry_run:
@@ -101,7 +103,10 @@ class Adviser:
                     heapq.heappush(self._computed_stacks_heap, heap_entry)
 
                 if self.limit is not None and self._visited >= self.limit:
-                    _LOGGER.info("Reached graph traversal limit (%s), stopping dependency graph traversal", self.limit)
+                    _LOGGER.info(
+                        "Reached graph traversal limit (%s), stopping dependency graph traversal",
+                        self.limit,
+                    )
                     break
 
             if dry_run:
@@ -116,7 +121,8 @@ class Adviser:
             )
             _LOGGER.info("Filling package digests to software stacks")
             result = [
-                (item[0], fill_package_digests_from_graph(item[1], graph)) for item in result
+                (item[0], fill_package_digests_from_graph(item[1], graph))
+                for item in result
             ]
             return result
         finally:
@@ -136,7 +142,9 @@ class Adviser:
         graph: GraphDatabase = None,
     ) -> tuple:
         """Compute recommendations for the given project, a syntax sugar for the compute method."""
-        instance = cls(count=count, limit=limit, recommendation_type=recommendation_type)
+        instance = cls(
+            count=count, limit=limit, recommendation_type=recommendation_type
+        )
 
         if not graph:
             graph = GraphDatabase()
@@ -152,6 +160,6 @@ class Adviser:
             project,
             runtime_environment,
             scoring.get_scoring_function(recommendation_type),
-            dry_run=dry_run
+            dry_run=dry_run,
         )
         return scoring.get_stack_info(), report
