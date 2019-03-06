@@ -69,6 +69,11 @@ objects:
                   value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
                 - name: THOTH_ADVISER_SUBCOMMAND
                   value: 'advise'
+                - name: ISIS_API_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: isis-api-url
+                      name: thoth
                 - name: PROMETHEUS_PUSHGATEWAY_HOST
                   valueFrom:
                     configMapKeyRef:
