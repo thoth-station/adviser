@@ -24,6 +24,7 @@ import math
 import attr
 
 from thoth.adviser import RecommendationType
+from thoth.adviser.isis import ISIS_API
 from thoth.adviser.exceptions import InternalError
 from thoth.common import RuntimeEnvironment
 from thoth.storages import GraphDatabase
@@ -43,6 +44,7 @@ class Scoring:
 
     _CVE_PENALIZATION = -0.1
     _PERFORMANCE_PENALIZATION = 0.2
+    _PERFORMANCE_IMPACT_THRESHOLD = 0.0
 
     def get_scoring_function(
         self, recommendation_type: RecommendationType
@@ -68,13 +70,46 @@ class Scoring:
         """Get a generic report which is generic for the application stack."""
         return list(dict(item) for item in self._stack_info)
 
+    @classmethod
+    def _get_performance_substack(cls, packages: typing.List[tuple]) -> typing.List[tuple]:
+        """Filter out packages from stack (packages lists) that do not have performance impact.
+
+         The filtering is done based on queries to Amun API (project2vec API service).
+         """
+        result = []
+        packages_perfomance_impact = ISIS_API.get_python_package_performance_impact_all(packages)
+        for package_tuple, performance_impact_score in packages_perfomance_impact.items():
+            if performance_impact_score is None:
+                _LOGGER.warning(
+                    "Package %r has no record on Isis, assuming positively its performance impact",
+                    package_tuple
+                )
+                result.append(package_tuple)
+            elif performance_impact_score > cls._PERFORMANCE_IMPACT_THRESHOLD:
+                _LOGGER.debug(
+                    "Package %r included in sub-stack for performance scoring (score: %f, threshold: %f)",
+                    package_tuple,
+                    performance_impact_score,
+                    cls._PERFORMANCE_IMPACT_THRESHOLD
+                )
+                result.append(package_tuple)
+            else:
+                _LOGGER.debug(
+                    "Excluding package %r from sub-stack used in performance scoring (score: %f, threshold: %f)",
+                    package_tuple,
+                    performance_impact_score,
+                    cls._PERFORMANCE_IMPACT_THRESHOLD
+                )
+
+        return result
+
     def _performance_scoring(
         self, packages: typing.List[tuple]
     ) -> typing.Tuple[float, list]:
         """Score the given stack based on performance."""
-        # TODO: filter out packages that do not have impact on performance
         _LOGGER.debug("Obtaining performance index for stack")
         hardware = self.runtime_environment.hardware.to_dict(without_none=True)
+        packages = self._get_performance_substack(packages)
         # TODO: add operating system and cuda/python version to the query
         performance_index = self.graph.compute_python_package_version_avg_performance(
             packages, hardware_specs=hardware
