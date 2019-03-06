@@ -31,8 +31,12 @@ init_logging()
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
-_DEFAULT_LIBDEPENDENCY_GRAPH_SO = os.path.join(os.path.dirname(os.path.realpath(__file__)), "libdependency_graph.so")
-_LIBDEPENDENCY_GRAPH_SO = os.getenv("LIBDEPENDENCY_GRAPH_SO_PATH", _DEFAULT_LIBDEPENDENCY_GRAPH_SO)
+_DEFAULT_LIBDEPENDENCY_GRAPH_SO = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), "libdependency_graph.so"
+)
+_LIBDEPENDENCY_GRAPH_SO = os.getenv(
+    "LIBDEPENDENCY_GRAPH_SO_PATH", _DEFAULT_LIBDEPENDENCY_GRAPH_SO
+)
 _LIBDEPENDENCY_GRAPH = ctypes.cdll.LoadLibrary(_LIBDEPENDENCY_GRAPH_SO)
 
 
@@ -95,7 +99,9 @@ class DependencyGraph:
             self._stack_producer(
                 direct_dependencies, dependencies_list, dependency_types, write_fd
             )
-            _LOGGER.error("Stack producer exited abnormally, this code has to be unreachable")
+            _LOGGER.error(
+                "Stack producer exited abnormally, this code has to be unreachable"
+            )
             sys.exit(1)
         else:
             self.read_pipe = os.fdopen(read_fd, "rb")
@@ -122,10 +128,16 @@ class DependencyGraph:
         Calls libdependency_graph.so routines to generate all the stacks and quits.
         """
         try:
-            _LOGGER.info("Starting stack producer from %r library...", _LIBDEPENDENCY_GRAPH_SO)
+            _LOGGER.info(
+                "Starting stack producer from %r library...", _LIBDEPENDENCY_GRAPH_SO
+            )
             size = len(dependency_types)
-            c_dependency_types = (ctypes.c_uint * len(dependency_types))(*dependency_types)
-            c_direct_dependencies = (ctypes.c_uint * len(direct_dependencies))(*direct_dependencies)
+            c_dependency_types = (ctypes.c_uint * len(dependency_types))(
+                *dependency_types
+            )
+            c_direct_dependencies = (ctypes.c_uint * len(direct_dependencies))(
+                *direct_dependencies
+            )
 
             # Convert list into ctype representation.
             c_rows = ctypes.c_uint * 2

@@ -44,7 +44,9 @@ class Scoring:
     _CVE_PENALIZATION = -0.1
     _PERFORMANCE_PENALIZATION = 0.2
 
-    def get_scoring_function(self, recommendation_type: RecommendationType) -> typing.Callable:
+    def get_scoring_function(
+        self, recommendation_type: RecommendationType
+    ) -> typing.Callable:
         """Get a bound method keeping connected adapter to a graph database with runtime information."""
         if recommendation_type == RecommendationType.STABLE:
             _LOGGER.info("Using scoring function obtaining stable software stacks")
@@ -92,23 +94,31 @@ class Scoring:
         for package in packages:
             cves = self.graph.get_python_cve_records(package[0], package[1])
             for cve_record in cves:
-                cve_record.update({
-                    "type": "WARNING",
-                    "package": package[0],
-                    "version": package[1],
-                    "version_range": cve_record["version_range"],
-                    "justification": "Found a CVE for the package",
-                })
+                cve_record.update(
+                    {
+                        "type": "WARNING",
+                        "package": package[0],
+                        "version": package[1],
+                        "version_range": cve_record["version_range"],
+                        "justification": "Found a CVE for the package",
+                    }
+                )
                 report.append(cve_record)
                 # Add for the complete listing for user information.
                 cve_record = dict(cve_record)
                 cve_record.pop("version")
-                cve_record['justification'] = f"Resolution of package {package[0]!r} can lead to a version with CVE"
+                cve_record[
+                    "justification"
+                ] = f"Resolution of package {package[0]!r} can lead to a version with CVE"
                 self._stack_info.add(tuple(cve_record.items()))
 
         cve_count = len(report)
         if cve_count > 0:
-            _LOGGER.info("Found %d CVE%s in the application stack", cve_count, 's' if cve_count != 1 else '')
+            _LOGGER.info(
+                "Found %d CVE%s in the application stack",
+                cve_count,
+                "s" if cve_count != 1 else "",
+            )
 
         score = 0.0 if not report else self._CVE_PENALIZATION * cve_count
 

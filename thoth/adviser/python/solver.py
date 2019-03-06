@@ -43,7 +43,9 @@ class GraphReleasesFetcher(ReleasesFetcher):
         """Initialize graph release fetcher."""
         super().__init__()
         self._graph_db = graph_db
-        self.runtime_environment = runtime_environment or RuntimeEnvironment.from_dict({})
+        self.runtime_environment = runtime_environment or RuntimeEnvironment.from_dict(
+            {}
+        )
 
     @property
     def graph_db(self):
@@ -89,12 +91,19 @@ class PythonGraphSolver(Solver):
     """Solve Python dependencies based on data available in the graph database."""
 
     def __init__(
-        self, *, parser_kwargs: dict = None, graph_db=None, runtime_environment=None, solver_kwargs: dict = None
+        self,
+        *,
+        parser_kwargs: dict = None,
+        graph_db=None,
+        runtime_environment=None,
+        solver_kwargs: dict = None,
     ):
         """Initialize instance."""
         super().__init__(
             PackageVersionDependencyParser(**(parser_kwargs or {})),
-            GraphReleasesFetcher(graph_db=graph_db, runtime_environment=runtime_environment),
+            GraphReleasesFetcher(
+                graph_db=graph_db, runtime_environment=runtime_environment
+            ),
             **(solver_kwargs or {}),
         )
 
@@ -115,7 +124,7 @@ class PythonPackageGraphSolver:
             parser_kwargs=parser_kwargs,
             graph_db=graph_db,
             solver_kwargs=solver_kwargs,
-            runtime_environment=runtime_environment
+            runtime_environment=runtime_environment,
         )
 
     def solve(
@@ -155,7 +164,7 @@ class PythonPackageGraphSolver:
                 # We only change version attribute that will be the resolved one.
                 package_version = PackageVersion(
                     name=dependencies[0].name,
-                    version='==' + version,
+                    version="==" + version,
                     index=Source(index_url),
                     develop=dependencies[0].develop,
                 )
@@ -183,7 +192,7 @@ class PythonPackageGraphSolver:
                     result_versions.append(
                         PackageVersion(
                             name=original_package.name,
-                            version='==' + version,
+                            version="==" + version,
                             index=Source(index_url),
                             develop=original_package.develop,
                         )

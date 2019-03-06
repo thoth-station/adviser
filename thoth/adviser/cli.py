@@ -105,7 +105,7 @@ def _instantiate_project(
     "--metadata",
     type=str,
     envvar="THOTH_ADVISER_METADATA",
-    help="Metadata in a form of a JSON which are used for carrying additional context in Thoth deployment."
+    help="Metadata in a form of a JSON which are used for carrying additional context in Thoth deployment.",
 )
 def cli(ctx=None, verbose=False, metadata=None):
     """Thoth adviser command line interface."""
@@ -269,7 +269,6 @@ def provenance(
     "--limit",
     envvar="THOTH_ADVISER_LIMIT",
     help="Number of software stacks that should be taken into account (stop after reaching the limit).",
-
 )
 @click.option(
     "--runtime-environment",
@@ -329,7 +328,10 @@ def advise(
     try:
         project = _instantiate_project(requirements, requirements_locked, files)
         result["input"] = project.to_dict()
-        _LOGGER.info("Computing advises for runtime environment: %r", runtime_environment.to_dict())
+        _LOGGER.info(
+            "Computing advises for runtime environment: %r",
+            runtime_environment.to_dict(),
+        )
         stack_info, report = Adviser.compute_on_project(
             project,
             runtime_environment=runtime_environment,

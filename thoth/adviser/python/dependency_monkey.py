@@ -89,7 +89,9 @@ def _do_dependency_monkey(
     dry_run: bool = False,
 ) -> dict:
     """Run dependency monkey."""
-    dependency_graph = DependencyGraph.from_project(graph, project, runtime_environment, restrict_indexes=True)
+    dependency_graph = DependencyGraph.from_project(
+        graph, project, runtime_environment, restrict_indexes=True
+    )
 
     computed = 0
     result = {"output": [], "computed": 0}
