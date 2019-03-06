@@ -1,0 +1,94 @@
+# This is YAML used for mocking graph database queries.
+#
+#           a                a               a
+#         1.0.0            2.0.0           3.0.0
+#           |                |               |
+#           |                |               |
+#           b                b               b
+#           *                *               *
+#
+# Resolved to:
+#    (1.{1,2,3}.0)     (1.{1,2,3}.0)   (1.{1,2,3}.0)
+#
+#
+#           b                b               b
+#         1.1.0            1.2.0           1.3.0
+#           |                |               |
+#           |                |               |
+#           c                c               c
+#           *                *               *
+#    ({6,7,8}.0.0)     {6,7,8}.0.0)    ({6,7,8}.0.0)
+#
+# Versions are intentionally mixed when it comes to ordering for the sorting test.
+#
+a:
+  2.0.0:
+    - index_url: aicoe-index
+      depends_on:
+        - package_name: b
+          version_range: '*'
+          index_url: aicoe-index
+          resolved:
+            - '1.2.0'
+            - '1.1.0'
+            - '1.3.0'
+  1.0.0:
+    - index_url: aicoe-index
+      depends_on:
+        - package_name: b
+          version_range: '*'
+          index_url: aicoe-index
+          resolved:
+            - '1.1.0'
+            - '1.3.0'
+            - '1.2.0'
+
+  3.0.0:
+    - index_url: aicoe-index
+      depends_on:
+        - package_name: b
+          version_range: '*'
+          index_url: aicoe-index
+          resolved:
+            - '1.3.0'
+            - '1.1.0'
+            - '1.2.0'
+
+b:
+  1.3.0:
+    - index_url: aicoe-index
+      depends_on:
+        - package_name: c
+          version_range: '*'
+          index_url: aicoe-index
+          resolved:
+            - '6.0.0'
+            - '7.0.0'
+            - '8.0.0'
+  1.1.0:
+    - index_url: aicoe-index
+      depends_on:
+        - package_name: c
+          version_range: '*'
+          index_url: aicoe-index
+          resolved:
+            - '7.0.0'
+            - '8.0.0'
+            - '6.0.0'
+  1.2.0:
+    - index_url: aicoe-index
+      depends_on:
+        - package_name: c
+          version_range: '*'
+          index_url: aicoe-index
+          resolved:
+            - '8.0.0'
+            - '7.0.0'
+            - '6.0.0'
+c:
+  8.0.0:
+    - index_url: aicoe-index
+  6.0.0:
+    - index_url: aicoe-index
+  7.0.0:
+    - index_url: aicoe-index

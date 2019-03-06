@@ -144,7 +144,7 @@ DependencyGraph::DependencyGraph(
 
     for (auto to_expand_item: output_vector) {
         StackItem * stack_item = new StackItem(to_expand_item);
-        this->traversal_stack.push_back(stack_item);
+        this->traversal_stack.push_front(stack_item);
     }
 }
 

@@ -19,6 +19,7 @@
 """Test dependency graph construction and operations on it."""
 
 import os
+import itertools
 
 from base import AdviserTestCase
 from graph_mock import MockedGraphDatabase
@@ -64,3 +65,33 @@ class TestDependencyGraph(AdviserTestCase):
 
         # 7 stacks for a/b, 8 stacks for b/d => 56 as they do not interfere
         assert count == 56
+
+    def test_sorted_results(self):
+        graph = MockedGraphDatabase("db_2.yaml")
+        project = Project.from_files(
+            os.path.join(self.data_dir, "projects", "Pipfile_project1")
+        )
+
+        # Versions sorted based on semver - latest first.
+        a_versions = ['3.0.0', '2.0.0', '1.0.0']
+        b_versions = ['1.3.0', '1.2.0', '1.1.0']
+        c_versions = ['8.0.0', '7.0.0', '6.0.0']
+
+        dependency_graph = DependencyGraph.from_project(
+            graph,
+            project,
+            runtime_environment=RuntimeEnvironment.from_dict({}),
+            restrict_indexes=False,
+        )
+
+        expected_versions = list(itertools.product(b_versions, c_versions))
+
+        idx = 0
+        for reasoning, generated_project in dependency_graph.walk(self.always_true):
+            # See sorting notes in dependency_graph.py for more info.
+            assert isinstance(generated_project, Project)
+            packages = generated_project.pipfile_lock.packages.packages
+            assert packages['a'].locked_version == a_versions[idx // len(expected_versions)]
+            assert packages['b'].locked_version == expected_versions[idx % len(expected_versions)][0]
+            assert packages['c'].locked_version == expected_versions[idx % len(expected_versions)][1]
+            idx += 1

@@ -75,7 +75,7 @@ class MockedGraphDatabase:
                     f"The given package {package_name!r} is not present in the database"
                 )
 
-            info_entry = self.db[package_name].get(version)
+            info_entry = self.db[package_name].get(package_version)
             if not info_entry:
                 raise ValueError(
                     f"The given package {package_name!r} has no record in the database for version {version!r}"
