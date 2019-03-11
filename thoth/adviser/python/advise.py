@@ -73,13 +73,12 @@ class Adviser:
         self,
         graph: GraphDatabase,
         project: Project,
-        runtime_environment: RuntimeEnvironment,
         scoring_function: typing.Callable,
         dry_run: bool = False,
     ) -> typing.Union[typing.List[Project], int]:
         """Compute recommendations for the given project."""
         dependency_graph = DependencyGraph.from_project(
-            graph, project, runtime_environment, restrict_indexes=False
+            graph, project, restrict_indexes=False
         )
 
         try:
@@ -134,7 +133,6 @@ class Adviser:
         cls,
         project: Project,
         *,
-        runtime_environment: RuntimeEnvironment,
         recommendation_type: RecommendationType,
         count: int = None,
         limit: int = None,
@@ -142,9 +140,24 @@ class Adviser:
         graph: GraphDatabase = None,
     ) -> tuple:
         """Compute recommendations for the given project, a syntax sugar for the compute method."""
+        stack_report = []
+
         instance = cls(
             count=count, limit=limit, recommendation_type=recommendation_type
         )
+
+        if project.runtime_environment.python_version and not project.python_version:
+            stack_report.append(
+                (
+                    None,
+                    {
+                        "type": "WARNING",
+                        "justification": "Use specific Python version in Pipfile based on Thoth's configuration to "
+                        "ensure correct Python version usage on deployment",
+                    },
+                )
+            )
+            project.set_python_version(project.runtime_environment.python_version)
 
         if not graph:
             graph = GraphDatabase()
@@ -152,14 +165,23 @@ class Adviser:
 
         scoring = Scoring(
             graph=graph,
-            runtime_environment=runtime_environment,
+            runtime_environment=project.runtime_environment,
             python_version=project.python_version,
         )
         report = instance.compute(
             graph,
             project,
-            runtime_environment,
             scoring.get_scoring_function(recommendation_type),
             dry_run=dry_run,
         )
-        return scoring.get_stack_info(), report
+
+        # Extend report with configuration checks.
+        stack_info_report = scoring.get_stack_info()
+        if stack_info_report:
+            stack_report.extend(stack_info_report)
+
+        configuration_check_report = project.get_configuration_check_report()
+        if configuration_check_report:
+            stack_report.extend(configuration_check_report)
+
+        return stack_report, report

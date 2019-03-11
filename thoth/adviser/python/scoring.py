@@ -66,23 +66,32 @@ class Scoring:
             f"No scoring function defined for recommendation type {recommendation_type}"
         )
 
-    def get_stack_info(self) -> list:
+    def get_stack_info(self) -> typing.Optional[list]:
         """Get a generic report which is generic for the application stack."""
-        return list(dict(item) for item in self._stack_info)
+        return (
+            list(dict(item) for item in self._stack_info) if self._stack_info else None
+        )
 
     @classmethod
-    def _get_performance_substack(cls, packages: typing.List[tuple]) -> typing.List[tuple]:
+    def _get_performance_substack(
+        cls, packages: typing.List[tuple]
+    ) -> typing.List[tuple]:
         """Filter out packages from stack (packages lists) that do not have performance impact.
 
         The filtering is done based on queries to Amun API (project2vec API service).
         """
         result = []
-        packages_perfomance_impact = ISIS_API.get_python_package_performance_impact_all(packages)
-        for package_tuple, performance_impact_score in packages_perfomance_impact.items():
+        packages_perfomance_impact = ISIS_API.get_python_package_performance_impact_all(
+            packages
+        )
+        for (
+            package_tuple,
+            performance_impact_score,
+        ) in packages_perfomance_impact.items():
             if performance_impact_score is None:
                 _LOGGER.warning(
                     "Package %r has no record on Isis, assuming its positive performance impact",
-                    package_tuple
+                    package_tuple,
                 )
                 result.append(package_tuple)
             elif performance_impact_score > cls._PERFORMANCE_IMPACT_THRESHOLD:
@@ -90,7 +99,7 @@ class Scoring:
                     "Package %r included in sub-stack for performance scoring (score: %f, threshold: %f)",
                     package_tuple,
                     performance_impact_score,
-                    cls._PERFORMANCE_IMPACT_THRESHOLD
+                    cls._PERFORMANCE_IMPACT_THRESHOLD,
                 )
                 result.append(package_tuple)
             else:
@@ -98,7 +107,7 @@ class Scoring:
                     "Excluding package %r from sub-stack used in performance scoring (score: %f, threshold: %f)",
                     package_tuple,
                     performance_impact_score,
-                    cls._PERFORMANCE_IMPACT_THRESHOLD
+                    cls._PERFORMANCE_IMPACT_THRESHOLD,
                 )
 
         return result

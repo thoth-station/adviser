@@ -50,11 +50,13 @@ class _IsisApi:
         if not self.isis_api_url:
             _LOGGER.warning(
                 "No Isis API configured, all performance related requests will have value %f",
-                self._NO_ISIS_PERFORMANCE_IMPACT
+                self._NO_ISIS_PERFORMANCE_IMPACT,
             )
 
     @lru_cache(maxsize=2048)
-    def get_python_project_performance_import(self, project_name: str) -> typing.Optional[float]:
+    def get_python_project_performance_import(
+        self, project_name: str
+    ) -> typing.Optional[float]:
         """Get performance import for a Python project.
 
         This function uses cache to reduce number of calls to Isis API.
@@ -62,7 +64,11 @@ class _IsisApi:
         if not self.isis_api_url:
             return self._NO_ISIS_PERFORMANCE_IMPACT
 
-        response = requests.get(urljoin(self.isis_api_url, f"/api/v1/python/performance-impact/{project_name}"))
+        response = requests.get(
+            urljoin(
+                self.isis_api_url, f"/api/v1/python/performance-impact/{project_name}"
+            )
+        )
         if response.status_code == 404:
             _LOGGER.debug(f"No records for project {project_name} found on Isis API")
             return None
@@ -70,7 +76,9 @@ class _IsisApi:
         response.raise_for_status()
         return float(response.json()["result"]["performance_impact"])
 
-    async def _get_python_package_performance_impact(self, package_tuple: tuple) -> dict:
+    async def _get_python_package_performance_impact(
+        self, package_tuple: tuple
+    ) -> dict:
         """Get performance impact for a Python project.
 
         This is an async method suitable for map-reduce style results gathering - this method accepts package
@@ -79,7 +87,9 @@ class _IsisApi:
         project_name = package_tuple[0]
         return {package_tuple: self.get_python_project_performance_import(project_name)}
 
-    def get_python_package_performance_impact_all(self, package_tuples: typing.List[tuple]) -> dict:
+    def get_python_package_performance_impact_all(
+        self, package_tuples: typing.List[tuple]
+    ) -> dict:
         """Get performance impact for a list of packages.
 
         This accepts directly uses package tuples even the Isis API uses projects (package names).
@@ -87,7 +97,9 @@ class _IsisApi:
         """
         tasks = []
         for package_tuple in package_tuples:
-            task = asyncio.ensure_future(self._get_python_package_performance_impact(package_tuple))
+            task = asyncio.ensure_future(
+                self._get_python_package_performance_impact(package_tuple)
+            )
             tasks.append(task)
 
         loop = asyncio.get_event_loop()
