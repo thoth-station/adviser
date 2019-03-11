@@ -284,7 +284,7 @@ def provenance(
 @click.option(
     "--limit-latest-versions",
     type=int,
-    envvar="THOTH_ADVISER_LIMIT_LATEST_PACKAGES_VERSIONS",
+    envvar="THOTH_ADVISER_LIMIT_LATEST_VERSIONS",
     help="Consider only desired number of versions (latest) for a package to limit number of software stacks scored.",
 )
 @click.option(
@@ -415,7 +415,7 @@ def advise(
 @click.option(
     "--limit-latest-versions",
     type=int,
-    envvar="THOTH_ADVISER_LIMIT_LATEST_PACKAGES_VERSIONS",
+    envvar="THOTH_ADVISER_LIMIT_LATEST_VERSIONS",
     help="Consider only desired number of versions (latest) for a package to limit number of software stacks generated.",
 )
 @click.option(
