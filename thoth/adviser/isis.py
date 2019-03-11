@@ -17,7 +17,6 @@
 
 """Adapter for communicating with Isis API (API exposing project2vec).
 
-
 Isis is, as of now, a simple API service. We did not generate swagger client,
 instead, use this adapter for transparent communication.
 """
@@ -97,4 +96,19 @@ class _IsisApi:
         return dict(ChainMap(*results_dict))
 
 
-ISIS_API = _IsisApi()
+class Isis:
+    """A singleton like object to handle Isis wrapper."""
+
+    def __init__(self):
+        """Instantiate singleton wrapper."""
+        self._isis_api_instance = None
+
+    def __getattr__(self, item):
+        """Delegate any call to Isis API."""
+        if self._isis_api_instance is None:
+            self._isis_api_instance = _IsisApi()
+
+        return getattr(self._isis_api_instance, item)
+
+
+ISIS_API = Isis()
