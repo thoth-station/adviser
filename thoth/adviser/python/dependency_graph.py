@@ -288,6 +288,7 @@ class DependencyGraph:
         That means we will sort paths horizontally, where each item in all transitive dependencies will be
         checked for its semver version and rows in paths can be swapped accordingly.
         """
+
         def dereference_package_version(package_tuple: tuple):
             """Get package version from the dependencies map based on tuple provided."""
             return full_dependencies_map[package_tuple[0]][package_tuple[1]][
@@ -348,7 +349,6 @@ class DependencyGraph:
         cls,
         graph: GraphDatabase,
         project: Project,
-        runtime_environment: RuntimeEnvironment,
         *,
         with_devel: bool = False,
         restrict_indexes: bool = True,
@@ -370,7 +370,7 @@ class DependencyGraph:
 
         # Place the import statement here to simplify mocks in the testsuite.
         solver = PythonPackageGraphSolver(
-            graph_db=graph, runtime_environment=runtime_environment
+            graph_db=graph, runtime_environment=project.runtime_environment
         )
         _LOGGER.info("Parsing and solving direct dependencies of the requested project")
         dependencies_map, full_dependencies_map = cls._prepare_direct_dependencies(

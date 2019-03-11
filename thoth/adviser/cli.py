@@ -56,7 +56,10 @@ def _print_version(ctx, _, value):
 
 
 def _instantiate_project(
-    requirements: str, requirements_locked: typing.Optional[str], files: bool
+    requirements: str,
+    requirements_locked: typing.Optional[str],
+    files: bool,
+    runtime_environment: RuntimeEnvironment = None,
 ):
     """Create Project instance based on arguments passed to CLI."""
     if files:
@@ -79,7 +82,11 @@ def _instantiate_project(
         if requirements_locked
         else None
     )
-    project = Project(pipfile=pipfile, pipfile_lock=pipfile_lock)
+    project = Project(
+        pipfile=pipfile,
+        pipfile_lock=pipfile_lock,
+        runtime_environment=runtime_environment,
+    )
 
     return project
 
@@ -326,7 +333,9 @@ def advise(
     }
 
     try:
-        project = _instantiate_project(requirements, requirements_locked, files)
+        project = _instantiate_project(
+            requirements, requirements_locked, files, runtime_environment
+        )
         result["input"] = project.to_dict()
         _LOGGER.info(
             "Computing advises for runtime environment: %r",
@@ -334,7 +343,6 @@ def advise(
         )
         stack_info, report = Adviser.compute_on_project(
             project,
-            runtime_environment=runtime_environment,
             recommendation_type=recommendation_type,
             count=count,
             limit=limit,
@@ -463,13 +471,18 @@ def dependency_monkey(
     runtime_environment: dict = None,
 ):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
-    project = _instantiate_project(requirements, requirements_locked=None, files=files)
 
     # We cannot have these as ints in click because they are optional and we
     # cannot pass empty string as an int as env variable.
     seed = int(seed) if seed else None
     count = int(count) if count else None
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
+    project = _instantiate_project(
+        requirements,
+        requirements_locked=None,
+        files=files,
+        runtime_environment=runtime_environment,
+    )
 
     result = {
         "error": False,
