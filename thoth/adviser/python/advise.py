@@ -74,11 +74,15 @@ class Adviser:
         graph: GraphDatabase,
         project: Project,
         scoring_function: typing.Callable,
+        limit_latest_versions: int = None,
         dry_run: bool = False,
     ) -> typing.Union[typing.List[Project], int]:
         """Compute recommendations for the given project."""
         dependency_graph = DependencyGraph.from_project(
-            graph, project, restrict_indexes=False
+            graph,
+            project,
+            limit_latest_versions=limit_latest_versions,
+            restrict_indexes=False
         )
 
         try:
@@ -136,6 +140,7 @@ class Adviser:
         recommendation_type: RecommendationType,
         count: int = None,
         limit: int = None,
+        limit_latest_versions: int = None,
         dry_run: bool = False,
         graph: GraphDatabase = None,
     ) -> tuple:
@@ -143,7 +148,9 @@ class Adviser:
         stack_report = []
 
         instance = cls(
-            count=count, limit=limit, recommendation_type=recommendation_type
+            count=count,
+            limit=limit,
+            recommendation_type=recommendation_type
         )
 
         if project.runtime_environment.python_version and not project.python_version:
@@ -172,6 +179,7 @@ class Adviser:
             graph,
             project,
             scoring.get_scoring_function(recommendation_type),
+            limit_latest_versions=limit_latest_versions,
             dry_run=dry_run,
         )
 
