@@ -154,16 +154,11 @@ class Adviser:
         )
 
         if project.runtime_environment.python_version and not project.python_version:
-            stack_report.append(
-                (
-                    None,
-                    {
-                        "type": "WARNING",
-                        "justification": "Use specific Python version in Pipfile based on Thoth's configuration to "
-                        "ensure correct Python version usage on deployment",
-                    },
-                )
-            )
+            stack_report.append({
+                "type": "WARNING",
+                "justification": "Use specific Python version in Pipfile based on Thoth's configuration to "
+                "ensure correct Python version usage on deployment",
+            })
             project.set_python_version(project.runtime_environment.python_version)
 
         if not graph:
@@ -188,8 +183,10 @@ class Adviser:
         if stack_info_report:
             stack_report.extend(stack_info_report)
 
+        advised_configuration = None
         configuration_check_report = project.get_configuration_check_report()
         if configuration_check_report:
+            advised_configuration, configuration_check_report = configuration_check_report
             stack_report.extend(configuration_check_report)
 
-        return stack_report, report
+        return stack_report, advised_configuration, report

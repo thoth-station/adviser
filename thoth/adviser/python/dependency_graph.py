@@ -223,7 +223,7 @@ class DependencyGraph:
                     versions_seen += 1
 
                 if versions_seen >= limit_latest_versions:
-                    _LOGGER.info("Excluding path with %r: limiting number of latest versions, index: %d", path[idx], index)
+                    _LOGGER.debug("Excluding path with %r: limiting number of latest versions, index: %d", path[idx], index)
                     # We traverse the list backwards, adjust index accordingly.
                     to_pop.add(len(paths) - index - 1)
 
@@ -615,9 +615,6 @@ class DependencyGraph:
             direct_dependencies=direct_dependencies,
             limit_latest_versions=limit_latest_versions,
         )
-
-        from pprint import pprint
-        pprint(dependencies_map_2)
 
         # Store in a dump if user requested it.
         if os.getenv("THOTH_ADVISER_FILEDUMP"):

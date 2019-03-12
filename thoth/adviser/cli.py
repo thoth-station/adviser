@@ -331,6 +331,8 @@ def advise(
     result = {
         "error": None,
         "report": [],
+        "stack_info": None,
+        "advised_configuration": None,
         "parameters": {
             "runtime_environment": runtime_environment.to_dict(),
             "recommendation_type": recommendation_type.name.lower(),
@@ -353,7 +355,7 @@ def advise(
             "Computing advises for runtime environment: %r",
             runtime_environment.to_dict(),
         )
-        stack_info, report = Adviser.compute_on_project(
+        stack_info, advised_configuration, report = Adviser.compute_on_project(
             project,
             recommendation_type=recommendation_type,
             count=count,
@@ -376,9 +378,10 @@ def advise(
     else:
         result["error"] = False
         # Convert report to a dict so its serialized.
+        result["stack_info"] = stack_info
+        result["advised_configuration"] = advised_configuration
         if not dry_run:
             result["report"] = [(item[0], item[1].to_dict()) for item in report]
-            result["stack_info"] = stack_info
         else:
             result["report"] = report
 

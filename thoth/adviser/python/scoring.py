@@ -257,7 +257,7 @@ class Scoring:
 
         cve_count = len(report)
         if cve_count > 0:
-            _LOGGER.info(
+            _LOGGER.warning(
                 "Found %d CVE%s in the application stack",
                 cve_count,
                 "s" if cve_count != 1 else "",
