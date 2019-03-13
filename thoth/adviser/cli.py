@@ -473,7 +473,6 @@ def dependency_monkey(
     runtime_environment: dict = None,
 ):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
-
     # We cannot have these as ints in click because they are optional and we
     # cannot pass empty string as an int as env variable.
     seed = int(seed) if seed else None

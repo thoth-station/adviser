@@ -288,7 +288,6 @@ class DependencyGraph:
         That means we will sort paths horizontally, where each item in all transitive dependencies will be
         checked for its semver version and rows in paths can be swapped accordingly.
         """
-
         def dereference_package_version(package_tuple: tuple):
             """Get package version from the dependencies map based on tuple provided."""
             return full_dependencies_map[package_tuple[0]][package_tuple[1]][
