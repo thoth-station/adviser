@@ -26,8 +26,8 @@
 /*
  * Declaration of static constants.
  */
-const unsigned DependencyGraph::STREAM_STOP = std::numeric_limits<unsigned>::max();
-const unsigned DependencyGraph::STREAM_DELIMITER = DependencyGraph::STREAM_STOP - 1;
+const package_t DependencyGraph::STREAM_STOP = std::numeric_limits<package_t>::max();
+const package_t DependencyGraph::STREAM_DELIMITER = DependencyGraph::STREAM_STOP - 1;
 
 /*
  * Walk dependency graph and generate application stacks. The value returned is a flag signalizing whether
@@ -80,11 +80,11 @@ void DependencyGraph::cartesian_product(std::vector<std::vector<package_t> *> * 
  * Export for ctypes.
  */
 extern "C" {
-    unsigned get_stream_delimiter() {
+    package_t get_stream_delimiter() {
         return DependencyGraph::STREAM_DELIMITER;
     }
 
-    unsigned get_stream_stop() {
+    package_t get_stream_stop() {
         return DependencyGraph::STREAM_STOP;
     }
 

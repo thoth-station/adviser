@@ -47,9 +47,9 @@ class DependencyGraph {
     bool walk();
 
     // Used to signalize there is no more stack to generate.
-    static const unsigned STREAM_STOP;
+    static const package_t STREAM_STOP;
     // Delimiter used to delimit stacks in the stack stream written to write_fd.
-    static const unsigned STREAM_DELIMITER;
+    static const package_t STREAM_DELIMITER;
 
   private:
     bool is_final_state() const;
