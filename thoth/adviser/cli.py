@@ -18,8 +18,10 @@
 """Thoth-adviser CLI."""
 
 import json
+import sys
 import logging
 import typing
+import traceback
 from copy import deepcopy
 
 import click
@@ -485,7 +487,7 @@ def dependency_monkey(
     )
 
     result = {
-        "error": False,
+        "error": None,
         "parameters": {
             "requirements": project.pipfile.to_dict(),
             "runtime_environment": runtime_environment.to_dict(),
@@ -520,7 +522,8 @@ def dependency_monkey(
         # Place report into result.
         result.update(report)
     except SolverException:
-        result["error"] = True
+        _LOGGER.exception("An error occurred during dependency monkey run")
+        result["error"] = traceback.format_exc()
 
     print_command_result(
         click_ctx,
@@ -531,7 +534,7 @@ def dependency_monkey(
         pretty=not no_pretty,
     )
 
-    return int(result["error"] is True)
+    return sys.exit(result["error"] is not None)
 
 
 @cli.command("submit-amun")
