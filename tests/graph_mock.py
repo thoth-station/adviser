@@ -32,7 +32,7 @@ class MockedGraphDatabase:
         with open(
             os.path.join(AdviserTestCase.data_dir, "graph", database_file), "r"
         ) as db_file:
-            self.db = yaml.load(db_file)
+            self.db = yaml.safe_load(db_file)
         # A map mapping package id to its tuples - this map can be used after the retrieve
         # transitive_dependencies_python call which fills this dict.
         self._id_map = {}
