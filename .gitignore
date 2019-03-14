@@ -4,3 +4,5 @@ __pycache__
 thoth_adviser.egg-info/
 *.eggs/
 .coverage
+build/
+docs/source/conf.py

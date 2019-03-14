@@ -38,7 +38,6 @@ from thoth.python import Project
 from thoth.python import Source
 from thoth.solver.python.base import SolverException
 from thoth.storages import GraphDatabase
-from thoth.common import RuntimeEnvironment
 
 from .solver import PythonPackageGraphSolver
 from .exceptions import ConstraintClashError
@@ -56,9 +55,11 @@ class DependencyGraph:
     meta = attr.ib(type=PipfileMeta)
     full_dependencies_map = attr.ib(type=dict)
     project = attr.ib(type=Project)
+    limit_latest_versions = attr.ib(type=int)
     # A list of package tuples (package name, package version, index url) forming paths based on versions.
     paths = attr.ib(type=list)
     direct_dependencies = attr.ib(type=typing.List[PackageVersion])
+    _closed_properly = attr.ib(type=bool, default=True)
 
     @property
     def stacks_estimated(self) -> int:
@@ -72,6 +73,12 @@ class DependencyGraph:
             dependencies[dependency_name] = dependencies_total
 
         return reduce(lambda a, b: a * b, dependencies.values())
+
+    def get_walk_report(self) -> list:
+        """Retrieve a report for a walk for a user.
+
+        This function should report back any issues encountered.
+        """
 
     @staticmethod
     def _is_package_version_no_index(
@@ -174,6 +181,69 @@ class DependencyGraph:
         return dependencies_map, full_dependencies_map
 
     @classmethod
+    def _limit_latest_versions(
+            cls,
+            full_dependencies_map: dict,
+            paths: list,
+            limit_latest_versions: int
+    ) -> list:
+        """Remove old versions of dependencies, consider only desired count of latest versions.
+
+        We traverse available paths horizontally and we check each package version in paths in the same column. If
+        there are present more versions then the limit provided, paths with additional versions are discarded.
+        A prerequisite for this function is to have paths sorted according to semver.
+        """
+        def dereference_package_version(package_tuple: tuple) -> PackageVersion:
+            """Get package version from the dependencies map based on tuple provided."""
+            return full_dependencies_map[package_tuple[0]][package_tuple[1]][package_tuple[2]]
+
+        if limit_latest_versions < 1:
+            raise ValueError(
+                "Number of latest versions has to be non-negative number bigger than 0, got %d",
+                limit_latest_versions
+            )
+
+        some_work = True
+        idx = -1
+        versions_seen = 0
+        to_pop = set()
+
+        while some_work:
+            some_work = False
+            idx += 1
+            last_package_seen = None
+
+            # We traverse in reversed order as we have items sorted from oldest to latest - this is needed for
+            # libdependency_graph implementation.
+            for index, path in enumerate(reversed(paths)):
+                if len(path) <= idx:
+                    continue
+
+                some_work = True
+                package_version = dereference_package_version(path[idx])
+
+                if not last_package_seen or last_package_seen.name != package_version.name:
+                    # First package of a type, always include path.
+                    versions_seen = 0
+                elif last_package_seen.version != package_version.version:
+                    versions_seen += 1
+
+                if versions_seen >= limit_latest_versions:
+                    _LOGGER.debug("Excluding path with %r: limiting number of latest versions, index: %d", path[idx], index)
+                    # We traverse the list backwards, adjust index accordingly.
+                    to_pop.add(len(paths) - index - 1)
+
+                last_package_seen = package_version
+
+        # As we work paths horizontally, we need to make sure paths we want to excluded are no longer
+        # present in next iteration.
+        for index in sorted(to_pop, reverse=True):
+            # Note we are pop'ing from back so that we preserve order.
+            paths.pop(index)
+
+        return paths
+
+    @classmethod
     def _cut_off_dependencies(
         cls,
         graph: GraphDatabase,
@@ -182,7 +252,7 @@ class DependencyGraph:
         core_packages: typing.Dict[str, dict],
         project: Project,
         restrict_indexes: bool,
-    ) -> typing.List[dict]:
+    ) -> typing.List[list]:
         """Cut off paths that have not relevant dependencies - dependencies we don't want to include in the stack."""
         result = []
         for core_package_name, versions in core_packages.items():
@@ -221,7 +291,7 @@ class DependencyGraph:
                     not in core_packages[package_tuple[0]][package_tuple[1]]
                 ):
                     _LOGGER.debug(
-                        "Excluding the given stack due to core package %r",
+                        "Excluding a path due to core package %r",
                         package_tuple,
                     )
                     include_path = False
@@ -349,6 +419,7 @@ class DependencyGraph:
         graph: GraphDatabase,
         project: Project,
         *,
+        limit_latest_versions: int = None,
         with_devel: bool = False,
         restrict_indexes: bool = True,
     ):
@@ -425,7 +496,7 @@ class DependencyGraph:
 
                     if solver_error:
                         item = package_tuples_map[entry[idx + 2]]
-                        _LOGGER.info(
+                        _LOGGER.debug(
                             "Excluding a path due to package %s: unable to install in the given environment",
                             item,
                         )
@@ -489,7 +560,7 @@ class DependencyGraph:
                     full_dependencies_map, package_tuple
                 )
 
-        _LOGGER.warning("Sorting dependencies to preserve order of generated stacks")
+        _LOGGER.info("Sorting dependencies to preserve order of generated stacks")
         all_transitive_dependencies_to_include = cls._sort_paths(
             full_dependencies_map, all_transitive_dependencies_to_include
         )
@@ -504,14 +575,51 @@ class DependencyGraph:
             restrict_indexes,
         )
 
+        _LOGGER.warning("Sorting dependencies to preserve order of generated stacks")
+        all_transitive_dependencies_to_include = cls._sort_paths(
+            full_dependencies_map, all_transitive_dependencies_to_include
+        )
+
+        if limit_latest_versions:
+            _LOGGER.warning(
+                "Removing older versions of packages, considering only %d latest versions for each package",
+                limit_latest_versions
+            )
+            all_transitive_dependencies_to_include = cls._limit_latest_versions(
+                full_dependencies_map,
+                all_transitive_dependencies_to_include,
+                limit_latest_versions
+            )
+
+        dependencies_map_2 = {}
+        direct_dependencies = []
+        direct_dependencies_map = set()
+        for path in all_transitive_dependencies_to_include:
+            for idx, package_tuple in enumerate(path):
+                if package_tuple[0] not in dependencies_map_2:
+                    dependencies_map_2[package_tuple[0]] = {}
+
+                it = dependencies_map_2[package_tuple[0]]
+                if package_tuple[1] not in it:
+                    it[package_tuple[1]] = {}
+
+                it = it[package_tuple[1]]
+                if package_tuple[2] not in it:
+                    it[package_tuple[2]] = full_dependencies_map[package_tuple[0]][package_tuple[1]][package_tuple[2]]
+
+                if idx == 0 and package_tuple not in direct_dependencies_map:
+                    direct_dependencies.append(it[package_tuple[2]])
+                    direct_dependencies_map.add(package_tuple)
+
         _LOGGER.info("Creating dependency graph")
         instance = cls(
             dependencies_map,
             project=project,
             meta=project.pipfile.meta,
-            full_dependencies_map=full_dependencies_map,
+            full_dependencies_map=dependencies_map_2,
             paths=all_transitive_dependencies_to_include,
-            direct_dependencies=all_direct_dependencies,
+            direct_dependencies=direct_dependencies,
+            limit_latest_versions=limit_latest_versions,
         )
 
         # Store in a dump if user requested it.
@@ -660,4 +768,5 @@ class DependencyGraph:
                     _LOGGER.info("Decision function excluded the computed stack")
                     _LOGGER.debug("Excluded stack %r", stack)
         except PrematureStreamEndError:
+            self._closed_properly = False
             _LOGGER.warning("Stack stream was closed prematurely (OOM?)")

@@ -69,6 +69,8 @@ objects:
                   value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
                 - name: THOTH_ADVISER_SUBCOMMAND
                   value: 'advise'
+                - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+                  value: "${THOTH_ADVISER_LIMIT_LATEST_VERSIONS}"
                 - name: ISIS_API_URL
                   valueFrom:
                     configMapKeyRef:
@@ -138,3 +140,7 @@ parameters:
     description: Number of software stacks returned in the recommendation.
     displayName: Adviser count.
     value: '1'
+  - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+    required: false
+    description: Limit number of versions starting from latest in stacks.
+    displayName: Limit latest versions

@@ -19,14 +19,13 @@
 """Helper functions and utilities."""
 
 import os
-from itertools import chain
 import logging
+import typing
+from functools import lru_cache
 
-from thoth.adviser.configuration import config
 from thoth.storages import GraphDatabase
 
 from thoth.python import Project
-from thoth.python import Source
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -60,6 +59,18 @@ def fill_package_digests(generated_project: Project) -> Project:
     return generated_project
 
 
+@lru_cache()
+def _do_get_python_package_version_hashes_sha256(
+        graph: GraphDatabase, package_name: str, package_version: str, index_url: str
+) -> typing.List[str]:
+    """A wrapper for ensuring cached results when querying graph database."""
+    return graph.get_python_package_version_hashes_sha256(
+        package_name,
+        package_version,
+        index_url,
+    )
+
+
 def fill_package_digests_from_graph(
     generated_project: Project, graph: GraphDatabase = None
 ) -> Project:
@@ -77,14 +88,15 @@ def fill_package_digests_from_graph(
             # Already filled from the last run.
             continue
 
-        _LOGGER.info(
+        _LOGGER.debug(
             "Retrieving package digests from graph database for package %r in version %r from index %r",
             package_version.name,
             package_version.locked_version,
             package_version.index.url,
         )
 
-        digests = graph.get_python_package_version_hashes_sha256(
+        digests = _do_get_python_package_version_hashes_sha256(
+            graph,
             package_version.name,
             package_version.locked_version,
             package_version.index.url,

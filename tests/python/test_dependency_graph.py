@@ -25,7 +25,6 @@ from base import AdviserTestCase
 from graph_mock import MockedGraphDatabase
 from thoth.adviser.python import DependencyGraph
 from thoth.python import Project
-from thoth.common import RuntimeEnvironment
 
 
 class TestDependencyGraph(AdviserTestCase):
@@ -35,13 +34,12 @@ class TestDependencyGraph(AdviserTestCase):
     def test_construct_project0(self):
         graph = MockedGraphDatabase("db_1.yaml")
         project = Project.from_files(
-            os.path.join(self.data_dir, "projects", "Pipfile_project0")
+            os.path.join(self.data_dir, "projects", "Pipfile_project0"),
         )
 
         dependency_graph = DependencyGraph.from_project(
             graph,
             project,
-            runtime_environment=RuntimeEnvironment.from_dict({}),
             restrict_indexes=False,
         )
         count = 0
@@ -69,7 +67,7 @@ class TestDependencyGraph(AdviserTestCase):
     def test_sorted_results(self):
         graph = MockedGraphDatabase("db_2.yaml")
         project = Project.from_files(
-            os.path.join(self.data_dir, "projects", "Pipfile_project1")
+            os.path.join(self.data_dir, "projects", "Pipfile_project1"),
         )
 
         # Versions sorted based on semver - latest first.
@@ -80,7 +78,6 @@ class TestDependencyGraph(AdviserTestCase):
         dependency_graph = DependencyGraph.from_project(
             graph,
             project,
-            runtime_environment=RuntimeEnvironment.from_dict({}),
             restrict_indexes=False,
         )
 

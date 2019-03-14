@@ -87,10 +87,14 @@ def _do_dependency_monkey(
     decision_function: typing.Callable,
     count: int = None,
     dry_run: bool = False,
+    limit_latest_versions: int = None
 ) -> dict:
     """Run dependency monkey."""
     dependency_graph = DependencyGraph.from_project(
-        graph, project, runtime_environment, restrict_indexes=True
+        graph,
+        project,
+        restrict_indexes=True,
+        limit_latest_versions=limit_latest_versions,
     )
 
     computed = 0
@@ -121,6 +125,7 @@ def dependency_monkey(
     context: str = None,
     count: int = None,
     runtime_environment: RuntimeEnvironment = None,
+    limit_latest_versions: int = None,
 ) -> dict:
     """Run Dependency Monkey on the given stack.
 
@@ -189,4 +194,5 @@ def dependency_monkey(
         decision_function=decision_function,
         count=count,
         output_function=output_function,
+        limit_latest_versions=limit_latest_versions,
     )

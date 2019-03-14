@@ -271,13 +271,21 @@ def provenance(
 )
 @click.option(
     "--count",
+    type=int,
     envvar="THOTH_ADVISER_COUNT",
     help="Number of software stacks shown in the output.",
 )
 @click.option(
     "--limit",
+    type=int,
     envvar="THOTH_ADVISER_LIMIT",
     help="Number of software stacks that should be taken into account (stop after reaching the limit).",
+)
+@click.option(
+    "--limit-latest-versions",
+    type=int,
+    envvar="THOTH_ADVISER_LIMIT_LATEST_VERSIONS",
+    help="Consider only desired number of versions (latest) for a package to limit number of software stacks scored.",
 )
 @click.option(
     "--runtime-environment",
@@ -309,6 +317,7 @@ def advise(
     files=False,
     count=None,
     limit=None,
+    limit_latest_versions=None,
     dry_run=False,
 ):
     """Advise package and package versions in the given stack or on solely package only."""
@@ -322,11 +331,14 @@ def advise(
     result = {
         "error": None,
         "report": [],
+        "stack_info": None,
+        "advised_configuration": None,
         "parameters": {
             "runtime_environment": runtime_environment.to_dict(),
             "recommendation_type": recommendation_type.name.lower(),
             "requirements_format": requirements_format.name.lower(),
             "limit": limit,
+            "limit_latest_versions": limit_latest_versions,
             "count": count,
             "dry_run": dry_run,
             "no_pretty": no_pretty,
@@ -343,11 +355,12 @@ def advise(
             "Computing advises for runtime environment: %r",
             runtime_environment.to_dict(),
         )
-        stack_info, report = Adviser.compute_on_project(
+        stack_info, advised_configuration, report = Adviser.compute_on_project(
             project,
             recommendation_type=recommendation_type,
             count=count,
             limit=limit,
+            limit_latest_versions=limit_latest_versions,
             dry_run=dry_run,
         )
     except ThothAdviserException as exc:
@@ -365,9 +378,10 @@ def advise(
     else:
         result["error"] = False
         # Convert report to a dict so its serialized.
+        result["stack_info"] = stack_info
+        result["advised_configuration"] = advised_configuration
         if not dry_run:
             result["report"] = [(item[0], item[1].to_dict()) for item in report]
-            result["stack_info"] = stack_info
         else:
             result["report"] = report
 
@@ -400,6 +414,12 @@ def advise(
     required=True,
     help="Output directory or remote API to print results to, in case of URL a POST request "
     "is issued to the Amun REST API.",
+)
+@click.option(
+    "--limit-latest-versions",
+    type=int,
+    envvar="THOTH_ADVISER_LIMIT_LATEST_VERSIONS",
+    help="Consider only desired number of versions (latest) for a package to limit number of software stacks generated.",
 )
 @click.option(
     "--report-output",
@@ -471,6 +491,7 @@ def dependency_monkey(
     no_pretty: bool = False,
     count: int = None,
     runtime_environment: dict = None,
+    limit_latest_versions: int = None,
 ):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
     # We cannot have these as ints in click because they are optional and we
@@ -517,6 +538,7 @@ def dependency_monkey(
             context=context,
             count=count,
             runtime_environment=runtime_environment,
+            limit_latest_versions=limit_latest_versions,
         )
         # Place report into result.
         result.update(report)

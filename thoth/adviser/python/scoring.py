@@ -112,6 +112,105 @@ class Scoring:
 
         return result
 
+    @classmethod
+    def _get_performance_substack(cls, packages: typing.List[tuple]) -> typing.List[tuple]:
+        """Filter out packages from stack (packages lists) that do not have performance impact.
+
+         The filtering is done based on queries to Isis API (project2vec API service).
+         """
+        result = []
+        packages_performance_impact = ISIS_API.get_python_package_performance_impact_all(packages)
+        for package_tuple, performance_impact_score in packages_performance_impact.items():
+            if performance_impact_score is None:
+                _LOGGER.warning(
+                    "Package %r has no record on Isis, assuming its positive performance impact",
+                    package_tuple
+                )
+                result.append(package_tuple)
+            elif performance_impact_score > cls._PERFORMANCE_IMPACT_THRESHOLD:
+                _LOGGER.debug(
+                    "Package %r included in sub-stack for performance scoring (score: %f, threshold: %f)",
+                    package_tuple,
+                    performance_impact_score,
+                    cls._PERFORMANCE_IMPACT_THRESHOLD
+                )
+                result.append(package_tuple)
+            else:
+                _LOGGER.debug(
+                    "Excluding package %r from sub-stack used in performance scoring (score: %f, threshold: %f)",
+                    package_tuple,
+                    performance_impact_score,
+                    cls._PERFORMANCE_IMPACT_THRESHOLD
+                )
+
+        return result
+
+    @classmethod
+    def _get_performance_substack(cls, packages: typing.List[tuple]) -> typing.List[tuple]:
+        """Filter out packages from stack (packages lists) that do not have performance impact.
+
+         The filtering is done based on queries to Isis API (project2vec API service).
+         """
+        result = []
+        packages_performance_impact = ISIS_API.get_python_package_performance_impact_all(packages)
+        for package_tuple, performance_impact_score in packages_performance_impact.items():
+            if performance_impact_score is None:
+                _LOGGER.warning(
+                    "Package %r has no record on Isis, assuming its positive performance impact",
+                    package_tuple
+                )
+                result.append(package_tuple)
+            elif performance_impact_score > cls._PERFORMANCE_IMPACT_THRESHOLD:
+                _LOGGER.debug(
+                    "Package %r included in sub-stack for performance scoring (score: %f, threshold: %f)",
+                    package_tuple,
+                    performance_impact_score,
+                    cls._PERFORMANCE_IMPACT_THRESHOLD
+                )
+                result.append(package_tuple)
+            else:
+                _LOGGER.debug(
+                    "Excluding package %r from sub-stack used in performance scoring (score: %f, threshold: %f)",
+                    package_tuple,
+                    performance_impact_score,
+                    cls._PERFORMANCE_IMPACT_THRESHOLD
+                )
+
+        return result
+
+    @classmethod
+    def _get_performance_substack(cls, packages: typing.List[tuple]) -> typing.List[tuple]:
+        """Filter out packages from stack (packages lists) that do not have performance impact.
+
+         The filtering is done based on queries to Isis API (project2vec API service).
+         """
+        result = []
+        packages_performance_impact = ISIS_API.get_python_package_performance_impact_all(packages)
+        for package_tuple, performance_impact_score in packages_performance_impact.items():
+            if performance_impact_score is None:
+                _LOGGER.warning(
+                    "Package %r has no record on Isis, assuming its positive performance impact",
+                    package_tuple
+                )
+                result.append(package_tuple)
+            elif performance_impact_score > cls._PERFORMANCE_IMPACT_THRESHOLD:
+                _LOGGER.debug(
+                    "Package %r included in sub-stack for performance scoring (score: %f, threshold: %f)",
+                    package_tuple,
+                    performance_impact_score,
+                    cls._PERFORMANCE_IMPACT_THRESHOLD
+                )
+                result.append(package_tuple)
+            else:
+                _LOGGER.debug(
+                    "Excluding package %r from sub-stack used in performance scoring (score: %f, threshold: %f)",
+                    package_tuple,
+                    performance_impact_score,
+                    cls._PERFORMANCE_IMPACT_THRESHOLD
+                )
+
+        return result
+
     def _performance_scoring(
         self, packages: typing.List[tuple]
     ) -> typing.Tuple[float, list]:
@@ -158,7 +257,7 @@ class Scoring:
 
         cve_count = len(report)
         if cve_count > 0:
-            _LOGGER.info(
+            _LOGGER.warning(
                 "Found %d CVE%s in the application stack",
                 cve_count,
                 "s" if cve_count != 1 else "",
