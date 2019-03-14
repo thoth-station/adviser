@@ -38,7 +38,6 @@ from thoth.python import Project
 from thoth.python import Source
 from thoth.solver.python.base import SolverException
 from thoth.storages import GraphDatabase
-from thoth.common import RuntimeEnvironment
 
 from .solver import PythonPackageGraphSolver
 from .exceptions import ConstraintClashError
@@ -60,6 +59,7 @@ class DependencyGraph:
     # A list of package tuples (package name, package version, index url) forming paths based on versions.
     paths = attr.ib(type=list)
     direct_dependencies = attr.ib(type=typing.List[PackageVersion])
+    _closed_properly = attr.ib(type=bool, default=True)
 
     @property
     def stacks_estimated(self) -> int:
@@ -73,6 +73,12 @@ class DependencyGraph:
             dependencies[dependency_name] = dependencies_total
 
         return reduce(lambda a, b: a * b, dependencies.values())
+
+    def get_walk_report(self) -> list:
+        """Retrieve a report for a walk for a user.
+
+        This function should report back any issues encountered.
+        """
 
     @staticmethod
     def _is_package_version_no_index(
@@ -762,4 +768,5 @@ class DependencyGraph:
                     _LOGGER.info("Decision function excluded the computed stack")
                     _LOGGER.debug("Excluded stack %r", stack)
         except PrematureStreamEndError:
+            self._closed_properly = False
             _LOGGER.warning("Stack stream was closed prematurely (OOM?)")

@@ -45,9 +45,10 @@ class Test(TestCommand):
         sys.exit(pytest.main(self.pytest_args))
 
 
+VERSION = get_version()
 setup(
     name='thoth-adviser',
-    version=get_version(),
+    version=VERSION,
     description='Package and package stack adviser for the Thoth project',
     long_description=read('README.rst'),
     author='Fridolin Pokorny',
@@ -60,4 +61,9 @@ setup(
     zip_safe=False,
     install_requires=get_install_requires(),
     cmdclass={'test': Test},
+    command_options={
+        'build_sphinx': {
+            'version': ('setup.py', VERSION),
+        }
+    }
 )
