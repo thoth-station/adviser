@@ -419,7 +419,8 @@ def advise(
     "--limit-latest-versions",
     type=int,
     envvar="THOTH_ADVISER_LIMIT_LATEST_VERSIONS",
-    help="Consider only desired number of versions (latest) for a package to limit number of software stacks generated.",
+    help="Consider only desired number of versions (latest) for "
+    "a package to limit number of software stacks generated.",
 )
 @click.option(
     "--report-output",
