@@ -183,26 +183,34 @@ class DependencyGraph:
         """Generate a software stack by traversing the graph."""
         stack_dependencies = []
         _LOGGER.debug("Reading from pipe, item size: %d", self._ITEM_SIZE)
-        while True:
-            item = self.read_pipe.read(self._ITEM_SIZE)
+        try:
+            while True:
+                item = self.read_pipe.read(self._ITEM_SIZE)
 
-            if not item:
-                raise PrematureStreamEndError("Reached end of stream prematurely")
+                if not item:
+                    raise PrematureStreamEndError("Reached end of stream prematurely")
 
-            item = int.from_bytes(item, byteorder=sys.byteorder)
+                item = int.from_bytes(item, byteorder=sys.byteorder)
 
-            if item == self.STREAM_DELIMITER:
-                _LOGGER.debug("Reached stack delimiter, yielding stack")
-                yield stack_dependencies
-                stack_dependencies = []
-                continue
+                if item == self.STREAM_DELIMITER:
+                    _LOGGER.debug("Reached stack delimiter, yielding stack")
+                    yield stack_dependencies
+                    stack_dependencies = []
+                    continue
 
-            if item == self.STREAM_STOP:
-                _LOGGER.debug("Reached stream stop marker, closing read pipe")
-                self.read_pipe.close()
-                return
+                if item == self.STREAM_STOP:
+                    _LOGGER.debug("Reached stream stop marker, closing read pipe")
+                    self.read_pipe.close()
+                    return
 
-            stack_dependencies.append(item)
+                stack_dependencies.append(item)
+        finally:
+            # Ensure stack producer gets killed if there is no consumer
+            # e.g. on keyboard interrupt in Jupyter Notebook.
+            try:
+                os.kill(self.producer_pid, signal.SIGKILL)
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":
