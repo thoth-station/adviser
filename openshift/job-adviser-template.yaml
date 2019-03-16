@@ -46,8 +46,8 @@ objects:
                 # stack producer so the main process reports scored results.
                 exec:
                   command:
-                  - python3
-                  - liveness.py
+                    - python3
+                    - liveness.py
                 failureThreshold: 2
                 initialDelaySeconds: "${THOTH_ADVISER_TIMEOUT_SECONDS}"
                 # Give main process some time to submit results.
@@ -153,4 +153,3 @@ parameters:
     description: Give adviser specified number of seconds on CPU to compute results.
     displayName: Adviser timeout seconds.
     value: '1800'
-

@@ -116,8 +116,8 @@ class Scoring:
     def _get_performance_substack(cls, packages: typing.List[tuple]) -> typing.List[tuple]:
         """Filter out packages from stack (packages lists) that do not have performance impact.
 
-         The filtering is done based on queries to Isis API (project2vec API service).
-         """
+        The filtering is done based on queries to Isis API (project2vec API service).
+        """
         result = []
         packages_performance_impact = ISIS_API.get_python_package_performance_impact_all(packages)
         for package_tuple, performance_impact_score in packages_performance_impact.items():
@@ -149,8 +149,8 @@ class Scoring:
     def _get_performance_substack(cls, packages: typing.List[tuple]) -> typing.List[tuple]:
         """Filter out packages from stack (packages lists) that do not have performance impact.
 
-         The filtering is done based on queries to Isis API (project2vec API service).
-         """
+        The filtering is done based on queries to Isis API (project2vec API service).
+        """
         result = []
         packages_performance_impact = ISIS_API.get_python_package_performance_impact_all(packages)
         for package_tuple, performance_impact_score in packages_performance_impact.items():
@@ -182,8 +182,8 @@ class Scoring:
     def _get_performance_substack(cls, packages: typing.List[tuple]) -> typing.List[tuple]:
         """Filter out packages from stack (packages lists) that do not have performance impact.
 
-         The filtering is done based on queries to Isis API (project2vec API service).
-         """
+        The filtering is done based on queries to Isis API (project2vec API service).
+        """
         result = []
         packages_performance_impact = ISIS_API.get_python_package_performance_impact_all(packages)
         for package_tuple, performance_impact_score in packages_performance_impact.items():

@@ -229,7 +229,10 @@ class DependencyGraph:
                     versions_seen += 1
 
                 if versions_seen >= limit_latest_versions:
-                    _LOGGER.debug("Excluding path with %r: limiting number of latest versions, index: %d", path[idx], index)
+                    _LOGGER.debug(
+                            "Excluding path with %r: limiting number of latest versions, index: %d",
+                            path[idx], index
+                    )
                     # We traverse the list backwards, adjust index accordingly.
                     to_pop.add(len(paths) - index - 1)
 

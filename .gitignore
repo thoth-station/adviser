@@ -6,3 +6,4 @@ thoth_adviser.egg-info/
 .coverage
 build/
 docs/source/conf.py
+docs/source/thoth.*.rst

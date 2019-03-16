@@ -31,6 +31,7 @@ import signal
 
 
 def main() -> int:
+    """Kill all processes except for main."""
     pids = [int(pid) for pid in os.listdir('/proc') if pid.isdigit()]
 
     for pid in pids:
