@@ -42,11 +42,15 @@ objects:
             - name: adviser
               image: adviser
               livenessProbe:
-                # Give analyzer 30 minutes to compute results, kill it if it was not able result anything.
-                tcpSocket:
-                  port: 80
-                initialDelaySeconds: 1800
-                failureThreshold: 1
+                # Give analyzer specified seconds to compute results, kill
+                # stack producer so the main process reports scored results.
+                exec:
+                  command:
+                  - python3
+                  - liveness.py
+                failureThreshold: 2
+                initialDelaySeconds: "${THOTH_ADVISER_TIMEOUT_SECONDS}"
+                # Give main process some time to submit results.
                 periodSeconds: 10
               env:
                 - name: THOTH_LOG_ADVISER
@@ -144,3 +148,9 @@ parameters:
     required: false
     description: Limit number of versions starting from latest in stacks.
     displayName: Limit latest versions
+  - name: THOTH_ADVISER_TIMEOUT_SECONDS
+    required: true
+    description: Give adviser specified number of seconds on CPU to compute results.
+    displayName: Adviser timeout seconds.
+    value: '1800'
+

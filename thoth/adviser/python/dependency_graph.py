@@ -769,4 +769,4 @@ class DependencyGraph:
                     _LOGGER.debug("Excluded stack %r", stack)
         except PrematureStreamEndError:
             self._closed_properly = False
-            _LOGGER.warning("Stack stream was closed prematurely (OOM?)")
+            _LOGGER.warning("Stack stream was closed prematurely: OOM or stack scoring timed out")
