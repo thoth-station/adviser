@@ -111,16 +111,14 @@ class _IsisApi:
 class Isis:
     """A singleton like object to handle Isis wrapper."""
 
-    def __init__(self):
+    def __init__(self, isis_api_url: str = None):
         """Instantiate singleton wrapper."""
+        self._isis_api_url = isis_api_url
         self._isis_api_instance = None
 
     def __getattr__(self, item):
         """Delegate any call to Isis API."""
         if self._isis_api_instance is None:
-            self._isis_api_instance = _IsisApi()
+            self._isis_api_instance = _IsisApi(isis_api_url=self._isis_api_url)
 
         return getattr(self._isis_api_instance, item)
-
-
-ISIS_API = Isis()
