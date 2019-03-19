@@ -748,13 +748,13 @@ class DependencyGraph:
             for stack_identifiers in libdependency_graph.walk():
                 stack = self._reconstruct_stack(context, stack_identifiers)
 
-                _LOGGER.info(
+                _LOGGER.debug(
                     "Found a new stack, asking decision function for inclusion"
                 )
                 decision_function_result = decision_function(stack)
                 if decision_function_result[0] is not False:
                     _LOGGER.info(
-                        "Decision function included the computed stack - result was %r",
+                        "Found a new stack with total score of %r",
                         decision_function_result[0],
                     )
                     package_versions = self._create_package_versions(stack)
@@ -768,7 +768,7 @@ class DependencyGraph:
                         meta=PipfileMeta.from_dict(pipfile_meta),
                     )
                 else:
-                    _LOGGER.info("Decision function excluded the computed stack")
+                    _LOGGER.info("Found a new stack but stack is not present due to negative results")
                     _LOGGER.debug("Excluded stack %r", stack)
         except PrematureStreamEndError:
             self._closed_properly = False
