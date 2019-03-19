@@ -87,17 +87,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:69aac64100a8680db98c327af969af40f2241ba7a72ef271bff106e49c9be848",
-                "sha256:dcf46a30d33ee213acfd3f7d61f60a1797dc21b8e3f8121ebe9eeb00237fea61"
+                "sha256:80f24c01a630e6be409d70aa1b1e30076eda1daf8456157ec210aea2d8d51f2c",
+                "sha256:f259046902b1daa542a08f08796d000160e9801a87f470faf940addacedcc7d7"
             ],
-            "version": "==1.9.116"
+            "version": "==1.9.117"
         },
         "botocore": {
             "hashes": [
-                "sha256:724008bddb35e0833a44613b67bc3c6af3ca07e3f661a55cb3861ccf06bccfb8",
-                "sha256:b0e79b61dda7fb5f05949a4fe319d44108e0ba6db41775d909b891e6992d5a06"
+                "sha256:6c3b1b3344d7bb53a85d3877047e5f29a46f13deb27bda2e85a6d24d7a27c5bf",
+                "sha256:c2a8ae81bb2dfd70951279a1b63ba7ef89333675f9ff479b008ce14fcd9872c1"
             ],
-            "version": "==1.12.116"
+            "version": "==1.12.117"
         },
         "certifi": {
             "hashes": [
@@ -446,10 +446,10 @@
         },
         "thoth-python": {
             "hashes": [
-                "sha256:b6f04cc4612ad069005612d730a03dfae44df2a36ba75c82398ecc96b2c43ba8"
+                "sha256:676601be43ddbafa026518483ae4ac5314f4179722cce65dabdc0e88fc2eba81"
             ],
             "index": "pypi",
-            "version": "==0.4.6"
+            "version": "==0.5.0"
         },
         "thoth-solver": {
             "hashes": [
