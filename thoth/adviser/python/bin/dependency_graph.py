@@ -30,7 +30,6 @@ from .exceptions import PrematureStreamEndError
 init_logging()
 
 _LOGGER = logging.getLogger(__name__)
-_LOGGER.setLevel(logging.DEBUG)
 _DEFAULT_LIBDEPENDENCY_GRAPH_SO = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "libdependency_graph.so"
 )
