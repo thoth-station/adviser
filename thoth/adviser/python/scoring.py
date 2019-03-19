@@ -42,6 +42,7 @@ class Scoring:
     _counter = attr.ib(type=int, default=0)
     _stack_info = attr.ib(type=set, default=attr.Factory(set))
     _isis = attr.ib(type=Isis, default=attr.Factory(Isis))
+    _reported_no_isis_record = attr.ib(type=set, default=attr.Factory(set))
 
     _CVE_PENALIZATION = -0.1
     _PERFORMANCE_PENALIZATION = 0.2
@@ -89,10 +90,12 @@ class Scoring:
             performance_impact_score,
         ) in packages_performance_impact.items():
             if performance_impact_score is None:
-                _LOGGER.warning(
-                    "Package %r has no record on Isis, assuming its positive performance impact",
-                    package_tuple,
-                )
+                if package_tuple not in self._reported_no_isis_record:
+                    _LOGGER.warning(
+                        "Package %r has no record on Isis, assuming its positive performance impact",
+                        package_tuple,
+                    )
+                    self._reported_no_isis_record.add(package_tuple)
                 result.append(package_tuple)
             elif performance_impact_score > self._PERFORMANCE_IMPACT_THRESHOLD:
                 _LOGGER.debug(
@@ -124,10 +127,10 @@ class Scoring:
             packages, hardware_specs=hardware
         )
 
-        _LOGGER.info("Performance index for stack: %f", performance_index)
-
         if math.isnan(performance_index):
             return 0.0, []
+        else:
+            _LOGGER.info("Performance index for stack: %f", performance_index)
 
         score = (1.0 - performance_index) * self._PERFORMANCE_PENALIZATION
         return score, [{"performance": performance_index}]
