@@ -439,10 +439,10 @@
         },
         "thoth-common": {
             "hashes": [
-                "sha256:30d0385be9804c1cdad7340bcb3fba8dc80044085afdce43c2ffd27b6f5b1d97"
+                "sha256:ec1987ee0fceaf7829c05ef86b2d32b613730e7fcdb595ced595e99eb96a52dc"
             ],
             "index": "pypi",
-            "version": "==0.7.1"
+            "version": "==0.8.1"
         },
         "thoth-python": {
             "hashes": [
