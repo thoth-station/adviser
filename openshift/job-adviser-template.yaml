@@ -48,11 +48,10 @@ objects:
                   command:
                     - python3
                     - liveness.py
-                failureThreshold: 3
+                failureThreshold: 1
                 initialDelaySeconds: "${THOTH_ADVISER_TIMEOUT_SECONDS}"
-                periodSeconds: 10
-                # Give main process some time to submit results.
-                timeoutSeconds: 10
+                # Give main process some time to finish scoring and submit results.
+                timeoutSeconds: 300
               env:
                 - name: THOTH_LOG_ADVISER
                   value: "${THOTH_LOG_ADVISER}"

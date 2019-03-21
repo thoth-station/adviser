@@ -36,12 +36,17 @@ def main() -> int:
 
     for pid in pids:
         if pid == 1:
+            # No attempt to kill main process.
+            continue
+        if os.getpid() == pid:
+            # Do not kill self.
             continue
 
         print("Killing process with PID %d" % pid)
         os.kill(pid, signal.SIGTERM)
 
-    # Let liveness probe always fail.
+    # Let liveness probe always fail with timeout.
+    signal.pause()
     return 1
 
 
