@@ -132,7 +132,7 @@ class Scoring:
         else:
             _LOGGER.info("Performance index for stack: %f", performance_index)
 
-        score = (1.0 - performance_index) * self._PERFORMANCE_PENALIZATION
+        score = (100 - performance_index) * self._PERFORMANCE_PENALIZATION
         return score, [{"performance": performance_index}]
 
     def _cve_scoring(self, packages: typing.List[tuple]) -> typing.Tuple[float, list]:
