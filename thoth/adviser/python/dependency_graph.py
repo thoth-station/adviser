@@ -79,6 +79,14 @@ class DependencyGraph:
 
         This function should report back any issues encountered.
         """
+        if not self._closed_properly:
+            return [{
+                "type": "WARNING",
+                "justification": "Resolver was closed prematurely because of memory or time-out, consider "
+                                 "decreasing latest versions considered in software stacks"
+            }]
+
+        return []
 
     @staticmethod
     def _is_package_version_no_index(

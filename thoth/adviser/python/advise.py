@@ -68,6 +68,7 @@ class Adviser:
     )
     _computed_stacks_heap = attr.ib(type=RuntimeEnvironment, default=attr.Factory(list))
     _visited = attr.ib(type=int, default=0)
+    _walk_report = attr.ib(type=list, default=attr.Factory(list))
 
     def compute(
         self,
@@ -142,6 +143,7 @@ class Adviser:
         finally:
             self._computed_stacks_heap = []
             self._visited = 0
+            self._walk_report = dependency_graph.get_walk_report()
 
     @classmethod
     def compute_on_project(
@@ -201,5 +203,8 @@ class Adviser:
                 configuration_check_report
             )
             stack_report.extend(configuration_check_report)
+
+        if instance._walk_report:
+            stack_report.extend(instance._walk_report)
 
         return stack_report, advised_configuration, report

@@ -127,7 +127,7 @@ class Scoring:
             packages, hardware_specs=hardware
         )
 
-        if math.isnan(performance_index):
+        if performance_index is None or math.isnan(performance_index):
             return 0.0, []
         else:
             _LOGGER.info("Performance index for stack: %f", performance_index)
