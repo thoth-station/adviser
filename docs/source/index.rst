@@ -6,10 +6,11 @@ Information about implementation
 .. toctree::
    :maxdepth: 1
 
-   libdependency_graph
-   provenance_checks
    dependency_graph
    dependency_monkey
+   libdependency_graph
+   pipeline
+   provenance_checks
 
 Crossroad
 =========

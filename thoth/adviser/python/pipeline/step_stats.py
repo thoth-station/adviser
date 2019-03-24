@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2018 Fridolin Pokorny
+# Copyright(C) 2019 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,21 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+"""Implementation of statistics for a stack generation pipeline and every pipeline step."""
 
-"""Exceptions that can happen in libdependency_graph implementation."""
+import logging
 
+import attr
+from .stats_base import StatsBase
 
-class DependencyGraphException(Exception):
-    """A base class for dependency graph exception hierarchy."""
-
-
-class PrematureStreamEndError(DependencyGraphException):
-    """An exception raised if the stack stream was closed prematurely.
-
-    This can happen for example due to OOM, which can kill stack producer. In that case we would like to
-    report to user what we have computed so far.
-    """
+_LOGGER = logging.getLogger(__name__)
 
 
-class NoDependenciesError(DependencyGraphException):
-    """An exception raised if no direct dependencies were provided to dependency graph."""
+@attr.s(slots=True)
+class StepStats(StatsBase):
+    """Statistics accumulated for steps in pipeline."""
+
+    def log_report(self) -> None:
+        """Log report for a pipeline step."""
+        total = 0.0
+        for step_name, step_duration in self._units_run.items():
+            _LOGGER.debug("    Step %r took %.5f seconds", step_name, step_duration)
+            total += step_duration
+
+        _LOGGER.debug("Steps took %.5f seconds in total", total)

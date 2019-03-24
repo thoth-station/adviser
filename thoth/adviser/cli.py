@@ -29,10 +29,10 @@ from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser import __version__ as analyzer_version
 from thoth.adviser.enums import PythonRecommendationOutput
 from thoth.adviser.enums import RecommendationType
+from thoth.adviser.enums import DecisionType
 from thoth.adviser.exceptions import InternalError
 from thoth.adviser.exceptions import ThothAdviserException
 from thoth.adviser.python import Adviser
-from thoth.adviser.python import DECISISON_FUNCTIONS
 from thoth.adviser.python import GraphDigestsFetcher
 from thoth.adviser.python import dependency_monkey as run_dependency_monkey
 from thoth.adviser.python.dependency_monkey import dm_amun_inspect_wrapper
@@ -264,9 +264,9 @@ def provenance(
     "--recommendation-type",
     "-t",
     envvar="THOTH_ADVISER_RECOMMENDATION_TYPE",
-    default="stable",
+    default="STABLE",
     required=True,
-    type=click.Choice(["stable", "testing", "latest"]),
+    type=click.Choice([e.name for e in RecommendationType]),
     help="Type of recommendation generated based on knowledge base.",
 )
 @click.option(
@@ -300,11 +300,6 @@ def provenance(
     is_flag=True,
     help="Requirements passed represent paths to files on local filesystem.",
 )
-@click.option(
-    "--dry-run",
-    is_flag=True,
-    help="Do not output generated stacks, output just stack count.",
-)
 def advise(
     click_ctx,
     requirements,
@@ -318,7 +313,6 @@ def advise(
     count=None,
     limit=None,
     limit_latest_versions=None,
-    dry_run=False,
 ):
     """Advise package and package versions in the given stack or on solely package only."""
     _LOGGER.debug("Passed arguments: %s", locals())
@@ -335,12 +329,11 @@ def advise(
         "advised_configuration": None,
         "parameters": {
             "runtime_environment": runtime_environment.to_dict(),
-            "recommendation_type": recommendation_type.name.lower(),
-            "requirements_format": requirements_format.name.lower(),
+            "recommendation_type": recommendation_type.name,
+            "requirements_format": requirements_format.name,
             "limit": limit,
             "limit_latest_versions": limit_latest_versions,
             "count": count,
-            "dry_run": dry_run,
             "no_pretty": no_pretty,
         },
         "input": None,
@@ -361,7 +354,6 @@ def advise(
             count=count,
             limit=limit,
             limit_latest_versions=limit_latest_versions,
-            dry_run=dry_run,
         )
     except ThothAdviserException as exc:
         # TODO: we should extend exceptions so they are capable of storing more info.
@@ -377,13 +369,12 @@ def advise(
         result["report"] = [([{"justification": str(exc), "type": "ERROR"}], None)]
     else:
         result["error"] = False
-        # Convert report to a dict so its serialized.
         result["stack_info"] = stack_info
         result["advised_configuration"] = advised_configuration
-        if not dry_run:
-            result["report"] = [(item[0], item[1].to_dict()) for item in report]
-        else:
-            result["report"] = report
+        # Convert report to a dict so its serialized.
+        result["report"] = [
+            (justification, project.to_dict()) for justification, project in report
+        ]
 
     print_command_result(
         click_ctx,
@@ -403,6 +394,7 @@ def advise(
     "-r",
     type=str,
     envvar="THOTH_ADVISER_REQUIREMENTS",
+    metavar="REQUIREMENTS_FILE",
     required=True,
     help="Requirements to be advised.",
 )
@@ -411,6 +403,7 @@ def advise(
     "-o",
     type=str,
     envvar="THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT",
+    metavar="OUTPUT",
     required=True,
     help="Output directory or remote API to print results to, in case of URL a POST request "
     "is issued to the Amun REST API.",
@@ -419,6 +412,7 @@ def advise(
     "--limit-latest-versions",
     type=int,
     envvar="THOTH_ADVISER_LIMIT_LATEST_VERSIONS",
+    metavar="INT",
     help="Consider only desired number of versions (latest) for "
     "a package to limit number of software stacks generated.",
 )
@@ -427,6 +421,7 @@ def advise(
     "-R",
     type=str,
     envvar="THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT",
+    metavar="REPORT_OUTPUT",
     required=False,
     default="-",
     help="Output directory or remote API where reports of dependency monkey run should be posted..",
@@ -448,12 +443,12 @@ def advise(
     help="Number of software stacks that should be computed.",
 )
 @click.option(
-    "--decision",
+    "--decision-type",
     required=False,
-    envvar="THOTH_DEPENDENCY_MONKEY_DECISION",
-    default="all",
-    type=click.Choice(DECISISON_FUNCTIONS),
-    help="A decision function that should be used for generating software stack samples; "
+    envvar="THOTH_DEPENDENCY_MONKEY_DECISION_TYPE",
+    default="ALL",
+    type=click.Choice([e.name for e in DecisionType]),
+    help="A decision type that should be used for generating software stack samples; "
     "if omitted, all software stacks will be created.",
 )
 @click.option(
@@ -467,6 +462,7 @@ def advise(
     "--context",
     type=str,
     envvar="THOTH_AMUN_CONTEXT",
+    metavar="AMUN_JSON",
     help="The context into which computed stacks should be placed; if omitteed, "
     "raw software stacks will be created. This option cannot be set when generating "
     "software stacks onto filesystem.",
@@ -475,6 +471,7 @@ def advise(
     "--runtime-environment",
     "-e",
     envvar="THOTH_ADVISER_RUNTIME_ENVIRONMENT",
+    metavar="ENV_JSON",
     type=str,
     help="Runtime environment specification (file or directly JSON) to describe target environment.",
 )
@@ -486,7 +483,7 @@ def dependency_monkey(
     report_output: str,
     files: bool,
     seed: int = None,
-    decision: str = None,
+    decision_type: str = None,
     dry_run: bool = False,
     context: str = None,
     no_pretty: bool = False,
@@ -500,6 +497,7 @@ def dependency_monkey(
     seed = int(seed) if seed else None
     count = int(count) if count else None
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
+    decision_type = DecisionType.by_name(decision_type)
     project = _instantiate_project(
         requirements,
         requirements_locked=None,
@@ -513,7 +511,7 @@ def dependency_monkey(
             "requirements": project.pipfile.to_dict(),
             "runtime_environment": runtime_environment.to_dict(),
             "seed": seed,
-            "decision": decision,
+            "decision_type": decision_type.name,
             "context": deepcopy(
                 context
             ),  # We reuse context later, perform deepcopy to report the one on input.
@@ -534,11 +532,10 @@ def dependency_monkey(
             project,
             stack_output,
             seed=seed,
-            decision_function_name=decision,
+            decision_type=decision_type,
             dry_run=dry_run,
             context=context,
             count=count,
-            runtime_environment=runtime_environment,
             limit_latest_versions=limit_latest_versions,
         )
         # Place report into result.
@@ -581,6 +578,7 @@ def dependency_monkey(
     "-o",
     type=str,
     envvar="THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT",
+    metavar="OUTPUT",
     required=True,
     help="Output directory or remote API to print results to, in case of URL a POST request "
     "is issued to the Amun REST API.",
@@ -595,6 +593,7 @@ def dependency_monkey(
     "--context",
     type=str,
     envvar="THOTH_AMUN_CONTEXT",
+    metavar="AMUN_JSON",
     help="The context into which computed stacks should be placed; if omitteed, "
     "raw software stacks will be created. This option cannot be set when generating "
     "software stacks onto filesystem.",

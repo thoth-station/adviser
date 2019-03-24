@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2018 Fridolin Pokorny
+# Copyright(C) 2019 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Interface to libdependencygraph.so."""
+"""Filter out stacks randomly."""
 
-from .dependency_graph import DependencyGraph
-from .exceptions import DependencyGraphException
-from .exceptions import PrematureStreamEndError
-from .exceptions import NoDependenciesError
+import logging
+import random
+
+from ..stride_context import StrideContext
+from ..exceptions import StrideRemoveStack
+from ..stride import Stride
+
+_LOGGER = logging.getLogger(__name__)
+
+
+class RandomDecision(Stride):
+    """Filtering of stacks which encountered runtime errors."""
+
+    def run(self, stride_context: StrideContext) -> None:
+        """Filter out packages which have runtime errors."""
+        if bool(random.getrandbits(1)):
+            raise StrideRemoveStack("Stack was randomly discarded by flipping a coin")

@@ -101,7 +101,7 @@ class Isis(metaclass=_Singleton):
         return {package_tuple: self.get_python_project_performance_import(project_name)}
 
     def get_python_package_performance_impact_all(
-        self, package_tuples: typing.List[tuple]
+        self, package_tuples: typing.Iterable[typing.Tuple[str, str, str]]
     ) -> dict:
         """Get performance impact for a list of packages.
 

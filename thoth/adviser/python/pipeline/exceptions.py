@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2018 Fridolin Pokorny
+# Copyright(C) 2019 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Interface to libdependencygraph.so."""
+"""Exceptions hierarchy used inside stack generation pipeline.
 
-from .dependency_graph import DependencyGraph
-from .exceptions import DependencyGraphException
-from .exceptions import PrematureStreamEndError
-from .exceptions import NoDependenciesError
+These exceptions should not be propagated outside of pipeline module.
+"""
+
+
+class PipelineExceptionBase(Exception):
+    """An exception raised inside stack generator pipeline."""
+
+
+class StrideRemoveStack(PipelineExceptionBase):
+    """Raised from within a stride if the given stack should be removed."""
+
+
+class CannotRemovePackage(PipelineExceptionBase):
+    """Raised if the given package cannot be removed from paths due to dependencies."""

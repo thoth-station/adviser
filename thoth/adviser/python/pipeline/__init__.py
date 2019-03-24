@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2018 Fridolin Pokorny
+# Copyright(C) 2019 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Interface to libdependencygraph.so."""
+"""Implementation of stack generation pipeline."""
 
-from .dependency_graph import DependencyGraph
-from .exceptions import DependencyGraphException
-from .exceptions import PrematureStreamEndError
-from .exceptions import NoDependenciesError
+
+from .pipeline import Pipeline
+from .step import Step
+from .step_context import StepContext
+from .stride import Stride
+from .stride_context import StrideContext
+from .product import PipelineProduct
