@@ -77,7 +77,7 @@ parameters:
     required: true
     description: Give adviser specified number of seconds on CPU to compute results.
     displayName: Adviser timeout seconds.
-    value: "1800"
+    value: "3600"
 
 objects:
   - apiVersion: batch/v1
