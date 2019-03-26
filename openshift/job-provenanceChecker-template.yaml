@@ -3,10 +3,10 @@ kind: Template
 metadata:
   name: provenance-checker
   annotations:
-    description: This is Thoth Core - Provenance Checker
-    openshift.io/display-name: 'Thoth: Provenance Checker'
-    version: 0.1.0
-    tags: poc,thoth,ai-stacks,provenance-checker
+    description: "Thoth: Provenance Checker"
+    openshift.io/display-name: "Thoth: Provenance Checker"
+    version: 0.4.0
+    tags: thoth,ai-stacks,provenance-checker
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
       This template defines resources needed to run recommendation logic of Thoth to OpenShift.
@@ -15,6 +15,42 @@ metadata:
     app: thoth
     template: provenance-checker
     component: provenance-checker
+
+parameters:
+  - description: Project the ImageStream to be use lives in
+    displayName: ImageStream Project
+    required: true
+    name: IMAGE_STREAM_NAMESPACE
+
+  - description: Tag of the ImageStream to be use
+    displayName: ImageStream Tag
+    required: true
+    name: IMAGE_STREAM_TAG
+    value: "latest"
+
+  - name: THOTH_PROVENANCE_CHECKER_JOB_ID
+    required: true
+    description: A unique identifier of provenance-checker job.
+    displayName: Provenance checker id
+  - name: THOTH_WHITELISTED_SOURCES
+    required: false
+    description: A comma separated values of URLs to whitelisted sources.
+    displayName: Whitelisted sources
+  - name: THOTH_ADVISER_OUTPUT
+    required: false
+    description: Remote where results should be send to.
+  - name: THOTH_ADVISER_REQUIREMENTS
+    required: false
+    description: Raw stack requirements.
+  - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+    required: false
+    description: Fully pinned down stack.
+    displayName: Locked requirements
+  - name: THOTH_LOG_ADVISER
+    required: false
+    description: Log adviser actions.
+    displayName: Log adviser actions
+    value: INFO
 
 objects:
   - apiVersion: batch/v1
@@ -40,7 +76,7 @@ objects:
           automountServiceAccountToken: false
           containers:
             - name: provenance-checker
-              image: adviser
+              image: "${IMAGE_STREAM_NAMESPACE}/adviser:${IMAGE_STREAM_TAG}"
               livenessProbe:
                 # Give analyzer 10 minutes to compute results, kill it if it was not able result anything.
                 tcpSocket:
@@ -60,7 +96,7 @@ objects:
                 - name: THOTH_WHITELISTED_SOURCES
                   value: "${THOTH_WHITELISTED_SOURCES}"
                 - name: THOTH_ADVISER_SUBCOMMAND
-                  value: 'provenance'
+                  value: "provenance"
                 - name: PROMETHEUS_PUSHGATEWAY_HOST
                   valueFrom:
                     configMapKeyRef:
@@ -78,32 +114,8 @@ objects:
                       key: sentry-dsn
               resources:
                 limits:
-                  memory: '128Mi'
-                  cpu: '500m'
+                  memory: "128Mi"
+                  cpu: "500m"
                 requests:
-                  memory: '128Mi'
-                  cpu: '500m'
-parameters:
-  - name: THOTH_PROVENANCE_CHECKER_JOB_ID
-    required: true
-    description: A unique identifier of provenance-checker job.
-    displayName: Provenance checker id
-  - name: THOTH_WHITELISTED_SOURCES
-    required: false
-    description: A comma separated values of URLs to whitelisted sources.
-    displayName: Whitelisted sources
-  - name: THOTH_ADVISER_OUTPUT
-    required: false
-    description: Remote where results should be send to.
-  - name: THOTH_ADVISER_REQUIREMENTS
-    required: false
-    description: Raw stack requirements.
-  - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
-    required: false
-    description: Fully pinned down stack.
-    displayName: Locked requirements
-  - name: THOTH_LOG_ADVISER
-    required: false
-    description: Log adviser actions.
-    displayName: Log adviser actions
-    value: INFO
+                  memory: "128Mi"
+                  cpu: "500m"
