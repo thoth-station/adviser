@@ -4,20 +4,39 @@ metadata:
   name: adviser-buildconfig
   annotations:
     description: >
-      This is Thoth Adviser BuildConfig, this template is meant to be used by Jenkins, but could also be
+      This is Thoth Adviser BuildConfig, this template is meant to be used by Bots, but could also be
       used by humans...
-    openshift.io/display-name: Thoth Adviser BuildConfig
-    version: 0.3.0
-    tags: poc,thoth,ai-stacks,adviser
+    openshift.io/display-name: "Thoth: Adviser BuildConfig"
+    version: 0.4.1
+    tags: thoth,ai-stacks,adviser
     template.openshift.io/documentation-url: https://github.com/Thoth-Station
     template.openshift.io/long-description: >
       This is Thoth Adviser BuildConfig, this template is meant to be
-      used by Jenkins, but could also be used by humans...
-    template.openshift.io/provider-display-name: Red Hat, Inc.
+      used by Bots, but could also be used by humans...
+    template.openshift.io/provider-display-name: "Red Hat, Inc."
   labels:
     template: adviser-buildconfig
     app: thoth
     component: adviser
+
+parameters:
+  - description: Git repository for Thoth's Adviser
+    displayName: Thoth Adviser git repository
+    required: true
+    name: GITHUB_URL
+    value: "https://github.com/thoth-station/adviser"
+
+  - description: Git repository for Thoth's Adviser
+    displayName: Thoth Adviser git reference
+    required: true
+    name: GITHUB_REF
+    value: "master"
+
+  - description: Tag of the output ImageStream the resulting container image should go to
+    displayName: ImageStream Tag
+    required: true
+    name: IMAGE_STREAM_TAG
+    value: "latest"
 
 objects:
   - apiVersion: v1
@@ -53,30 +72,11 @@ objects:
             name: python-36-centos7:latest
           env:
             - name: ENABLE_PIPENV
-              value: '1'
+              value: "1"
             - name: UPGRADE_PIP_TO_LATEST
-              value: ''
+              value: ""
             - name: APP_FILE
-              value: 'thoth-adviser'
+              value: "thoth-adviser"
       triggers:
         - imageChange: {}
           type: ImageChange
-
-parameters:
-  - description: Git repository for Thoth's Adviser
-    displayName: Thoth Adviser git repository
-    required: true
-    name: GITHUB_URL
-    value: 'https://github.com/thoth-station/adviser'
-
-  - description: Git repository for Thoth's Adviser
-    displayName: Thoth Adviser git reference
-    required: true
-    name: GITHUB_REF
-    value: 'master'
-
-  - description: Tag of the output ImageStream the resulting container image should go to
-    displayName: ImageStream Tag
-    required: true
-    name: IMAGE_STREAM_TAG
-    value: 'latest'

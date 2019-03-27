@@ -4,16 +4,16 @@ metadata:
   name: adviser-imagestream
   annotations:
     description: >
-      This is Thoth Adviser ImageStream, this template is meant to be used by Jenkins, but could also
+      This is Thoth Adviser ImageStream, this template is meant to be used by Bots, but could also
       be used by humans
-    openshift.io/display-name: Thoth Adviser ImageStream
-    version: 0.2.0
-    tags: poc,thoth,ai-stacks,adviser
+    openshift.io/display-name: "Thoth: Adviser ImageStream"
+    version: 0.4.1
+    tags: thoth,ai-stacks,adviser
     template.openshift.io/documentation-url: https://github.com/Thoth-Station
     template.openshift.io/long-description: >
-      This is Thoth Adviser ImageStream, this template is meant to be used by Jenkins, but could also
+      This is Thoth Adviser ImageStream, this template is meant to be used by Bots, but could also
       be used by humans...
-    template.openshift.io/provider-display-name: Red Hat, Inc.
+    template.openshift.io/provider-display-name: "Red Hat, Inc."
   labels:
     app: thoth
     component: adviser

@@ -5,7 +5,7 @@ metadata:
   annotations:
     description: "Thoth: Dependency Monkey"
     openshift.io/display-name: "Thoth: Dependency Monkey"
-    version: 0.4.0
+    version: 0.4.1
     tags: thoth,ai-stacks,dependency-monkey
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
@@ -21,6 +21,7 @@ parameters:
     displayName: ImageStream Project
     required: true
     name: IMAGE_STREAM_NAMESPACE
+    value: "thoth-infra-stage"
 
   - description: Tag of the ImageStream to be use
     displayName: ImageStream Tag
