@@ -36,7 +36,20 @@ import requests
 _LOGGER = logging.getLogger(__name__)
 
 
-class _IsisApi:
+class _Singleton(type):
+    """A metaclass for managing singleton instances."""
+
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        """Call a singleton instance."""
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+
+        return cls._instances[cls]
+
+
+class Isis(metaclass=_Singleton):
     """An adapter for communicating with Isis API from within adviser."""
 
     _NOT_FOUND_PERFORMANCE_IMPACT = 1.0
@@ -106,19 +119,3 @@ class _IsisApi:
         results = loop.run_until_complete(asyncio.gather(*tasks))
         results_dict = list(chain(results))
         return dict(ChainMap(*results_dict))
-
-
-class Isis:
-    """A singleton like object to handle Isis wrapper."""
-
-    def __init__(self, isis_api_url: str = None):
-        """Instantiate singleton wrapper."""
-        self._isis_api_url = isis_api_url
-        self._isis_api_instance = None
-
-    def __getattr__(self, item):
-        """Delegate any call to Isis API."""
-        if self._isis_api_instance is None:
-            self._isis_api_instance = _IsisApi(isis_api_url=self._isis_api_url)
-
-        return getattr(self._isis_api_instance, item)
