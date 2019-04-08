@@ -12,6 +12,7 @@ semantic-version = "*"
 contoml = "*"
 thoth-storages = "*"
 thoth-python = "*"
+voluptuous = "*"
 
 [dev-packages]
 flexmock = "*"

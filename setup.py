@@ -6,7 +6,6 @@ from setuptools.command.test import test as TestCommand
 
 def get_install_requires():
     with open('requirements.txt', 'r') as requirements_file:
-        # TODO: respect hashes in requirements.txt file
         res = requirements_file.readlines()
         return [req.split(' ', maxsplit=1)[0] for req in res if req]
 
@@ -33,7 +32,7 @@ class Test(TestCommand):
 
     def initialize_options(self):
         super().initialize_options()
-        self.pytest_args = ['tests/', '--timeout=2', '--cov=./thoth', '--capture=no', '--verbose', '-l', '-s']
+        self.pytest_args = ['tests/', '--timeout=2', '--cov=./thoth', '--capture=no', '--verbose', '-l', '-s', '-vv']
 
     def finalize_options(self):
         super().finalize_options()

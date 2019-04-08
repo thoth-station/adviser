@@ -56,3 +56,10 @@ class Ecosystem(_ExtendedEnum):
     """Ecosystem known to recommendation engine."""
 
     PYTHON = auto()
+
+
+class DecisionType(_ExtendedEnum):
+    """Type of decision used in Dependency Monkey for generating stacks."""
+
+    ALL = auto()
+    RANDOM = auto()

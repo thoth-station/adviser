@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2018 Fridolin Pokorny
+# Copyright(C) 2019 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Interface to libdependencygraph.so."""
+"""A base for a pipeline unit context - stride or step context."""
 
-from .dependency_graph import DependencyGraph
-from .exceptions import DependencyGraphException
-from .exceptions import PrematureStreamEndError
-from .exceptions import NoDependenciesError
+import abc
+
+import attr
+
+
+@attr.s(slots=True)
+class ContextBase(metaclass=abc.ABCMeta):
+    """A base for a pipeline unit context."""
+
+    _stats = attr.ib()
+
+    @property
+    def stats(self):
+        """Retrieve statistics for the current running step."""
+        return self._stats

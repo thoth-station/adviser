@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2018 Fridolin Pokorny
+# Copyright(C) 2019 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Interface to libdependencygraph.so."""
+"""Common code for pipeline units - steps and strides.
 
-from .dependency_graph import DependencyGraph
-from .exceptions import DependencyGraphException
-from .exceptions import PrematureStreamEndError
-from .exceptions import NoDependenciesError
+These classes are meant to be used for sharing code between strides and steps serving similar purpose.
+"""
+
+
+from .cve import get_cve_records
+from .performance import get_performance_impact_packages
+from .performance import get_performance

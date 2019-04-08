@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2018 Fridolin Pokorny
+# Copyright(C) 2019 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Interface to libdependencygraph.so."""
+"""Filter out stacks which have buildtime errors."""
 
-from .dependency_graph import DependencyGraph
-from .exceptions import DependencyGraphException
-from .exceptions import PrematureStreamEndError
-from .exceptions import NoDependenciesError
+import logging
+
+from ..step_context import StepContext
+from ..step import Step
+
+_LOGGER = logging.getLogger(__name__)
+
+
+class BuildtimeErrorFiltering(Step):
+    """Filtering of stacks which have errors."""
+
+    def run(self, step_context: StepContext) -> None:
+        """Filter out packages which have buildtime errors."""
