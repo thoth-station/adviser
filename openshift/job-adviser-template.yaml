@@ -80,6 +80,8 @@ parameters:
     required: false
     description: Limit number of versions starting from latest in stacks.
     displayName: Limit latest versions
+    # A workaround for click which is complaining about bad integer if empty value is provided.
+    default: "-1"
   - name: THOTH_ADVISER_TIMEOUT_SECONDS
     required: true
     description: Give adviser specified number of seconds on CPU to compute results.
