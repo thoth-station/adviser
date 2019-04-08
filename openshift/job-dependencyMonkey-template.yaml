@@ -5,7 +5,7 @@ metadata:
   annotations:
     description: "Thoth: Dependency Monkey"
     openshift.io/display-name: "Thoth: Dependency Monkey"
-    version: 0.4.1
+    version: 0.4.2
     tags: thoth,ai-stacks,dependency-monkey
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
@@ -17,6 +17,12 @@ metadata:
     component: dependency-monkey
 
 parameters:
+  - description: Registry the ImageStream to be use lives in
+    displayName: ImageStream Registry
+    required: true
+    name: IMAGE_STREAM_REGISTRY
+    value: "docker-registry.default.svc:5000"
+
   - description: Project the ImageStream to be use lives in
     displayName: ImageStream Project
     required: true
@@ -106,7 +112,7 @@ objects:
           automountServiceAccountToken: false
           containers:
             - name: dependency-monkey
-              image: "${IMAGE_STREAM_NAMESPACE}/adviser:${IMAGE_STREAM_TAG}"
+              image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/adviser:${IMAGE_STREAM_TAG}"
               livenessProbe:
                 # Give analyzer 30 minutes to compute results, kill it if it was not able result anything.
                 tcpSocket:

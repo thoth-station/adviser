@@ -5,7 +5,7 @@ metadata:
   annotations:
     description: "Thoth: Provenance Checker"
     openshift.io/display-name: "Thoth: Provenance Checker"
-    version: 0.4.1
+    version: 0.4.2
     tags: thoth,ai-stacks,provenance-checker
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
@@ -17,6 +17,12 @@ metadata:
     component: provenance-checker
 
 parameters:
+  - description: Registry the ImageStream to be use lives in
+    displayName: ImageStream Registry
+    required: true
+    name: IMAGE_STREAM_REGISTRY
+    value: "docker-registry.default.svc:5000"
+
   - description: Project the ImageStream to be use lives in
     displayName: ImageStream Project
     required: true
@@ -77,7 +83,7 @@ objects:
           automountServiceAccountToken: false
           containers:
             - name: provenance-checker
-              image: "${IMAGE_STREAM_NAMESPACE}/adviser:${IMAGE_STREAM_TAG}"
+              image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/adviser:${IMAGE_STREAM_TAG}"
               livenessProbe:
                 # Give analyzer 10 minutes to compute results, kill it if it was not able result anything.
                 tcpSocket:
