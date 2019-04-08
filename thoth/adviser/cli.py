@@ -319,6 +319,10 @@ def advise(
     limit = int(limit) if limit else None
     count = int(count) if count else None
 
+    # A workaround for click which is complaining about bad integer if empty value is provided.
+    if limit_latest_versions == -1:
+        limit_latest_versions = None
+
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
     recommendation_type = RecommendationType.by_name(recommendation_type)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
