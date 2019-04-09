@@ -390,10 +390,10 @@
         },
         "rfc5424-logging-handler": {
             "hashes": [
-                "sha256:2025075d9a71084a0baf97a840fd419fd07cb15f63d3c06357dd21e84d5595d4",
-                "sha256:9a0665cecacaf9b6dc7841256b835a7fb7dba231684c8e64412b70bcd789b0d6"
+                "sha256:82cc162eeed5b80b8bc5223dcdb8278780b26c3ed354a06f07a15b79e1c43581",
+                "sha256:c7502c0db19bf89e4adc71bac37d0848ab5f5d1c807380d235c46adcb8efcfdb"
             ],
-            "version": "==1.4.1"
+            "version": "==1.4.2"
         },
         "s3transfer": {
             "hashes": [
@@ -439,10 +439,10 @@
         },
         "thoth-common": {
             "hashes": [
-                "sha256:672ffdaea4ca372f4f3686514512a1570640c1f62a8517d8d05d04aaa2831ac2"
+                "sha256:bf61f6c464393e0e9caeeccdde3bdb75eca97eb67ac30c13f97821b100dceb7e"
             ],
             "index": "pypi",
-            "version": "==0.8.4"
+            "version": "==0.8.5"
         },
         "thoth-python": {
             "hashes": [
