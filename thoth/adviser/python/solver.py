@@ -51,7 +51,7 @@ class GraphReleasesFetcher(ReleasesFetcher):
     def graph_db(self):
         """Get instance of graph database adapter, lazily."""
         # Place the import statement here to simplify mocks in the testsuite.
-        from thoth.storages.graph.janusgraph import GraphDatabase
+        from thoth.storages import GraphDatabase
 
         if not self._graph_db:
             self._graph_db = GraphDatabase()
