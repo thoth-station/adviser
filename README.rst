@@ -97,10 +97,10 @@ and using its command line interface:
 When thoth-adviser is scheduled in a deployment, it is actually executed as a
 CLI with arguments passed via environment variables.
 
-See `JanusGraph <https://github.com/thoth-station/janusgraph-thoth-config>`_
-repository on how to run a JanusGraph instance locally and
+See `Dgraph <https://github.com/thoth-station/dgraph-thoth-config>`_
+repository on how to run a Dgraph instance locally and
 example `notebooks <https://github.com/thoth-station/notebooks>`_ which can feed
-your JanusGraph instance for experiments.
+your Dgraph instance for experiments.
 
 Running adviser locally
 =======================
@@ -113,10 +113,10 @@ in implementation. You can do so easily by running:
   pipenv install
   PYTHONPATH=. JANUSGRAPH_SERVICE_HOST=janusgraph.test.thoth-station.ninja pipenv run ./thoth-adviser --help
 
-This command will set `janusgraph.test.thoth-station.ninja` (JanusGraph
+This command will set `janusgraph.test.thoth-station.ninja` (Dgraph
 deployed in test environment) as your source for advises and information for
 resolver to correctly resovle dependencies. Feel free to use `a local
-JanusGraph instance
+Dgraph instance
 <https://github.com/thoth-station/janusgraph-thoth-config#running-janusgraph-instance-locally>`_
 if it suits your needs. Also, follow the developer's guide to get `more
 information about developer's setup

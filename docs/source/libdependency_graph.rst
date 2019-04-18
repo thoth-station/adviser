@@ -4,7 +4,7 @@ Resolver design document
 ------------------------
 
 This document describes the current and past implementations of Thoth’s
-software stack resolution algorithm which is implemented on top of JanusGraph
+software stack resolution algorithm which is implemented on top of graph
 database. The main reason for creating this resolution algorithm are two
 fundamental requirements from Thoth side:
 
@@ -15,7 +15,7 @@ Queries to the graph database
 =============================
 
 Packages and their dependencies were obtained from the graph database
-(JanusGraph). A query to JanusGraph database for transitive dependencies
+(Dgraph). A query to graph database for transitive dependencies
 retrieves a path to each package starting from each direct dependency. Given
 the following dependencies (where A, B, C, D, E, F, G are packages in specific
 versions):
@@ -45,24 +45,19 @@ references back the item which started the cycle).
 
 The actual query implemented in Thoth does not return values of packages. Based
 on our performance observations, due to serialization, deserialization and
-JanusGraph server-side cache, it is much more efficient to retrieve identifiers
+graph database server-side cache, it is much more efficient to retrieve identifiers
 of these packages and ask for the actual package name, package version and
 source index URL later on in parallel for each item in the dependency chain
 (note that packages in the resulting query occur multiple times based on
 packages which introduced them).
 
 We are now primarily focused on Python ecosystem, we use pip’s internal
-resolution algorithm to resolve dependencies. JanusGraph allows to submit code
-which should be executed during the traversal in JanusGraph, but this code has
-to be JVM compatible (e.g. Java, Groovy scripts) - because of this reason we
-cannot directly submit pip’s internal resolution algorithm written in Python.
-Moreover, we are interested in resolved stacks, which require maintaining a
-context used during the actual graph traversal.  Python Implementation The very
+resolution algorithm to resolve dependencies.  The very
 first implementation is written in Python and can be found in the Thoth’s
 adviser repository.
 
 The key idea is in creation in-memory N-ary graph constructed based on queries
-to JanusGraph. This graph is subsequently traversed and the result of each full
+to graph database. This graph is subsequently traversed and the result of each full
 traversal yields a fully pinned down stack.
 
 .. image:: _static/dependency_graph.png
@@ -202,4 +197,3 @@ done using:
 
 This build will produce the ``libdependency_graph.so`` file in a container (use
 base image you would like to be compatible with) and copied to host for use.
-
