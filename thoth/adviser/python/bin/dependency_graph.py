@@ -251,7 +251,7 @@ class DependencyGraph:
             os.close(write_fd)
 
         # This is a really dirty hack, but it is required. We need to wait for parent to finish as queries to the
-        # JanusGraph are done in async coroutines. If the stack producer process finishes sooner, we get stuck in the
+        # graph db are done in async coroutines. If the stack producer process finishes sooner, we get stuck in the
         # event loop which is halted due to SIGCHILD signal. Obviously, child cannot wait for parent in
         # waitpid call (in a POSIX compliant way), so we send SIGSTOP to self (stack producer process) and wait
         # for parent to finish passively so we are out of OS process scheduler. Once the parent finishes
