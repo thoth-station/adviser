@@ -63,6 +63,7 @@ setup(
     command_options={
         'build_sphinx': {
             'version': ('setup.py', VERSION),
+            'release': ('setup.py', VERSION),
         }
     }
 )
