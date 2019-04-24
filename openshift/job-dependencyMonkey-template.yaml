@@ -162,6 +162,17 @@ objects:
                     secretKeyRef:
                       name: thoth
                       key: sentry-dsn
+                - name: GRAPH_SERVICE_HOST
+                  valueFrom:
+                    configMapKeyRef:
+                      key: graph-service-host
+                      name: thoth
+                - name: GRAPH_TLS_PATH
+                  value: "/var/run/secrets/dgraph"
+              volumeMounts:
+                - mountPath: /var/run/secrets/dgraph
+                  name: dgraph-tls-secrets
+                  readOnly: true
               resources:
                 limits:
                   memory: "8Gi"
@@ -169,3 +180,8 @@ objects:
                 requests:
                   memory: "8Gi"
                   cpu: 1
+          volumes:
+            - name: dgraph-tls-secrets
+              secret:
+                defaultMode: 420
+                secretName: dgraph-tls
