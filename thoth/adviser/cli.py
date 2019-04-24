@@ -377,7 +377,8 @@ def advise(
         result["advised_configuration"] = advised_configuration
         # Convert report to a dict so its serialized.
         result["report"] = [
-            (justification, project.to_dict()) for justification, project in report
+            (justification, project.to_dict(), overall_score)
+            for justification, project, overall_score in report
         ]
 
     print_command_result(
