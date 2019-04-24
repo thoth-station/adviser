@@ -99,6 +99,8 @@ objects:
         app: thoth
         component: dependency-monkey
         mark: cleanup
+        operator: graph-sync
+        task: dependency-monkey
     spec:
       backoffLimit: 0
       template:
