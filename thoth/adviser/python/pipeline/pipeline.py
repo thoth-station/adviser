@@ -116,7 +116,7 @@ class Pipeline:
         seen_ids = ids_map.keys()
         unseen_ids = set()
         for entry in transitive_dependencies:
-            for idx in range(0, len(entry), 2):
+            for idx in range(len(entry)):
                 if entry[idx] not in seen_ids:
                     unseen_ids.add(entry[idx])
 
@@ -134,10 +134,7 @@ class Pipeline:
         for entries in transitive_dependencies:
             new_entries = []
             for idx, entry in enumerate(entries):
-                if idx % 2 == 0:
-                    # TODO: remove "is_solvable" flag from query
-                    new_entries.append(ids_map[entry])
-
+                new_entries.append(ids_map[entry])
             result.append(new_entries)
 
         return result
