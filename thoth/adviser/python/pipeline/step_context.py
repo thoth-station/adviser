@@ -60,6 +60,13 @@ class _StepChangeContext(ContextDecorator):
     def __exit__(self, *exc):
         """Remove paths or tuples which were requested to be removed."""
         for package_tuple in self._to_remove_tuples_list:
+            if not any(package_tuple in path for path in self.step_context.raw_paths):
+                _LOGGER.debug(
+                    "No need to remove package %r, it was already removed",
+                    package_tuple
+                )
+                continue
+
             _LOGGER.debug("Removing %r", package_tuple)
             try:
                 self.step_context.remove_package_tuple(package_tuple)
