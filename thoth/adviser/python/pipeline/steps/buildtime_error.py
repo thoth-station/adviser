@@ -19,8 +19,11 @@
 
 import logging
 
+from thoth.adviser.python.exceptions import UnableLock
+
 from ..step_context import StepContext
 from ..step import Step
+from ..exceptions import CannotRemovePackage
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,3 +33,14 @@ class BuildtimeErrorFiltering(Step):
 
     def run(self, step_context: StepContext) -> None:
         """Filter out packages which have buildtime errors."""
+        try:
+            with step_context.change(graceful=False) as step_change:
+                for package_version in step_context.iter_all_dependencies():
+                    package_tuple = package_version.to_tuple()
+                    if self.graph.has_python_solver_error(*package_tuple):
+                        _LOGGER.debug("Removing package %r due to build-time error", package_tuple)
+                        step_change.remove_package_tuple(package_tuple)
+        except CannotRemovePackage as exc:
+            raise UnableLock(
+                f"Cannot construct stack based on build time error filtering criteria: {str(exc)}"
+            )
