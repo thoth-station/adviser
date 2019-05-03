@@ -20,7 +20,9 @@
 import logging
 
 from thoth.adviser.python.exceptions import UnableLock
+from thoth.python.exceptions import UnableLock
 
+from ..exceptions import CannotRemovePackage
 from ..step_context import StepContext
 from ..step import Step
 from ..exceptions import CannotRemovePackage
@@ -37,7 +39,12 @@ class BuildtimeErrorFiltering(Step):
             with step_context.change(graceful=False) as step_change:
                 for package_version in step_context.iter_all_dependencies():
                     package_tuple = package_version.to_tuple()
-                    if self.graph.has_python_solver_error(*package_tuple):
+                    if self.graph.has_python_solver_error(
+                            *package_tuple,
+                            os_name=self.project.runtime_environment.operating_system.name,
+                            os_version=self.project.runtime_environment.operating_system.version,
+                            python_version=self.project.runtime_environment.python_version,
+                    ):
                         _LOGGER.debug("Removing package %r due to build-time error", package_tuple)
                         step_change.remove_package_tuple(package_tuple)
         except CannotRemovePackage as exc:
