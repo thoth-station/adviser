@@ -414,10 +414,10 @@ class StepContext(ContextBase):
         new_direct_dependencies_score = {}
         new_direct_dependencies_map = {}
         for package_version in self._direct_dependencies:
-            package_tuple = package_version.to_tuple()
+            adjust_package_tuple = package_version.to_tuple()
             new_direct_dependencies_score[
-                package_tuple
-            ] = self._direct_dependencies_score[package_tuple]
+                adjust_package_tuple
+            ] = self._direct_dependencies_score[adjust_package_tuple]
             self._create_record(package_version, new_direct_dependencies_map)
 
         self._direct_dependencies_score = new_direct_dependencies_score
