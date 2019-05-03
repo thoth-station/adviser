@@ -28,6 +28,7 @@ from contextlib import ContextDecorator
 from itertools import chain
 import logging
 from collections import deque
+import copy
 
 from thoth.python import PackageVersion
 from thoth.python import Source
@@ -301,7 +302,10 @@ class StepContext(ContextBase):
         stack = deque([package_tuple])
         removed = set()
         # Do not adjust it directly - it can lead to an invalid self._paths in case of an exception.
-        paths = self._paths
+        paths = copy.copy(self._paths)
+        # We update associate dependency map once we know the given package is actually removed.
+        to_remove_associate_dependency_map = set()
+
         while stack:
             to_remove_tuple = stack.pop()
             removed.add(to_remove_tuple)
@@ -358,9 +362,7 @@ class StepContext(ContextBase):
 
                     self._associate_dependent_map[to_remove_tuple] = set()
                     for dependent in dependents:
-                        self._associate_dependency_map[dependent][
-                            to_remove_tuple[0]
-                        ].remove(to_remove_tuple)
+                        to_remove_associate_dependency_map.add((dependent, to_remove_tuple))
 
             # Filter out markers.
             self._associate_dependent_map = {
@@ -370,11 +372,6 @@ class StepContext(ContextBase):
             # Assign new paths with removed packages, we iterate on this list to satisfy all the removals.
             paths = list(new_paths)
             new_paths = []
-
-        for removed_tuple in removed:
-            self._transitive_dependencies_map.get(removed_tuple[0], {}).get(
-                removed_tuple[1], {}
-            ).pop(removed_tuple[2], None)
 
         # We need to check we construct direct dependency list from:
         #  1. All the direct dependencies stated in paths.
@@ -412,6 +409,16 @@ class StepContext(ContextBase):
                     f"Cannot remove package {package_tuple}, removing this package would lead "
                     f"to removal of all direct dependencies of package {direct_dependency_type!r}"
                 )
+
+        for removed_tuple in removed:
+            self._transitive_dependencies_map.get(removed_tuple[0], {}).get(
+                removed_tuple[1], {}
+            ).pop(removed_tuple[2], None)
+
+        for dependent, to_remove_tuple in to_remove_associate_dependency_map:
+            self._associate_dependency_map[dependent][
+                to_remove_tuple[0]
+            ].remove(to_remove_tuple)
 
         self._paths = paths
         self._direct_dependencies = [
@@ -474,9 +481,7 @@ class StepContext(ContextBase):
                 package_tuple[1]
             ][package_tuple[2]]
         except KeyError:
-            return self._direct_dependencies_map[package_tuple[0]][package_tuple[1]][
-                package_tuple[2]
-            ]
+            return self._direct_dependencies_map[package_tuple[0]][package_tuple[1]][package_tuple[2]]
 
     def final_sort(self) -> None:
         """Perform sorting of paths and direct dependencies based on score.
