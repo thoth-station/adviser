@@ -32,6 +32,7 @@ from thoth.adviser.enums import RecommendationType
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.exceptions import InternalError
 from thoth.adviser.exceptions import ThothAdviserException
+from thoth.adviser.python.exceptions import UnableLock
 from thoth.adviser.python import Adviser
 from thoth.adviser.python import GraphDigestsFetcher
 from thoth.adviser.python import dependency_monkey as run_dependency_monkey
@@ -368,7 +369,7 @@ def advise(
         _LOGGER.exception("Error during computing recommendation: %s", str(exc))
         result["error"] = True
         result["report"] = [([{"justification": f"{str(exc)}", "type": "ERROR"}], None)]
-    except SolverException as exc:
+    except (SolverException, UnableLock) as exc:
         result["error"] = True
         result["report"] = [([{"justification": str(exc), "type": "ERROR"}], None)]
     else:
