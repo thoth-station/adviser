@@ -406,8 +406,6 @@ class StepContext(ContextBase):
                 new_direct_dependencies_tuples.append(direct_dependency_tuple)
                 new_direct_dependencies_types.add(direct_dependency_tuple[0])
 
-        self._paths = paths
-
         for direct_dependency_type in direct_dependency_types:
             if direct_dependency_type not in new_direct_dependencies_types:
                 raise CannotRemovePackage(
@@ -415,6 +413,7 @@ class StepContext(ContextBase):
                     f"to removal of all direct dependencies of package {direct_dependency_type!r}"
                 )
 
+        self._paths = paths
         self._direct_dependencies = [
             self.get_package_version_tuple(pt) for pt in new_direct_dependencies_tuples
         ]
