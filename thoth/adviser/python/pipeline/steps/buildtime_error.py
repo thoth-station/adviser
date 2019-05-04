@@ -20,7 +20,6 @@
 import logging
 
 from thoth.adviser.python.exceptions import UnableLock
-from thoth.python.exceptions import UnableLock
 
 from ..exceptions import CannotRemovePackage
 from ..step_context import StepContext

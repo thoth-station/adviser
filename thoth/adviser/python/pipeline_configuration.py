@@ -94,11 +94,11 @@ class PipelineConfigAdviser:
         elif recommendation_type == RecommendationType.STABLE:
             pipeline_config = PipelineConfig(
                 steps=[
-                    (CutPreReleases, None),
-                    (CutToolchain, None),
-                    (CutUnreachable, None),
-                    (SemverSort, None),
                     (BuildtimeErrorFiltering, None),
+                    (CutPreReleases, None),
+                    (CutUnreachable, None),
+                    (CutToolchain, None),
+                    (SemverSort, None),
                     (RuntimeErrorFiltering, None),
                     (CvePenalization, None),
                 ],
