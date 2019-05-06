@@ -50,7 +50,7 @@ class Adviser:
     _visited = attr.ib(type=int, default=0)
 
     def compute(
-        self, graph: GraphDatabase, project: Project, limit_latest_versions: int = None
+        self, graph: GraphDatabase, project: Project, limit_latest_versions: int = None, library_usage: dict = None
     ) -> Tuple[List[Tuple[Dict, Project, float]], List[Dict]]:
         """Compute recommendations for the given project."""
         pipeline_configuration = PipelineConfig.by_recommendation_type(
@@ -61,6 +61,7 @@ class Adviser:
             strides=pipeline_configuration.strides,
             graph=graph,
             project=project,
+            library_usage=library_usage,
         )
 
         result = []
@@ -76,6 +77,7 @@ class Adviser:
         project: Project,
         *,
         recommendation_type: RecommendationType,
+        library_usage: dict = None,
         count: int = None,
         limit: int = None,
         limit_latest_versions: int = None,
@@ -101,7 +103,7 @@ class Adviser:
             graph.connect()
 
         report, stack_info = instance.compute(
-            graph, project, limit_latest_versions=limit_latest_versions
+            graph, project, limit_latest_versions=limit_latest_versions, library_usage=library_usage
         )
 
         advised_configuration = None

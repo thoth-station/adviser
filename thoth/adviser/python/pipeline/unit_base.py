@@ -39,6 +39,7 @@ class PipelineUnitBase(metaclass=abc.ABCMeta):
 
     graph = attr.ib(type=GraphDatabase)
     project = attr.ib(type=Project)
+    library_usage = attr.ib(type=dict)
     _parameters = attr.ib(type=dict)
     _name = attr.ib(type=str, default=None)
 

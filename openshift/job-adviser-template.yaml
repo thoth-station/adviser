@@ -49,6 +49,10 @@ parameters:
     required: false
     description: Fully pinned down stack
     displayName: Locked requirements
+  - name: THOTH_ADVISER_LIBRARY_USAGE
+    required: false
+    description: Usage of libraries for adviser's resolution algorithm.
+    displayName: Library usage
   - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
     required: false
     description: Format of input
@@ -147,6 +151,8 @@ objects:
                   value: "advise"
                 - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
                   value: "${THOTH_ADVISER_LIMIT_LATEST_VERSIONS}"
+                - name: THOTH_ADVISER_LIBRARY_USAGE
+                  value: "${THOTH_ADVISER_LIBRARY_USAGE}"
                 - name: ISIS_API_URL
                   valueFrom:
                     configMapKeyRef:
