@@ -78,6 +78,7 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
         step_context = self._get_prepared_context()
 
         buildtime_error_filtering = BuildtimeErrorFiltering(graph=GraphDatabase(), project=None)
+        # TODO: pass project
         buildtime_error_filtering.run(step_context)
 
         assert len(step_context.raw_paths) == 1, "Wrong number of paths removed"
@@ -96,6 +97,7 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
         ).and_return(False).ordered()
 
         step_context = self._get_prepared_context()
+        # TODO: pass project
         buildtime_error_filtering = BuildtimeErrorFiltering(graph=GraphDatabase(), project=None)
 
         with pytest.raises(UnableLock):

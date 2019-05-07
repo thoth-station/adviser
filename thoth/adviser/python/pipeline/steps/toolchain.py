@@ -34,7 +34,7 @@ class CutToolchain(Step):
     If packages considered in the "toolchain" group are present as direct dependencies, they are not removed.
     """
 
-    _TOOLCHAIN_PACKAGE_NAMES = frozenset(("setuptools", "wheels", "pip"))
+    _TOOLCHAIN_PACKAGE_NAMES = frozenset(("setuptools", "wheel", "pip"))
 
     def is_toolchain(self, package_version: PackageVersion):
         """Check if the given package is a toolchain package."""
@@ -44,8 +44,11 @@ class CutToolchain(Step):
         """Cut off packages from toolchain."""
         # reversed() to remove from the oldest ones so we keep new ones.
         # We cut off toolchain packages only in transitive dependency listing.
-        for package_version in list(step_context.iter_transitive_dependencies()):
+        for package_version in reversed(list(step_context.iter_transitive_dependencies())):
             package_tuple = package_version.to_tuple()
             if self.is_toolchain(package_version):
-                with step_context.change(graceful=True) as step_change:
-                    step_change.remove_package_tuple(package_tuple)
+                _LOGGER.debug("Removing package %r - toolchain package", package_tuple)
+                try:
+                    step_context.remove_package_tuple(package_tuple)
+                except CannotRemovePackage as exc:
+                    _LOGGER.debug("Keeping toolchain package %r: %s", package_tuple, str(exc))
