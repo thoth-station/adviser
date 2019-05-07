@@ -52,6 +52,7 @@ class Pipeline:
     project = attr.ib(type=Project)
     steps = attr.ib(type=List[Tuple[type, dict]], default=attr.Factory(list))
     strides = attr.ib(type=List[Tuple[type, dict]], default=attr.Factory(list))
+    library_usage = attr.ib(type=dict, default=attr.Factory(dict))
     _solver = attr.ib(type=PythonPackageGraphSolver, default=None)
     _stack_info = attr.ib(type=List[Dict], default=attr.Factory(list))
 
@@ -188,7 +189,7 @@ class Pipeline:
         strides = []
         for stride_class, parameters_dict in self.strides:
             filter_instance: Stride = stride_class(
-                graph=self.graph, project=self.project
+                graph=self.graph, project=self.project, library_usage=self.library_usage,
             )
             if parameters_dict:
                 filter_instance.update_parameters(parameters_dict)
@@ -234,7 +235,7 @@ class Pipeline:
         self._log_pipeline_msg(count, limit)
         step_context.stats.start_timer()
         for step_class, parameters_dict in self.steps:
-            step_instance: Step = step_class(graph=self.graph, project=self.project)
+            step_instance: Step = step_class(graph=self.graph, project=self.project, library_usage=self.library_usage)
             _LOGGER.info("Running pipeline step %r", step_instance.name)
             if parameters_dict:
                 step_instance.update_parameters(parameters_dict)

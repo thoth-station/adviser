@@ -17,11 +17,13 @@
 
 """Thoth-adviser CLI."""
 
+import os
 import json
 import sys
 import logging
 import typing
 import traceback
+from pathlib import Path
 from copy import deepcopy
 
 import click
@@ -289,6 +291,12 @@ def provenance(
     help="Consider only desired number of versions (latest) for a package to limit number of software stacks scored.",
 )
 @click.option(
+    "--library-usage",
+    type=str,
+    envvar="THOTH_ADVISER_LIBRARY_USAGE",
+    help="Add library usage information to adviser's resolution algorithm.",
+)
+@click.option(
     "--runtime-environment",
     "-e",
     envvar="THOTH_ADVISER_RUNTIME_ENVIRONMENT",
@@ -313,6 +321,7 @@ def advise(
     files=False,
     count=None,
     limit=None,
+    library_usage=None,
     limit_latest_versions=None,
 ):
     """Advise package and package versions in the given stack or on solely package only."""
@@ -323,6 +332,16 @@ def advise(
     # A workaround for click which is complaining about bad integer if empty value is provided.
     if limit_latest_versions == -1:
         limit_latest_versions = None
+
+    if library_usage:
+        if os.path.isfile(library_usage):
+            try:
+                library_usage = json.loads(Path(library_usage).read_text())
+            except Exception as exc:
+                _LOGGER.error("Failed to load library usage file %r", library_usage)
+                raise
+        else:
+            library_usage = json.loads(library_usage)
 
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
     recommendation_type = RecommendationType.by_name(recommendation_type)
@@ -335,6 +354,7 @@ def advise(
         "parameters": {
             "runtime_environment": runtime_environment.to_dict(),
             "recommendation_type": recommendation_type.name,
+            "library_usage": library_usage,
             "requirements_format": requirements_format.name,
             "limit": limit,
             "limit_latest_versions": limit_latest_versions,
@@ -356,6 +376,7 @@ def advise(
         stack_info, advised_configuration, report = Adviser.compute_on_project(
             project,
             recommendation_type=recommendation_type,
+            library_usage=library_usage,
             count=count,
             limit=limit,
             limit_latest_versions=limit_latest_versions,
