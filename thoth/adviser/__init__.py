@@ -2,7 +2,7 @@
 
 
 __title__ = "thoth-adviser"
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from .enums import Ecosystem
 from .enums import PythonRecommendationOutput
