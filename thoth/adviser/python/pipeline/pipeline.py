@@ -108,65 +108,15 @@ class Pipeline:
 
         return step_context
 
-    def _get_python_package_tuples(
-        self, ids_map: Dict[int, tuple], transitive_dependencies: List
-    ) -> List[List[Tuple[str, str, str]]]:
-        """Retrieve tuples representing package name, package version and index url for the given set of ids."""
-        # We need to explicitly iterate over these results as gremlin-python wraps result into Path object
-        # which does not support advanced indexing like 0::2.
-        seen_ids = ids_map.keys()
-        unseen_ids = set()
-        for entry in transitive_dependencies:
-            for idx in range(len(entry)):
-                if entry[idx] not in seen_ids:
-                    unseen_ids.add(entry[idx])
-
-        if len(unseen_ids) > 0:
-            _LOGGER.debug(
-                "Retrieving package tuples for transitive dependencies (count: %d)",
-                len(unseen_ids),
-            )
-
-        package_tuples = self.graph.get_python_package_tuples(unseen_ids)
-        for python_package_id, package_tuple in package_tuples.items():
-            ids_map[python_package_id] = package_tuple
-
-        result = []
-        for entries in transitive_dependencies:
-            new_entries = []
-            for idx, entry in enumerate(entries):
-                new_entries.append(ids_map[entry])
-            result.append(new_entries)
-
-        return result
-
-    def _resolve_transitive_dependencies(self, step_context: StepContext) -> None:
-        """Solve all direct dependencies to find all transitive paths (all possible transitive dependencies)."""
-        _LOGGER.info("Resolving transitive dependencies of direct dependencies")
-
-        ids_map = {}
-        for package_version in step_context.iter_direct_dependencies():
-            _LOGGER.debug(
-                "Retrieving transitive dependencies for %r in version %r from %r",
-                package_version.name,
-                package_version.locked_version,
-                package_version.index.url,
-            )
-            transitive_dependencies = self.graph.retrieve_transitive_dependencies_python(
-                package_version.name,
-                package_version.locked_version,
-                package_version.index.url,
-            )
-            transitive_dependencies = self._get_python_package_tuples(
-                ids_map, transitive_dependencies
-            )
-            step_context.add_paths(transitive_dependencies)
-
     def _initialize_stepping(self) -> StepContext:
         """Initialize pipeline - resolve direct dependencies and all the transitive dependencies."""
         _LOGGER.debug("Initializing pipeline")
         step_context = self._prepare_direct_dependencies(with_devel=True)
-        self._resolve_transitive_dependencies(step_context)
+        _LOGGER.info("Retrieving transitive dependencies of direct dependencies")
+        transitive_dependencies_tuples = set((pv.name, pv.locked_version, pv.index.url) for pv in step_context.iter_direct_dependencies())
+        _LOGGER.debug("Direct dependencies considered: %r", transitive_dependencies_tuples)
+        transitive_dependencies = self.graph.retrieve_transitive_dependencies_python_multi(transitive_dependencies_tuples)
+        step_context.add_paths(transitive_dependencies)
         return step_context
 
     @staticmethod
