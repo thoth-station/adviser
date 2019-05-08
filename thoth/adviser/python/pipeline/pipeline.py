@@ -21,6 +21,7 @@ from typing import Generator
 from typing import List
 from typing import Tuple
 from typing import Dict
+from itertools import chain
 import logging
 from time import monotonic
 
@@ -113,9 +114,17 @@ class Pipeline:
         _LOGGER.debug("Initializing pipeline")
         step_context = self._prepare_direct_dependencies(with_devel=True)
         _LOGGER.info("Retrieving transitive dependencies of direct dependencies")
-        transitive_dependencies_tuples = set((pv.name, pv.locked_version, pv.index.url) for pv in step_context.iter_direct_dependencies())
-        _LOGGER.debug("Direct dependencies considered: %r", transitive_dependencies_tuples)
-        transitive_dependencies = self.graph.retrieve_transitive_dependencies_python_multi(transitive_dependencies_tuples)
+        transitive_dependencies_tuples = set(
+            (pv.name, pv.locked_version, pv.index.url)
+            for pv in step_context.iter_direct_dependencies()
+        )
+        _LOGGER.debug(
+            "Direct dependencies considered: %r", transitive_dependencies_tuples
+        )
+        transitive_dependencies = self.graph.retrieve_transitive_dependencies_python_multi(
+            transitive_dependencies_tuples
+        )
+        transitive_dependencies = list(chain(*transitive_dependencies.values()))
         step_context.add_paths(transitive_dependencies)
         return step_context
 
@@ -126,7 +135,7 @@ class Pipeline:
         step_context.final_sort()
         dependency_graph = DependencyGraph(
             direct_dependencies=list(step_context.iter_direct_dependencies_tuple()),
-            paths=step_context.raw_paths
+            paths=step_context.raw_paths,
         )
         _LOGGER.info(
             "Estimated number of stacks: %d", dependency_graph.stacks_estimated
@@ -139,7 +148,7 @@ class Pipeline:
         strides = []
         for stride_class, parameters_dict in self.strides:
             filter_instance: Stride = stride_class(
-                graph=self.graph, project=self.project, library_usage=self.library_usage,
+                graph=self.graph, project=self.project, library_usage=self.library_usage
             )
             if parameters_dict:
                 filter_instance.update_parameters(parameters_dict)
@@ -185,7 +194,9 @@ class Pipeline:
         self._log_pipeline_msg(count, limit)
         step_context.stats.start_timer()
         for step_class, parameters_dict in self.steps:
-            step_instance: Step = step_class(graph=self.graph, project=self.project, library_usage=self.library_usage)
+            step_instance: Step = step_class(
+                graph=self.graph, project=self.project, library_usage=self.library_usage
+            )
             _LOGGER.info("Running pipeline step %r", step_instance.name)
             if parameters_dict:
                 step_instance.update_parameters(parameters_dict)
@@ -234,11 +245,13 @@ class Pipeline:
                     stride_context.stats.log_report()
         except PrematureStreamEndError as exc:
             _LOGGER.info("Error while dependency graph walk: %s", str(exc))
-            self._stack_info.append({
-                "type": "WARNING",
-                "justification": "Resolver was closed prematurely because of memory or time-out, consider "
-                                 "decreasing latest versions considered in software stacks"
-            })
+            self._stack_info.append(
+                {
+                    "type": "WARNING",
+                    "justification": "Resolver was closed prematurely because of memory or time-out, consider "
+                    "decreasing latest versions considered in software stacks",
+                }
+            )
         finally:
             if len(strides) == 0:
                 _LOGGER.debug("No strides were configured")
