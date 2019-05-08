@@ -78,7 +78,7 @@ class TestCutToolchain(AdviserTestCase):
                 ],
             ]
         )
-        cut_toolchain = CutToolchain(graph=None, project=None)
+        cut_toolchain = CutToolchain(graph=None, project=None, library_usage=None)
         cut_toolchain.run(step_context)
 
         # We always expect the latest one to be present.
@@ -131,7 +131,7 @@ class TestCutToolchain(AdviserTestCase):
                 ],
             ]
         )
-        cut_toolchain = CutToolchain(graph=None, project=None)
+        cut_toolchain = CutToolchain(graph=None, project=None, library_usage=None)
         cut_toolchain.run(step_context)
 
         assert len(step_context.raw_paths) == 3, "Wrong number of paths removed"
@@ -168,7 +168,7 @@ class TestCutToolchain(AdviserTestCase):
                 ]
             ]
         )
-        cut_toolchain = CutToolchain(graph=None, project=None)
+        cut_toolchain = CutToolchain(graph=None, project=None, library_usage=None)
         cut_toolchain.run(step_context)
 
         assert len(step_context.raw_paths) == 1, "Wrong number of paths removed"

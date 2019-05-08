@@ -87,7 +87,7 @@ class TestSemverSort(AdviserTestCase):
             ]
         )
 
-        semver_sort = SemverSort(project=None, graph=None)
+        semver_sort = SemverSort(project=None, graph=None, library_usage=None)
         semver_sort.run(step_context)
 
         assert step_context.raw_paths == [

@@ -82,7 +82,7 @@ tensorflow = "==2.0.0"
             ]
         )
         project = Project.from_strings(self._CASE_PIPFILE)
-        restrict_indexes = RestrictIndexes(graph=None, project=project)
+        restrict_indexes = RestrictIndexes(graph=None, project=project, library_usage=None)
         restrict_indexes.run(step_context)
 
         assert len(step_context.raw_paths) == 2, "Wrong number of paths removed"
@@ -123,7 +123,7 @@ tensorflow = "==2.0.0"
             ]
         )
         project = Project.from_strings(self._CASE_PIPFILE)
-        restrict_indexes = RestrictIndexes(graph=None, project=project)
+        restrict_indexes = RestrictIndexes(graph=None, project=project, library_usage=None)
         restrict_indexes.run(step_context)
 
         assert len(step_context.raw_paths) == 1, "Wrong number of paths removed"
@@ -172,7 +172,7 @@ tensorflow = "==2.0.0"
             ]
         )
         project = Project.from_strings(self._CASE_PIPFILE)
-        restrict_indexes = RestrictIndexes(graph=None, project=project)
+        restrict_indexes = RestrictIndexes(graph=None, project=project, library_usage=None)
         restrict_indexes.run(step_context)
 
         assert len(step_context.raw_paths) == 1, "Wrong number of paths removed"
@@ -207,7 +207,7 @@ tensorflow = "==2.0.0"
             ]
         )
         project = Project.from_strings(self._CASE_PIPFILE)
-        restrict_indexes = RestrictIndexes(graph=None, project=project)
+        restrict_indexes = RestrictIndexes(graph=None, project=project, library_usage=None)
 
         with pytest.raises(CannotRemovePackage):
             restrict_indexes.run(step_context)
@@ -241,7 +241,7 @@ tensorflow = "==2.0.0"
             ]
         )
         project = Project.from_strings(self._CASE_PIPFILE)
-        restrict_indexes = RestrictIndexes(graph=None, project=project)
+        restrict_indexes = RestrictIndexes(graph=None, project=project, library_usage=None)
 
         with pytest.raises(CannotRemovePackage):
             restrict_indexes.run(step_context)

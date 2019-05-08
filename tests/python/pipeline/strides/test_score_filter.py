@@ -35,7 +35,7 @@ class TestScoreFiltering(AdviserTestCase):
             [("selinon", "1.0.0", "https://pypi.org/simple")]
         )
         stride_context.adjust_score(0.02)  # Set some score.
-        ScoreFiltering(graph=None, project=None).run(stride_context)
+        ScoreFiltering(graph=None, project=None, library_usage=None).run(stride_context)
 
     def test_reject_second(self):
         """Test accepting the very first result and rejecting a second one with same score."""
@@ -43,7 +43,7 @@ class TestScoreFiltering(AdviserTestCase):
             [("selinon", "1.0.0", "https://pypi.org/simple")]
         )
         stride_context.adjust_score(0.02)  # Set some score.
-        score_filtering = ScoreFiltering(graph=None, project=None)
+        score_filtering = ScoreFiltering(graph=None, project=None, library_usage=None)
 
         # The first one should always pass.
         score_filtering.run(stride_context)

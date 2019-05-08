@@ -77,7 +77,7 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
 
         step_context = self._get_prepared_context()
 
-        buildtime_error_filtering = BuildtimeErrorFiltering(graph=GraphDatabase(), project=None)
+        buildtime_error_filtering = BuildtimeErrorFiltering(graph=GraphDatabase(), project=None, library_usage=None)
         # TODO: pass project
         buildtime_error_filtering.run(step_context)
 
@@ -98,7 +98,7 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
 
         step_context = self._get_prepared_context()
         # TODO: pass project
-        buildtime_error_filtering = BuildtimeErrorFiltering(graph=GraphDatabase(), project=None)
+        buildtime_error_filtering = BuildtimeErrorFiltering(graph=GraphDatabase(), project=None, library_usage=None)
 
         with pytest.raises(UnableLock):
             buildtime_error_filtering.run(step_context)

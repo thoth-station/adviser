@@ -37,7 +37,7 @@ class TestRandomDecision(AdviserTestCase):
             step_context = StrideContext(
                 [("tensorflow", "1.9.0", "https://thoth-station.ninja/simple")]
             )
-            RandomDecision(project=None, graph=None).run(step_context)
+            RandomDecision(project=None, graph=None, library_usage=None).run(step_context)
         finally:
             # Recover to make sure there is no "implicit" random configuration other steps as a side effect.
             random.seed(None)
@@ -52,7 +52,7 @@ class TestRandomDecision(AdviserTestCase):
                 [("tensorflow", "1.9.0", "https://thoth-station.ninja/simple")]
             )
             with pytest.raises(StrideRemoveStack):
-                RandomDecision(project=None, graph=None).run(step_context)
+                RandomDecision(project=None, graph=None, library_usage=None).run(step_context)
         finally:
             # Recover to make sure there is no "implicit" random configuration other steps as a side effect.
             random.seed(None)
