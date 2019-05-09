@@ -229,10 +229,10 @@
         },
         "pip-tools": {
             "hashes": [
-                "sha256:603d374e43bfa02e7a775b58c25a203799155d42f89ef94ee445eb7ae116439f",
-                "sha256:7c52bd17e8b8003a0d8daf5ac6e98c38097223508993fefb440c7e333a09f345"
+                "sha256:4ff38ab655bec47db2d5a82fa6c6807e231ecddf3b7cbb2f2b957a9b11f016c3",
+                "sha256:542cc32393ec8e97932b4710462567e3ecbd0a1d483d8b1d5ef05bc6ef83f7f8"
             ],
-            "version": "==3.6.1"
+            "version": "==3.7.0"
         },
         "pipdeptree": {
             "hashes": [
@@ -401,10 +401,10 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:ca72a13661d345de370392999f10cf69ac634a1a95c6d0c4d1c4f902c7892279"
+                "sha256:d350138adb75dee53c87aa8612b004092f3b35195e2a11d3ad65021f575c1bf0"
             ],
             "index": "pypi",
-            "version": "==0.11.2"
+            "version": "==0.11.3"
         },
         "timestamp": {
             "hashes": [
