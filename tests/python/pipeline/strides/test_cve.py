@@ -65,7 +65,11 @@ class TestCveScoring(AdviserTestCase):
         GraphDatabase.should_receive("get_python_cve_records").with_args(
             "pyyaml", "3.12"
         ).and_return([]).ordered()
-        cve_scoring = CveScoring(graph=GraphDatabase(), project=None)
+        cve_scoring = CveScoring(
+            graph=GraphDatabase(),
+            project=None,
+            library_usage=None,
+        )
         cve_scoring.run(stride_context)
         assert (
             stride_context.score
@@ -86,7 +90,11 @@ class TestCveScoring(AdviserTestCase):
         GraphDatabase.should_receive("get_python_cve_records").with_args(
             "pyyaml", "3.12"
         ).and_return([self._PYYAML_CVE]).ordered()
-        cve_scoring = CveScoring(graph=GraphDatabase(), project=None)
+        cve_scoring = CveScoring(
+            graph=GraphDatabase(),
+            project=None,
+            library_usage=None,
+        )
         cve_scoring.run(stride_context)
         assert (
             stride_context.score
@@ -108,7 +116,11 @@ class TestCveScoring(AdviserTestCase):
         GraphDatabase.should_receive("get_python_cve_records").with_args(
             "pyyaml", "3.12"
         ).and_return([]).ordered()
-        cve_scoring = CveScoring(graph=GraphDatabase(), project=None)
+        cve_scoring = CveScoring(
+            graph=GraphDatabase(),
+            project=None,
+            library_usage=None,
+        )
         cve_scoring.run(stride_context)
         assert (
             stride_context.score

@@ -27,8 +27,14 @@ from thoth.adviser.python.pipeline.steps import BuildtimeErrorFiltering
 from thoth.adviser.python.exceptions import UnableLock
 
 from thoth.storages import GraphDatabase
+from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
 from thoth.python import Source
+
+
+class _FakeProject:
+
+    runtime_environment = RuntimeEnvironment.from_dict({})
 
 
 class TestBuildtimeErrorFiltering(AdviserTestCase):
@@ -66,19 +72,37 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
     def test_remove_simple(self):
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "flask", "0.12.0", "https://pypi.org/simple",
+            "flask",
+            "0.12.0",
+            "https://pypi.org/simple",
+            os_name=None,
+            os_version=None,
+            python_version=None
         ).and_return(False).ordered()
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "click", "2.0", "https://pypi.org/simple",
+            "click",
+            "2.0",
+            "https://pypi.org/simple",
+            os_name=None,
+            os_version=None,
+            python_version=None
         ).and_return(True).ordered()
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "click", "2.1", "https://pypi.org/simple",
+            "click",
+            "2.1",
+            "https://pypi.org/simple",
+            os_name=None,
+            os_version=None,
+            python_version=None
         ).and_return(False).ordered()
 
         step_context = self._get_prepared_context()
 
-        buildtime_error_filtering = BuildtimeErrorFiltering(graph=GraphDatabase(), project=None)
-        # TODO: pass project
+        buildtime_error_filtering = BuildtimeErrorFiltering(
+            graph=GraphDatabase(),
+            project=_FakeProject(),
+            library_usage=None
+        )
         buildtime_error_filtering.run(step_context)
 
         assert len(step_context.raw_paths) == 1, "Wrong number of paths removed"
@@ -87,18 +111,37 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
     def test_remove_error(self):
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "flask", "0.12.0", "https://pypi.org/simple",
+            "flask",
+            "0.12.0",
+            "https://pypi.org/simple",
+            os_name=None,
+            os_version=None,
+            python_version=None
         ).and_return(True).ordered()
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "click", "2.0", "https://pypi.org/simple",
+            "click",
+            "2.0",
+            "https://pypi.org/simple",
+            os_name=None,
+            os_version=None,
+            python_version=None
         ).and_return(False).ordered()
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "click", "2.1", "https://pypi.org/simple",
+            "click",
+            "2.1",
+            "https://pypi.org/simple",
+            os_name=None,
+            os_version=None,
+            python_version=None,
         ).and_return(False).ordered()
 
         step_context = self._get_prepared_context()
         # TODO: pass project
-        buildtime_error_filtering = BuildtimeErrorFiltering(graph=GraphDatabase(), project=None)
+        buildtime_error_filtering = BuildtimeErrorFiltering(
+            graph=GraphDatabase(),
+            project=_FakeProject(),
+            library_usage=None,
+        )
 
         with pytest.raises(UnableLock):
             buildtime_error_filtering.run(step_context)

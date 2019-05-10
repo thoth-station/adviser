@@ -61,17 +61,21 @@ class _StepChangeContext(ContextDecorator):
     def __exit__(self, *exc):
         """Remove paths or tuples which were requested to be removed."""
         for package_tuple in self._to_remove_tuples_list:
-            if not any(package_tuple in path for path in self.step_context.raw_paths):
+            if (
+                not any(package_tuple in path for path in self.step_context.raw_paths)
+                and package_tuple
+                not in self.step_context.iter_direct_dependencies_tuple()
+            ):
                 _LOGGER.debug(
                     "No need to remove package %r, it was already removed",
-                    package_tuple
+                    package_tuple,
                 )
                 continue
 
             _LOGGER.debug("Removing %r", package_tuple)
             try:
                 self.step_context.remove_package_tuple(package_tuple)
-            except CannotRemovePackage:
+            except CannotRemovePackage as exc:
                 _LOGGER.debug("Failed to remove package %r", package_tuple)
                 if not self.graceful:
                     raise
@@ -238,9 +242,14 @@ class StepContext(ContextBase):
                 seen.add(package_tuple)
                 yield package_version
 
-    def iter_all_dependencies_tuple(self) -> Generator[Tuple[str, str, str], None, None]:
+    def iter_all_dependencies_tuple(
+        self
+    ) -> Generator[Tuple[str, str, str], None, None]:
         """Iterate over all the dependencies, return each as a tuple."""
-        return (package_version.to_tuple() for package_version in self.iter_all_dependencies())
+        return (
+            package_version.to_tuple()
+            for package_version in self.iter_all_dependencies()
+        )
 
     def add_paths(self, paths: List[List[Tuple[str, str, str]]]) -> None:
         """Add all the paths of transitive dependencies to this instance."""
@@ -362,7 +371,9 @@ class StepContext(ContextBase):
 
                     self._associate_dependent_map[to_remove_tuple] = set()
                     for dependent in dependents:
-                        to_remove_associate_dependency_map.add((dependent, to_remove_tuple))
+                        to_remove_associate_dependency_map.add(
+                            (dependent, to_remove_tuple)
+                        )
 
             # Filter out markers.
             self._associate_dependent_map = {
@@ -416,9 +427,9 @@ class StepContext(ContextBase):
             ).pop(removed_tuple[2], None)
 
         for dependent, to_remove_tuple in to_remove_associate_dependency_map:
-            self._associate_dependency_map[dependent][
-                to_remove_tuple[0]
-            ].remove(to_remove_tuple)
+            self._associate_dependency_map[dependent][to_remove_tuple[0]].remove(
+                to_remove_tuple
+            )
 
         self._paths = paths
         self._direct_dependencies = [
@@ -481,7 +492,9 @@ class StepContext(ContextBase):
                 package_tuple[1]
             ][package_tuple[2]]
         except KeyError:
-            return self._direct_dependencies_map[package_tuple[0]][package_tuple[1]][package_tuple[2]]
+            return self._direct_dependencies_map[package_tuple[0]][package_tuple[1]][
+                package_tuple[2]
+            ]
 
     def final_sort(self) -> None:
         """Perform sorting of paths and direct dependencies based on score.

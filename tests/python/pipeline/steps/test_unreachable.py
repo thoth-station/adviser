@@ -17,11 +17,8 @@
 
 """Test cutting off unreachable dependencies."""
 
-import pytest
-
 from thoth.adviser.python.pipeline import StepContext
 from thoth.adviser.python.pipeline.steps import CutUnreachable
-from thoth.adviser.python.pipeline.exceptions import CannotRemovePackage
 
 from thoth.python import PackageVersion
 from thoth.python import Source
@@ -75,7 +72,11 @@ class TestCutUnreachable(AdviserTestCase):
             ]
         )
 
-        cut_unreachable = CutUnreachable(graph=None, project=None)
+        cut_unreachable = CutUnreachable(
+            graph=None,
+            project=None,
+            library_usage=None,
+        )
         cut_unreachable.run(step_context)
 
         assert (
@@ -130,7 +131,11 @@ class TestCutUnreachable(AdviserTestCase):
                 ],
             ]
         )
-        cut_unreachable = CutUnreachable(graph=None, project=None)
+        cut_unreachable = CutUnreachable(
+            graph=None,
+            project=None,
+            library_usage=None,
+        )
 
         cut_unreachable.run(step_context)
 
@@ -190,7 +195,11 @@ class TestCutUnreachable(AdviserTestCase):
                 ],
             ]
         )
-        cut_unreachable = CutUnreachable(graph=None, project=None)
+        cut_unreachable = CutUnreachable(
+            graph=None,
+            project=None,
+            library_usage=None,
+        )
 
         cut_unreachable.run(step_context)
 
@@ -234,5 +243,9 @@ class TestCutUnreachable(AdviserTestCase):
                 ],
             ]
         )
-        cut_unreachable = CutUnreachable(graph=None, project=None)
+        cut_unreachable = CutUnreachable(
+            graph=None,
+            project=None,
+            library_usage=None,
+        )
         cut_unreachable.run(step_context)
