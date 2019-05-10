@@ -15,13 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Configuration of stack generator pipelines."""
+"""Dynamic constructor of stack generation pipeline."""
 
+import attr
 
 from collections import namedtuple
 
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import RecommendationType
+
+from thoth.storages import GraphDatabase
+from thoth.python import Project
 
 from .pipeline.steps import LimitLatestVersions
 from .pipeline.steps import PerformanceAdjustment
@@ -38,24 +42,23 @@ from .pipeline.strides import RandomDecision
 from .pipeline.strides import ScoreFiltering
 from .pipeline.strides import CveScoring
 
+
 PipelineConfig = namedtuple("PipelineConfig", "steps, strides")
 
 
-class PipelineConfigAdviser:
-    """Configuration of stack generator pipeline for adviser."""
+@attr.s(slots=True)
+class PipelineBuilder:
+    """Dynamic constructor of stack generation pipeline."""
 
-    def __init__(self):
-        """Avoid instantiating this class."""
-        raise RuntimeError("Cannot instantiate")
+    graph = attr.ib(type=GraphDatabase)
+    project = attr.ib(type=Project)
+    library_usage = attr.ib(type=dict, default=None)
 
-    @classmethod
-    def by_recommendation_type(
-        cls,
-        recommendation_type: RecommendationType,
-        *,
-        limit_latest_versions: int = None,
+    @staticmethod
+    def get_adviser_pipeline_config(
+        recommendation_type: RecommendationType, *, limit_latest_versions: int = None
     ) -> PipelineConfig:
-        """Get pipeline configuration based on recommendation type."""
+        """Get pipeline configuration for an adviser run."""
         if recommendation_type == RecommendationType.LATEST:
             pipeline_config = PipelineConfig(
                 steps=[
@@ -106,7 +109,7 @@ class PipelineConfigAdviser:
                     (PerformanceScoring, None),
                     (CveScoring, None),
                     (ScoreFiltering, None),
-                 ],
+                ],
             )
 
             if limit_latest_versions:
@@ -125,19 +128,11 @@ class PipelineConfigAdviser:
 
         return pipeline_config
 
-
-class PipelineConfigDependencyMonkey:
-    """Configuration of stack generator pipeline for adviser."""
-
-    def __init__(self):
-        """Avoid instantiating this class."""
-        raise RuntimeError("Cannot instantiate")
-
-    @classmethod
-    def by_decision_type(
-        cls, decision_type: DecisionType, *, limit_latest_versions: int = None
+    @staticmethod
+    def get_dependency_monkey_pipeline_config(
+        decision_type: DecisionType, *, limit_latest_versions: int = None
     ) -> PipelineConfig:
-        """Get pipeline configuration based on decision type."""
+        """Get pipeline configuration for a dependency monkey run."""
         if decision_type == DecisionType.ALL:
             pipeline_config = PipelineConfig(
                 steps=[

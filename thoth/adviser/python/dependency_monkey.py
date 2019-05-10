@@ -32,8 +32,8 @@ from thoth.adviser.enums import DecisionType
 from thoth.python import Project
 from thoth.storages import GraphDatabase
 
+from .builder import PipelineBuilder
 from .pipeline import Pipeline
-from .pipeline_configuration import PipelineConfigDependencyMonkey as PipelineConfig
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -86,9 +86,11 @@ def _do_dependency_monkey(
     count: int = None,
     dry_run: bool = False,
     limit_latest_versions: int = None,
+    library_usage: dict = None,
 ) -> dict:
     """Run dependency monkey."""
-    pipeline_config = PipelineConfig.by_decision_type(
+    builder = PipelineBuilder(graph, project, library_usage)
+    pipeline_config = builder.get_dependency_monkey_pipeline_config(
         decision_type, limit_latest_versions=limit_latest_versions
     )
     pipeline = Pipeline(
@@ -130,6 +132,7 @@ def dependency_monkey(
     context: str = None,
     count: int = None,
     limit_latest_versions: int = None,
+    library_usage: dict = None,
 ) -> dict:
     """Run Dependency Monkey on the given stack.
 
@@ -141,6 +144,7 @@ def dependency_monkey(
     @param context: context to be sent to Amun, if output is set to be Amun
     @param count: generate upto N stacks
     @param limit_latest_versions: number of latest versions considered for each package when generation is done
+    @library_usage: library usage to supply additional configuration in stack generation pipeline
     """
     output = output or "-"  # Default to stdout if no output was provided.
 
@@ -192,4 +196,5 @@ def dependency_monkey(
         count=count,
         output_function=output_function,
         limit_latest_versions=limit_latest_versions,
+        library_usage=library_usage,
     )
