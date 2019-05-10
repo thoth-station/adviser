@@ -35,6 +35,7 @@ from thoth.adviser.python.pipeline import StrideContext
 from thoth.adviser.python.pipeline.step import Step
 from thoth.adviser.python.pipeline.stride import Stride
 from thoth.adviser.python.pipeline.exceptions import StrideRemoveStack
+from thoth.storages import GraphDatabase
 
 from base import AdviserTestCase
 
@@ -306,8 +307,12 @@ class TestPipeline(AdviserTestCase):
     def test_conduct_empty_error(self):
         """Test the pipeline does not produce any products if nothing could be produced."""
         project = Project.from_strings(_PIPFILE_STR)
+        flexmock(GraphDatabase)\
+            .should_receive("retrieve_transitive_dependencies_python_multi")\
+            .with_args(set())\
+            .and_return({})
         pipeline = Pipeline(
-            graph=None,  # We avoid low-level testing down to thoth-storages.
+            graph=GraphDatabase(),  # We avoid low-level testing down to thoth-storages.
             project=project,
             steps=[],
             strides=[],

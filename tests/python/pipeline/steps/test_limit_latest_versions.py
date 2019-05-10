@@ -60,7 +60,11 @@ class TestLimitLatestVersions(AdviserTestCase):
                 ],
             ]
         )
-        limit_latest_versions = LimitLatestVersions(graph=None, project=None)
+        limit_latest_versions = LimitLatestVersions(
+            graph=None,
+            project=None,
+            library_usage=None
+        )
         limit_latest_versions.update_parameters({"limit_latest_versions": 1})
         limit_latest_versions.run(step_context)
         assert list(step_context.iter_paths_with_score()) == [
@@ -103,7 +107,11 @@ class TestLimitLatestVersions(AdviserTestCase):
             ]
         )
 
-        limit_latest_versions = LimitLatestVersions(graph=None, project=None)
+        limit_latest_versions = LimitLatestVersions(
+            graph=None,
+            project=None,
+            library_usage=None,
+        )
         limit_latest_versions.update_parameters({"limit_latest_versions": 1})
         limit_latest_versions.run(step_context)
         assert list(step_context.iter_paths_with_score()) == [
@@ -160,7 +168,11 @@ class TestLimitLatestVersions(AdviserTestCase):
             ]
         )
 
-        limit_latest_versions = LimitLatestVersions(graph=None, project=None)
+        limit_latest_versions = LimitLatestVersions(
+            graph=None,
+            project=None,
+            library_usage=None,
+        )
         limit_latest_versions.update_parameters({"limit_latest_versions": 1})
         limit_latest_versions.run(step_context)
         assert list(step_context.iter_paths_with_score()) == [
@@ -216,7 +228,11 @@ class TestLimitLatestVersions(AdviserTestCase):
                 ],
             ]
         )
-        limit_latest_versions = LimitLatestVersions(graph=None, project=None)
+        limit_latest_versions = LimitLatestVersions(
+            graph=None,
+            project=None,
+            library_usage=None,
+        )
         limit_latest_versions.update_parameters({"limit_latest_versions": 2})
         limit_latest_versions.run(step_context)
         assert list(step_context.iter_paths_with_score()) == [

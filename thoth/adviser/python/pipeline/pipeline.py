@@ -109,23 +109,27 @@ class Pipeline:
 
         return step_context
 
-    def _initialize_stepping(self) -> StepContext:
-        """Initialize pipeline - resolve direct dependencies and all the transitive dependencies."""
-        _LOGGER.debug("Initializing pipeline")
-        step_context = self._prepare_direct_dependencies(with_devel=True)
+    def _resolve_transitive_dependencies(self, step_context: StepContext) -> None:
+        """Solve all direct dependencies to find all transitive paths (all possible transitive dependencies)."""
         _LOGGER.info("Retrieving transitive dependencies of direct dependencies")
-        transitive_dependencies_tuples = set(
+        direct_dependencies_tuples = set(
             (pv.name, pv.locked_version, pv.index.url)
             for pv in step_context.iter_direct_dependencies()
         )
         _LOGGER.debug(
-            "Direct dependencies considered: %r", transitive_dependencies_tuples
+            "Direct dependencies considered: %r", direct_dependencies_tuples
         )
         transitive_dependencies = self.graph.retrieve_transitive_dependencies_python_multi(
-            transitive_dependencies_tuples
+            direct_dependencies_tuples
         )
         transitive_dependencies = list(chain(*transitive_dependencies.values()))
         step_context.add_paths(transitive_dependencies)
+
+    def _initialize_stepping(self) -> StepContext:
+        """Initialize pipeline - resolve direct dependencies and all the transitive dependencies."""
+        _LOGGER.debug("Initializing pipeline")
+        step_context = self._prepare_direct_dependencies(with_devel=True)
+        self._resolve_transitive_dependencies(step_context)
         return step_context
 
     @staticmethod
