@@ -17,6 +17,7 @@
 
 """Implementation of stack generation pipeline."""
 
+import os
 from typing import Generator
 from typing import List
 from typing import Tuple
@@ -117,12 +118,21 @@ class Pipeline:
             for pv in step_context.iter_direct_dependencies()
         )
         _LOGGER.debug(
-            "Direct dependencies considered: %r", direct_dependencies_tuples
+            "Direct dependencies considered: %r (count: %d)",
+            direct_dependencies_tuples,
+            len(direct_dependencies_tuples)
         )
         transitive_dependencies = self.graph.retrieve_transitive_dependencies_python_multi(
             direct_dependencies_tuples
         )
         transitive_dependencies = list(chain(*transitive_dependencies.values()))
+
+        if _LOGGER.getEffectiveLevel() == logging.DEBUG:
+            total = set()
+            for path in transitive_dependencies:
+                total.update(path)
+            _LOGGER.debug("Total number of packages including transitive: %d", len(total))
+
         step_context.add_paths(transitive_dependencies)
 
     def _initialize_stepping(self) -> StepContext:
