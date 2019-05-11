@@ -25,6 +25,7 @@ from typing import Dict
 from itertools import chain
 import logging
 from time import monotonic
+import pickle
 
 import attr
 
@@ -184,7 +185,19 @@ class Pipeline:
     ) -> Generator[PipelineProduct, None, None]:
         """Chain execution of each step and filter in a pipeline and execute it."""
         start_time = monotonic()
-        step_context = self._initialize_stepping()
+
+        # Load file-dump if configured so.
+        if os.getenv("THOTH_ADVISER_FILEDUMP") and os.path.isfile(os.getenv("THOTH_ADVISER_FILEDUMP")):
+            _LOGGER.warning("Loading filedump %r as per user request", os.environ["THOTH_ADVISER_FILEDUMP"])
+            with open(os.getenv("THOTH_ADVISER_FILEDUMP"), "rb") as file_dump:
+                step_context = pickle.load(file_dump)
+        else:
+            step_context = self._initialize_stepping()
+            if os.getenv("THOTH_ADVISER_FILEDUMP"):
+                _LOGGER.warning("Storing filedump %r as per user request", os.environ["THOTH_ADVISER_FILEDUMP"])
+                with open(os.getenv("THOTH_ADVISER_FILEDUMP"), "wb") as file_dump:
+                    pickle.dump(step_context, file_dump)
+
         strides = self._instantiate_strides()
 
         if count is not None and count <= 0:
