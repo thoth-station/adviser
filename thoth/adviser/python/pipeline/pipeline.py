@@ -246,6 +246,12 @@ class Pipeline:
         try:
             for stack_candidate in dependency_graph.walk():
                 stacks_seen += 1
+                if stacks_seen == 1:
+                    _LOGGER.info(
+                        "Stack producer started producing stacks, scoring and filtering produced stacks "
+                        "from stack stream in strides..."
+                    )
+
                 stride_context = StrideContext(stack_candidate)
 
                 stride_context.stats.start_timer()
