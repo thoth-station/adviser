@@ -17,6 +17,7 @@
 
 """Implementation of stack generation pipeline."""
 
+import os
 from typing import Generator
 from typing import List
 from typing import Tuple
@@ -24,6 +25,7 @@ from typing import Dict
 from itertools import chain
 import logging
 from time import monotonic
+import pickle
 
 import attr
 
@@ -109,23 +111,36 @@ class Pipeline:
 
         return step_context
 
-    def _initialize_stepping(self) -> StepContext:
-        """Initialize pipeline - resolve direct dependencies and all the transitive dependencies."""
-        _LOGGER.debug("Initializing pipeline")
-        step_context = self._prepare_direct_dependencies(with_devel=True)
+    def _resolve_transitive_dependencies(self, step_context: StepContext) -> None:
+        """Solve all direct dependencies to find all transitive paths (all possible transitive dependencies)."""
         _LOGGER.info("Retrieving transitive dependencies of direct dependencies")
-        transitive_dependencies_tuples = set(
+        direct_dependencies_tuples = set(
             (pv.name, pv.locked_version, pv.index.url)
             for pv in step_context.iter_direct_dependencies()
         )
         _LOGGER.debug(
-            "Direct dependencies considered: %r", transitive_dependencies_tuples
+            "Direct dependencies considered: %r (count: %d)",
+            direct_dependencies_tuples,
+            len(direct_dependencies_tuples)
         )
         transitive_dependencies = self.graph.retrieve_transitive_dependencies_python_multi(
-            transitive_dependencies_tuples
+            direct_dependencies_tuples
         )
         transitive_dependencies = list(chain(*transitive_dependencies.values()))
+
+        if _LOGGER.getEffectiveLevel() == logging.DEBUG:
+            total = set()
+            for path in transitive_dependencies:
+                total.update(path)
+            _LOGGER.debug("Total number of packages including transitive: %d", len(total))
+
         step_context.add_paths(transitive_dependencies)
+
+    def _initialize_stepping(self) -> StepContext:
+        """Initialize pipeline - resolve direct dependencies and all the transitive dependencies."""
+        _LOGGER.debug("Initializing pipeline")
+        step_context = self._prepare_direct_dependencies(with_devel=True)
+        self._resolve_transitive_dependencies(step_context)
         return step_context
 
     @staticmethod
@@ -170,7 +185,19 @@ class Pipeline:
     ) -> Generator[PipelineProduct, None, None]:
         """Chain execution of each step and filter in a pipeline and execute it."""
         start_time = monotonic()
-        step_context = self._initialize_stepping()
+
+        # Load file-dump if configured so.
+        if os.getenv("THOTH_ADVISER_FILEDUMP") and os.path.isfile(os.getenv("THOTH_ADVISER_FILEDUMP")):
+            _LOGGER.warning("Loading filedump %r as per user request", os.environ["THOTH_ADVISER_FILEDUMP"])
+            with open(os.getenv("THOTH_ADVISER_FILEDUMP"), "rb") as file_dump:
+                step_context = pickle.load(file_dump)
+        else:
+            step_context = self._initialize_stepping()
+            if os.getenv("THOTH_ADVISER_FILEDUMP"):
+                _LOGGER.warning("Storing filedump %r as per user request", os.environ["THOTH_ADVISER_FILEDUMP"])
+                with open(os.getenv("THOTH_ADVISER_FILEDUMP"), "wb") as file_dump:
+                    pickle.dump(step_context, file_dump)
+
         strides = self._instantiate_strides()
 
         if count is not None and count <= 0:

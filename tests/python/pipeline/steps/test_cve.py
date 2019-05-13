@@ -118,7 +118,11 @@ class TestCvePenalization(AdviserTestCase):
         GraphDatabase.should_receive("get_python_cve_records").with_args(
             "pyyaml", "4.0"
         ).and_return([self._PYYAML_CVE]).ordered()
-        cve_scoring = CvePenalization(graph=GraphDatabase(), project=None)
+        cve_scoring = CvePenalization(
+            graph=GraphDatabase(),
+            project=None,
+            library_usage=None,
+        )
         cve_scoring.run(step_context)
 
         step_context.final_sort()
@@ -178,7 +182,11 @@ class TestCvePenalization(AdviserTestCase):
         GraphDatabase.should_receive("get_python_cve_records").with_args(
             "pyyaml", "4.0"
         ).and_return([self._PYYAML_CVE]).ordered()
-        cve_scoring = CvePenalization(graph=GraphDatabase(), project=None)
+        cve_scoring = CvePenalization(
+            graph=GraphDatabase(),
+            project=None,
+            library_usage=None,
+        )
         cve_scoring.run(step_context)
 
         step_context.final_sort()
@@ -237,7 +245,11 @@ class TestCvePenalization(AdviserTestCase):
         GraphDatabase.should_receive("get_python_cve_records").with_args(
             "pyyaml", "4.0"
         ).and_return([]).ordered()
-        cve_scoring = CvePenalization(graph=GraphDatabase(), project=None)
+        cve_scoring = CvePenalization(
+            graph=GraphDatabase(),
+            project=None,
+            library_usage=None,
+        )
         cve_scoring.run(step_context)
 
         step_context.final_sort()
@@ -296,7 +308,11 @@ class TestCvePenalization(AdviserTestCase):
         GraphDatabase.should_receive("get_python_cve_records").with_args(
             "pyyaml", "4.0"
         ).and_return([self._PYYAML_CVE]).ordered()
-        cve_scoring = CvePenalization(graph=GraphDatabase(), project=None)
+        cve_scoring = CvePenalization(
+            graph=GraphDatabase(),
+            project=None,
+            library_usage=None,
+        )
         cve_scoring.run(step_context)
 
         step_context.final_sort()
@@ -354,7 +370,11 @@ class TestCvePenalization(AdviserTestCase):
         GraphDatabase.should_receive("get_python_cve_records").with_args(
             "pyyaml", "4.0"
         ).and_return([]).ordered()
-        cve_scoring = CvePenalization(graph=GraphDatabase(), project=None)
+        cve_scoring = CvePenalization(
+            graph=GraphDatabase(),
+            project=None,
+            library_usage=None,
+        )
         cve_scoring.run(step_context)
 
         step_context.final_sort()

@@ -72,7 +72,11 @@ class TestPerformanceScoring(AdviserTestCase):
         project = flexmock(
             name="project", runtime_environment=RuntimeEnvironment.from_dict({})
         )
-        PerformanceScoring(graph=GraphDatabase(), project=project).run(stride_context)
+        PerformanceScoring(
+            graph=GraphDatabase(),
+            project=project,
+            library_usage=None,
+        ).run(stride_context)
         assert (
             len(stride_context.justification) == 1
         ), "No justification adjustments found after scoring"
@@ -113,7 +117,11 @@ class TestPerformanceScoring(AdviserTestCase):
         project = flexmock(
             name="project", runtime_environment=RuntimeEnvironment.from_dict({})
         )
-        PerformanceScoring(graph=GraphDatabase(), project=project).run(stride_context)
+        PerformanceScoring(
+            graph=GraphDatabase(),
+            project=project,
+            library_usage=None,
+        ).run(stride_context)
         assert (
             len(stride_context.justification) == 1
         ), "No changes to justification found"
@@ -155,7 +163,11 @@ class TestPerformanceScoring(AdviserTestCase):
         project = flexmock(
             name="project", runtime_environment=RuntimeEnvironment.from_dict({})
         )
-        PerformanceScoring(graph=GraphDatabase(), project=project).run(stride_context)
+        PerformanceScoring(
+            graph=GraphDatabase(),
+            project=project,
+            library_usage=None,
+        ).run(stride_context)
         assert (
             len(stride_context.justification) == 0
         ), "No justification expected if no changes were made"

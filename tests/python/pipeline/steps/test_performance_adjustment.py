@@ -112,7 +112,9 @@ class TestPerformanceAdjustment(AdviserTestCase):
         )
 
         performance_adjustment = PerformanceAdjustment(
-            graph=GraphDatabase(), project=project
+            graph=GraphDatabase(),
+            project=project,
+            library_usage=None,
         )
         performance_adjustment.run(step_context)
         step_context.final_sort()
@@ -175,7 +177,9 @@ class TestPerformanceAdjustment(AdviserTestCase):
         )
 
         performance_adjustment = PerformanceAdjustment(
-            graph=GraphDatabase(), project=project
+            graph=GraphDatabase(),
+            project=project,
+            library_usage=None,
         )
         performance_adjustment.run(step_context)
         step_context.final_sort()
@@ -238,7 +242,9 @@ class TestPerformanceAdjustment(AdviserTestCase):
         )
 
         performance_adjustment = PerformanceAdjustment(
-            graph=GraphDatabase(), project=project
+            graph=GraphDatabase(),
+            project=project,
+            library_usage=None,
         )
         performance_adjustment.run(step_context)
         step_context.final_sort()
@@ -301,7 +307,9 @@ class TestPerformanceAdjustment(AdviserTestCase):
         )
 
         performance_adjustment = PerformanceAdjustment(
-            graph=GraphDatabase(), project=project
+            graph=GraphDatabase(),
+            project=project,
+            library_usage=None,
         )
         performance_adjustment.run(step_context)
         step_context.final_sort()

@@ -30,7 +30,7 @@ from thoth.python import Project
 from thoth.adviser.enums import RecommendationType
 from thoth.storages import GraphDatabase
 
-from .pipeline_configuration import PipelineConfigAdviser as PipelineConfig
+from .builder import PipelineBuilder
 from .pipeline import Pipeline
 
 
@@ -50,15 +50,20 @@ class Adviser:
     _visited = attr.ib(type=int, default=0)
 
     def compute(
-        self, graph: GraphDatabase, project: Project, limit_latest_versions: int = None, library_usage: dict = None
+        self,
+        graph: GraphDatabase,
+        project: Project,
+        limit_latest_versions: int = None,
+        library_usage: dict = None,
     ) -> Tuple[List[Tuple[Dict, Project, float]], List[Dict]]:
         """Compute recommendations for the given project."""
-        pipeline_configuration = PipelineConfig.by_recommendation_type(
+        builder = PipelineBuilder(graph, project, library_usage)
+        pipeline_config = builder.get_adviser_pipeline_config(
             self.recommendation_type, limit_latest_versions=limit_latest_versions
         )
         pipeline = Pipeline(
-            steps=pipeline_configuration.steps,
-            strides=pipeline_configuration.strides,
+            steps=pipeline_config.steps,
+            strides=pipeline_config.strides,
             graph=graph,
             project=project,
             library_usage=library_usage,
@@ -91,11 +96,13 @@ class Adviser:
         )
 
         if project.runtime_environment.python_version and not project.python_version:
-            stack_info.append({
-                "type": "WARNING",
-                "justification": "Use specific Python version in Pipfile based on Thoth's configuration to "
-                "ensure correct Python version usage on deployment",
-            })
+            stack_info.append(
+                {
+                    "type": "WARNING",
+                    "justification": "Use specific Python version in Pipfile based on Thoth's configuration to "
+                    "ensure correct Python version usage on deployment",
+                }
+            )
             project.set_python_version(project.runtime_environment.python_version)
 
         if not graph:
@@ -103,7 +110,10 @@ class Adviser:
             graph.connect()
 
         report, stack_info = instance.compute(
-            graph, project, limit_latest_versions=limit_latest_versions, library_usage=library_usage
+            graph,
+            project,
+            limit_latest_versions=limit_latest_versions,
+            library_usage=library_usage,
         )
 
         advised_configuration = None

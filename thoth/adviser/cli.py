@@ -369,10 +369,20 @@ def advise(
             requirements, requirements_locked, files, runtime_environment
         )
         result["input"] = project.to_dict()
-        _LOGGER.info(
-            "Computing advises for runtime environment: %r",
-            runtime_environment.to_dict(),
-        )
+        if runtime_environment:
+            _LOGGER.info(
+                "Runtime environment configuration:\n%s",
+                json.dumps(runtime_environment.to_dict(), sort_keys=True, indent=2),
+            )
+        else:
+            _LOGGER.info("No runtime environment configuration supplied")
+        if library_usage:
+            _LOGGER.info(
+                "Library usage:\n%s",
+                json.dumps(library_usage, sort_keys=True, indent=2)
+            )
+        else:
+            _LOGGER.info("No library usage supplied")
         stack_info, advised_configuration, report = Adviser.compute_on_project(
             project,
             recommendation_type=recommendation_type,
@@ -442,6 +452,12 @@ def advise(
     metavar="INT",
     help="Consider only desired number of versions (latest) for "
     "a package to limit number of software stacks generated.",
+)
+@click.option(
+    "--library-usage",
+    type=str,
+    envvar="THOTH_ADVISER_LIBRARY_USAGE",
+    help="Add library usage information to dependency-monkey resolution algorithm.",
 )
 @click.option(
     "--report-output",
@@ -517,6 +533,7 @@ def dependency_monkey(
     count: int = None,
     runtime_environment: dict = None,
     limit_latest_versions: int = None,
+    library_usage: str = None,
 ):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
     # We cannot have these as ints in click because they are optional and we
@@ -532,6 +549,31 @@ def dependency_monkey(
         runtime_environment=runtime_environment,
     )
 
+    if library_usage:
+        if os.path.isfile(library_usage):
+            try:
+                library_usage = json.loads(Path(library_usage).read_text())
+            except Exception as exc:
+                _LOGGER.error("Failed to load library usage file %r", library_usage)
+                raise
+        else:
+            library_usage = json.loads(library_usage)
+
+    if runtime_environment:
+        _LOGGER.info(
+            "Runtime environment configuration:\n%s",
+            json.dumps(runtime_environment.to_dict(), sort_keys=True, indent=2),
+        )
+    else:
+        _LOGGER.info("No runtime environment configuration supplied")
+    if library_usage:
+        _LOGGER.info(
+            "Library usage:\n%s",
+            json.dumps(library_usage, sort_keys=True, indent=2)
+        )
+    else:
+        _LOGGER.info("No library usage supplied")
+
     result = {
         "error": None,
         "parameters": {
@@ -539,6 +581,7 @@ def dependency_monkey(
             "runtime_environment": runtime_environment.to_dict(),
             "seed": seed,
             "decision_type": decision_type.name,
+            "library_usage": library_usage,
             "context": deepcopy(
                 context
             ),  # We reuse context later, perform deepcopy to report the one on input.
@@ -564,6 +607,7 @@ def dependency_monkey(
             context=context,
             count=count,
             limit_latest_versions=limit_latest_versions,
+            library_usage=library_usage,
         )
         # Place report into result.
         result.update(report)
