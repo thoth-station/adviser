@@ -329,7 +329,11 @@ def advise(
     limit = int(limit) if limit else None
     count = int(count) if count else None
 
-    # A workaround for click which is complaining about bad integer if empty value is provided.
+    # A special value of -1 signalizes no limit/count, this is a workaround for Click's option parser.
+    if count == -1:
+        count = None
+    if limit == -1:
+        limit = None
     if limit_latest_versions == -1:
         limit_latest_versions = None
 
@@ -540,6 +544,14 @@ def dependency_monkey(
     # cannot pass empty string as an int as env variable.
     seed = int(seed) if seed else None
     count = int(count) if count else None
+    limit_latest_versions = int(limit_latest_versions) if limit_latest_versions else None
+
+    # A special value of -1 signalizes no limit, this is a workaround for Click's option parser.
+    if count == -1:
+        count = None
+    if limit_latest_versions == -1:
+        limit_latest_versions = None
+
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
     decision_type = DecisionType.by_name(decision_type)
     project = _instantiate_project(
