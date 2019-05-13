@@ -121,3 +121,237 @@
 * Ignore s2i's virtualenv in which adviser is run
 * Increase memory for adviser due to OOMs
 * Do not use command in openshift template
+
+## Release 0.4.0 (2019-05-08T23:28:27)
+* Fix coala issues
+* :pushpin: Automatic update of dependency pytest from 4.4.1 to 4.4.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.11.1 to 0.11.2
+* Use new method to obtain even large stacks from graph database
+* :pushpin: Automatic update of dependency mock from 3.0.4 to 3.0.5
+* :pushpin: Automatic update of dependency mock from 3.0.3 to 3.0.4
+* Add information about library usage to pipeline and OpenShift job
+* Build-time error filtering should be a very first step
+* Propagate information about project runtime when checking buildtime error
+* Fix issue happening in semver sort after a package is removed
+* Remove toolchain to always use latest toolchain release
+* Fix empty paths if there is raised an exception about invalid pkg removal
+* :pushpin: Automatic update of dependency thoth-storages from 0.11.0 to 0.11.1
+* Log message was missleading if package_tuple gets overwritten
+* Provide fast-path when checking for already removed packages
+* :pushpin: Automatic update of dependency pytest-cov from 2.6.1 to 2.7.1
+* Implement build-time error filtering step
+* :pushpin: Automatic update of dependency mock from 3.0.2 to 3.0.3
+* :pushpin: Automatic update of dependency mock from 2.0.0 to 3.0.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.10.0 to 0.11.0
+* Adjust provenance-checker template to use Dgraph
+* Adjust Dependency Monkey to use Dgraph
+* Adjust adviser template to use Dgraph
+* Report overall score of a stack
+* Remove is_solvable flag as done in Dgraph implementation
+* Added the method to read version from project to conf.py
+* Remove JanusGraph specific bits
+* Do not depend on specific graph adapter from specific module
+* Remove JanusGraph specific bits
+* :pushpin: Automatic update of dependency thoth-storages from 0.9.7 to 0.10.0
+* Trigger dependency monkey reports sync into graph database
+* :pushpin: Automatic update of dependency pytest from 4.4.0 to 4.4.1
+* :pushpin: Automatic update of dependency thoth-common from 0.8.4 to 0.8.5
+* Automatic update of dependency thoth-common from 0.8.3 to 0.8.4
+* Create a workaround for click argument parsing from env vars
+* :sparkles: added the Registry to be used for image pulling to the templates
+* Adviser implementation using stack generation pipeline
+* Automatic update of dependency thoth-common from 0.8.2 to 0.8.3
+* Make Isis a proper adapter
+* Automatic update of dependency thoth-common from 0.8.1 to 0.8.2
+* Automatic update of dependency pytest from 4.3.1 to 4.4.0
+* :bug: put some sane default for IMAGE_STREAM_NAMESPACE into each template
+* hot fixing the timeout
+* :sparkles: ImageStream Tag and Namespace
+* Automatic update of dependency flexmock from 0.10.3 to 0.10.4
+* Report premature end of stack stream
+* Improve handling of long-running advises
+* Add timeout seconds for adviser to let it submit results
+* Top score is now 100
+* Automatic update of dependency thoth-storages from 0.9.6 to 0.9.7
+* Automatic update of dependency thoth-python from 0.4.6 to 0.5.0
+* Make reports more human readable
+* Fix testsuite
+* Add Thoth's configuration file
+* Make Isis instance attribute
+* Always kill stack producer if there is no consumer of stacks
+* Fix Coala issues
+* Do not score more than requested number of latest stacks
+* Introduce stack producer timeout
+* Use Sphinx for documentation
+* Fix some test errors
+* Minor improvements
+* Introduce parameters for limiting number of versions
+* Introduce limit parameter to limit number of packages of a same type
+* Fix usage of package_t in libdependency_graph.so
+* Use safe_load
+* Fix coala complains
+* Report any exception which occurred during dependency monkey run
+* Introduce checks on configuration
+* Make sure Isis is a singleton
+* Minor fix in logged message
+* Use Isis API from configmap
+* Introduce performance based queries to Isis
+* Make Coala happy again
+* Use black for formatting
+* Add missing file
+* Make sure versions are sorted, add tests for adviser
+* Use black for formatting tests
+* Fix tests
+* Log runtime environment when computing advises
+* Address coala issues
+* Add an optional graph database adapter to reduce number of connections
+* Take into account packages that are not installable into the given env
+* Update README, state local run in a container
+* Report CVE count only if there were some found
+* Remove unused env variables
+* Provide Sentry and Prometheus configuration
+* Add metadata information shown in result reports
+* Update Pipfile.lock
+* Register provenance-checker to graph-sync-scheduler
+* Use runtime information during runtime-specific resolution
+* Use runtime environment as provided by user
+* Use click echo instead of raw print
+* Fix wrong order of tuples
+* Provide generic stack information
+* Score and report CVEs in the application stack to the user
+* Report version on each run
+* Do not be too verbose
+* Open source documentation for dependency graph
+* Document dependency graph build
+* Report number of stacks scored
+* Raise an exception on premature stream end
+* Minor changes in comment and logging message
+* Fix coala complains
+* Wait for parent to score stacks in stack producer
+* Add shared library for CentOS:7
+* Provide Dockerfile for container-build
+* Add linked library
+* Initial dependency graph implementation in C++
+* Correctly handle end of pipe
+* Adjust .gitignore
+* Run dependency graph as a standalone process, produce stacks into pipe
+* It's already 2019
+* Use proper loglevel for debug message
+* Restrict indexes in dependency monkey runs
+* Schedule graph syncs for adviser runs by graph-sync-operator
+* Fix hashes collision in generated Pipfile.locks
+* Implement dependency graph in C++
+* Reuse connected graph adapter do reduce number of connections
+* Amun API URL is used by Dependency Monkey
+* Argument has to be named otherwise cannot be used as kwargs
+* Increase run time for dependency monkey
+* Propagate whitelisted sources to provenance checks
+* Increase dependency monkey requests
+* Correctly propagate job ids from workload operator
+* Fix CI by updating thoth-python package
+* Remove duplicit parameter from template
+* Increase adviser job run limit
+* Provide limit and count defaults in template
+* Add coverage file to .gitignore
+* Fix linter issues
+* Fix wrong variable usage
+* Report limit if limit was reached
+* Remove unused imports
+* Minor docs fixes
+* Link to Dependency Monkey design document
+* Add dependency monkey design document into docs
+* Cut off and minor adjustmets
+* Refactor test suite
+* Use black for formatting
+* Minor code refactoring, update requirements
+* Use to_tuple_locked method as we have locked packages
+* Fix missing import
+* Construct Pipfile from resolved dependencies
+* Print estimated number of software stacks
+* Remove unused if statement
+* Adjust dependency graph to use ids
+* The decision function is now not optional
+* Performance based scoring on exact stack match
+* Do not pass None values in runtime environment to_dict
+* Simplify work with dependency graph
+* Fix handling of runtime environment, remove unused bits
+* Avoid possibly inserting same package versions multiple times
+* Utilize iter_dependencies locked method
+* Use Python 3.6 by default
+* Discard original sources when creating a new project
+* Fix transitive dependencies retrieval
+* Don't be too verbose in logs
+* Mark jobs for cleanup
+* Fetch digests from graph database in provenance checks
+* Remove unused perf type
+* Prepare dependency graph for graph slicing
+* Minor fixes in decision functions
+* Restructure scoring and decision functions
+* Capture all the layers of dependencies
+* Minor code refactoring
+* Do not print reasoning into logs
+* Fix injecting digests into generated stacks
+* Minor fixes in dependency monkey
+* Do not forget to package requirements.txt
+* Minor fixes
+* Raise an exception if no matching versions were found
+* Consider also version when creating dependency graph
+* Move relevant test files to thoth-python package
+* Correctly fill stacks with package digests
+* Remove files that were moved to thoth-python
+* Include index when retrieving packages from the graph database
+* Fill package hashes from the graph database
+* Fix import errors
+* Structure error reports correctly respecting schema
+* Use thoth-python package
+* CI fixes
+* Fix janusgraph port
+* Fix Coala complains
+* Fixes and improvements
+* Adjust temporary filling package hashes
+* Fix missing import
+* Pass index to be none always
+* Fill package digets in advises
+* Be consistent with subcommand naming
+* Minor fix in docstring
+* Introduce limit in dependency monkey template
+* Introduce limit and count in adviser template
+* First implementation of the Adviser class
+* Default to stdout in dependency monkey
+* Refactor dependency monkey so that it can be used in notebooks
+* Perform deepcopy to report the correct input
+* Fix filling hashes multiple times
+* Seed and count can be empty string
+* Convert required parameters to ints
+* Fix environment variable name
+* Place all decision functions at one place
+* Improve logging
+* Fix missing import
+* Make sure queries respect python package names according to PEP
+* Improve logging to make sure its visible what's going on
+* Fix syntax error
+* Fix import error
+* Add missing import
+* Add ability to submit a testing stack
+* Issue warning when submitting to Amun API
+* Remove duplicit code for loading Amun context
+* Handle exceptions happening when submitting to Amun API
+* CI fixes
+* Add exception if constraints cannot be met
+* Temporary fill package digests by querying PyPI index
+* Always check which source in a warehouse
+* Adjust output methods
+* Adjust dependency monkey job template
+* Minor improvements in implementation
+* Aaa
+* Fixes in the dependency graph implementation
+* A package version is distinguished by name, version and index
+* Add missing imports
+* Check first layer of dependencies for validity
+* Sanity check for adding non-locked version to lock
+* Add testsuite for graph solver, dependency graph implementation
+* Introduce graph Python solver
+* Add testsuite for graph solver
+* Introduce dependency graph
+* Introduce graph Python solver
+* reading README from file, its the long_description...
