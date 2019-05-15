@@ -29,9 +29,6 @@ from typing import Tuple
 from collections import Counter
 from functools import reduce
 
-from .exceptions import PrematureStreamEndError
-from .exceptions import NoDependenciesError
-
 _LOGGER = logging.getLogger(__name__)
 _DEFAULT_LIBDEPENDENCY_GRAPH_SO = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "libdependency_graph.so"
@@ -40,6 +37,22 @@ _LIBDEPENDENCY_GRAPH_SO = os.getenv(
     "LIBDEPENDENCY_GRAPH_SO_PATH", _DEFAULT_LIBDEPENDENCY_GRAPH_SO
 )
 _LIBDEPENDENCY_GRAPH = ctypes.cdll.LoadLibrary(_LIBDEPENDENCY_GRAPH_SO)
+
+
+class DependencyGraphException(Exception):
+    """A base class for dependency graph exception hierarchy."""
+
+
+class PrematureStreamEndError(DependencyGraphException):
+    """An exception raised if the stack stream was closed prematurely.
+
+    This can happen for example due to OOM, which can kill stack producer. In that case we would like to
+    report to user what we have computed so far.
+    """
+
+
+class NoDependenciesError(DependencyGraphException):
+    """An exception raised if no direct dependencies were provided to dependency graph."""
 
 
 class DependencyGraph:
