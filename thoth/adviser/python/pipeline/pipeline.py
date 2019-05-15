@@ -59,6 +59,8 @@ class Pipeline:
     _solver = attr.ib(type=PythonPackageGraphSolver, default=None)
     _stack_info = attr.ib(type=List[Dict], default=attr.Factory(list))
 
+    _LIVENESS_PROBE_KILL_FILE = "/tmp/thoth_adviser_cpu_timeout"
+
     @property
     def solver(self) -> PythonPackageGraphSolver:
         """Get solver instance - solver implemented on top of graph database."""
@@ -76,6 +78,14 @@ class Pipeline:
         This report includes reports from dependency graph walk.
         """
         return self._stack_info
+
+    @classmethod
+    def _get_premature_stream_log_msg(cls) -> str:
+        if os.path.isfile(cls._LIVENESS_PROBE_KILL_FILE):
+            return "Stack producer was killed as allocated CPU time was exceeded, consider " \
+                   "decreasing limit for latest versions"
+
+        return "Exceeded memory, consider decreasing latest versions considered to score more stacks"
 
     def _prepare_direct_dependencies(self, *, with_devel: bool) -> StepContext:
         """Resolve all the direct dependencies based on the resolution and data available in the graph."""
@@ -277,12 +287,13 @@ class Pipeline:
                 if len(strides) > 0:
                     stride_context.stats.log_report()
         except PrematureStreamEndError as exc:
-            _LOGGER.info("Error while dependency graph walk: %s", str(exc))
+            _LOGGER.debug("Stack stream closed prematurely: %s", str(exc))
+            reported_message = self._get_premature_stream_log_msg()
+            _LOGGER.warning(reported_message)
             self._stack_info.append(
                 {
                     "type": "WARNING",
-                    "justification": "Resolver was closed prematurely because of memory or time-out, consider "
-                    "decreasing latest versions considered in software stacks",
+                    "justification": reported_message
                 }
             )
         finally:
