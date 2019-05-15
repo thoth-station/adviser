@@ -23,13 +23,24 @@ from base import AdviserTestCase
 
 from thoth.adviser.python.bin import DependencyGraph
 from thoth.adviser.python.bin import NoDependenciesError
+from thoth.adviser.python.bin import DependenciesCountOverflow
 
 
 class TestDependencyGraph(AdviserTestCase):
+
     def test_no_dependency_error(self):
         """Test there is raised an exception if there are no dependencies specified."""
         with pytest.raises(NoDependenciesError):
             DependencyGraph(direct_dependencies=[], paths=[])
+
+    def test_too_many_dependencies_error(self):
+        """Test there is raised an exception if there are no dependencies specified."""
+        direct_dependencies = [
+            ("flask", "1.0." + str(i), "https://pypi.org/simple")
+            for i in range(DependencyGraph.MAX_DEPENDENCIES_COUNT + 1)
+        ]
+        with pytest.raises(DependenciesCountOverflow):
+            DependencyGraph(direct_dependencies=direct_dependencies, paths=[])
 
     def test_one_direct(self):
         """Test a stack with just one direct dependency."""

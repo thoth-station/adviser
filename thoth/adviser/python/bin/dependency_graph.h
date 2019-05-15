@@ -110,7 +110,7 @@ class DependencyGraph {
  * Also note the dependency_types array states how many packages we are considering in total (equal to size).
  *
  * Stacks are written into write_fd file descriptor (can be any opened file descriptor, not just pipe) as
- * a stream of unsigned integers. Each stack is delimited with STREAM_DELIMITER sign, the last stack generated
+ * a stream of numbers. Each stack is delimited with STREAM_DELIMITER sign, the last stack generated
  * has a STREAM_STOP marker (after STREAM_DELIMITER).
  */
 DependencyGraph::DependencyGraph(
