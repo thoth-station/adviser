@@ -22,19 +22,16 @@ parameters:
     required: true
     name: IMAGE_STREAM_REGISTRY
     value: "docker-registry.default.svc:5000"
-
   - description: Project the ImageStream to be use lives in
     displayName: ImageStream Project
     required: true
     name: IMAGE_STREAM_NAMESPACE
     value: "thoth-infra-stage"
-
   - description: Tag of the ImageStream to be use
     displayName: ImageStream Tag
     required: true
     name: IMAGE_STREAM_TAG
     value: "latest"
-
   - name: THOTH_ADVISER_JOB_ID
     required: true
     description: A unique dentifier of adviser job.
@@ -127,7 +124,7 @@ objects:
                 failureThreshold: 1
                 initialDelaySeconds: "${THOTH_ADVISER_TIMEOUT_SECONDS}"
                 # Give main process some time to finish scoring and submit results.
-                timeoutSeconds: 300
+                timeoutSeconds: 600
               env:
                 - name: THOTH_LOG_ADVISER
                   value: "${THOTH_LOG_ADVISER}"
