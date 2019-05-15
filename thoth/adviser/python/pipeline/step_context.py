@@ -425,6 +425,7 @@ class StepContext(ContextBase):
             self._transitive_dependencies_map.get(removed_tuple[0], {}).get(
                 removed_tuple[1], {}
             ).pop(removed_tuple[2], None)
+            self._stats.mark_removed_package_tuple(removed_tuple)
 
         for dependent, to_remove_tuple in to_remove_associate_dependency_map:
             self._associate_dependency_map[dependent][to_remove_tuple[0]].remove(
