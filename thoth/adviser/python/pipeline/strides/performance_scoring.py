@@ -21,17 +21,17 @@ import logging
 
 from ..stride_context import StrideContext
 from ..units import get_performance
-from ..stride import Stride
+from ..stride import AsyncStride
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class PerformanceScoring(Stride):
+class PerformanceScoring(AsyncStride):
     """Scoring of resolved stacks based on performance."""
 
     PARAMETERS_DEFAULT = {"performance_threshold": 0.0}
 
-    def run(self, stride_context: StrideContext) -> None:
+    async def run(self, stride_context: StrideContext) -> None:
         """Performance based scoring of generated stacks."""
         performance_impact_packages = get_performance(
             self.graph,

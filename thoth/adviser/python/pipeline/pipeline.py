@@ -17,6 +17,7 @@
 
 """Implementation of stack generation pipeline."""
 
+import asyncio
 import os
 from typing import Generator
 from typing import List
@@ -38,7 +39,8 @@ from thoth.storages import GraphDatabase
 
 from .step import Step
 from .step_context import StepContext
-from .stride import Stride
+from .stride import AsyncStride
+from .stride import SerialStride
 from .stride_context import StrideContext
 from .stack_candidates import StackCandidates
 from .exceptions import StrideRemoveStack
@@ -54,7 +56,8 @@ class Pipeline:
     graph = attr.ib(type=GraphDatabase)
     project = attr.ib(type=Project)
     steps = attr.ib(type=List[Tuple[type, dict]], default=attr.Factory(list))
-    strides = attr.ib(type=List[Tuple[type, dict]], default=attr.Factory(list))
+    async_strides = attr.ib(type=List[Tuple[type, dict]], default=attr.Factory(list))
+    serial_strides = attr.ib(type=List[Tuple[type, dict]], default=attr.Factory(list))
     library_usage = attr.ib(type=dict, default=attr.Factory(dict))
     _solver = attr.ib(type=PythonPackageGraphSolver, default=None)
     _stack_info = attr.ib(type=List[Dict], default=attr.Factory(list))
@@ -157,19 +160,28 @@ class Pipeline:
         )
         return dependency_graph
 
-    def _instantiate_strides(self) -> List[Stride]:
+    def _instantiate_strides(self) -> Tuple[List[AsyncStride], List[SerialStride]]:
         """Instantiate stride classes with configuration supplied."""
         _LOGGER.debug("Instantiating strides")
-        strides = []
-        for stride_class, parameters_dict in self.strides:
-            filter_instance: Stride = stride_class(
+        async_strides = []
+        serial_strides = []
+        for stride_class, parameters_dict in self.async_strides:
+            stride_instance: AsyncStride = stride_class(
                 graph=self.graph, project=self.project, library_usage=self.library_usage
             )
             if parameters_dict:
-                filter_instance.update_parameters(parameters_dict)
-            strides.append(filter_instance)
+                stride_instance.update_parameters(parameters_dict)
+            async_strides.append(stride_instance)
 
-        return strides
+        for stride_class, parameters_dict in self.serial_strides:
+            stride_instance: SerialStride = stride_class(
+                graph=self.graph, project=self.project, library_usage=self.library_usage
+            )
+            if parameters_dict:
+                stride_instance.update_parameters(parameters_dict)
+            serial_strides.append(stride_instance)
+
+        return async_strides, serial_strides
 
     @staticmethod
     def _log_pipeline_msg(count: int = None, limit: int = None) -> None:
@@ -198,7 +210,7 @@ class Pipeline:
                 with open(os.getenv("THOTH_ADVISER_FILEDUMP"), "wb") as file_dump:
                     pickle.dump(step_context, file_dump)
 
-        strides = self._instantiate_strides()
+        async_strides, serial_strides = self._instantiate_strides()
 
         if count is not None and count <= 0:
             raise ValueError(
@@ -240,7 +252,7 @@ class Pipeline:
             direct_dependencies_map=step_context.direct_dependencies_map,
             transitive_dependencies_map=step_context.transitive_dependencies_map,
         )
-        if len(strides) > 0:
+        if len(async_strides) > 0 or len(serial_strides) > 0:
             _LOGGER.info("Running strides on stack candidates")
         dependency_graph = self._finalize_stepping(step_context)
         try:
@@ -254,9 +266,22 @@ class Pipeline:
 
                 stride_context = StrideContext(stack_candidate)
 
+                # Run first async strides, serial strides can hold context.
+                async_tasks = []
+                for async_stride in async_strides:
+                    task = asyncio.ensure_future(async_stride.run(stride_context))
+                    async_tasks.append(task)
+
+                loop = asyncio.get_event_loop()
+                try:
+                    loop.run_until_complete(asyncio.gather(*async_tasks))
+                except StrideRemoveStack as exc:
+                    _LOGGER.debug("Async stride filtered out stack %r", str(exc))
+                    continue
+
                 stride_context.stats.start_timer()
-                for stride_instance in strides:
-                    _LOGGER.debug("Running stride %r", stride_instance.name)
+                for stride_instance in serial_strides:
+                    _LOGGER.debug("Running serial stride %r", stride_instance.name)
                     stride_context.stats.reset_stats(stride_instance)
                     try:
                         stride_instance.run(stride_context)
@@ -274,7 +299,7 @@ class Pipeline:
                     if limit is not None and stacks_added >= limit:
                         break
 
-                if len(strides) > 0:
+                if len(async_strides) > 0 or len(serial_strides) > 0:
                     stride_context.stats.log_report()
         except PrematureStreamEndError as exc:
             _LOGGER.info("Error while dependency graph walk: %s", str(exc))
@@ -286,7 +311,7 @@ class Pipeline:
                 }
             )
         finally:
-            if len(strides) == 0:
+            if len(async_strides) == 0 and len(serial_strides) == 0:
                 _LOGGER.debug("No strides were configured")
 
             _LOGGER.info(

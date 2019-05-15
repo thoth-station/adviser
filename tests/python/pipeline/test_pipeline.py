@@ -33,7 +33,8 @@ from thoth.adviser.python.pipeline import PipelineProduct
 from thoth.adviser.python.pipeline import StepContext
 from thoth.adviser.python.pipeline import StrideContext
 from thoth.adviser.python.pipeline.step import Step
-from thoth.adviser.python.pipeline.stride import Stride
+from thoth.adviser.python.pipeline.stride import AsyncStride
+from thoth.adviser.python.pipeline.stride import SerialStride
 from thoth.adviser.python.pipeline.exceptions import StrideRemoveStack
 from thoth.storages import GraphDatabase
 
@@ -69,16 +70,25 @@ class _MockStep(Step):
         assert isinstance(step_context, StepContext)
 
 
-class _MockStride(Stride):
-    """A mock used as a stride in testing pipeline."""
+class _MockAsyncStride(AsyncStride):
+    """A mock used as an async stride in testing pipeline."""
 
-    def run(self, stride_context: StrideContext) -> None:
+    async def run(self, stride_context: StrideContext) -> None:
         assert self.parameters == _MOCK_STRIDE_PARAMETERS
         assert isinstance(stride_context, StrideContext)
         stride_context.adjust_score(1.0, _MOCK_STRIDE_JUSTIFICATION)
 
 
-class _MockStrideRemoveStack(Stride):
+class _MockSerialStride(SerialStride):
+    """A mock used as a serial stride in testing pipeline."""
+
+    def run(self, stride_context: StrideContext) -> None:
+        assert self.parameters == _MOCK_STRIDE_PARAMETERS
+        assert isinstance(stride_context, StrideContext)
+        stride_context.adjust_score(2.0, _MOCK_STRIDE_JUSTIFICATION)
+
+
+class _MockSerialStrideRemoveStack(SerialStride):
     """A mock used as a stride in testing pipeline."""
 
     def run(self, stride_context: StrideContext) -> None:
@@ -117,7 +127,8 @@ class TestPipeline(AdviserTestCase):
             steps=[
                 (_MockStep, _MOCK_STEP_PARAMETERS)
             ],
-            strides=[],
+            async_strides=[],
+            serial_strides=[],
         )
 
         flexmock(
@@ -138,7 +149,11 @@ class TestPipeline(AdviserTestCase):
         assert pipeline_product.score == 0.0
         assert pipeline_product.project
 
-    def test_stride_simple_run(self):
+    def test_serial_stride_simple_run(self):
+        # TODO: implement
+        pass
+
+    def test_async_stride_simple_run(self):
         """Test running a single stride inside pipeline."""
         project = Project.from_strings(_PIPFILE_STR)
 
@@ -160,9 +175,10 @@ class TestPipeline(AdviserTestCase):
             steps=[
                 (_MockStep, _MOCK_STEP_PARAMETERS)
             ],
-            strides=[
-                (_MockStride, _MOCK_STRIDE_PARAMETERS)
+            async_strides=[
+                (_MockAsyncStride, _MOCK_STRIDE_PARAMETERS)
             ],
+            serial_strides=[],
         )
 
         flexmock(
@@ -182,7 +198,11 @@ class TestPipeline(AdviserTestCase):
         assert pipeline_product.score == 1.0
         assert pipeline_product.project
 
-    def test_stride_remove_stack(self):
+    def test_async_stride_remove_stack(self):
+        # TODO: test
+        pass
+
+    def test_serial_stride_remove_stack(self):
         project = Project.from_strings(_PIPFILE_STR)
 
         # We do not provide any paths.
@@ -201,9 +221,10 @@ class TestPipeline(AdviserTestCase):
             graph=None,  # We avoid low-level testing down to thoth-storages.
             project=project,
             steps=[],
-            strides=[
-                (_MockStrideRemoveStack, None)
+            serial_strides=[
+                (_MockSerialStrideRemoveStack, None)
             ],
+            async_strides=[],
         )
 
         flexmock(
@@ -216,7 +237,11 @@ class TestPipeline(AdviserTestCase):
         pipeline_products = list(pipeline.conduct(limit=None, count=None))
         assert len(pipeline_products) == 0
 
-    def test_step_and_stride_simple_run(self):
+    def test_step_and_async_stride_simple_run(self):
+        # TODO: implement
+        pass
+
+    def test_step_and_serial_stride_simple_run(self):
         """Test running step and stride at the same time."""
         project = Project.from_strings(_PIPFILE_STR)
 
@@ -236,9 +261,10 @@ class TestPipeline(AdviserTestCase):
             graph=None,  # We avoid low-level testing down to thoth-storages.
             project=project,
             steps=[],
-            strides=[
-                (_MockStride, _MOCK_STRIDE_PARAMETERS)
+            serial_strides=[
+                (_MockSerialStride, _MOCK_STRIDE_PARAMETERS)
             ],
+            async_strides=[],
         )
 
         flexmock(
@@ -255,8 +281,12 @@ class TestPipeline(AdviserTestCase):
         pipeline_product = pipeline_products[0]
         assert isinstance(pipeline_product, PipelineProduct)
         assert pipeline_product.justification == _MOCK_STRIDE_JUSTIFICATION
-        assert pipeline_product.score == 1.0
+        assert pipeline_product.score == 2.0
         assert pipeline_product.project
+
+    def test_step_and_strides_run(self):
+        # TODO: implement
+        pass
 
     def test_conduct_premature_stream_end(self):
         """Test pipeline reports premature stream error if libdependency_graph.so died."""
@@ -268,7 +298,8 @@ class TestPipeline(AdviserTestCase):
             graph=None,  # We avoid low-level testing down to thoth-storages.
             project=project,
             steps=[],
-            strides=[],
+            async_strides=[],
+            serial_strides=[],
         )
 
         flexmock(
@@ -315,7 +346,8 @@ class TestPipeline(AdviserTestCase):
             graph=GraphDatabase(),  # We avoid low-level testing down to thoth-storages.
             project=project,
             steps=[],
-            strides=[],
+            async_strides=[],
+            serial_strides=[],
         )
 
         # We do not provide any paths.

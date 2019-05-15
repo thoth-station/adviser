@@ -19,19 +19,19 @@
 
 import logging
 
-from ..stride import Stride
+from ..stride import AsyncStride
 from ..stride_context import StrideContext
 from ..units import get_cve_records
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CveScoring(Stride):
+class CveScoring(AsyncStride):
     """Penalization based on CVE being present in stack."""
 
     PARAMETERS_DEFAULT = {"cve_penalization": -0.2}
 
-    def run(self, stride_context: StrideContext) -> None:
+    async def run(self, stride_context: StrideContext) -> None:
         """Score stacks with a CVE in a negative way."""
         for package_tuple in stride_context.stack_candidate:
             cve_records = get_cve_records(self.graph, package_tuple)

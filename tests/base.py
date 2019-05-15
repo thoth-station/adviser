@@ -18,9 +18,20 @@
 """Core logic for adviser test suite."""
 
 import os
+import asyncio
 
 
 class AdviserTestCase:
     """A base class for adviser test cases."""
 
     data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+
+    @staticmethod
+    def run_async(coroutine) -> object:
+        """Run the given coroutine and return its results.
+
+        This is a helper method to simplify usage of asyncio.
+        """
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        return loop.run_until_complete(coroutine)

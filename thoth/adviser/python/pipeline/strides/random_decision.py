@@ -22,12 +22,12 @@ import random
 
 from ..stride_context import StrideContext
 from ..exceptions import StrideRemoveStack
-from ..stride import Stride
+from ..stride import SerialStride
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class RandomDecision(Stride):
+class RandomDecision(SerialStride):
     """Filtering of stacks which encountered runtime errors."""
 
     def run(self, stride_context: StrideContext) -> None:

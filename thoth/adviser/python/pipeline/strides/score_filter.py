@@ -31,13 +31,13 @@ from ..stride_context import StrideContext
 
 import attr
 
-from ..stride import Stride
+from ..stride import SerialStride
 from ..exceptions import StrideRemoveStack
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class ScoreFiltering(Stride):
+class ScoreFiltering(SerialStride):
     """Filtering of stacks which encountered runtime errors."""
 
     _previous_stack_score = attr.ib(type=float, default=None)

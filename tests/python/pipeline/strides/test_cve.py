@@ -70,7 +70,7 @@ class TestCveScoring(AdviserTestCase):
             project=None,
             library_usage=None,
         )
-        cve_scoring.run(stride_context)
+        self.run_async(cve_scoring.run(stride_context))
         assert (
             stride_context.score
             == 1 * CveScoring.PARAMETERS_DEFAULT["cve_penalization"]
@@ -95,7 +95,7 @@ class TestCveScoring(AdviserTestCase):
             project=None,
             library_usage=None,
         )
-        cve_scoring.run(stride_context)
+        self.run_async(cve_scoring.run(stride_context))
         assert (
             stride_context.score
             == 2 * CveScoring.PARAMETERS_DEFAULT["cve_penalization"]
@@ -121,7 +121,7 @@ class TestCveScoring(AdviserTestCase):
             project=None,
             library_usage=None,
         )
-        cve_scoring.run(stride_context)
+        self.run_async(cve_scoring.run(stride_context))
         assert (
             stride_context.score
             == 0 * CveScoring.PARAMETERS_DEFAULT["cve_penalization"]

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation a base class for a stride in stack generation pipeline."""
+"""Implementation a base class for a stride types in stack generation pipeline."""
 
 import abc
 import logging
@@ -29,9 +29,27 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class Stride(PipelineUnitBase, metaclass=abc.ABCMeta):
-    """A stride in a stack generation pipeline."""
+class SerialStride(PipelineUnitBase, metaclass=abc.ABCMeta):
+    """A stride in a stack generation pipeline.
+
+    This stride is executed in a serialized manner - meaning all strides which are
+    considered as serial strides are executed one after another in the pipeline.
+    """
 
     @abc.abstractmethod
     def run(self, stride_context: StrideContext) -> None:
-        """Entrypoint for a stride pipeline stride."""
+        """Entrypoint for a serial stride in stack generation pipeline."""
+
+
+@attr.s(slots=True)
+class AsyncStride(PipelineUnitBase, metaclass=abc.ABCMeta):
+    """A stride in a stack generation pipeline.
+
+    This stride is executed as async stride - these type of strides are
+    especially useful when querying knowledge base so that pipeline can benefit
+    from asyncio.
+    """
+
+    @abc.abstractmethod
+    async def run(self, stride_context: StrideContext) -> None:
+        """Entrypoint for an async stride in stack generation pipeline."""
