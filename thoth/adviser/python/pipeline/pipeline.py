@@ -30,8 +30,8 @@ import pickle
 import attr
 
 from thoth.adviser.python.solver import PythonPackageGraphSolver
-from thoth.adviser.python.bin.exceptions import PrematureStreamEndError
-from thoth.adviser.python.bin.dependency_graph import DependencyGraph
+from thoth.adviser.python.bin import PrematureStreamEndError
+from thoth.adviser.python.bin import DependencyGraph
 from thoth.python import Project
 from thoth.solver.python.base import SolverException
 from thoth.storages import GraphDatabase

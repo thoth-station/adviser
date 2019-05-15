@@ -22,7 +22,7 @@ import pytest
 from base import AdviserTestCase
 
 from thoth.adviser.python.bin import DependencyGraph
-from thoth.adviser.python.bin.exceptions import NoDependenciesError
+from thoth.adviser.python.bin import NoDependenciesError
 
 
 class TestDependencyGraph(AdviserTestCase):
