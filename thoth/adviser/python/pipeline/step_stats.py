@@ -18,6 +18,7 @@
 """Implementation of statistics for a stack generation pipeline and every pipeline step."""
 
 import logging
+from typing import Tuple
 
 import attr
 from .stats_base import StatsBase
@@ -29,11 +30,25 @@ _LOGGER = logging.getLogger(__name__)
 class StepStats(StatsBase):
     """Statistics accumulated for steps in pipeline."""
 
+    _packages_removed_count = attr.ib(type=dict, default=attr.Factory(dict))
+
     def log_report(self) -> None:
         """Log report for a pipeline step."""
         total = 0.0
         for step_name, step_duration in self._units_run.items():
             _LOGGER.debug("    Step %r took %.5f seconds", step_name, step_duration)
+            if len(self._packages_removed_count.get(step_name, set())) > 0:
+                _LOGGER.debug(
+                    "     -> number of packages removed from dependency graph: %d",
+                    len(self._packages_removed_count[step_name])
+                )
             total += step_duration
 
         _LOGGER.debug("Steps took %.5f seconds in total", total)
+
+    def mark_removed_package_tuple(self, package_tuple: Tuple[str, str, str]):
+        """Keep track of packages removed in a step run for statistics."""
+        if self._current_name not in self._packages_removed_count:
+            self._packages_removed_count[self._current_name] = set()
+
+        self._packages_removed_count[self._current_name].add(package_tuple)
