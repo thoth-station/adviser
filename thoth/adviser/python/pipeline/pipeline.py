@@ -157,7 +157,6 @@ class Pipeline:
     def _finalize_stepping(step_context: StepContext) -> DependencyGraph:
         """Finalize pipeline - run dependency graph to resolve fully pinned down stacks."""
         _LOGGER.debug("Finalizing stepping")
-        step_context.final_sort()
         dependency_graph = DependencyGraph(
             direct_dependencies=list(step_context.iter_direct_dependencies_tuple()),
             paths=step_context.raw_paths,

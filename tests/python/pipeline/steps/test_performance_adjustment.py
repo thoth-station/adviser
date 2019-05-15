@@ -117,9 +117,8 @@ class TestPerformanceAdjustment(AdviserTestCase):
             library_usage=None,
         )
         performance_adjustment.run(step_context)
-        step_context.final_sort()
 
-        assert list(step_context.iter_paths_with_score()) == [
+        assert list(sorted(step_context.iter_paths_with_score())) == [
             (
                 0.0,
                 [
@@ -131,10 +130,10 @@ class TestPerformanceAdjustment(AdviserTestCase):
         ]
         # Make sure Flask gets precedence in resolution.
         assert list(
-            pv.to_tuple() for pv in step_context.iter_direct_dependencies()
+            sorted(step_context.iter_direct_dependencies_with_score())
         ) == [
-            ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-            ("flask", "0.12.0", "https://pypi.org/simple"),
+            (0.0, ("tensorflow", "2.0.0", "https://pypi.org/simple")),
+            (2.0, ("flask", "0.12.0", "https://pypi.org/simple")),
         ]
 
     def test_transitive_adjusted(self):
@@ -182,10 +181,9 @@ class TestPerformanceAdjustment(AdviserTestCase):
             library_usage=None,
         )
         performance_adjustment.run(step_context)
-        step_context.final_sort()
 
         # The order should be fixed - without any change, but scores should be adjusted.
-        assert list(step_context.iter_paths_with_score()) == [
+        assert list(sorted(step_context.iter_paths_with_score())) == [
             (3.0, [("flask", "0.12.0", "https://pypi.org/simple")]),
             (
                 3.0,
@@ -247,9 +245,8 @@ class TestPerformanceAdjustment(AdviserTestCase):
             library_usage=None,
         )
         performance_adjustment.run(step_context)
-        step_context.final_sort()
 
-        assert list(step_context.iter_paths_with_score()) == [
+        assert list(sorted(step_context.iter_paths_with_score())) == [
             (0.0, [("flask", "0.12.0", "https://pypi.org/simple")]),
             (
                 2.0,
@@ -261,10 +258,10 @@ class TestPerformanceAdjustment(AdviserTestCase):
         ]
         # Make sure TF gets precedence in resolution.
         assert list(
-            pv.to_tuple() for pv in step_context.iter_direct_dependencies()
+            sorted(step_context.iter_direct_dependencies_with_score())
         ) == [
-            ("flask", "0.12.0", "https://pypi.org/simple"),
-            ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+            (0.0, ("flask", "0.12.0", "https://pypi.org/simple")),
+            (2.0, ("tensorflow", "2.0.0", "https://pypi.org/simple")),
         ]
 
     def test_no_adjusted(self):
@@ -312,9 +309,8 @@ class TestPerformanceAdjustment(AdviserTestCase):
             library_usage=None,
         )
         performance_adjustment.run(step_context)
-        step_context.final_sort()
 
-        assert list(step_context.iter_paths_with_score()) == [
+        assert list(sorted(step_context.iter_paths_with_score())) == [
             (0.0, [("flask", "0.12.0", "https://pypi.org/simple")]),
             (
                 0.0,
@@ -324,9 +320,10 @@ class TestPerformanceAdjustment(AdviserTestCase):
                 ],
             ),
         ]
+
         assert list(
-            pv.to_tuple() for pv in step_context.iter_direct_dependencies()
+            sorted(step_context.iter_direct_dependencies_with_score())
         ) == [
-            ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-            ("flask", "0.12.0", "https://pypi.org/simple"),
+            (0.0, ("flask", "0.12.0", "https://pypi.org/simple")),
+            (0.0, ("tensorflow", "2.0.0", "https://pypi.org/simple")),
         ]

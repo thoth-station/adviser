@@ -15,18 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of steps used in stack generators pipeline."""
+"""Test filtering out paths with no or negative observations."""
+
+from base import AdviserTestCase
 
 
-from .buildtime_error import BuildtimeErrorFiltering
-from .cve import CvePenalization
-from .limit_latest_versions import LimitLatestVersions
-from .path_cutoff import PathCutoff
-from .performance_adjustment import PerformanceAdjustment
-from .prereleases import CutPreReleases
-from .restrict_indexes import RestrictIndexes
-from .runtime_error import RuntimeErrorFiltering
-from .score_sort import ScoreSort
-from .semver_sort import SemverSort
-from .toolchain import CutToolchain
-from .unreachable import CutUnreachable
+class TestPathCutoff(AdviserTestCase):
+    """Test filtering out paths with no or negative observations."""
+
+    def test_path_cutoff(self):
+        pass

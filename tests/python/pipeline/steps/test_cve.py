@@ -125,10 +125,8 @@ class TestCvePenalization(AdviserTestCase):
         )
         cve_scoring.run(step_context)
 
-        step_context.final_sort()
-
         # All paths with Flask and CVE get penalized (all of them).
-        assert list(step_context.iter_paths_with_score()) == [
+        assert list(sorted(step_context.iter_paths_with_score())) == [
             (
                 -0.4,
                 [
@@ -189,10 +187,8 @@ class TestCvePenalization(AdviserTestCase):
         )
         cve_scoring.run(step_context)
 
-        step_context.final_sort()
-
         # The path with Flask with CVE and with PyYAML with CVE gets penalized more.
-        assert list(step_context.iter_paths_with_score()) == [
+        assert list(sorted(step_context.iter_paths_with_score())) == [
             (
                 -0.4,
                 [
@@ -219,10 +215,10 @@ class TestCvePenalization(AdviserTestCase):
             ),
         ]
         assert list(
-            pv.to_tuple() for pv in step_context.iter_direct_dependencies()
+            sorted(step_context.iter_direct_dependencies_with_score())
         ) == [
-            ("flask", "0.13.0", "https://pypi.org/simple"),
-            ("flask", "0.12.0", "https://pypi.org/simple"),
+            (-0.2, ("flask", "0.13.0", "https://pypi.org/simple")),
+            (0.0, ("flask", "0.12.0", "https://pypi.org/simple")),
         ]
 
     def test_no_score(self):
@@ -252,10 +248,8 @@ class TestCvePenalization(AdviserTestCase):
         )
         cve_scoring.run(step_context)
 
-        step_context.final_sort()
-
         # Make sure paths are untouched.
-        assert list(step_context.iter_paths_with_score()) == [
+        assert list(sorted(step_context.iter_paths_with_score())) == [
             (
                 0.0,
                 [
@@ -315,9 +309,8 @@ class TestCvePenalization(AdviserTestCase):
         )
         cve_scoring.run(step_context)
 
-        step_context.final_sort()
         # The path with Flask with CVE and with PyYAML with CVE gets penalized more.
-        assert list(step_context.iter_paths_with_score()) == [
+        assert list(sorted(step_context.iter_paths_with_score())) == [
             (
                 -0.2,
                 [
@@ -344,10 +337,10 @@ class TestCvePenalization(AdviserTestCase):
             ),
         ]
         assert list(
-            pv.to_tuple() for pv in step_context.iter_direct_dependencies()
+            sorted(step_context.iter_direct_dependencies_with_score())
         ) == [
-            ("flask", "0.12.0", "https://pypi.org/simple"),
-            ("flask", "0.13.0", "https://pypi.org/simple"),
+            (0.0, ("flask", "0.12.0", "https://pypi.org/simple")),
+            (0.0, ("flask", "0.13.0", "https://pypi.org/simple")),
         ]
 
     def test_direct(self):
@@ -377,9 +370,8 @@ class TestCvePenalization(AdviserTestCase):
         )
         cve_scoring.run(step_context)
 
-        step_context.final_sort()
         # The path with Flask with CVE and with PyYAML with CVE gets penalized more.
-        assert list(step_context.iter_paths_with_score()) == [
+        assert list(sorted(step_context.iter_paths_with_score())) == [
             (
                 -0.2,
                 [
@@ -406,8 +398,8 @@ class TestCvePenalization(AdviserTestCase):
             ),
         ]
         assert list(
-            pv.to_tuple() for pv in step_context.iter_direct_dependencies()
+            sorted(step_context.iter_direct_dependencies_with_score())
         ) == [
-            ("flask", "0.13.0", "https://pypi.org/simple"),
-            ("flask", "0.12.0", "https://pypi.org/simple"),
+            (-0.2, ("flask", "0.13.0", "https://pypi.org/simple")),
+            (0.0, ("flask", "0.12.0", "https://pypi.org/simple")),
         ]

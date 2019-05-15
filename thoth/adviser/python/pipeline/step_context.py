@@ -76,7 +76,7 @@ class _StepChangeContext(ContextDecorator):
             try:
                 self.step_context.remove_package_tuple(package_tuple)
             except CannotRemovePackage as exc:
-                _LOGGER.debug("Failed to remove package %r", package_tuple)
+                _LOGGER.debug("Failed to remove package %r: %s", package_tuple, str(exc))
                 if not self.graceful:
                     raise
 
@@ -479,9 +479,18 @@ class StepContext(ContextBase):
                 package_tuple,
             )
 
+    def get_direct_dependency_score(self, package_tuple: Tuple[str, str, str]) -> float:
+        """Get score of a direct dependency."""
+        return self._direct_dependencies_score[package_tuple]
+
+    def iter_direct_dependencies_with_score(self) -> Generator[Tuple[float, Tuple[str, str, str]], None, None]:
+        """Iterate over direct dependencies, show also their score."""
+        for package_tuple, score in self._direct_dependencies_score.items():
+            yield score, package_tuple
+
     def iter_paths_with_score(
         self
-    ) -> Generator[Tuple[int, float, List[Tuple[str, str, str]]], None, None]:
+    ) -> Generator[Tuple[float, List[Tuple[str, str, str]]], None, None]:
         """Iterate over paths and return path with its score and index."""
         yield from self._paths
 
@@ -495,26 +504,6 @@ class StepContext(ContextBase):
             return self._direct_dependencies_map[package_tuple[0]][package_tuple[1]][
                 package_tuple[2]
             ]
-
-    def final_sort(self) -> None:
-        """Perform sorting of paths and direct dependencies based on score.
-
-        This sorting *HAS TO* be performed before the actual scoring if run un un-sorted paths as it does
-        not take into account scoring.
-        """
-        def cmp_function(
-            path1: Tuple[float, List[Tuple[str, str, str]]],
-            path2: [Tuple[float, List[Tuple[str, str, str]]]],
-        ) -> int:
-            """Comparision based on score."""
-            score1 = path1[0]
-            score2 = path2[0]
-            return score1 - score2
-
-        self._paths.sort(key=cmp_to_key(cmp_function))
-        self._direct_dependencies.sort(
-            key=lambda x: self._direct_dependencies_score[x.to_tuple()]
-        )
 
     def sort_direct_dependencies(
         self, cmp_function: Callable, reverse: bool = False
