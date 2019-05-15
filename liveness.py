@@ -28,6 +28,10 @@ main process (PID 1).
 import sys
 import os
 import signal
+from pathlib import Path
+
+# Create this file on kill for better reports in adviser logs.
+_LIVENESS_PROBE_KILL_FILE = "/tmp/thoth_adviser_cpu_timeout"
 
 
 def main() -> int:
@@ -44,6 +48,7 @@ def main() -> int:
 
         print("Killing process with PID %d" % pid)
         os.kill(pid, signal.SIGTERM)
+        Path(_LIVENESS_PROBE_KILL_FILE).touch()
 
     # Let liveness probe always fail with timeout.
     signal.pause()
