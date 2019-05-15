@@ -55,6 +55,13 @@ class NoDependenciesError(DependencyGraphException):
     """An exception raised if no direct dependencies were provided to dependency graph."""
 
 
+class DependenciesCountOverflow(DependencyGraphException):
+    """An exception raised if number of dependencies cannot be processed due to overflow.
+
+    Based on internal representation of packages (fixed size unsigned integers).
+    """
+
+
 class DependencyGraph:
     """Adapter for C implementation of dependency graph."""
 
@@ -96,13 +103,16 @@ class DependencyGraph:
 
     # Marker used to signalize delimit stacks in stack stream (one stack delimited by this marker).
     _C_GET_STREAM_DELIMITER = _LIBDEPENDENCY_GRAPH.get_stream_delimiter
-    _C_GET_STREAM_DELIMITER.restype = ctypes.c_uint
+    _C_GET_STREAM_DELIMITER.restype = ctypes.c_uint16
     STREAM_DELIMITER = _C_GET_STREAM_DELIMITER()
 
     # Marker used to signalize end of the stack stream (one stack delimited by this marker).
     _C_GET_STREAM_STOP = _LIBDEPENDENCY_GRAPH.get_stream_stop
-    _C_GET_STREAM_STOP.restype = ctypes.c_uint
+    _C_GET_STREAM_STOP.restype = ctypes.c_uint16
     STREAM_STOP = _C_GET_STREAM_STOP()
+
+    # Given the fact we have uint16_t for representing a package and 2 markers - stream stop and delimiter marker.
+    MAX_DEPENDENCIES_COUNT = (2**16) - 2
 
     def __init__(
         self,
@@ -183,6 +193,12 @@ class DependencyGraph:
             for item in sorted(self._context):
                 _LOGGER.info("    %r", item)
 
+        if len(self._context) > self.MAX_DEPENDENCIES_COUNT:
+            raise DependenciesCountOverflow(
+                f"Number of dependencies overflowed dependency graph implementation, number "
+                f"of dependencies: {len(self._context)}, limit is {self.MAX_DEPENDENCIES_COUNT}"
+            )
+
         # Remove duplicates of paths, but preserve order of these dependencies so
         # dependency graph generates based on dependencies stated.
         self._dependencies_list = list(
@@ -225,16 +241,16 @@ class DependencyGraph:
                 "Starting stack producer from %r library...", _LIBDEPENDENCY_GRAPH_SO
             )
             size = len(self._dependency_types)
-            c_dependency_types = (ctypes.c_uint * len(self._dependency_types))(
+            c_dependency_types = (ctypes.c_uint16 * len(self._dependency_types))(
                 *self._dependency_types
             )
-            c_direct_dependencies = (ctypes.c_uint * len(self._direct_dependencies))(
+            c_direct_dependencies = (ctypes.c_uint16 * len(self._direct_dependencies))(
                 *self._direct_dependencies
             )
 
             # Convert list into ctype representation.
-            c_rows = ctypes.c_uint * 2
-            c_matrix = ctypes.POINTER(ctypes.c_uint) * len(self._dependencies_list)
+            c_rows = ctypes.c_uint16 * 2
+            c_matrix = ctypes.POINTER(ctypes.c_uint16) * len(self._dependencies_list)
 
             c_dependencies_list = c_matrix()
             for i, row in enumerate(self._dependencies_list):
