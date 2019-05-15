@@ -21,6 +21,7 @@
 #include <list>
 #include <set>
 #include <vector>
+#include <cstdint>
 
 /*
  * Forward for typedef.
@@ -28,9 +29,9 @@
 class StackItem;
 
 // Type of a package.
-typedef unsigned package_type_t;
+typedef uint16_t package_type_t;
 // A package.
-typedef unsigned package_t;
+typedef uint16_t package_t;
 
 // A traversal stack - a list of
 typedef std::list<StackItem *> traversal_stack_t;
