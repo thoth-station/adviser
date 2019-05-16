@@ -310,8 +310,7 @@ class StepContext(ContextBase):
         new_paths = []
         stack = deque([package_tuple])
         removed = set()
-        # Do not adjust it directly - it can lead to an invalid self._paths in case of an exception.
-        paths = copy.copy(self._paths)
+        paths = self._paths
         # We update associate dependency map once we know the given package is actually removed.
         to_remove_associate_dependency_map = set()
 
