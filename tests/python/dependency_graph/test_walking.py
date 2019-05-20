@@ -21,9 +21,9 @@ import pytest
 
 from base import AdviserTestCase
 
-from thoth.adviser.python.bin import DependencyGraph
-from thoth.adviser.python.bin import NoDependenciesError
-from thoth.adviser.python.bin import DependenciesCountOverflow
+from thoth.adviser.python.dependency_graph import DependencyGraphWalker
+from thoth.adviser.python.dependency_graph import NoDependenciesError
+from thoth.adviser.python.dependency_graph import DependenciesCountOverflow
 
 
 class TestDependencyGraph(AdviserTestCase):
@@ -31,16 +31,16 @@ class TestDependencyGraph(AdviserTestCase):
     def test_no_dependency_error(self):
         """Test there is raised an exception if there are no dependencies specified."""
         with pytest.raises(NoDependenciesError):
-            DependencyGraph(direct_dependencies=[], paths=[])
+            DependencyGraphWalker(direct_dependencies=[], paths=[])
 
     def test_too_many_dependencies_error(self):
         """Test there is raised an exception if there are no dependencies specified."""
         direct_dependencies = [
             ("flask", "1.0." + str(i), "https://pypi.org/simple")
-            for i in range(DependencyGraph.MAX_DEPENDENCIES_COUNT + 1)
+            for i in range(DependencyGraphWalker.MAX_DEPENDENCIES_COUNT + 1)
         ]
         with pytest.raises(DependenciesCountOverflow):
-            DependencyGraph(direct_dependencies=direct_dependencies, paths=[])
+            DependencyGraphWalker(direct_dependencies=direct_dependencies, paths=[])
 
     def test_one_direct(self):
         """Test a stack with just one direct dependency."""
@@ -49,7 +49,7 @@ class TestDependencyGraph(AdviserTestCase):
         ]
         expected_result = [direct_dependencies]
 
-        dependency_graph = DependencyGraph(
+        dependency_graph = DependencyGraphWalker(
             direct_dependencies=direct_dependencies, paths=[]
         )
         walk_result = list(dependency_graph.walk())
@@ -70,7 +70,7 @@ class TestDependencyGraph(AdviserTestCase):
             [("numpy", "1.16.0", "https://pypi.org/simple")],
             [("numpy", "1.15.4", "https://pypi.org/simple")],
         ]
-        dependency_graph = DependencyGraph(
+        dependency_graph = DependencyGraphWalker(
             direct_dependencies=direct_dependencies, paths=[]
         )
         walk_result = list(dependency_graph.walk())
@@ -92,7 +92,7 @@ class TestDependencyGraph(AdviserTestCase):
                 ("markupsafe", "1.0", "https://pypi.org/simple"),
             ],
         ]
-        dependency_graph = DependencyGraph(
+        dependency_graph = DependencyGraphWalker(
             direct_dependencies=direct_dependencies, paths=paths
         )
 
@@ -119,7 +119,7 @@ class TestDependencyGraph(AdviserTestCase):
                 ("markupsafe", "1.0", "https://pypi.org/simple"),
             ],
         ]
-        dependency_graph = DependencyGraph(
+        dependency_graph = DependencyGraphWalker(
             direct_dependencies=direct_dependencies, paths=paths
         )
 
@@ -176,7 +176,7 @@ class TestDependencyGraph(AdviserTestCase):
                 ("werkzeug", "0.14.1", "https://pypi.org/simple"),
             },
         ]
-        dependency_graph = DependencyGraph(
+        dependency_graph = DependencyGraphWalker(
             direct_dependencies=direct_dependencies, paths=paths
         )
 
@@ -233,7 +233,7 @@ class TestDependencyGraph(AdviserTestCase):
                 ("markupsafe", "1.0", "https://pypi.org/simple"),
             },
         ]
-        dependency_graph = DependencyGraph(
+        dependency_graph = DependencyGraphWalker(
             direct_dependencies=direct_dependencies, paths=paths
         )
 
@@ -267,7 +267,7 @@ class TestDependencyGraph(AdviserTestCase):
                 ("markupsafe", "1.0", "https://pypi.org/simple"),
             },
         ]
-        dependency_graph = DependencyGraph(
+        dependency_graph = DependencyGraphWalker(
             direct_dependencies=direct_dependencies, paths=paths
         )
 

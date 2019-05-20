@@ -28,7 +28,6 @@ from contextlib import ContextDecorator
 from itertools import chain
 import logging
 from collections import deque
-import copy
 
 from thoth.python import PackageVersion
 from thoth.python import Source

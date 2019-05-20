@@ -39,11 +39,11 @@ _LIBDEPENDENCY_GRAPH_SO = os.getenv(
 _LIBDEPENDENCY_GRAPH = ctypes.cdll.LoadLibrary(_LIBDEPENDENCY_GRAPH_SO)
 
 
-class DependencyGraphException(Exception):
+class DependencyGraphWalkerException(Exception):
     """A base class for dependency graph exception hierarchy."""
 
 
-class PrematureStreamEndError(DependencyGraphException):
+class PrematureStreamEndError(DependencyGraphWalkerException):
     """An exception raised if the stack stream was closed prematurely.
 
     This can happen for example due to OOM, which can kill stack producer. In that case we would like to
@@ -51,11 +51,11 @@ class PrematureStreamEndError(DependencyGraphException):
     """
 
 
-class NoDependenciesError(DependencyGraphException):
+class NoDependenciesError(DependencyGraphWalkerException):
     """An exception raised if no direct dependencies were provided to dependency graph."""
 
 
-class DependenciesCountOverflow(DependencyGraphException):
+class DependenciesCountOverflow(DependencyGraphWalkerException):
     """An exception raised if number of dependencies cannot be processed due to overflow.
 
     Based on internal representation of packages (fixed size unsigned integers).

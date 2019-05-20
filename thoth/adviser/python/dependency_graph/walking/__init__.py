@@ -18,7 +18,7 @@
 """Interface to libdependencygraph.so."""
 
 from .dependency_graph import DependencyGraph
-from .dependency_graph import DependencyGraphException
+from .dependency_graph import DependencyGraphWalkerException
 from .dependency_graph import PrematureStreamEndError
 from .dependency_graph import NoDependenciesError
 from .dependency_graph import DependenciesCountOverflow

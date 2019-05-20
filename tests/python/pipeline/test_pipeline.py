@@ -25,9 +25,9 @@ import flexmock
 from thoth.python import Project
 from thoth.python import Source
 from thoth.python import PackageVersion
-from thoth.adviser.python.bin import NoDependenciesError
-from thoth.adviser.python.bin import DependencyGraph
-from thoth.adviser.python.bin import PrematureStreamEndError
+from thoth.adviser.python.dependency_graph import NoDependenciesError
+from thoth.adviser.python.dependency_graph import DependencyGraphWalker
+from thoth.adviser.python.dependency_graph import PrematureStreamEndError
 from thoth.adviser.python.pipeline import Pipeline
 from thoth.adviser.python.pipeline import PipelineProduct
 from thoth.adviser.python.pipeline import StepContext
@@ -272,7 +272,7 @@ class TestPipeline(AdviserTestCase):
         )
 
         flexmock(
-            DependencyGraph,
+            DependencyGraphWalker,
             walk=raise_premature_stream_error,
         )
 

@@ -30,8 +30,8 @@ import pickle
 import attr
 
 from thoth.adviser.python.solver import PythonPackageGraphSolver
-from thoth.adviser.python.bin import PrematureStreamEndError
-from thoth.adviser.python.bin import DependencyGraph
+from thoth.adviser.python.dependency_graph import PrematureStreamEndError
+from thoth.adviser.python.dependency_graph import DependencyGraphWalker
 from thoth.python import Project
 from thoth.solver.python.base import SolverException
 from thoth.storages import GraphDatabase
@@ -154,11 +154,11 @@ class Pipeline:
         return step_context
 
     @staticmethod
-    def _finalize_stepping(step_context: StepContext) -> DependencyGraph:
+    def _finalize_stepping(step_context: StepContext) -> DependencyGraphWalker:
         """Finalize pipeline - run dependency graph to resolve fully pinned down stacks."""
         _LOGGER.debug("Finalizing stepping")
         step_context.final_sort()
-        dependency_graph = DependencyGraph(
+        dependency_graph = DependencyGraphWalker(
             direct_dependencies=list(step_context.iter_direct_dependencies_tuple()),
             paths=step_context.raw_paths,
         )
@@ -232,6 +232,8 @@ class Pipeline:
             )
             count = limit
 
+        _LOGGER.debug("Number of paths entering stepping part of pipeline: %d", len(step_context.raw_paths))
+
         self._log_pipeline_msg(count, limit)
         step_context.stats.start_timer()
         for step_class, parameters_dict in self.steps:
@@ -245,6 +247,8 @@ class Pipeline:
             step_instance.run(step_context)
 
         step_context.stats.log_report()
+
+        _LOGGER.debug("Number of paths after stepping part of pipeline: %d", len(step_context.raw_paths))
 
         stacks_seen = 0
         stacks_added = 0
