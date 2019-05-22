@@ -23,6 +23,7 @@ from typing import Tuple
 from typing import Dict
 from typing import Set
 from typing import Union
+from typing import Generator
 
 from itertools import chain
 from collections import deque
@@ -95,7 +96,7 @@ class DependencyGraph:
         edges_map = {}
         direct_dependency_map = {}
 
-        for path in paths:
+        for path in paths or []:
             if not path:
                 raise ValueError("Empty path supplied")
 
@@ -131,10 +132,10 @@ class DependencyGraph:
                         previous.outgoing_edges[package_node.package_tuple[0]][package_node.package_tuple] = edge
 
                 if previous_package_name not in package_node.incoming_edges:
-                    package_node.incoming_edges[previous_package_name] = []
+                    package_node.incoming_edges[previous_package_name] = {}
 
                 if edge.get_edge_key() not in package_node.incoming_edges[previous_package_name]:
-                    package_node.incoming_edges[previous_package_name].append(edge.get_edge_key())
+                    package_node.incoming_edges[previous_package_name][edge.get_edge_key()] = edge
 
                 previous = package_node
 
@@ -155,9 +156,9 @@ class DependencyGraph:
                 f"No record for package {package_tuple} found in dependency graph"
             )
 
-        for edge_tuples in chain(self.packages_map[package_tuple].incoming_edges.values()):
-            for edge_tuple in edge_tuples:
-                self.edges_map[edge_tuple].score += score_adjustment
+        for edges_dict in chain(self.packages_map[package_tuple].incoming_edges.values()):
+            for edge in edges_dict.values():
+                edge.score += score_adjustment
 
     def to_scored_package_tuple_pairs(
             self
@@ -177,9 +178,9 @@ class DependencyGraph:
         return self.remove_package_tuples({package_tuple})
 
     def remove_package_tuples(
-            self
-            ,
-            package_tuples: Set[Tuple[str, str, str]]
+        self
+        ,
+        package_tuples: Set[Tuple[str, str, str]]
     ) -> None:
         """Remove a package from dependency graph, ensure the given package can be removed.
 
@@ -205,9 +206,9 @@ class DependencyGraph:
 
             all_to_remove_nodes[to_remove_node.package_tuple] = to_remove_node
 
-            for edge_keys in chain(to_remove_node.incoming_edges.values()):
-                for edge_key in edge_keys:
-                    all_to_remove_edges[edge_key] = self.edges_map[edge_key]
+            for edges_dict in chain(to_remove_node.incoming_edges.values()):
+                for edge in edges_dict.values():
+                    all_to_remove_edges[edge.get_edge_key()] = edge
 
             # Now check each parent has an alternative for the given package.
             direct_dependency_node = self.direct_dependencies_map.get(to_remove_node.package_tuple)
@@ -226,14 +227,12 @@ class DependencyGraph:
                     )
             else:
                 for incoming_edges in to_remove_node.incoming_edges.values():
-                    for edge_tuple in incoming_edges:
-                        edge = self.edges_map[edge_tuple]
+                    for edge in incoming_edges.values():
                         edges_considered = set(e.get_edge_key() for e in edge.source.outgoing_edges[to_remove_node.package_tuple[0]].values())
                         if not edges_considered - set(all_to_remove_edges.keys()):
                             # We don't have any alternative for the removed package.
-                            for edge_tuple in incoming_edges:
-                                edge = self.edges_map[edge_tuple]
-                                stack.append((edge.source, requested_remove_node))
+                            for incoming_edge in incoming_edges.values():
+                                stack.append((incoming_edge.source, requested_remove_node))
 
         for package_tuple in all_to_remove_nodes:
             self.packages_map.pop(package_tuple)
@@ -246,14 +245,13 @@ class DependencyGraph:
                 if not edge.source.outgoing_edges[edge.target.package_tuple[0]]:
                     edge.source.outgoing_edges.pop(edge.target.package_tuple[0])
 
-                # edge.target.incoming_edges[edge.source.package_tuple[0]].remove(edge)
-                # if not edge.target.incoming_edges[edge.source.package_tuple[0]]:
-                #     edge.target.incoming_edges.pop(edge.source.package_tuple[0])
+                edge.target.incoming_edges[edge.source.package_tuple[0]].pop(edge.get_edge_key())
+                if not edge.target.incoming_edges[edge.source.package_tuple[0]]:
+                    edge.target.incoming_edges.pop(edge.source.package_tuple[0])
             else:
-                pass
-                # edge.target.incoming_edges.pop(None)
+                edge.target.incoming_edges.pop(None)
 
-            self.edges_map.pop(edge.get_edge_key())
+            self.edges_map.pop(edge.get_edge_key(), None)
 
         # FIXME: we could optimize this and check if can get removed dependencies up the dependency tree
         stack = deque(self.direct_dependencies_map.values())
@@ -274,3 +272,18 @@ class DependencyGraph:
 
         for edge_to_remove in to_remove:
             self.edges_map.pop(edge_to_remove)
+
+    def iter_transitive_dependencies_tuple(self) -> Generator[Tuple[str, str, str], None, None]:
+        """Get all transitive dependencies found in dependency graph."""
+        # Iterate over all edges and find those who have no starting node - these are packages
+        # which came are present due to its dependency.
+        package_tuples_seen = set()
+        # Create list so that we can adjust dependency graph
+        for edge in list(self.edges_map.values()):
+            if edge.source is not None and edge.target.package_tuple not in package_tuples_seen:
+                package_tuples_seen.add(edge.target.package_tuple)
+                yield edge.target.package_tuple
+
+    def iter_direct_dependencies_tuple(self) -> Generator[Tuple[str, str, str], None, None]:
+        """Iterate over all direct dependencies."""
+        yield from self.direct_dependencies_map.keys()

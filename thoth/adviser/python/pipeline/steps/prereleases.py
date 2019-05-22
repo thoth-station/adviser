@@ -43,14 +43,13 @@ class CutPreReleases(Step):
             # Keep this branch so we reset flag if another project is used.
             self._DEBUG_SKIP_REPORTED = False
 
-        with step_context.change(graceful=False) as step_change:
-            for package_version in step_context.iter_all_dependencies():
-                if (
-                    package_version.semantic_version.prerelease
-                    or package_version.semantic_version.build
-                ):
-                    package_tuple = package_version.to_tuple()
-                    _LOGGER.debug(
-                        "Removing package %r - pre-releases are disabled", package_tuple
-                    )
-                    step_change.remove_package_tuple(package_tuple)
+        for package_version in step_context.iter_all_dependencies():
+            if (
+                package_version.semantic_version.prerelease
+                or package_version.semantic_version.build
+            ):
+                package_tuple = package_version.to_tuple()
+                _LOGGER.debug(
+                    "Removing package %r - pre-releases are disabled", package_tuple
+                )
+                step_context.remove_package_tuple(package_tuple)

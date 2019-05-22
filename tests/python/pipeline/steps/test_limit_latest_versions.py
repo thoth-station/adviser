@@ -17,6 +17,8 @@
 
 """Test limiting number of latest versions considered for a single package."""
 
+import operator
+
 from thoth.adviser.python.pipeline.steps import LimitLatestVersions
 from thoth.adviser.python.pipeline.step_context import StepContext
 from thoth.python import PackageVersion
@@ -30,7 +32,6 @@ class TestLimitLatestVersions(AdviserTestCase):
 
     def test_limit_direct(self):
         """Test cutting off latest versions for a direct dependency of a type."""
-        step_context = StepContext()
         direct_dependencies = [
             PackageVersion(
                 name="tensorflow",
@@ -45,21 +46,20 @@ class TestLimitLatestVersions(AdviserTestCase):
                 develop=False,
             ),
         ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
 
-        step_context.add_paths(
+        paths = [
             [
-                [
-                    ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "1.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "1.0.0", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+                ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.0.0", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.0.0", "https://pypi.org/simple"),
+            ],
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
+
         limit_latest_versions = LimitLatestVersions(
             graph=None,
             project=None,
@@ -67,22 +67,34 @@ class TestLimitLatestVersions(AdviserTestCase):
         )
         limit_latest_versions.update_parameters({"limit_latest_versions": 1})
         limit_latest_versions.run(step_context)
-        assert list(step_context.iter_paths_with_score()) == [
+        pairs = list(sorted(
+            step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs(),
+            key=operator.itemgetter(0)
+        ))
+
+        assert pairs == [
             (
                 0.0,
-                [
+                (
+                    None,
+                    ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ),
+            ),
+            (
+                0.0,
+                (
                     ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
                     ("numpy", "1.0.0", "https://pypi.org/simple"),
-                ],
+                ),
             )
         ]
+
         assert list(
             pv.to_tuple() for pv in step_context.iter_direct_dependencies()
         ) == [("tensorflow", "2.0.0", "https://thoth-station.ninja/simple")]
 
     def test_limit_transitive(self):
         """Test cutting of latest versions for transitive dependencies."""
-        step_context = StepContext()
         direct_dependencies = [
             PackageVersion(
                 name="tensorflow",
@@ -91,21 +103,19 @@ class TestLimitLatestVersions(AdviserTestCase):
                 develop=False,
             )
         ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
 
-        step_context.add_paths(
+        paths = [
             [
-                [
-                    ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "1.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.0.0", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "2.0.0", "https://pypi.org/simple"),
+            ],
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
 
         limit_latest_versions = LimitLatestVersions(
             graph=None,
@@ -114,13 +124,26 @@ class TestLimitLatestVersions(AdviserTestCase):
         )
         limit_latest_versions.update_parameters({"limit_latest_versions": 1})
         limit_latest_versions.run(step_context)
-        assert list(step_context.iter_paths_with_score()) == [
+
+        pairs = list(sorted(
+            step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs(),
+            key=operator.itemgetter(0)
+        ))
+
+        assert pairs == [
             (
                 0.0,
-                [
+                (
+                    None,
+                    ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ),
+            ),
+            (
+                0.0,
+                (
                     ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
                     ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
+                ),
             )
         ]
         assert list(
@@ -129,7 +152,6 @@ class TestLimitLatestVersions(AdviserTestCase):
 
     def test_limit_all(self):
         """Test cutting of latest versions for direct and transitive dependencies."""
-        step_context = StepContext()
         direct_dependencies = [
             PackageVersion(
                 name="tensorflow",
@@ -144,29 +166,27 @@ class TestLimitLatestVersions(AdviserTestCase):
                 develop=False,
             ),
         ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
 
-        step_context.add_paths(
+        paths = [
             [
-                [
-                    ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "1.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "1.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+                ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.0.0", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "2.0.0", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.0.0", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "2.0.0", "https://pypi.org/simple"),
+            ],
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
 
         limit_latest_versions = LimitLatestVersions(
             graph=None,
@@ -175,13 +195,26 @@ class TestLimitLatestVersions(AdviserTestCase):
         )
         limit_latest_versions.update_parameters({"limit_latest_versions": 1})
         limit_latest_versions.run(step_context)
-        assert list(step_context.iter_paths_with_score()) == [
+
+        pairs = list(sorted(
+            step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs(),
+            key=operator.itemgetter(0)
+        ))
+
+        assert pairs == [
             (
                 0.0,
-                [
+                (
+                    None,
+                    ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ),
+            ),
+            (
+                0.0,
+                (
                     ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
                     ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
+                ),
             )
         ]
         assert list(
@@ -190,7 +223,6 @@ class TestLimitLatestVersions(AdviserTestCase):
 
     def test_limit_no_change(self):
         """Test cutting off latest versions without any change."""
-        step_context = StepContext()
         direct_dependencies = [
             PackageVersion(
                 name="tensorflow",
@@ -205,29 +237,28 @@ class TestLimitLatestVersions(AdviserTestCase):
                 develop=False,
             ),
         ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
 
-        step_context.add_paths(
+        paths = [
             [
-                [
-                    ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "1.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "1.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+                ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.0.0", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "2.0.0", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.0.0", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "2.0.0", "https://pypi.org/simple"),
+            ],
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
+
         limit_latest_versions = LimitLatestVersions(
             graph=None,
             project=None,
@@ -235,36 +266,25 @@ class TestLimitLatestVersions(AdviserTestCase):
         )
         limit_latest_versions.update_parameters({"limit_latest_versions": 2})
         limit_latest_versions.run(step_context)
-        assert list(step_context.iter_paths_with_score()) == [
-            (
-                0.0,
-                [
-                    ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "1.0.0", "https://pypi.org/simple"),
-                ],
-            ),
-            (
-                0.0,
-                [
-                    ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ),
-            (
-                0.0,
-                [
-                    ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "1.0.0", "https://pypi.org/simple"),
-                ],
-            ),
-            (
-                0.0,
-                [
-                    ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ),
+
+        pairs = list(sorted(
+            step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs(),
+            key=operator.itemgetter(0)
+        ))
+
+        assert pairs == [
+            (0.0, (None, ('tensorflow', '1.9.0', 'https://thoth-station.ninja/simple'))),
+            (0.0, (('tensorflow', '1.9.0', 'https://thoth-station.ninja/simple'),
+                   ('numpy', '1.0.0', 'https://pypi.org/simple'))),
+            (0.0, (('tensorflow', '1.9.0', 'https://thoth-station.ninja/simple'),
+                   ('numpy', '2.0.0', 'https://pypi.org/simple'))),
+            (0.0, (None, ('tensorflow', '2.0.0', 'https://thoth-station.ninja/simple'))),
+            (0.0, (('tensorflow', '2.0.0', 'https://thoth-station.ninja/simple'),
+                   ('numpy', '1.0.0', 'https://pypi.org/simple'))),
+            (0.0, (('tensorflow', '2.0.0', 'https://thoth-station.ninja/simple'),
+                   ('numpy', '2.0.0', 'https://pypi.org/simple')))
         ]
+
         assert list(
             pv.to_tuple() for pv in step_context.iter_direct_dependencies()
         ) == [

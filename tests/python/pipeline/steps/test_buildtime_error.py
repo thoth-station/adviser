@@ -17,6 +17,8 @@
 
 """Test filtering out buildtime errors."""
 
+from itertools import chain
+
 from base import AdviserTestCase
 
 import pytest
@@ -42,7 +44,6 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
 
     @staticmethod
     def _get_prepared_context():
-        step_context = StepContext()
         direct_dependencies = [
             PackageVersion(
                 name="flask",
@@ -51,23 +52,19 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
                 develop=False,
             ),
         ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
 
-        step_context.add_paths(
+        paths = [
             [
-                [
-                    ("flask", "0.12.0", "https://pypi.org/simple"),
-                    ("click", "2.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", "0.12.0", "https://pypi.org/simple"),
-                    ("click", "2.1", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+                ("flask", "0.12.0", "https://pypi.org/simple"),
+                ("click", "2.0", "https://pypi.org/simple"),
+            ],
+            [
+                ("flask", "0.12.0", "https://pypi.org/simple"),
+                ("click", "2.1", "https://pypi.org/simple"),
+            ],
+        ]
 
-        return step_context
+        return StepContext.from_paths(direct_dependencies, paths)
 
     def test_remove_simple(self):
         flexmock(GraphDatabase)
@@ -105,8 +102,10 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
         )
         buildtime_error_filtering.run(step_context)
 
-        assert len(step_context.raw_paths) == 1, "Wrong number of paths removed"
-        assert ("click", "2.0", "https://pypi.org/simple") not in step_context.raw_paths[0], "Wrong path removed"
+        pairs = step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs()
+        assert len(pairs) == 2, "Wrong number of paths removed"
+        pairs = chain(pair[1] for pair in pairs)
+        assert ("click", "2.0", "https://pypi.org/simple") not in pairs, "Wrong path removed"
 
     def test_remove_error(self):
         flexmock(GraphDatabase)

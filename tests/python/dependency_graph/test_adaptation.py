@@ -26,7 +26,7 @@ from thoth.adviser.python.dependency_graph import DependencyGraphAdaptation
 from thoth.adviser.python.dependency_graph import CannotRemovePackage
 
 
-class TestDependencyGraph(AdviserTestCase):
+class TestDependencyGraphAdaptation(AdviserTestCase):
     def test_empty(self):
         dg = DependencyGraphAdaptation.from_paths([])
         pairs = dg.to_scored_package_tuple_pairs()

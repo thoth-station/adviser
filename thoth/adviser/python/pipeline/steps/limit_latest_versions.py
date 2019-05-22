@@ -26,7 +26,7 @@ import logging
 
 from ..step import Step
 from ..step_context import StepContext
-from ..exceptions import CannotRemovePackage
+from thoth.adviser.python.dependency_graph import CannotRemovePackage
 
 _LOGGER = logging.getLogger(__name__)
 

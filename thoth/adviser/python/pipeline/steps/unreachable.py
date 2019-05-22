@@ -41,16 +41,15 @@ class CutUnreachable(Step):
                 package_version.locked_version
             )
 
-        with step_context.change(graceful=True) as change_context:
-            for package_version in step_context.iter_transitive_dependencies():
-                if (
-                    package_version.name in direct_dependencies_map
-                    and package_version.locked_version
-                    not in direct_dependencies_map[package_version.name]
-                ):
-                    package_tuple = package_version.to_tuple()
-                    _LOGGER.debug(
-                        "Removing package %r - unreachable based on direct dependencies",
-                        package_tuple,
-                    )
-                    change_context.remove_package_tuple(package_tuple)
+        for package_version in step_context.iter_transitive_dependencies():
+            if (
+                package_version.name in direct_dependencies_map
+                and package_version.locked_version
+                not in direct_dependencies_map[package_version.name]
+            ):
+                package_tuple = package_version.to_tuple()
+                _LOGGER.debug(
+                    "Removing package %r - unreachable based on direct dependencies",
+                    package_tuple,
+                )
+                step_context.remove_package_tuple(package_tuple)

@@ -75,13 +75,9 @@ class StackCandidates:
     def get_package_version_tuple(self, package_tuple: tuple) -> PackageVersion:
         """Get package version from the dependencies map based on tuple provided."""
         try:
-            return self.transitive_dependencies_map[package_tuple[0]][package_tuple[1]][
-                package_tuple[2]
-            ]
+            return self.transitive_dependencies_map[package_tuple]
         except KeyError:
-            return self.direct_dependencies_map[package_tuple[0]][package_tuple[1]][
-                package_tuple[2]
-            ]
+            return self.direct_dependencies_map[package_tuple]
 
     def generate_pipeline_products(self) -> Generator[PipelineProduct, None, None]:
         """Generate projects in stack candidates.

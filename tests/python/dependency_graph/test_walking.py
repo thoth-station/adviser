@@ -26,7 +26,7 @@ from thoth.adviser.python.dependency_graph import NoDependenciesError
 from thoth.adviser.python.dependency_graph import DependenciesCountOverflow
 
 
-class TestDependencyGraph(AdviserTestCase):
+class TestDependencyGraphWalking(AdviserTestCase):
 
     def test_no_dependency_error(self):
         """Test there is raised an exception if there are no dependencies specified."""

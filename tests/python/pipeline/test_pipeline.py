@@ -17,8 +17,6 @@
 
 """Test pipeline run."""
 
-from functools import partial
-
 import pytest
 import flexmock
 
@@ -88,28 +86,20 @@ class _MockStrideRemoveStack(Stride):
 class TestPipeline(AdviserTestCase):
     """Test pipeline run and manipulation."""
 
-    @staticmethod
-    def _pipeline_prepare_direct_dependencies(step_context: StepContext, with_devel: bool = False) -> StepContext:
-        """A mocked version of _prepare_direct_dependencies as implemented in the Pipeline."""
-        assert with_devel is True
-        assert isinstance(step_context, StepContext)
-        return step_context
-
     def test_step_simple_run(self):
         """Test running a single step inside pipeline."""
         project = Project.from_strings(_PIPFILE_STR)
 
-        # We do not provide any paths.
-        step_context = StepContext()
-        step_context.add_resolved_direct_dependency(
-            # Add any package here, we raise anyway.
+        direct_dependencies = [
             PackageVersion(
                 name="flask",
                 version="==1.0.2",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        )
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, [])
 
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
@@ -122,8 +112,8 @@ class TestPipeline(AdviserTestCase):
 
         flexmock(
             pipeline,
-            _prepare_direct_dependencies=partial(self._pipeline_prepare_direct_dependencies, step_context),
-            _resolve_transitive_dependencies=lambda _: None,
+            _prepare_direct_dependencies=lambda with_devel: None,
+            _resolve_transitive_dependencies=lambda _: step_context,
         )
 
         # We raise an exception on first walk call, no stacks should be produced.
@@ -142,17 +132,16 @@ class TestPipeline(AdviserTestCase):
         """Test running a single stride inside pipeline."""
         project = Project.from_strings(_PIPFILE_STR)
 
-        # We do not provide any paths.
-        step_context = StepContext()
-        step_context.add_resolved_direct_dependency(
-            # Add any package here, we raise anyway.
+        direct_dependencies = [
             PackageVersion(
                 name="flask",
                 version="==1.0.2",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        )
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, [])
 
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
@@ -167,8 +156,8 @@ class TestPipeline(AdviserTestCase):
 
         flexmock(
             pipeline,
-            _prepare_direct_dependencies=partial(self._pipeline_prepare_direct_dependencies, step_context),
-            _resolve_transitive_dependencies=lambda _: None,
+            _prepare_direct_dependencies=lambda with_devel: None,
+            _resolve_transitive_dependencies=lambda _: step_context,
         )
 
         # We raise an exception on first walk call, no stacks should be produced.
@@ -185,17 +174,16 @@ class TestPipeline(AdviserTestCase):
     def test_stride_remove_stack(self):
         project = Project.from_strings(_PIPFILE_STR)
 
-        # We do not provide any paths.
-        step_context = StepContext()
-        step_context.add_resolved_direct_dependency(
-            # Add any package here, we raise anyway.
+        direct_dependencies = [
             PackageVersion(
                 name="flask",
                 version="==1.0.2",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        )
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, [])
 
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
@@ -208,8 +196,8 @@ class TestPipeline(AdviserTestCase):
 
         flexmock(
             pipeline,
-            _prepare_direct_dependencies=partial(self._pipeline_prepare_direct_dependencies, step_context),
-            _resolve_transitive_dependencies=lambda _: None,
+            _prepare_direct_dependencies=lambda with_devel: None,
+            _resolve_transitive_dependencies=lambda _: step_context,
         )
 
         # We raise an exception on first walk call, no stacks should be produced.
@@ -220,17 +208,16 @@ class TestPipeline(AdviserTestCase):
         """Test running step and stride at the same time."""
         project = Project.from_strings(_PIPFILE_STR)
 
-        # We do not provide any paths.
-        step_context = StepContext()
-        step_context.add_resolved_direct_dependency(
-            # Add any package here, we raise anyway.
+        direct_dependencies = [
             PackageVersion(
                 name="flask",
                 version="==1.0.2",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        )
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, [])
 
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
@@ -243,8 +230,8 @@ class TestPipeline(AdviserTestCase):
 
         flexmock(
             pipeline,
-            _prepare_direct_dependencies=partial(self._pipeline_prepare_direct_dependencies, step_context),
-            _resolve_transitive_dependencies=lambda _: None,
+            _prepare_direct_dependencies=lambda with_devel: None,
+            _resolve_transitive_dependencies=lambda _: step_context,
         )
 
         # We raise an exception on first walk call, no stacks should be produced.
@@ -276,21 +263,21 @@ class TestPipeline(AdviserTestCase):
             walk=raise_premature_stream_error,
         )
 
-        # We do not provide any paths.
-        step_context = StepContext()
-        step_context.add_resolved_direct_dependency(
-            # Add any package here, we raise anyway.
+        direct_dependencies = [
             PackageVersion(
                 name="flask",
                 version="==1.0.2",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        )
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, [])
+
         flexmock(
             pipeline,
-            _prepare_direct_dependencies=partial(self._pipeline_prepare_direct_dependencies, step_context),
-            _resolve_transitive_dependencies=lambda _: None,
+            _prepare_direct_dependencies=lambda with_devel: None,
+            _resolve_transitive_dependencies=lambda _: step_context,
         )
 
         # We raise an exception on first walk call, no stacks should be produced.
@@ -318,11 +305,12 @@ class TestPipeline(AdviserTestCase):
             strides=[],
         )
 
-        # We do not provide any paths.
-        step_context = StepContext()
+        step_context = StepContext.from_paths([], [])
+
         flexmock(
             pipeline,
-            _prepare_direct_dependencies=partial(self._pipeline_prepare_direct_dependencies, step_context)
+            _prepare_direct_dependencies=lambda with_devel: None,
+            _resolve_transitive_dependencies=lambda _: step_context,
         )
 
         with pytest.raises(NoDependenciesError):

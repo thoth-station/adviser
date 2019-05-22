@@ -20,10 +20,11 @@
 import logging
 
 from thoth.python import PackageVersion
+from thoth.adviser.python.dependency_graph import CannotRemovePackage
+
 
 from ..step import Step
 from ..step_context import StepContext
-from ..exceptions import CannotRemovePackage
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class CutToolchain(Step):
         """Cut off packages from toolchain."""
         # reversed() to remove from the oldest ones so we keep new ones.
         # We cut off toolchain packages only in transitive dependency listing.
-        for package_version in reversed(list(step_context.iter_transitive_dependencies())):
+        for package_version in step_context.iter_transitive_dependencies():
             package_tuple = package_version.to_tuple()
             if self.is_toolchain(package_version):
                 _LOGGER.debug("Removing package %r - toolchain package", package_tuple)
