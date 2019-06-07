@@ -1,6 +1,7 @@
 - project:
     check:
       jobs:
+        - "thoth-integrationtest-adviser"
         - "thoth-coala"
         - "thoth-pytest"
     gate:
