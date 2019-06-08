@@ -111,13 +111,12 @@ in implementation. You can do so easily by running:
 .. code-block:: console
 
   pipenv install
-  PYTHONPATH=. JANUSGRAPH_SERVICE_HOST=janusgraph.test.thoth-station.ninja pipenv run ./thoth-adviser --help
+  PYTHONPATH=. GRAPH_TLS_PATH=<graph-tls-path> GRAPH_SERVICE_HOST=<graph-service-host> pipenv run ./thoth-adviser --help
 
-This command will set `janusgraph.test.thoth-station.ninja` (Dgraph
+This command will set `<graph-service-host>` (Dgraph
 deployed in test environment) as your source for advises and information for
-resolver to correctly resovle dependencies. Feel free to use `a local
-Dgraph instance
-<https://github.com/thoth-station/janusgraph-thoth-config#running-janusgraph-instance-locally>`_
+resolver to correctly resolve dependencies. Feel free to use `a local
+Dgraph instance`, as explaind here<https://github.com/thoth-station/thoth-storages>,
 if it suits your needs. Also, follow the developer's guide to get `more
 information about developer's setup
 <https://github.com/thoth-station/thoth/blob/master/docs/developers_guide.rst>`_.
@@ -129,4 +128,4 @@ container with memory limit set for large application stacks. To do so, use
 .. code-block:: console
 
   s2i build . centos/python-36-centos7 thoth-adviser
-  docker run -m 8G -e THOTH_ADVISER_SUBCOMMAND=advise -e JANUSGRAPH_SERVICE_HOST=janusgraph.test.thoth-station.ninja thoth-adviser
+  docker run -m 8G -e THOTH_ADVISER_SUBCOMMAND=advise -e GRAPH_SERVICE_HOST=<graph-service-host> thoth-adviser
