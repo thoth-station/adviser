@@ -400,10 +400,10 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:0b0189c306cd7ef7ae9352e1638dcfde462a1060c887a59eab045958bd256001"
+                "sha256:d238103c93976db4ccc1593f2448deb760d6a3efb819bc6947e20800ebfc2cc4"
             ],
             "index": "pypi",
-            "version": "==0.11.4"
+            "version": "==0.14.1"
         },
         "timestamp": {
             "hashes": [
