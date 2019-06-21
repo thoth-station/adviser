@@ -11,6 +11,13 @@
     release:
       jobs:
         - "upload-pypi-sesheta"
+    post:
+      jobs:
+        - "trigger-build":
+            vars:
+              cluster: "paas.psi.redhat.com"
+              namespace: "thoth-test-core"
+              buildConfigName: "adviser"
     kebechet-auto-gate:
       queue: "thoth-station/core"
       jobs:

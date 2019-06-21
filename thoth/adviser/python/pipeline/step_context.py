@@ -307,11 +307,11 @@ class StepContext(ContextBase):
         old_paths_length = len(self._paths)
         old_direct_length = len(self._direct_dependencies)
 
-        new_paths = []
+        new_paths_idx = []
         stack = deque([package_tuple])
         removed = set()
-        # Do not adjust it directly - it can lead to an invalid self._paths in case of an exception.
-        paths = copy.copy(self._paths)
+        # Assign all at first.
+        paths_idx = range(len(self._paths))
         # We update associate dependency map once we know the given package is actually removed.
         to_remove_associate_dependency_map = set()
 
@@ -319,9 +319,10 @@ class StepContext(ContextBase):
             to_remove_tuple = stack.pop()
             removed.add(to_remove_tuple)
 
-            for score, path in paths:
+            for path_idx in paths_idx:
+                score, path = self._paths[path_idx]
                 if to_remove_tuple not in path:
-                    new_paths.append((score, path))
+                    new_paths_idx.append(path_idx)
                     continue
 
                 # Check that if we remove this package, the removal of path does not
@@ -367,7 +368,7 @@ class StepContext(ContextBase):
                             stack.append(dependent)
                             # Delegate removal of this path to the next round as "dependent" introduced bad
                             # package which should be removed.
-                            new_paths.append((score, path))
+                            new_paths_idx.append(path_idx)
 
                     self._associate_dependent_map[to_remove_tuple] = set()
                     for dependent in dependents:
@@ -381,8 +382,8 @@ class StepContext(ContextBase):
             }
 
             # Assign new paths with removed packages, we iterate on this list to satisfy all the removals.
-            paths = list(new_paths)
-            new_paths = []
+            paths_idx = new_paths_idx
+            new_paths_idx = []
 
         # We need to check we construct direct dependency list from:
         #  1. All the direct dependencies stated in paths.
@@ -394,8 +395,8 @@ class StepContext(ContextBase):
         # PS: this will be much simpler if we would just maintain paths
         # with each direct dependency in place.
         new_direct_dependencies_from_paths = set()
-        for _, path in paths:
-            new_direct_dependencies_from_paths.add(path[0])
+        for path_idx in paths_idx:
+            new_direct_dependencies_from_paths.add(self._paths[path_idx][1][0])
 
         old_direct_dependencies_from_paths = set()
         for _, path in self._paths:
@@ -432,7 +433,7 @@ class StepContext(ContextBase):
                 to_remove_tuple
             )
 
-        self._paths = paths
+        self._paths = [path for idx, path in enumerate(self._paths) if idx in set(paths_idx)]
         self._direct_dependencies = [
             self.get_package_version_tuple(pt) for pt in new_direct_dependencies_tuples
         ]
