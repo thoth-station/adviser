@@ -190,7 +190,7 @@ class DependencyGraph:
 
         if bool(os.getenv("THOTH_ADVISER_SHOW_PACKAGES", 0)):
             _LOGGER.info("Packages considered in dependency graph traversal:")
-            for item in sorted(self._context):
+            for item in self._context:
                 _LOGGER.info("    %r", item)
 
         if len(self._context) > self.MAX_DEPENDENCIES_COUNT:

@@ -15,20 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Filter out stacks which have runtime errors."""
-
-import logging
-
-from thoth.adviser.python.dependency_graph import CannotRemovePackage
-
-from ..step import Step
-from ..step_context import StepContext
-
-_LOGGER = logging.getLogger(__name__)
+"""Exceptions hierarchy for dependency graph adaptation."""
 
 
-class RuntimeErrorFiltering(Step):
-    """Filtering of stacks which encountered runtime errors."""
+class DependencyGraphAdaptationException(Exception):
+    """A top-class exception in dependency graph hierarchy."""
 
-    def run(self, step_context: StepContext) -> None:
-        """Filter out packages which have runtime errors."""
+
+class CannotRemovePackage(DependencyGraphAdaptationException):
+    """Raised if the given package cannot be removed."""
+
+
+class RemoveMultiplePackages(DependencyGraphAdaptationException):
+    """Raised if requested to remove a single package but multiple would be removed."""
+
+
+class PackageNotFound(DependencyGraphAdaptationException):
+    """Raised if the given package cannot be removed."""
+
+
+class TransactionExpired(DependencyGraphAdaptationException):
+    """Raised if the given transaction has been committed or rolled back."""

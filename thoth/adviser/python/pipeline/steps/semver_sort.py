@@ -24,6 +24,8 @@ from thoth.python import PackageVersion
 
 from ..step import Step
 from ..step_context import StepContext
+from thoth.adviser.python.dependency_graph.adaptation import Edge
+from thoth.adviser.python.pipeline.units import semver_cmp_package_version
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,61 +35,39 @@ class SemverSort(Step):
 
     @classmethod
     def _semver_cmp_function_path(
-        cls, step_context: StepContext, path1: list, path2: list
+        cls,
+        step_context: StepContext,
+        edge1: Edge,
+        edge2: Edge,
     ) -> int:
-        """Compare two paths and report which should take precedence.
+        """Compare two edges and report which should take precedence.
 
         To have stacks sorted from latest down to oldest, ideally we should take into account package release
         date. We are approximating the sorting based on semver of packages. This means that a stack which is made
         of packages in the following versions:
+
+        Basically, we sort serialized dependency graph (edges) based on target package tuples which makes sure
+        all the nodes in dependency graph are sorted based on semver (root nodes have source None) down to leaf nodes.
         """
-        # Be interested in paths, omit scores.
-        path1 = path1[1]
-        path2 = path2[1]
-        for idx in range(len(path1)):
-            if idx >= len(path2):
-                return -1
+        if edge1.source is None and edge2.source is not None:
+            return 1
 
-            package_version1 = step_context.get_package_version_tuple(path1[idx])
-            package_version2 = step_context.get_package_version_tuple(path2[idx])
-            cmp_result = cls._semver_cmp_function(package_version1, package_version2)
-            if cmp_result != 0:
-                return cmp_result
+        if edge2.source is None and edge1.source is not None:
+            return -1
 
-        # Same paths?! This should be probably unreachable but this can happen if we did not take into
-        # account os or python version when querying graph database. We take this into account earlier.
-        return 0
+        if edge1.source is not None and edge2.source is not None:
+            package_version1: PackageVersion = step_context.packages[edge1.source.package_tuple]
+            package_version2: PackageVersion = step_context.packages[edge2.source.package_tuple]
 
-    @staticmethod
-    def _semver_cmp_function(
-        package_version1: PackageVersion, package_version2: PackageVersion
-    ) -> int:
-        """Compare two packages based on semver."""
-        if package_version1.name != package_version2.name:
-            # We call this function with reverse set to true, to have packages sorted alphabetically we
-            # inverse logic here so package names are *really* sorted alphabetically.
-            return -int(package_version1.name > package_version2.name) or 1
-        elif package_version1 != package_version2:
-            result = package_version1.semantic_version.__cmp__(
-                package_version2.semantic_version
-            )
+            result = semver_cmp_package_version(package_version1, package_version2)
+            if result != 0:
+                return result
 
-            if result is NotImplemented:
-                # Based on semver, this can happen if at least one has build
-                # metadata - there is no ordering specified.
-                if package_version1.semantic_version.build:
-                    return -1
-                return 1
+        package_version1: PackageVersion = step_context.packages[edge1.target.package_tuple]
+        package_version2: PackageVersion = step_context.packages[edge2.target.package_tuple]
 
-            return result
-        elif package_version1.index.url != package_version2.index.url:
-            return -int(package_version1.index_url < package_version2.index.url) or 1
-
-        return 0
+        return semver_cmp_package_version(package_version1, package_version2)
 
     def run(self, step_context: StepContext):
         """Sort paths in context based on semver of packages."""
-        step_context.sort_paths(
-            partial(self._semver_cmp_function_path, step_context), reverse=False
-        )
-        step_context.sort_direct_dependencies(self._semver_cmp_function, reverse=False)
+        step_context.sort_paths(partial(self._semver_cmp_function_path, step_context), reverse=False)

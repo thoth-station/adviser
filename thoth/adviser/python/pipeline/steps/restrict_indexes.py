@@ -46,4 +46,5 @@ class RestrictIndexes(Step):
                 _LOGGER.warning(
                     "Removing package %r - not in restricted indexes", package_tuple
                 )
-                step_context.remove_package_tuple(package_tuple)
+                with step_context.remove_package_tuples(package_tuple) as txn:
+                    txn.commit()

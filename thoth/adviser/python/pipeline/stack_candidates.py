@@ -62,7 +62,7 @@ class StackCandidates:
         # first inserted if score matches. This requires insertion first and generation later on (do not mix
         # calls) - this is preserved in our case.
         heap_item = (
-            (-stride_context.score, len(self._stack_candidates)),
+            (stride_context.score, len(self._stack_candidates)),
             stride_context.justification,
             stride_context.stack_candidate,
         )
@@ -87,7 +87,7 @@ class StackCandidates:
         while self._stack_candidates:
             heap_item = heappop(self._stack_candidates)
             sort_key, justification, stack_candidate = heap_item
-            score = -sort_key[0]
+            score = sort_key[0]
             package_versions_locked = [
                 self.get_package_version_tuple(package_tuple)
                 for package_tuple in stack_candidate

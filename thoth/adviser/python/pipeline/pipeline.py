@@ -18,6 +18,7 @@
 """Implementation of stack generation pipeline."""
 
 import os
+import gc
 from typing import Generator
 from typing import List
 from typing import Tuple
@@ -155,14 +156,15 @@ class Pipeline:
     def _finalize_stepping(step_context: StepContext) -> DependencyGraphWalker:
         """Finalize pipeline - run dependency graph to resolve fully pinned down stacks."""
         _LOGGER.debug("Finalizing stepping...")
-        paths = sorted(
-            step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs(),
-            key=operator.itemgetter(0)
-        )
+        scored_package_tuple_pairs = step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs()
+        # It's important to have this sort stable so that we reflect relative ordering of paths
+        # based on for example semver sort which have same score.
+        paths = sorted(scored_package_tuple_pairs, key=operator.itemgetter(0))
         # We don't need actual score of paths and remove paths which are direct dependencies.
+        direct_dependencies = list(set(path[1][1] for path in paths if path[1][0] is None))
         paths = [path[1] for path in paths if path[1][0] is not None]
         dependency_graph = DependencyGraphWalker(
-            direct_dependencies=list(step_context.iter_direct_dependencies_tuple()),
+            direct_dependencies=direct_dependencies,
             paths=paths,
         )
 
@@ -212,6 +214,8 @@ class Pipeline:
             step_context = self._initialize_stepping()
             if os.getenv("THOTH_ADVISER_FILEDUMP"):
                 _LOGGER.warning("Storing filedump %r as per user request", os.environ["THOTH_ADVISER_FILEDUMP"])
+                import sys
+                sys.setrecursionlimit(5000)
                 with open(os.getenv("THOTH_ADVISER_FILEDUMP"), "wb") as file_dump:
                     pickle.dump(step_context, file_dump)
 
@@ -235,6 +239,11 @@ class Pipeline:
             )
             count = limit
 
+        # Explicitly call garbage collector to be more efficient with memory before actually running the pipeline.
+        _LOGGER.debug("Explicitly calling garbage collector before pipeline")
+        gc.collect()
+
+        _LOGGER.info("Preparing pipeline steps")
         self._log_pipeline_msg(count, limit)
         step_context.stats.start_timer()
         for step_class, parameters_dict in self.steps:

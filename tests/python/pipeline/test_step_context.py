@@ -80,7 +80,8 @@ class TestStepContext(AdviserTestCase):
         )
 
         to_remove = ("flask", "0.12.1", "https://pypi.org/simple")
-        step_context.remove_package_tuple(to_remove)
+        with step_context.remove_package_tuples(to_remove) as txn:
+            txn.commit()
 
         assert original_transitive_deps_len == len(
             list(step_context.iter_transitive_dependencies())
@@ -105,7 +106,8 @@ class TestStepContext(AdviserTestCase):
         )
 
         to_remove = ("werkzeug", "0.13", "https://pypi.org/simple")
-        step_context.remove_package_tuple(to_remove)
+        with step_context.remove_package_tuples(to_remove) as txn:
+            txn.commit()
 
         assert original_direct_deps_len == len(
             list(step_context.iter_direct_dependencies())
@@ -149,7 +151,8 @@ class TestStepContext(AdviserTestCase):
 
         # Now remove werkzeug 0.14 which will lead to removal of flask 1.0.1.
         to_remove = ("werkzeug", "0.14", "https://pypi.org/simple")
-        step_context.remove_package_tuple(to_remove)
+        with step_context.remove_package_tuples(to_remove) as txn:
+            txn.commit()
 
         assert len(list(step_context.iter_direct_dependencies())) == 1
         assert len(list(step_context.iter_transitive_dependencies_tuple())) == 1
@@ -187,9 +190,8 @@ class TestStepContext(AdviserTestCase):
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
         with pytest.raises(CannotRemovePackage):
-            step_context.remove_package_tuple(
-                ("six", "1.0.0", "https://pypi.org/simple")
-            )
+            with step_context.remove_package_tuples(("six", "1.0.0", "https://pypi.org/simple")):
+                pass
 
     def test_remove_package_tuple_transitive_with_direct_diamond_error(self):
         """Test removal of a package which does not have any candidate of direct dependency."""
@@ -218,9 +220,8 @@ class TestStepContext(AdviserTestCase):
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
         with pytest.raises(CannotRemovePackage):
-            step_context.remove_package_tuple(
-                ("six", "1.0.0", "https://pypi.org/simple")
-            )
+            with step_context.remove_package_tuples(("six", "1.0.0", "https://pypi.org/simple")):
+                pass
 
     def test_remove_package_tuple_direct_error(self):
         """Test removal of a package which is a direct dependency and causes issues."""
@@ -236,9 +237,8 @@ class TestStepContext(AdviserTestCase):
         step_context = StepContext.from_paths(direct_dependencies, paths=[])
 
         with pytest.raises(CannotRemovePackage):
-            step_context.remove_package_tuple(
-                ("flask", "0.12.1", "https://pypi.org/simple")
-            )
+            with step_context.remove_package_tuples(("flask", "0.12.1", "https://pypi.org/simple")):
+                pass
 
     def test_remove_package_tuple_transitive_error(self):
         """Remove a transitive dependency which will cause error during removal."""
@@ -262,6 +262,5 @@ class TestStepContext(AdviserTestCase):
         step_context = StepContext.from_paths(direct_dependencies, paths=paths)
 
         with pytest.raises(CannotRemovePackage):
-            step_context.remove_package_tuple(
-                ("six", "1.0.0", "https://pypi.org/simple")
-            )
+            with step_context.remove_package_tuples(("six", "1.0.0", "https://pypi.org/simple")):
+                pass

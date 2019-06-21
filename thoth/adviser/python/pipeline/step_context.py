@@ -22,6 +22,7 @@ from typing import Generator
 from typing import List
 from typing import Set
 from typing import Tuple
+from typing import Callable
 from itertools import chain
 import logging
 
@@ -30,7 +31,7 @@ import attr
 from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.adviser.python.dependency_graph import DependencyGraphAdaptation
-from thoth.adviser.python.dependency_graph import CannotRemovePackage
+from thoth.adviser.python.dependency_graph import DependencyGraphTransaction
 
 from .step_stats import StepStats
 from .context_base import ContextBase
@@ -49,12 +50,12 @@ class StepContext(ContextBase):
     @classmethod
     def from_paths(cls, direct_dependencies: List[PackageVersion], paths: List[List[Tuple[str, str, str]]]) -> "StepContext":
         """Instantiate step context from paths."""
-        packages = {}
-        for package_version in direct_dependencies:
-            package_tuple = package_version.to_tuple()
-            if package_tuple not in packages:
-                packages[package_tuple] = package_version
-
+        _LOGGER.debug("Preparing for instantiating step context")
+        packages = {p.to_tuple(): p for p in direct_dependencies}
+        # for package_version in direct_dependencies:
+        #     package_tuple = package_version.to_tuple()
+        #     if package_tuple not in packages:
+        #         packages[package_tuple] = package_version
         for path in paths:
             develop = packages[path[0]].develop
             for package_tuple in path:
@@ -73,6 +74,7 @@ class StepContext(ContextBase):
         for direct_dependency in direct_dependencies:
             paths.append([direct_dependency.to_tuple()])
 
+        _LOGGER.info("Instantiating step context and constructing dependency graph adaptation")
         return cls(
             packages=packages,
             dependency_graph_adaptation=DependencyGraphAdaptation.from_paths(paths),
@@ -82,6 +84,14 @@ class StepContext(ContextBase):
     def stats(self) -> StepStats:
         """Retrieve statistics kept during steps computation."""
         return self._stats
+
+    def sort_paths(
+        self,
+        comparision_func: Callable[[PackageVersion, PackageVersion], int],
+        reverse: bool = True
+    ) -> None:
+        """Sort paths in the dependency graph."""
+        self.dependency_graph_adaptation.sort_paths(comparision_func, reverse=reverse)
 
     def iter_direct_dependencies(self) -> Generator[PackageVersion, None, None]:
         """Iterate over direct dependencies, respect their ordering."""
@@ -122,27 +132,12 @@ class StepContext(ContextBase):
                 seen_tuples.add(package_tuple)
                 yield package_tuple
 
-    def remove_package_tuple(self, package_tuple: Tuple[str, str, str], graceful: bool = False) -> bool:
-        """Remove the given package from all the resolution paths, transactional operation."""
-        try:
-            self.dependency_graph_adaptation.remove_package_tuple(package_tuple)
-        except CannotRemovePackage:
-            if graceful:
-                return False
-            raise
-
-        return True
-
-    def remove_package_tuples(self, package_tuples: Set[Tuple[str, str, str]], graceful: bool = False) -> bool:
+    def remove_package_tuples(
+        self,
+        *package_tuples: Tuple[str, str, str],
+    ) -> DependencyGraphTransaction:
         """Remove all packages from all the resolution paths, transactional operation."""
-        try:
-            self.dependency_graph_adaptation.remove_package_tuple(package_tuples)
-        except CannotRemovePackage:
-            if graceful:
-                return False
-            raise
-
-        return True
+        return self.dependency_graph_adaptation.remove_package_tuples(*package_tuples)
 
     def score_package_tuple(
         self, package_tuple: Tuple[str, str, str], score: float

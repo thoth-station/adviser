@@ -31,6 +31,8 @@ from .adaptation import CannotRemovePackage
 from .adaptation import DependencyGraphAdaptationException
 from .adaptation import DependencyGraph as DependencyGraphAdaptation
 from .adaptation import PackageNotFound
+from .adaptation import RemoveMultiplePackages
+from .adaptation import DependencyGraphTransaction
 from .walking import DependenciesCountOverflow
 from .walking import DependencyGraph as DependencyGraphWalker
 from .walking import DependencyGraphWalkerException

@@ -19,6 +19,8 @@
 
 import logging
 
+from thoth.adviser.python.dependency_graph import CannotRemovePackage
+
 from ..step import Step
 from ..step_context import StepContext
 
@@ -52,4 +54,9 @@ class CutPreReleases(Step):
                 _LOGGER.debug(
                     "Removing package %r - pre-releases are disabled", package_tuple
                 )
-                step_context.remove_package_tuple(package_tuple)
+                try:
+                    with step_context.remove_package_tuples(package_tuple) as txn:
+                        txn.commit()
+                except CannotRemovePackage as exc:
+                    _LOGGER.error("Cannot produce stack: %s", str(exc))
+                    raise

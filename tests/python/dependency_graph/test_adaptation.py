@@ -134,7 +134,8 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
             [package_tuple2, package_tuple3],
         ])
 
-        dg.remove_package_tuple(package_tuple1)
+        with dg.remove_package_tuples(package_tuple1) as txn:
+            txn.commit()
 
         pairs = dg.to_scored_package_tuple_pairs()
         pairs_expected = [
@@ -152,7 +153,8 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         ])
 
         with pytest.raises(CannotRemovePackage):
-            dg.remove_package_tuple(package_tuple1)
+            with dg.remove_package_tuples(package_tuple1):
+                pass
 
         pairs = dg.to_scored_package_tuple_pairs()
         pairs_expected = [
@@ -170,7 +172,8 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
             [package_tuple2, package_tuple3],
         ])
 
-        dg.remove_package_tuple(package_tuple1)
+        with dg.remove_package_tuples(package_tuple1) as txn:
+            txn.commit()
 
         pairs = dg.to_scored_package_tuple_pairs()
         pairs_expected = [
@@ -196,7 +199,8 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
             [package_tuple1, package_tuple5, package_tuple3],
         ])
 
-        dg.remove_package_tuple(package_tuple2)
+        with dg.remove_package_tuples(package_tuple2) as txn:
+            txn.commit()
 
         pairs = dg.to_scored_package_tuple_pairs()
         pairs_expected = [
@@ -224,7 +228,8 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
             [package_tuple1, package_tuple5, package_tuple3],
         ])
 
-        dg.remove_package_tuple(package_tuple2)
+        with dg.remove_package_tuples(package_tuple2) as txn:
+            txn.commit()
 
         pairs = dg.to_scored_package_tuple_pairs()
         pairs_expected = [
@@ -252,7 +257,8 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
             [package_tuple1, package_tuple5, package_tuple3],
         ])
 
-        dg.remove_package_tuples({package_tuple2, package_tuple4})
+        with dg.remove_package_tuples(package_tuple2, package_tuple4) as txn:
+            txn.commit()
 
         pairs = dg.to_scored_package_tuple_pairs()
         pairs_expected = [
@@ -276,7 +282,8 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         ])
 
         with pytest.raises(CannotRemovePackage):
-            dg.remove_package_tuple(package_tuple3)
+            with dg.remove_package_tuples(package_tuple3):
+                pass
 
     def test_remove_transitive_multiple_error(self):
         package_tuple0 = ("daiquiri", "1.5.0", "https://pypi.org/simple")
@@ -294,7 +301,8 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         ])
 
         with pytest.raises(CannotRemovePackage):
-            dg.remove_package_tuples({package_tuple3, package_tuple4})
+            with dg.remove_package_tuples(package_tuple3, package_tuple4):
+                pass
 
     def test_remove_transitive_cyclic(self):
         package_tuple1 = ("flask", "1.0.2", "https://pypi.org/simple")
@@ -308,7 +316,9 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
             [package_tuple1, package_tuple4, package_tuple5],
         ])
 
-        dg.remove_package_tuple(package_tuple3)
+        with dg.remove_package_tuples(package_tuple3) as txn:
+            txn.commit()
+
         pairs = dg.to_scored_package_tuple_pairs()
         pairs_expected = [
             (0.0, (None, package_tuple1)),

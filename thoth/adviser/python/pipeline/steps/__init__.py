@@ -25,6 +25,7 @@ from .performance_adjustment import PerformanceAdjustment
 from .prereleases import CutPreReleases
 from .restrict_indexes import RestrictIndexes
 from .runtime_error import RuntimeErrorFiltering
+from .score_cutoff import ScoreCutoff
 from .semver_sort import SemverSort
 from .toolchain import CutToolchain
 from .unreachable import CutUnreachable

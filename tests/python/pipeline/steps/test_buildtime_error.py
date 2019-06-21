@@ -26,7 +26,7 @@ from flexmock import flexmock
 
 from thoth.adviser.python.pipeline.step_context import StepContext
 from thoth.adviser.python.pipeline.steps import BuildtimeErrorFiltering
-from thoth.adviser.python.exceptions import UnableLock
+from thoth.adviser.python.dependency_graph import CannotRemovePackage
 
 from thoth.storages import GraphDatabase
 from thoth.common import RuntimeEnvironment
@@ -69,25 +69,25 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
     def test_remove_simple(self):
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "flask",
-            "0.12.0",
-            "https://pypi.org/simple",
+            package_name="flask",
+            package_version="0.12.0",
+            index_url="https://pypi.org/simple",
             os_name=None,
             os_version=None,
             python_version=None
         ).and_return(False).ordered()
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "click",
-            "2.0",
-            "https://pypi.org/simple",
+            package_name="click",
+            package_version="2.0",
+            index_url="https://pypi.org/simple",
             os_name=None,
             os_version=None,
             python_version=None
         ).and_return(True).ordered()
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "click",
-            "2.1",
-            "https://pypi.org/simple",
+            package_name="click",
+            package_version="2.1",
+            index_url="https://pypi.org/simple",
             os_name=None,
             os_version=None,
             python_version=None
@@ -110,25 +110,25 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
     def test_remove_error(self):
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "flask",
-            "0.12.0",
-            "https://pypi.org/simple",
+            package_name="flask",
+            package_version="0.12.0",
+            index_url="https://pypi.org/simple",
             os_name=None,
             os_version=None,
             python_version=None
         ).and_return(True).ordered()
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "click",
-            "2.0",
-            "https://pypi.org/simple",
+            package_name="click",
+            package_version="2.0",
+            index_url="https://pypi.org/simple",
             os_name=None,
             os_version=None,
             python_version=None
         ).and_return(False).ordered()
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "click",
-            "2.1",
-            "https://pypi.org/simple",
+            package_name="click",
+            package_version="2.1",
+            index_url="https://pypi.org/simple",
             os_name=None,
             os_version=None,
             python_version=None,
@@ -142,5 +142,5 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
             library_usage=None,
         )
 
-        with pytest.raises(UnableLock):
+        with pytest.raises(CannotRemovePackage):
             buildtime_error_filtering.run(step_context)

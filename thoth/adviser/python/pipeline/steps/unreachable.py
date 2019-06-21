@@ -52,4 +52,6 @@ class CutUnreachable(Step):
                     "Removing package %r - unreachable based on direct dependencies",
                     package_tuple,
                 )
-                step_context.remove_package_tuple(package_tuple)
+
+                with step_context.remove_package_tuples(package_tuple) as txn:
+                    txn.commit()

@@ -63,8 +63,11 @@ class LimitLatestVersions(Step):
 
             if versions_seen[package_version.name] > limit_latest_versions:
                 try:
-                    step_context.remove_package_tuple(package_version.to_tuple())
-                    continue
+                    with step_context.remove_package_tuples(package_version.to_tuple()) as txn:
+                        if len(txn.to_remove_nodes) > 1:
+                            txn.abort()
+                        else:
+                            txn.commit()
                 except CannotRemovePackage as exc:
                     _LOGGER.debug(f"Cannot remove package {package_version.to_tuple()}: {str(exc)}")
                     continue
