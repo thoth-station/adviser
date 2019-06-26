@@ -183,11 +183,11 @@ objects:
                   readOnly: true
               resources:
                 limits:
-                  memory: "512Mi"
-                  cpu: "500m"
+                  memory: "1Gi"
+                  cpu: 1.5
                 requests:
-                  memory: "512Mi"
-                  cpu: "500m"
+                  memory: "1Gi"
+                  cpu: 1.5
           volumes:
             - name: dgraph-tls-secrets
               secret:
