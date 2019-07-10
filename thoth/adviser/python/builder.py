@@ -108,7 +108,7 @@ class PipelineBuilder:
                     (CvePenalization, None),
                 ],
                 strides=[
-                    (PerformanceScoring, None),
+                    # (PerformanceScoring, None),
                     (CveScoring, None),
                     (ScoreFiltering, None),
                 ],

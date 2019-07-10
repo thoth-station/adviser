@@ -43,7 +43,7 @@ class BuildtimeErrorFiltering(Step):
                 python_version=self.project.runtime_environment.python_version,
             )
             if has_error:
-                _LOGGER.debug("Removing package %s due to runtime error", package_tuple)
+                _LOGGER.debug("Removing package %s due to build time error", package_tuple)
                 try:
                     with step_context.remove_package_tuples(package_tuple) as txn:
                         txn.commit()
