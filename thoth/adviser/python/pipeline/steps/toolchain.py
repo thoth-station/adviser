@@ -55,7 +55,5 @@ class CutToolchain(Step):
                             txn.abort()
                 except CannotRemovePackage as exc:
                     _LOGGER.debug(
-                        "Keeping toolchain package %r: %s",
-                        package_tuple,
-                        str(exc)
+                        "Keeping toolchain package %r: %s", package_tuple, str(exc)
                     )

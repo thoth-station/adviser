@@ -57,14 +57,18 @@ class Node:
                 yield edge
 
     @property
-    def all_dependent_package_tuples(self) -> Generator[Tuple[str, str, str], None, None]:
+    def all_dependent_package_tuples(
+        self
+    ) -> Generator[Tuple[str, str, str], None, None]:
         """Iterate over all package tuples which depend on this node."""
         for incoming_edge in self.all_incoming_edges:
             if incoming_edge.source:
                 yield incoming_edge.source.package_tuple
 
     @property
-    def all_dependency_package_tuples(self) -> Generator[Tuple[str, str, str], None, None]:
+    def all_dependency_package_tuples(
+        self
+    ) -> Generator[Tuple[str, str, str], None, None]:
         """Iterate over all packages which are dependencies for this node."""
         for outgoing_edge in self.all_outgoing_edges:
             yield outgoing_edge.target.package_tuple

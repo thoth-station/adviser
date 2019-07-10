@@ -48,7 +48,11 @@ class StepContext(ContextBase):
     _stats = attr.ib(type=StepStats, default=attr.Factory(StepStats))
 
     @classmethod
-    def from_paths(cls, direct_dependencies: List[PackageVersion], paths: List[List[Tuple[str, str, str]]]) -> "StepContext":
+    def from_paths(
+        cls,
+        direct_dependencies: List[PackageVersion],
+        paths: List[List[Tuple[str, str, str]]],
+    ) -> "StepContext":
         """Instantiate step context from paths."""
         _LOGGER.debug("Preparing for instantiating step context")
         packages = {p.to_tuple(): p for p in direct_dependencies}
@@ -74,7 +78,9 @@ class StepContext(ContextBase):
         for direct_dependency in direct_dependencies:
             paths.append([direct_dependency.to_tuple()])
 
-        _LOGGER.info("Instantiating step context and constructing dependency graph adaptation")
+        _LOGGER.info(
+            "Instantiating step context and constructing dependency graph adaptation"
+        )
         return cls(
             packages=packages,
             dependency_graph_adaptation=DependencyGraphAdaptation.from_paths(paths),
@@ -88,7 +94,7 @@ class StepContext(ContextBase):
     def sort_paths(
         self,
         comparision_func: Callable[[PackageVersion, PackageVersion], int],
-        reverse: bool = True
+        reverse: bool = True,
     ) -> None:
         """Sort paths in the dependency graph."""
         self.dependency_graph_adaptation.sort_paths(comparision_func, reverse=reverse)
@@ -104,18 +110,24 @@ class StepContext(ContextBase):
         """Iterate over direct dependencies, respect their ordering and return a package tuple."""
         # Cast to list is required due to possible removals which would
         # cause runtime errors for dictionary changed size during iteration
-        yield from list(self.dependency_graph_adaptation.iter_direct_dependencies_tuple())
+        yield from list(
+            self.dependency_graph_adaptation.iter_direct_dependencies_tuple()
+        )
 
     def iter_transitive_dependencies(self) -> Generator[PackageVersion, None, None]:
         """Iterate over indirect (transitive) dependencies, respect their ordering."""
         for package_tuple in self.iter_transitive_dependencies_tuple():
             yield self.packages[package_tuple]
 
-    def iter_transitive_dependencies_tuple(self) -> Generator[Tuple[str, str, str], None, None]:
+    def iter_transitive_dependencies_tuple(
+        self
+    ) -> Generator[Tuple[str, str, str], None, None]:
         """Iterate over indirect (transitive) dependencies, respect their ordering."""
         # Cast to list is required due to possible removals which would
         # cause runtime errors for dictionary changed size during iteration
-        yield from list(self.dependency_graph_adaptation.iter_transitive_dependencies_tuple())
+        yield from list(
+            self.dependency_graph_adaptation.iter_transitive_dependencies_tuple()
+        )
 
     def iter_all_dependencies(self) -> Generator[PackageVersion, None, None]:
         """Iterate over all possible dependencies, make sure each dependency is returned once."""
@@ -127,14 +139,16 @@ class StepContext(ContextBase):
     ) -> Generator[Tuple[str, str, str], None, None]:
         """Iterate over all the dependencies, return each as a tuple."""
         seen_tuples = set()
-        for package_tuple in chain(self.iter_direct_dependencies_tuple(), self.iter_transitive_dependencies_tuple()):
+        for package_tuple in chain(
+            self.iter_direct_dependencies_tuple(),
+            self.iter_transitive_dependencies_tuple(),
+        ):
             if package_tuple not in seen_tuples:
                 seen_tuples.add(package_tuple)
                 yield package_tuple
 
     def remove_package_tuples(
-        self,
-        *package_tuples: Tuple[str, str, str],
+        self, *package_tuples: Tuple[str, str, str]
     ) -> DependencyGraphTransaction:
         """Remove all packages from all the resolution paths, transactional operation."""
         return self.dependency_graph_adaptation.remove_package_tuples(*package_tuples)

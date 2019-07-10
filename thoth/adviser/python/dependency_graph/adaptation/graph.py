@@ -78,7 +78,9 @@ class DependencyGraph:
                 packages_map[direct_dependency.package_tuple] = direct_dependency
 
             if direct_dependency.package_tuple not in direct_dependency_map:
-                direct_dependency_map[direct_dependency.package_tuple] = direct_dependency
+                direct_dependency_map[
+                    direct_dependency.package_tuple
+                ] = direct_dependency
 
             previous = None
             for package_tuple in path:
@@ -121,7 +123,9 @@ class DependencyGraph:
                     edge.get_edge_key()
                     not in package_node.incoming_edges[previous_package_name]
                 ):
-                    package_node.incoming_edges[previous_package_name][previous_package_tuple] = edge
+                    package_node.incoming_edges[previous_package_name][
+                        previous_package_tuple
+                    ] = edge
 
                 previous = package_node
 
@@ -167,7 +171,7 @@ class DependencyGraph:
 
     @contextmanager
     def remove_package_tuples(
-        self, *package_tuples: Tuple[str, str, str],
+        self, *package_tuples: Tuple[str, str, str]
     ) -> DependencyGraphTransaction:
         """Remove a package from dependency graph, ensure the given package can be removed.
 
@@ -234,9 +238,7 @@ class DependencyGraph:
 
                     if not edges_considered - set(all_to_remove_edges.keys()):
                         # We don't have any alternative for the removed package.
-                        stack.append(
-                            (edge.source, requested_remove_node)
-                        )
+                        stack.append((edge.source, requested_remove_node))
 
         # Discard nodes and edges as one would traverse down the graph that are not
         # reachable anymore based on computed removals.
@@ -250,7 +252,10 @@ class DependencyGraph:
                     continue
 
                 all_dependencies = set(package_node.all_dependency_package_tuples)
-                if all_dependencies and not all_dependencies - all_to_remove_package_tuples:
+                if (
+                    all_dependencies
+                    and not all_dependencies - all_to_remove_package_tuples
+                ):
                     all_to_remove_nodes[package_node.package_tuple] = package_node
 
                     for edge in package_node.all_outgoing_edges:
@@ -270,7 +275,9 @@ class DependencyGraph:
             to_remove_edges=list(all_to_remove_edges.values()),
         )
 
-    def perform_transaction(self, to_remove_nodes: List[Node], to_remove_edges: List[Edge]) -> None:
+    def perform_transaction(
+        self, to_remove_nodes: List[Node], to_remove_edges: List[Edge]
+    ) -> None:
         """Perform the actual transaction."""
         for package_tuple in set(node.package_tuple for node in to_remove_nodes):
             # _LOGGER.warning(node.package_tuple)

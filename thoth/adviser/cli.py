@@ -383,7 +383,7 @@ def advise(
         if library_usage:
             _LOGGER.info(
                 "Library usage:\n%s",
-                json.dumps(library_usage, sort_keys=True, indent=2)
+                json.dumps(library_usage, sort_keys=True, indent=2),
             )
         else:
             _LOGGER.info("No library usage supplied")
@@ -544,7 +544,9 @@ def dependency_monkey(
     # cannot pass empty string as an int as env variable.
     seed = int(seed) if seed else None
     count = int(count) if count else None
-    limit_latest_versions = int(limit_latest_versions) if limit_latest_versions else None
+    limit_latest_versions = (
+        int(limit_latest_versions) if limit_latest_versions else None
+    )
 
     # A special value of -1 signalizes no limit, this is a workaround for Click's option parser.
     if count == -1:
@@ -580,8 +582,7 @@ def dependency_monkey(
         _LOGGER.info("No runtime environment configuration supplied")
     if library_usage:
         _LOGGER.info(
-            "Library usage:\n%s",
-            json.dumps(library_usage, sort_keys=True, indent=2)
+            "Library usage:\n%s", json.dumps(library_usage, sort_keys=True, indent=2)
         )
     else:
         _LOGGER.info("No library usage supplied")

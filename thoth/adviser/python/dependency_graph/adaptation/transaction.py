@@ -44,8 +44,7 @@ class DependencyGraphTransaction:
             raise TransactionExpired("Transaction is not valid anymore")
 
         self.dependency_graph.perform_transaction(
-            to_remove_edges=self.to_remove_edges,
-            to_remove_nodes=self.to_remove_nodes,
+            to_remove_edges=self.to_remove_edges, to_remove_nodes=self.to_remove_nodes
         )
 
         self.to_remove_edges = None

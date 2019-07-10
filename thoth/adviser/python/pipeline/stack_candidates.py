@@ -105,4 +105,6 @@ class StackCandidates:
                 meta=self.input_project.pipfile.meta,
             )
 
-            yield PipelineProduct(project=project, score=score, justification=justification)
+            yield PipelineProduct(
+                project=project, score=score, justification=justification
+            )

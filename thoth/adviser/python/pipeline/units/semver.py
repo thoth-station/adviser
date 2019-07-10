@@ -20,7 +20,9 @@
 from thoth.python import PackageVersion
 
 
-def semver_cmp_package_version(package_version1: PackageVersion, package_version2: PackageVersion) -> int:
+def semver_cmp_package_version(
+    package_version1: PackageVersion, package_version2: PackageVersion
+) -> int:
     """Compare two packages based on semver."""
     if package_version1.name != package_version2.name:
         # We call this function with reverse set to true, to have packages sorted alphabetically we

@@ -40,37 +40,50 @@ class ScoreCutoff(Step):
 
     def run(self, step_context: StepContext) -> None:
         """Cut off parts of dependency graph which have score bellow the given threshold."""
-        _LOGGER.debug("Threshold for score cut off set to %f", self.parameters["threshold"])
+        _LOGGER.debug(
+            "Threshold for score cut off set to %f", self.parameters["threshold"]
+        )
         package_versions = sorted(
             step_context.iter_direct_dependencies(),
             key=cmp_to_key(semver_cmp_package_version),
-            reverse=False
+            reverse=False,
         )
 
         for package_version in package_versions:
             package_tuple = package_version.to_tuple()
-            if package_tuple not in step_context.dependency_graph_adaptation.packages_map:
+            if (
+                package_tuple
+                not in step_context.dependency_graph_adaptation.packages_map
+            ):
                 # Removed based on previous operations on dependency graph.
                 continue
 
-            if step_context.dependency_graph_adaptation.packages_score[package_tuple] <= self.parameters["threshold"]:
+            if (
+                step_context.dependency_graph_adaptation.packages_score[package_tuple]
+                <= self.parameters["threshold"]
+            ):
                 try:
                     with step_context.remove_package_tuples(package_tuple) as txn:
                         any_positive = any(e.score > 0 for e in txn.to_remove_edges)
                         total_score = sum(e.score for e in txn.to_remove_edges)
-                        if not any_positive and total_score <= self.parameters["threshold"]:
+                        if (
+                            not any_positive
+                            and total_score <= self.parameters["threshold"]
+                        ):
                             _LOGGER.debug(
                                 "Removing packages due to threshold (score %f): %r",
                                 total_score,
-                                list(txn.iter_package_tuples())
+                                list(txn.iter_package_tuples()),
                             )
                             txn.commit()
                         else:
                             _LOGGER.debug(
                                 "Transaction has been rolled back for (score %f): %r",
                                 total_score,
-                                list(txn.iter_package_tuples())
+                                list(txn.iter_package_tuples()),
                             )
                             txn.rollback()
                 except CannotRemovePackage as exc:
-                    _LOGGER.debug("Failed to remove package tuple %s: %s", package_tuple, str(exc))
+                    _LOGGER.debug(
+                        "Failed to remove package tuple %s: %s", package_tuple, str(exc)
+                    )

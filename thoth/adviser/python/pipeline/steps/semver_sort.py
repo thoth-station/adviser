@@ -35,10 +35,7 @@ class SemverSort(Step):
 
     @classmethod
     def _semver_cmp_function_path(
-        cls,
-        step_context: StepContext,
-        edge1: Edge,
-        edge2: Edge,
+        cls, step_context: StepContext, edge1: Edge, edge2: Edge
     ) -> int:
         """Compare two edges and report which should take precedence.
 
@@ -56,18 +53,28 @@ class SemverSort(Step):
             return -1
 
         if edge1.source is not None and edge2.source is not None:
-            package_version1: PackageVersion = step_context.packages[edge1.source.package_tuple]
-            package_version2: PackageVersion = step_context.packages[edge2.source.package_tuple]
+            package_version1: PackageVersion = step_context.packages[
+                edge1.source.package_tuple
+            ]
+            package_version2: PackageVersion = step_context.packages[
+                edge2.source.package_tuple
+            ]
 
             result = semver_cmp_package_version(package_version1, package_version2)
             if result != 0:
                 return result
 
-        package_version1: PackageVersion = step_context.packages[edge1.target.package_tuple]
-        package_version2: PackageVersion = step_context.packages[edge2.target.package_tuple]
+        package_version1: PackageVersion = step_context.packages[
+            edge1.target.package_tuple
+        ]
+        package_version2: PackageVersion = step_context.packages[
+            edge2.target.package_tuple
+        ]
 
         return semver_cmp_package_version(package_version1, package_version2)
 
     def run(self, step_context: StepContext):
         """Sort paths in context based on semver of packages."""
-        step_context.sort_paths(partial(self._semver_cmp_function_path, step_context), reverse=False)
+        step_context.sort_paths(
+            partial(self._semver_cmp_function_path, step_context), reverse=False
+        )

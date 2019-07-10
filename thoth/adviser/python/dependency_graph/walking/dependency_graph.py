@@ -112,7 +112,7 @@ class DependencyGraph:
     STREAM_STOP = _C_GET_STREAM_STOP()
 
     # Given the fact we have uint16_t for representing a package and 2 markers - stream stop and delimiter marker.
-    MAX_DEPENDENCIES_COUNT = (2**16) - 2
+    MAX_DEPENDENCIES_COUNT = (2 ** 16) - 2
 
     def __init__(
         self,
