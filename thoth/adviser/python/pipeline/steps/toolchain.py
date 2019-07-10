@@ -52,7 +52,7 @@ class CutToolchain(Step):
                         if len(txn.to_remove_nodes) == 1:
                             txn.commit()
                         else:
-                            txn.abort()
+                            txn.rollback()
                 except CannotRemovePackage as exc:
                     _LOGGER.debug(
                         "Keeping toolchain package %r: %s", package_tuple, str(exc)

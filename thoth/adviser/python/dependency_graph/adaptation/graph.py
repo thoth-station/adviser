@@ -226,9 +226,6 @@ class DependencyGraph:
                     )
             else:
                 for edge in to_remove_node.all_incoming_edges:
-                    if not edge.source:
-                        continue
-
                     edges_considered = set(
                         e.get_edge_key()
                         for e in edge.source.outgoing_edges[
@@ -267,6 +264,10 @@ class DependencyGraph:
                     change = True
                     break
 
+                for edge in package_node.all_outgoing_edges:
+                    if edge.target.package_tuple in all_to_remove_edges:
+                        all_to_remove_edges[edge.edge.get_edge_key()] = edge
+
             del all_to_remove_package_tuples
 
         yield DependencyGraphTransaction(
@@ -280,16 +281,27 @@ class DependencyGraph:
     ) -> None:
         """Perform the actual transaction."""
         for package_tuple in set(node.package_tuple for node in to_remove_nodes):
-            # _LOGGER.warning(node.package_tuple)
-            self.packages_map.pop(package_tuple, None)
-            self.packages_score.pop(package_tuple, None)
+            self.packages_map.pop(package_tuple)
+            self.packages_score.pop(package_tuple)
+            self.direct_dependencies_map.pop(package_tuple, None)
 
-            if package_tuple in self.direct_dependencies_map:
-                self.direct_dependencies_map.pop(package_tuple)
+        for edge_key in set(e.get_edge_key() for e in to_remove_edges):
+            edge = self.edges_map.pop(edge_key)
 
-        for edge in set(e.get_edge_key() for e in to_remove_edges):
-            # _LOGGER.warning(edge.get_edge_key())
-            self.edges_map.pop(edge, None)
+            # Unregister from source and target.
+            if edge.source:
+                source_name = edge.source.package_tuple[0]
+                source_tuple = edge.source.package_tuple
+
+                edge.source.outgoing_edges[edge.target.package_tuple[0]].pop(edge.target.package_tuple)
+                if not edge.source.outgoing_edges[edge.target.package_tuple[0]]:
+                    edge.source.outgoing_edges.pop(edge.target.package_tuple[0])
+            else:
+                source_name, source_tuple = None, None
+
+            edge.target.incoming_edges[source_name].pop(source_tuple)
+            if not edge.target.incoming_edges[source_name]:
+                edge.target.incoming_edges.pop(source_name)
 
     def iter_transitive_dependencies_tuple(
         self

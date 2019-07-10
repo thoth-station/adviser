@@ -67,7 +67,7 @@ class LimitLatestVersions(Step):
                         package_version.to_tuple()
                     ) as txn:
                         if len(txn.to_remove_nodes) > 1:
-                            txn.abort()
+                            txn.rollback()
                         else:
                             txn.commit()
                 except CannotRemovePackage as exc:

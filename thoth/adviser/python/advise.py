@@ -31,6 +31,7 @@ from thoth.adviser.enums import RecommendationType
 from thoth.storages import GraphDatabase
 
 from .builder import PipelineBuilder
+from .builder import PipelineConfig
 from .pipeline import Pipeline
 
 
@@ -49,6 +50,15 @@ class Adviser:
     _computed_stacks_heap = attr.ib(type=RuntimeEnvironment, default=attr.Factory(list))
     _visited = attr.ib(type=int, default=0)
 
+    def compute_using_pipeline(self, pipeline: Pipeline):
+        """Compute recommendations using a custom pipeline configuration."""
+        result = []
+        for product in pipeline.conduct(count=self.count, limit=self.limit):
+            product.finalize(pipeline.graph)
+            result.append((product.justification, product.project, product.score))
+
+        return result, pipeline.get_stack_info()
+
     def compute(
         self,
         graph: GraphDatabase,
@@ -58,7 +68,7 @@ class Adviser:
     ) -> Tuple[List[Tuple[Dict, Project, float]], List[Dict]]:
         """Compute recommendations for the given project."""
         builder = PipelineBuilder(graph, project, library_usage)
-        pipeline_config = builder.get_adviser_pipeline_config(
+        pipeline_config: PipelineConfig = builder.get_adviser_pipeline_config(
             self.recommendation_type, limit_latest_versions=limit_latest_versions
         )
         pipeline = Pipeline(
@@ -69,12 +79,7 @@ class Adviser:
             library_usage=library_usage,
         )
 
-        result = []
-        for product in pipeline.conduct(count=self.count, limit=self.limit):
-            product.finalize(graph)
-            result.append((product.justification, product.project, product.score))
-
-        return result, pipeline.get_stack_info()
+        return self.compute_using_pipeline(pipeline)
 
     @classmethod
     def compute_on_project(
