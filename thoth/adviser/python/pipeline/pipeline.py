@@ -82,6 +82,19 @@ class Pipeline:
         """
         return self._stack_info
 
+    def get_configuration(self) -> dict:
+        """Get a serialized configuration of this pipeline."""
+        return {
+            "steps": [{
+                "name": step_entry[0].__name__,
+                "configuration": step_entry[0].compute_expanded_parameters(step_entry[1]),
+            } for step_entry in self.steps],
+            "strides": [{
+                "name": stride_entry[0].__name__,
+                "configuration": stride_entry[0].compute_expanded_parameters(stride_entry[1]),
+            } for stride_entry in self.strides],
+        }
+
     @classmethod
     def _get_premature_stream_log_msg(cls) -> str:
         if os.path.isfile(cls._LIVENESS_PROBE_KILL_FILE):

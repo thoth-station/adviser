@@ -50,7 +50,7 @@ class Adviser:
     _computed_stacks_heap = attr.ib(type=RuntimeEnvironment, default=attr.Factory(list))
     _visited = attr.ib(type=int, default=0)
 
-    def compute_using_pipeline(self, pipeline: Pipeline):
+    def compute_using_pipeline(self, pipeline: Pipeline) -> Tuple[List[Tuple[Dict, Project, float]], List[Dict]]:
         """Compute recommendations using a custom pipeline configuration."""
         result = []
         for product in pipeline.conduct(count=self.count, limit=self.limit):
@@ -65,7 +65,7 @@ class Adviser:
         project: Project,
         limit_latest_versions: int = None,
         library_usage: dict = None,
-    ) -> Tuple[List[Tuple[Dict, Project, float]], List[Dict]]:
+    ) -> Tuple[Tuple[List[Tuple[Dict, Project, float]], List[Dict]], Dict]:
         """Compute recommendations for the given project."""
         builder = PipelineBuilder(graph, project, library_usage)
         pipeline_config: PipelineConfig = builder.get_adviser_pipeline_config(
@@ -79,7 +79,7 @@ class Adviser:
             library_usage=library_usage,
         )
 
-        return self.compute_using_pipeline(pipeline)
+        return self.compute_using_pipeline(pipeline), pipeline.get_configuration()
 
     @classmethod
     def compute_on_project(
@@ -114,13 +114,14 @@ class Adviser:
             graph = GraphDatabase()
             graph.connect()
 
-        report, stack_info = instance.compute(
+        result, pipeline_configuration = instance.compute(
             graph,
             project,
             limit_latest_versions=limit_latest_versions,
             library_usage=library_usage,
         )
 
+        report, stack_info = result
         advised_configuration = None
         configuration_check_report = project.get_configuration_check_report()
         if configuration_check_report:
@@ -129,4 +130,4 @@ class Adviser:
             )
             stack_info.extend(configuration_check_report)
 
-        return stack_info, advised_configuration, report
+        return stack_info, advised_configuration, report, pipeline_configuration

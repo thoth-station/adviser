@@ -21,6 +21,7 @@ import re
 import abc
 import logging
 from copy import copy
+from typing import Optional
 
 import attr
 from voluptuous import Schema
@@ -48,6 +49,16 @@ class PipelineUnitBase(metaclass=abc.ABCMeta):
     PARAMETERS_DEFAULT = {}
 
     _RE_CAMEL2SNAKE = re.compile("(?!^)([A-Z]+)")
+
+    @classmethod
+    def compute_expanded_parameters(cls, parameters_dict: Optional[dict]):
+        """Compute parameters as they would be computed based on unit configuration."""
+        result = copy(cls.PARAMETERS_DEFAULT)
+
+        if parameters_dict:
+            result.update(parameters_dict)
+
+        return result
 
     @_parameters.default
     def _initialize_default_parameters(self) -> dict:

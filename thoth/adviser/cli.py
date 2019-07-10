@@ -355,6 +355,7 @@ def advise(
         "report": [],
         "stack_info": None,
         "advised_configuration": None,
+        "pipeline_configuration": None,
         "parameters": {
             "runtime_environment": runtime_environment.to_dict(),
             "recommendation_type": recommendation_type.name,
@@ -387,7 +388,7 @@ def advise(
             )
         else:
             _LOGGER.info("No library usage supplied")
-        stack_info, advised_configuration, report = Adviser.compute_on_project(
+        stack_info, advised_configuration, report, pipeline_configuration = Adviser.compute_on_project(
             project,
             recommendation_type=recommendation_type,
             library_usage=library_usage,
@@ -411,6 +412,7 @@ def advise(
         result["error"] = False
         result["stack_info"] = stack_info
         result["advised_configuration"] = advised_configuration
+        result["pipeline_configuration"] = pipeline_configuration
         # Convert report to a dict so its serialized.
         result["report"] = [
             (justification, project.to_dict(), overall_score)
