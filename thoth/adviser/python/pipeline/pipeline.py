@@ -162,8 +162,12 @@ class Pipeline:
             direct_dependencies=list(step_context.iter_direct_dependencies_tuple()),
             paths=step_context.raw_paths,
         )
+
+        estimated = dependency_graph.stacks_estimated
         _LOGGER.info(
-            "Estimated number of stacks: %d", dependency_graph.stacks_estimated
+            "Estimated number of stacks: %.2E (precise number: %d)",
+            estimated,
+            estimated,
         )
         return dependency_graph
 
