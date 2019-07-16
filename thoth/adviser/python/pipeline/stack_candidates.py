@@ -18,7 +18,8 @@
 """Wrapper for transparent manipulation with stack candidates."""
 
 
-import sys
+import os
+import logging
 from typing import Generator
 from typing import List
 from typing import Tuple
@@ -34,6 +35,9 @@ from thoth.python import PackageVersion
 
 from .stride_context import StrideContext
 from .product import PipelineProduct
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
@@ -92,6 +96,13 @@ class StackCandidates:
                 self.get_package_version_tuple(package_tuple)
                 for package_tuple in stack_candidate
             ]
+
+            # Print out packages if user requested so.
+            if bool(os.getenv("THOTH_ADVISER_SHOW_PACKAGES", 0)):
+                _LOGGER.info("Packages forming found stack (score: %f):", score)
+                for item in stack_candidate:
+                    _LOGGER.info("    %r", item)
+
             project = Project.from_package_versions(
                 packages=self.input_project.iter_dependencies(with_devel=True),
                 packages_locked=package_versions_locked,
