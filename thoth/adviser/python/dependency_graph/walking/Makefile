@@ -32,4 +32,3 @@ container-build: build-container
 	$(eval id=$(shell sh -c "docker create thoth-libdependency-graph"))
 	docker cp $(id):/home/buildroot/libdependency_graph.so ./libdependency_graph.so
 	docker rm $(id)
-

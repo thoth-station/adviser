@@ -355,6 +355,7 @@ def advise(
         "report": [],
         "stack_info": None,
         "advised_configuration": None,
+        "pipeline_configuration": None,
         "parameters": {
             "runtime_environment": runtime_environment.to_dict(),
             "recommendation_type": recommendation_type.name,
@@ -383,11 +384,11 @@ def advise(
         if library_usage:
             _LOGGER.info(
                 "Library usage:\n%s",
-                json.dumps(library_usage, sort_keys=True, indent=2)
+                json.dumps(library_usage, sort_keys=True, indent=2),
             )
         else:
             _LOGGER.info("No library usage supplied")
-        stack_info, advised_configuration, report = Adviser.compute_on_project(
+        stack_info, advised_configuration, report, pipeline_configuration = Adviser.compute_on_project(
             project,
             recommendation_type=recommendation_type,
             library_usage=library_usage,
@@ -411,6 +412,7 @@ def advise(
         result["error"] = False
         result["stack_info"] = stack_info
         result["advised_configuration"] = advised_configuration
+        result["pipeline_configuration"] = pipeline_configuration
         # Convert report to a dict so its serialized.
         result["report"] = [
             (justification, project.to_dict(), overall_score)
@@ -544,7 +546,9 @@ def dependency_monkey(
     # cannot pass empty string as an int as env variable.
     seed = int(seed) if seed else None
     count = int(count) if count else None
-    limit_latest_versions = int(limit_latest_versions) if limit_latest_versions else None
+    limit_latest_versions = (
+        int(limit_latest_versions) if limit_latest_versions else None
+    )
 
     # A special value of -1 signalizes no limit, this is a workaround for Click's option parser.
     if count == -1:
@@ -580,8 +584,7 @@ def dependency_monkey(
         _LOGGER.info("No runtime environment configuration supplied")
     if library_usage:
         _LOGGER.info(
-            "Library usage:\n%s",
-            json.dumps(library_usage, sort_keys=True, indent=2)
+            "Library usage:\n%s", json.dumps(library_usage, sort_keys=True, indent=2)
         )
     else:
         _LOGGER.info("No library usage supplied")

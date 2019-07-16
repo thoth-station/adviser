@@ -17,6 +17,7 @@
 
 """Test adjustment of paths based on performance score."""
 
+import operator
 from typing import List
 from typing import Tuple
 
@@ -64,7 +65,7 @@ class TestPerformanceAdjustment(AdviserTestCase):
             "compute_python_package_version_avg_performance"
         ).with_args(
             performance_args,
-            runtime_environment=project.runtime_environment.to_dict(without_none=True),
+            run_software_environment=project.runtime_environment.to_dict(without_none=True),
             hardware_specs=None,
         ).and_return(
             avg_performance
@@ -74,7 +75,6 @@ class TestPerformanceAdjustment(AdviserTestCase):
 
     def test_direct_adjusted(self):
         """Test adjustment of direct dependencies on good perf score."""
-        step_context = StepContext()
         direct_dependencies = [
             PackageVersion(
                 name="tensorflow",
@@ -89,22 +89,20 @@ class TestPerformanceAdjustment(AdviserTestCase):
                 develop=False,
             ),
         ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
 
-        step_context.add_paths(
+        paths = [
+            [("flask", "0.12.0", "https://pypi.org/simple")],
             [
-                [("flask", "0.12.0", "https://pypi.org/simple")],
-                [
-                    ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                ("numpy", "2.0.0", "https://pypi.org/simple"),
+            ],
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
 
         performance_impact = {
-            ("tensorflow", "2.0.0", "https://pypi.org/simple"): 0.0,
             ("flask", "0.12.0", "https://pypi.org/simple"): 1.0,
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): 0.0,
             ("numpy", "2.0.0", "https://pypi.org/simple"): 0,
         }
         project = self._prepare_isis_and_graph(
@@ -117,29 +115,29 @@ class TestPerformanceAdjustment(AdviserTestCase):
             library_usage=None,
         )
         performance_adjustment.run(step_context)
-        step_context.final_sort()
 
-        assert list(step_context.iter_paths_with_score()) == [
-            (
-                0.0,
-                [
-                    ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ),
-            (2.0, [("flask", "0.12.0", "https://pypi.org/simple")]),
+        pairs = list(sorted(
+            step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs(),
+            key=operator.itemgetter(0)
+        ))
+
+        assert pairs == [
+            (0.0, (None, ('tensorflow', '2.0.0', 'https://pypi.org/simple'))),
+            (0.0, (('tensorflow', '2.0.0', 'https://pypi.org/simple'),
+                   ('numpy', '2.0.0', 'https://pypi.org/simple'))),
+            (2.0, (None, ('flask', '0.12.0', 'https://pypi.org/simple')))
         ]
+
         # Make sure Flask gets precedence in resolution.
         assert list(
             pv.to_tuple() for pv in step_context.iter_direct_dependencies()
         ) == [
-            ("tensorflow", "2.0.0", "https://pypi.org/simple"),
             ("flask", "0.12.0", "https://pypi.org/simple"),
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"),
         ]
 
     def test_transitive_adjusted(self):
         """Make sure transitive dependencies are adjusted, without affecting direct dependencies."""
-        step_context = StepContext()
         direct_dependencies = [
             PackageVersion(
                 name="tensorflow",
@@ -154,22 +152,20 @@ class TestPerformanceAdjustment(AdviserTestCase):
                 develop=False,
             ),
         ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
 
-        step_context.add_paths(
+        paths = [
+            [("flask", "0.12.0", "https://pypi.org/simple")],
             [
-                [("flask", "0.12.0", "https://pypi.org/simple")],
-                [
-                    ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                ("numpy", "2.0.0", "https://pypi.org/simple"),
+            ],
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
 
         performance_impact = {
-            ("tensorflow", "2.0.0", "https://pypi.org/simple"): 1.0,
             ("flask", "0.12.0", "https://pypi.org/simple"): 1.0,
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): 1.0,
             ("numpy", "2.0.0", "https://pypi.org/simple"): 0,
         }
         project = self._prepare_isis_and_graph(
@@ -182,29 +178,29 @@ class TestPerformanceAdjustment(AdviserTestCase):
             library_usage=None,
         )
         performance_adjustment.run(step_context)
-        step_context.final_sort()
+
+        pairs = list(sorted(
+            step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs(),
+            key=operator.itemgetter(0)
+        ))
 
         # The order should be fixed - without any change, but scores should be adjusted.
-        assert list(step_context.iter_paths_with_score()) == [
-            (3.0, [("flask", "0.12.0", "https://pypi.org/simple")]),
-            (
-                3.0,
-                [
-                    ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ),
+        assert pairs == [
+            (0.0, (('tensorflow', '2.0.0', 'https://pypi.org/simple'),
+                   ('numpy', '2.0.0', 'https://pypi.org/simple'))),
+            (3.0, (None, ('flask', '0.12.0', 'https://pypi.org/simple'))),
+            (3.0, (None, ('tensorflow', '2.0.0', 'https://pypi.org/simple')))
         ]
+
         assert list(
             pv.to_tuple() for pv in step_context.iter_direct_dependencies()
         ) == [
-            ("tensorflow", "2.0.0", "https://pypi.org/simple"),
             ("flask", "0.12.0", "https://pypi.org/simple"),
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"),
         ]
 
     def test_adjusted(self):
         """Test adjustment of direct and indirect dependencies on good perf score."""
-        step_context = StepContext()
         direct_dependencies = [
             PackageVersion(
                 name="tensorflow",
@@ -219,27 +215,25 @@ class TestPerformanceAdjustment(AdviserTestCase):
                 develop=False,
             ),
         ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
 
-        step_context.add_paths(
+        paths = [
+            [("flask", "0.12.0", "https://pypi.org/simple")],
             [
-                [("flask", "0.12.0", "https://pypi.org/simple")],
-                [
-                    ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                ("numpy", "2.0.0", "https://pypi.org/simple"),
+            ],
+        ]
 
         performance_impact = {
-            ("tensorflow", "2.0.0", "https://pypi.org/simple"): 1.0,
             ("flask", "0.12.0", "https://pypi.org/simple"): 0,
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): 1.0,
             ("numpy", "2.0.0", "https://pypi.org/simple"): 0,
         }
         project = self._prepare_isis_and_graph(
             list(performance_impact.keys()), performance_impact, 2.0
         )
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
 
         performance_adjustment = PerformanceAdjustment(
             graph=GraphDatabase(),
@@ -247,18 +241,16 @@ class TestPerformanceAdjustment(AdviserTestCase):
             library_usage=None,
         )
         performance_adjustment.run(step_context)
-        step_context.final_sort()
 
-        assert list(step_context.iter_paths_with_score()) == [
-            (0.0, [("flask", "0.12.0", "https://pypi.org/simple")]),
-            (
-                2.0,
-                [
-                    ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ),
+        pairs = step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs()
+
+        assert pairs == [
+            (0.0, (None, ('flask', '0.12.0', 'https://pypi.org/simple'))),
+            (2.0, (None, ('tensorflow', '2.0.0', 'https://pypi.org/simple'))),
+            (0.0, (('tensorflow', '2.0.0', 'https://pypi.org/simple'),
+                   ('numpy', '2.0.0', 'https://pypi.org/simple')))
         ]
+
         # Make sure TF gets precedence in resolution.
         assert list(
             pv.to_tuple() for pv in step_context.iter_direct_dependencies()
@@ -269,7 +261,6 @@ class TestPerformanceAdjustment(AdviserTestCase):
 
     def test_no_adjusted(self):
         """Test no adjustment if there is not performance impact."""
-        step_context = StepContext()
         direct_dependencies = [
             PackageVersion(
                 name="tensorflow",
@@ -284,22 +275,20 @@ class TestPerformanceAdjustment(AdviserTestCase):
                 develop=False,
             ),
         ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
 
-        step_context.add_paths(
+        paths = [
+            [("flask", "0.12.0", "https://pypi.org/simple")],
             [
-                [("flask", "0.12.0", "https://pypi.org/simple")],
-                [
-                    ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                ("numpy", "2.0.0", "https://pypi.org/simple"),
+            ],
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
 
         performance_impact = {
-            ("tensorflow", "2.0.0", "https://pypi.org/simple"): 0.0,
             ("flask", "0.12.0", "https://pypi.org/simple"): 0,
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): 0.0,
             ("numpy", "2.0.0", "https://pypi.org/simple"): 0,
         }
         project = self._prepare_isis_and_graph(
@@ -312,21 +301,17 @@ class TestPerformanceAdjustment(AdviserTestCase):
             library_usage=None,
         )
         performance_adjustment.run(step_context)
-        step_context.final_sort()
 
-        assert list(step_context.iter_paths_with_score()) == [
-            (0.0, [("flask", "0.12.0", "https://pypi.org/simple")]),
-            (
-                0.0,
-                [
-                    ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                    ("numpy", "2.0.0", "https://pypi.org/simple"),
-                ],
-            ),
+        assert step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs() == [
+            (0.0, (None, ('flask', '0.12.0', 'https://pypi.org/simple'))),
+            (0.0, (None, ('tensorflow', '2.0.0', 'https://pypi.org/simple'))),
+            (0.0, (('tensorflow', '2.0.0', 'https://pypi.org/simple'),
+                   ('numpy', '2.0.0', 'https://pypi.org/simple')))
         ]
+
         assert list(
             pv.to_tuple() for pv in step_context.iter_direct_dependencies()
         ) == [
-            ("tensorflow", "2.0.0", "https://pypi.org/simple"),
             ("flask", "0.12.0", "https://pypi.org/simple"),
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"),
         ]

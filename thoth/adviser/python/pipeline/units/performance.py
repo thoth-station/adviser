@@ -103,7 +103,7 @@ def get_performance(
 
         score = graph.compute_python_package_version_avg_performance(
             set(packages),
-            runtime_environment=runtime_environment,
+            run_software_environment=runtime_environment,
             hardware_specs=hardware,
         )
         if math.isnan(score) or score is None:

@@ -174,7 +174,7 @@ To implement a pipeline step, simply derive from :class:`StepContext
 
   from thoth.adviser.python.pipeline import Step
   from thoth.adviser.python.pipeline import StepContext
-  from thoth.adviser.python.pipeline.exceptions import CannotRemovePackage
+  from thoth.adviser.python.dependency_graph import CannotRemovePackage
 
   _LOGGER = logging.getLogger(__name__)
 

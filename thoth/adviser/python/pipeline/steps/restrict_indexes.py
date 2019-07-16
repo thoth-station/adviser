@@ -40,11 +40,11 @@ class RestrictIndexes(Step):
             )
             return
 
-        with step_context.change(graceful=False) as step_change:
-            for package_version in step_context.iter_all_dependencies():
-                if package_version.index.url not in index_urls:
-                    package_tuple = package_version.to_tuple()
-                    _LOGGER.warning(
-                        "Removing package %r - not in restricted indexes", package_tuple
-                    )
-                    step_change.remove_package_tuple(package_tuple)
+        for package_version in step_context.iter_all_dependencies():
+            if package_version.index.url not in index_urls:
+                package_tuple = package_version.to_tuple()
+                _LOGGER.warning(
+                    "Removing package %r - not in restricted indexes", package_tuple
+                )
+                with step_context.remove_package_tuples(package_tuple) as txn:
+                    txn.commit()

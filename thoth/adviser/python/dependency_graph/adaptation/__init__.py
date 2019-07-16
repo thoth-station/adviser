@@ -15,20 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Filter out stacks which have runtime errors."""
-
-import logging
-
-from thoth.adviser.python.dependency_graph import CannotRemovePackage
-
-from ..step import Step
-from ..step_context import StepContext
-
-_LOGGER = logging.getLogger(__name__)
+"""Adaptation of dependency graph based on scoring and package removals."""
 
 
-class RuntimeErrorFiltering(Step):
-    """Filtering of stacks which encountered runtime errors."""
-
-    def run(self, step_context: StepContext) -> None:
-        """Filter out packages which have runtime errors."""
+from .elements import Edge
+from .elements import Node
+from .exceptions import CannotRemovePackage
+from .exceptions import DependencyGraphAdaptationException
+from .exceptions import PackageNotFound
+from .exceptions import RemoveMultiplePackages
+from .exceptions import TransactionExpired
+from .graph import DependencyGraph
+from .transaction import DependencyGraphTransaction

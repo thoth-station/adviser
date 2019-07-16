@@ -20,11 +20,10 @@
 import logging
 
 from thoth.adviser.python.exceptions import UnableLock
+from thoth.adviser.python.dependency_graph import CannotRemovePackage
 
-from ..exceptions import CannotRemovePackage
 from ..step_context import StepContext
 from ..step import Step
-from ..exceptions import CannotRemovePackage
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,19 +33,20 @@ class BuildtimeErrorFiltering(Step):
 
     def run(self, step_context: StepContext) -> None:
         """Filter out packages which have buildtime errors."""
-        try:
-            with step_context.change(graceful=False) as step_change:
-                for package_version in step_context.iter_all_dependencies():
-                    package_tuple = package_version.to_tuple()
-                    if self.graph.has_python_solver_error(
-                            *package_tuple,
-                            os_name=self.project.runtime_environment.operating_system.name,
-                            os_version=self.project.runtime_environment.operating_system.version,
-                            python_version=self.project.runtime_environment.python_version,
-                    ):
-                        _LOGGER.debug("Removing package %r due to build-time error", package_tuple)
-                        step_change.remove_package_tuple(package_tuple)
-        except CannotRemovePackage as exc:
-            raise UnableLock(
-                f"Cannot construct stack based on build time error filtering criteria: {str(exc)}"
+        for package_tuple in step_context.iter_all_dependencies_tuple():
+            has_error = self.graph.has_python_solver_error(
+                package_name=package_tuple[0],
+                package_version=package_tuple[1],
+                index_url=package_tuple[2],
+                os_name=self.project.runtime_environment.operating_system.name,
+                os_version=self.project.runtime_environment.operating_system.version,
+                python_version=self.project.runtime_environment.python_version,
             )
+            if has_error:
+                _LOGGER.debug("Removing package %s due to build time error", package_tuple)
+                try:
+                    with step_context.remove_package_tuples(package_tuple) as txn:
+                        txn.commit()
+                except CannotRemovePackage as exc:
+                    _LOGGER.error("Cannot produce stack: %s", str(exc))
+                    raise

@@ -52,7 +52,7 @@ class TestPerformanceScoring(AdviserTestCase):
                 ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
                 ("numpy", "1.16.2", "https://pypi.org/simple"),
             },
-            runtime_environment={},
+            run_software_environment=RuntimeEnvironment.from_dict({}).to_dict(without_none=True),
             hardware_specs=None,
         ).and_return(
             30.0
@@ -97,7 +97,7 @@ class TestPerformanceScoring(AdviserTestCase):
             "compute_python_package_version_avg_performance"
         ).with_args(
             {("tensorflow", "1.9.0", "https://thoth-station.ninja/simple")},
-            runtime_environment={},
+            run_software_environment={},
             hardware_specs=None,
         ).and_return(
             42.0
@@ -144,7 +144,7 @@ class TestPerformanceScoring(AdviserTestCase):
                 ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
                 ("numpy", "1.16.2", "https://pypi.org/simple"),
             },
-            runtime_environment={},
+            run_software_environment={},
             hardware_specs=None,
         ).and_return(
             math.nan

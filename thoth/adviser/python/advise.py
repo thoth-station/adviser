@@ -31,6 +31,7 @@ from thoth.adviser.enums import RecommendationType
 from thoth.storages import GraphDatabase
 
 from .builder import PipelineBuilder
+from .builder import PipelineConfig
 from .pipeline import Pipeline
 
 
@@ -49,16 +50,25 @@ class Adviser:
     _computed_stacks_heap = attr.ib(type=RuntimeEnvironment, default=attr.Factory(list))
     _visited = attr.ib(type=int, default=0)
 
+    def compute_using_pipeline(self, pipeline: Pipeline) -> Tuple[List[Tuple[Dict, Project, float]], List[Dict]]:
+        """Compute recommendations using a custom pipeline configuration."""
+        result = []
+        for product in pipeline.conduct(count=self.count, limit=self.limit):
+            product.finalize(pipeline.graph)
+            result.append((product.justification, product.project, product.score))
+
+        return result, pipeline.get_stack_info()
+
     def compute(
         self,
         graph: GraphDatabase,
         project: Project,
         limit_latest_versions: int = None,
         library_usage: dict = None,
-    ) -> Tuple[List[Tuple[Dict, Project, float]], List[Dict]]:
+    ) -> Tuple[Tuple[List[Tuple[Dict, Project, float]], List[Dict]], Dict]:
         """Compute recommendations for the given project."""
         builder = PipelineBuilder(graph, project, library_usage)
-        pipeline_config = builder.get_adviser_pipeline_config(
+        pipeline_config: PipelineConfig = builder.get_adviser_pipeline_config(
             self.recommendation_type, limit_latest_versions=limit_latest_versions
         )
         pipeline = Pipeline(
@@ -69,12 +79,7 @@ class Adviser:
             library_usage=library_usage,
         )
 
-        result = []
-        for product in pipeline.conduct(count=self.count, limit=self.limit):
-            product.finalize(graph)
-            result.append((product.justification, product.project, product.score))
-
-        return result, pipeline.get_stack_info()
+        return self.compute_using_pipeline(pipeline), pipeline.get_configuration()
 
     @classmethod
     def compute_on_project(
@@ -109,13 +114,14 @@ class Adviser:
             graph = GraphDatabase()
             graph.connect()
 
-        report, stack_info = instance.compute(
+        result, pipeline_configuration = instance.compute(
             graph,
             project,
             limit_latest_versions=limit_latest_versions,
             library_usage=library_usage,
         )
 
+        report, stack_info = result
         advised_configuration = None
         configuration_check_report = project.get_configuration_check_report()
         if configuration_check_report:
@@ -124,4 +130,4 @@ class Adviser:
             )
             stack_info.extend(configuration_check_report)
 
-        return stack_info, advised_configuration, report
+        return stack_info, advised_configuration, report, pipeline_configuration

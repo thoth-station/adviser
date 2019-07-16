@@ -27,20 +27,21 @@ from thoth.adviser.enums import RecommendationType
 from thoth.storages import GraphDatabase
 from thoth.python import Project
 
-from .pipeline.steps import LimitLatestVersions
-from .pipeline.steps import PerformanceAdjustment
+from .pipeline.steps import BuildtimeErrorFiltering
 from .pipeline.steps import CutPreReleases
-from .pipeline.steps import RestrictIndexes
-from .pipeline.steps import SemverSort
 from .pipeline.steps import CutToolchain
 from .pipeline.steps import CutUnreachable
-from .pipeline.steps import BuildtimeErrorFiltering
 from .pipeline.steps import CvePenalization
+from .pipeline.steps import LimitLatestVersions
+from .pipeline.steps import PerformanceAdjustment
+from .pipeline.steps import RestrictIndexes
 from .pipeline.steps import RuntimeErrorFiltering
+from .pipeline.steps import ScoreCutoff
+from .pipeline.steps import SemverSort
+from .pipeline.strides import CveScoring
 from .pipeline.strides import PerformanceScoring
 from .pipeline.strides import RandomDecision
 from .pipeline.strides import ScoreFiltering
-from .pipeline.strides import CveScoring
 
 
 PipelineConfig = namedtuple("PipelineConfig", "steps, strides")
@@ -103,10 +104,11 @@ class PipelineBuilder:
                     (SemverSort, None),
                     (CutToolchain, None),
                     (RuntimeErrorFiltering, None),
+                    (ScoreCutoff, None),
                     (CvePenalization, None),
                 ],
                 strides=[
-                    (PerformanceScoring, None),
+                    # (PerformanceScoring, None),
                     (CveScoring, None),
                     (ScoreFiltering, None),
                 ],
@@ -120,7 +122,7 @@ class PipelineBuilder:
                     )
                 )
 
-            pipeline_config.steps.append((PerformanceAdjustment, None))
+            # pipeline_config.steps.append((PerformanceAdjustment, None))
         else:
             raise ValueError(
                 f"No stack generation pipeline configuration defined for recommendation type {recommendation_type.name}"
