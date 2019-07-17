@@ -70,3 +70,15 @@ class DependencyGraphTransaction:
         """
         if self.to_remove_edges is not None:
             _LOGGER.error("Transaction on dependency graph was not closed properly")
+
+    def score_summary(self) -> float:
+        """Compute summary for the score that will result in the current transaction."""
+        result = 0.0
+        for edge in self.to_remove_edges:
+            result += edge.score
+
+        return result
+
+    def any_positive_score(self) -> bool:
+        """Check if positive score will be affected in this transaction once committed."""
+        return any(edge.score > 0 for edge in self.to_remove_edges)
