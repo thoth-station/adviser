@@ -264,3 +264,86 @@ class TestStepContext(AdviserTestCase):
         with pytest.raises(CannotRemovePackage):
             with step_context.remove_package_tuples(("six", "1.0.0", "https://pypi.org/simple")):
                 pass
+
+    def test_iter_dependencies(self):
+        direct_dependencies = [
+            PackageVersion(
+                name="flask",
+                version="==0.12.1",
+                index=Source("https://pypi.org/simple"),
+                develop=False,
+            ),
+            PackageVersion(
+                name="pytest",
+                version="==5.0.1",
+                index=Source("https://pypi.org/simple"),
+                develop=True,
+            ),
+            PackageVersion(
+                name="flask",
+                version="==1.0.2",
+                index=Source("https://pypi.org/simple"),
+                develop=False,
+            ),
+        ]
+
+        paths = [
+            [
+                ("flask", "0.12.1", "https://pypi.org/simple"),
+                ("werkzeug", "0.15.5", "https://pypi.org/simple"),
+            ],
+            [
+                ("flask", "1.0.2", "https://pypi.org/simple"),
+                ("werkzeug", "0.15.5", "https://pypi.org/simple"),
+            ],
+            [
+                ("pytest", "5.0.1", "https://pypi.org/simple"),
+                ("pytest-cov", "2.7.1", "https://pypi.org/simple"),
+            ]
+        ]
+
+        step_context = StepContext.from_paths(direct_dependencies, paths=paths)
+
+        all_dependencies = set(pv.to_tuple() for pv in step_context.iter_all_dependencies(develop=None))
+        assert len(all_dependencies) == 5
+        assert all_dependencies == {
+            ("flask", "0.12.1", "https://pypi.org/simple"),
+            ("pytest", "5.0.1", "https://pypi.org/simple"),
+            ("flask", "1.0.2", "https://pypi.org/simple"),
+            ("werkzeug", "0.15.5", "https://pypi.org/simple"),
+            ("pytest-cov", "2.7.1", "https://pypi.org/simple"),
+        }
+
+        all_develop_dependencies = set(pv.to_tuple() for pv in step_context.iter_all_dependencies(develop=True))
+        assert all_develop_dependencies == {
+            ("pytest", "5.0.1", "https://pypi.org/simple"),
+            ("pytest-cov", "2.7.1", "https://pypi.org/simple"),
+        }
+
+        all_nondevelop_dependencies = set(pv.to_tuple() for pv in step_context.iter_all_dependencies(develop=False))
+        assert all_nondevelop_dependencies == {
+            ("flask", "0.12.1", "https://pypi.org/simple"),
+            ("flask", "1.0.2", "https://pypi.org/simple"),
+            ("werkzeug", "0.15.5", "https://pypi.org/simple"),
+        }
+
+        transitive_nondevelop_dependencies = set(pv.to_tuple() for pv in step_context.iter_transitive_dependencies(develop=False))
+        assert transitive_nondevelop_dependencies == {
+            ("werkzeug", "0.15.5", "https://pypi.org/simple"),
+        }
+
+        transitive_develop_dependencies = set(pv.to_tuple() for pv in step_context.iter_transitive_dependencies(develop=True))
+        assert transitive_develop_dependencies == {
+            ("pytest-cov", "2.7.1", "https://pypi.org/simple"),
+        }
+
+        direct_develop_dependencies = set(pv.to_tuple() for pv in step_context.iter_direct_dependencies(develop=True))
+        assert direct_develop_dependencies == {
+            ("pytest", "5.0.1", "https://pypi.org/simple"),
+        }
+
+        direct_nondevelop_dependencies = set(pv.to_tuple() for pv in step_context.iter_direct_dependencies(develop=False))
+        assert direct_nondevelop_dependencies == {
+            ("flask", "0.12.1", "https://pypi.org/simple"),
+            ("flask", "1.0.2", "https://pypi.org/simple"),
+        }
