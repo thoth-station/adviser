@@ -33,6 +33,7 @@ from .pipeline.steps import CutToolchain
 from .pipeline.steps import CutUnreachable
 from .pipeline.steps import CvePenalization
 from .pipeline.steps import LimitLatestVersions
+from .pipeline.steps import ObservationReduction
 from .pipeline.steps import PerformanceAdjustment
 from .pipeline.steps import RestrictIndexes
 from .pipeline.steps import RuntimeErrorFiltering
@@ -67,6 +68,7 @@ class PipelineBuilder:
                     (CutToolchain, None),
                     (CutUnreachable, None),
                     (SemverSort, None),
+                    (ObservationReduction, None),
                 ],
                 strides=[],
             )
@@ -84,6 +86,7 @@ class PipelineBuilder:
                     (CutToolchain, None),
                     (CutUnreachable, None),
                     (SemverSort, None),
+                    (ObservationReduction, None),
                 ],
                 strides=[],
             )
@@ -106,6 +109,7 @@ class PipelineBuilder:
                     (RuntimeErrorFiltering, None),
                     (ScoreCutoff, None),
                     (CvePenalization, None),
+                    (ObservationReduction, None),
                 ],
                 strides=[
                     # (PerformanceScoring, None),

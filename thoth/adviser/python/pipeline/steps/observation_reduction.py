@@ -68,15 +68,15 @@ class ObservationReduction(Step):
 
     def run(self, step_context: StepContext) -> None:
         """Remove sub-graphs based on score threshold."""
-        stack = deque(sorted(
+        queue = deque(sorted(
             step_context.dependency_graph_adaptation.direct_dependencies_map.values(),
             key=cmp_to_key(partial(self._sort_nodes_score_semver, step_context)),
             reverse=True,
         ))
 
         seen = set()
-        while stack:
-            node = stack.pop()
+        while queue:
+            node = queue.pop()
             package_tuple = node.package_tuple
 
             if package_tuple in seen or package_tuple not in step_context.packages:
@@ -90,7 +90,7 @@ class ObservationReduction(Step):
                     if txn.any_positive_score():
                         # Get all the dependent and append them to the queue to have them processed
                         # in the correct order (top levels first).
-                        stack.extend(self._sorted_dependencies(step_context, node))
+                        queue.extend(self._sorted_dependencies(step_context, node))
                         txn.rollback()
                     else:
                         _LOGGER.debug(
@@ -100,4 +100,4 @@ class ObservationReduction(Step):
                         txn.commit()
             except CannotRemovePackage as exc:
                 _LOGGER.debug("Cannot remove sub-graph: %s", str(exc))
-                stack.extend(self._sorted_dependencies(step_context, node))
+                queue.extend(self._sorted_dependencies(step_context, node))

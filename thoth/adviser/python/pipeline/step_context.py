@@ -56,10 +56,6 @@ class StepContext(ContextBase):
         """Instantiate step context from paths."""
         _LOGGER.debug("Preparing for instantiating step context")
         packages = {p.to_tuple(): p for p in direct_dependencies}
-        # for package_version in direct_dependencies:
-        #     package_tuple = package_version.to_tuple()
-        #     if package_tuple not in packages:
-        #         packages[package_tuple] = package_version
         for path in paths:
             develop = packages[path[0]].develop
             for package_tuple in path:
