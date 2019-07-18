@@ -33,10 +33,10 @@ from .pipeline.steps import CutToolchain
 from .pipeline.steps import CutUnreachable
 from .pipeline.steps import CvePenalization
 from .pipeline.steps import LimitLatestVersions
+from .pipeline.steps import ObservationReduction
 from .pipeline.steps import PerformanceAdjustment
 from .pipeline.steps import RestrictIndexes
 from .pipeline.steps import RuntimeErrorFiltering
-from .pipeline.steps import ScoreCutoff
 from .pipeline.steps import SemverSort
 from .pipeline.strides import CveScoring
 from .pipeline.strides import PerformanceScoring
@@ -67,6 +67,7 @@ class PipelineBuilder:
                     (CutToolchain, None),
                     (CutUnreachable, None),
                     (SemverSort, None),
+                    (ObservationReduction, None),
                 ],
                 strides=[],
             )
@@ -80,10 +81,13 @@ class PipelineBuilder:
         elif recommendation_type == RecommendationType.TESTING:
             pipeline_config = PipelineConfig(
                 steps=[
+                    (BuildtimeErrorFiltering, None),
                     (CutPreReleases, None),
-                    (CutToolchain, None),
                     (CutUnreachable, None),
                     (SemverSort, None),
+                    (CutToolchain, None),
+                    (RuntimeErrorFiltering, None),
+                    (ObservationReduction, None),
                 ],
                 strides=[],
             )
@@ -104,8 +108,8 @@ class PipelineBuilder:
                     (SemverSort, None),
                     (CutToolchain, None),
                     (RuntimeErrorFiltering, None),
-                    (ScoreCutoff, None),
                     (CvePenalization, None),
+                    (ObservationReduction, None),
                 ],
                 strides=[
                     # (PerformanceScoring, None),
