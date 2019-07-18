@@ -37,7 +37,6 @@ from .pipeline.steps import ObservationReduction
 from .pipeline.steps import PerformanceAdjustment
 from .pipeline.steps import RestrictIndexes
 from .pipeline.steps import RuntimeErrorFiltering
-from .pipeline.steps import ScoreCutoff
 from .pipeline.steps import SemverSort
 from .pipeline.strides import CveScoring
 from .pipeline.strides import PerformanceScoring
@@ -107,7 +106,6 @@ class PipelineBuilder:
                     (SemverSort, None),
                     (CutToolchain, None),
                     (RuntimeErrorFiltering, None),
-                    (ScoreCutoff, None),
                     (CvePenalization, None),
                     (ObservationReduction, None),
                 ],
