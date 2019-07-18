@@ -409,15 +409,22 @@ def advise(
         result["error"] = True
         result["report"] = [([{"justification": str(exc), "type": "ERROR"}], None)]
     else:
-        result["error"] = False
-        result["stack_info"] = stack_info
-        result["advised_configuration"] = advised_configuration
-        result["pipeline_configuration"] = pipeline_configuration
         # Convert report to a dict so its serialized.
         result["report"] = [
             (justification, project.to_dict(), overall_score)
             for justification, project, overall_score in report
         ]
+        # Report error if we did not find any recommendation to the user, the
+        # stack_info carries information on why it hasn't been found.
+        result["error"] = len(result["report"]) == 0
+        result["stack_info"] = stack_info
+        if result["error"]:
+            result["stack_info"].append({
+                "type": "ERROR",
+                "justification": "Recommendation engine did not produce any stacks"
+            })
+        result["advised_configuration"] = advised_configuration
+        result["pipeline_configuration"] = pipeline_configuration
 
     print_command_result(
         click_ctx,

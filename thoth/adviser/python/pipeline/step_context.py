@@ -20,7 +20,6 @@
 from typing import Dict
 from typing import Generator
 from typing import List
-from typing import Set
 from typing import Tuple
 from typing import Callable
 from itertools import chain
@@ -95,10 +94,15 @@ class StepContext(ContextBase):
         """Sort paths in the dependency graph."""
         self.dependency_graph_adaptation.sort_paths(comparision_func, reverse=reverse)
 
-    def iter_direct_dependencies(self) -> Generator[PackageVersion, None, None]:
+    def iter_direct_dependencies(self, develop: bool = None) -> Generator[PackageVersion, None, None]:
         """Iterate over direct dependencies, respect their ordering."""
         for package_tuple in self.iter_direct_dependencies_tuple():
-            yield self.packages[package_tuple]
+            package_version = self.packages[package_tuple]
+            if develop is not None:
+                if package_version.develop == develop:
+                    yield package_version
+            else:
+                yield package_version
 
     def iter_direct_dependencies_tuple(
         self
@@ -110,10 +114,15 @@ class StepContext(ContextBase):
             self.dependency_graph_adaptation.iter_direct_dependencies_tuple()
         )
 
-    def iter_transitive_dependencies(self) -> Generator[PackageVersion, None, None]:
+    def iter_transitive_dependencies(self, develop: bool = None) -> Generator[PackageVersion, None, None]:
         """Iterate over indirect (transitive) dependencies, respect their ordering."""
         for package_tuple in self.iter_transitive_dependencies_tuple():
-            yield self.packages[package_tuple]
+            package_version = self.packages[package_tuple]
+            if develop is not None:
+                if package_version.develop == develop:
+                    yield package_version
+            else:
+                yield package_version
 
     def iter_transitive_dependencies_tuple(
         self
@@ -125,10 +134,15 @@ class StepContext(ContextBase):
             self.dependency_graph_adaptation.iter_transitive_dependencies_tuple()
         )
 
-    def iter_all_dependencies(self) -> Generator[PackageVersion, None, None]:
+    def iter_all_dependencies(self, develop: bool = None) -> Generator[PackageVersion, None, None]:
         """Iterate over all possible dependencies, make sure each dependency is returned once."""
         for package_tuple in self.iter_all_dependencies_tuple():
-            yield self.packages[package_tuple]
+            package_version = self.packages[package_tuple]
+            if develop is not None:
+                if package_version.develop == develop:
+                    yield package_version
+            else:
+                yield package_version
 
     def iter_all_dependencies_tuple(
         self
