@@ -418,6 +418,11 @@ def advise(
         # stack_info carries information on why it hasn't been found.
         result["error"] = len(result["report"]) == 0
         result["stack_info"] = stack_info
+        if result["error"]:
+            result["stack_info"].append({
+                "type": "ERROR",
+                "justification": "Recommendation engine did not produce any stacks"
+            })
         result["advised_configuration"] = advised_configuration
         result["pipeline_configuration"] = pipeline_configuration
 
