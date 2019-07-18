@@ -81,10 +81,12 @@ class PipelineBuilder:
         elif recommendation_type == RecommendationType.TESTING:
             pipeline_config = PipelineConfig(
                 steps=[
+                    (BuildtimeErrorFiltering, None),
                     (CutPreReleases, None),
-                    (CutToolchain, None),
                     (CutUnreachable, None),
                     (SemverSort, None),
+                    (CutToolchain, None),
+                    (RuntimeErrorFiltering, None),
                     (ObservationReduction, None),
                 ],
                 strides=[],
