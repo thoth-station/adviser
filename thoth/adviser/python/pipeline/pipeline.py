@@ -269,8 +269,9 @@ class Pipeline:
 
         if count is not None and limit is not None and count > limit:
             _LOGGER.warning(
-                "Cannot return more stacks (%d) than scored, adjusting count to %d based on limit provided",
+                "Cannot return more stacks (%d) than scored (%d), adjusting count to %d based on limit provided",
                 count,
+                limit,
                 limit,
             )
             count = limit
