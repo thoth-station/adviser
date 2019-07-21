@@ -152,7 +152,10 @@ class Pipeline:
             len(direct_dependencies_tuples),
         )
         paths = self.graph.retrieve_transitive_dependencies_python_multi(
-            direct_dependencies_tuples
+            direct_dependencies_tuples,
+            os_name=self.project.runtime_environment.operating_system.name,
+            os_version=self.project.runtime_environment.operating_system.version,
+            python_version=self.project.runtime_environment.python_version,
         )
         paths = list(chain(*paths.values()))
 
