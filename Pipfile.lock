@@ -386,10 +386,11 @@
         },
         "thoth-python": {
             "hashes": [
-                "sha256:676601be43ddbafa026518483ae4ac5314f4179722cce65dabdc0e88fc2eba81"
+                "sha256:af21b2617befef66fcfcf1e69c470400d1b604d7e4baa4feb2648a8431c2f73b",
+                "sha256:e6eb904ba67b41d942a5b4f6658ec97ef41bf59fb0805a9c457dea00a785cc85"
             ],
             "index": "pypi",
-            "version": "==0.5.0"
+            "version": "==0.6.0"
         },
         "thoth-solver": {
             "hashes": [
