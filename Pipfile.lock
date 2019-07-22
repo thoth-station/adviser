@@ -393,11 +393,11 @@
         },
         "thoth-solver": {
             "hashes": [
-                "sha256:2d6ca5248a9f60ff357dca22c545ca284cc61532e744e7bf000b0aaf42f13dfa",
-                "sha256:5c805d1ba7d4ca015addb50b000c426d813313d58fc64a9e6dbc5483fdcee07a"
+                "sha256:7507e97f26966c7211f56018bb3df5263d49e8aa298057c89b28ffe5f3ba407b",
+                "sha256:97a7163a801bd65a0123533e4a0008a7d8a8da4212ee00d8b73998a1cabe6b4f"
             ],
             "index": "pypi",
-            "version": "==1.2.1"
+            "version": "==1.2.2"
         },
         "thoth-storages": {
             "hashes": [
