@@ -143,31 +143,24 @@ class Pipeline:
     ) -> StepContext:
         """Solve all direct dependencies to find all transitive paths (all possible transitive dependencies)."""
         _LOGGER.info("Retrieving transitive dependencies of direct dependencies")
-        direct_dependencies_tuples = set(
-            (pv.name, pv.locked_version, pv.index.url) for pv in direct_dependencies
-        )
         _LOGGER.debug(
             "Direct dependencies considered: %r (count: %d)",
-            direct_dependencies_tuples,
-            len(direct_dependencies_tuples),
+            direct_dependencies,
+            len(direct_dependencies),
         )
+
+        direct_dependencies_dict = {
+            (pv.name, pv.locked_version, pv.index.url): pv for pv in direct_dependencies
+        }
+
         paths = self.graph.retrieve_transitive_dependencies_python_multi(
-            direct_dependencies_tuples,
+            *direct_dependencies_dict.keys(),
             os_name=self.project.runtime_environment.operating_system.name,
             os_version=self.project.runtime_environment.operating_system.version,
             python_version=self.project.runtime_environment.python_version,
         )
-        paths = list(chain(*paths.values()))
 
-        if _LOGGER.getEffectiveLevel() == logging.DEBUG:
-            total = set()
-            for path in paths:
-                total.update(path)
-            _LOGGER.debug(
-                "Total number of packages including transitive: %d", len(total)
-            )
-
-        return StepContext.from_paths(direct_dependencies, paths)
+        return StepContext.from_paths(direct_dependencies_dict, paths)
 
     def _initialize_stepping(self) -> StepContext:
         """Initialize pipeline - resolve direct dependencies and all the transitive dependencies."""
