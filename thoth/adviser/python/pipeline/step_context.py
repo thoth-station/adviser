@@ -78,7 +78,10 @@ class StepContext(ContextBase):
         )
         return cls(
             packages=packages,
-            dependency_graph_adaptation=DependencyGraphAdaptation.from_paths(paths),
+            dependency_graph_adaptation=DependencyGraphAdaptation.from_paths(
+                direct_dependencies=[d.to_tuple for d in direct_dependencies],
+                paths=paths
+            ),
         )
 
     @property

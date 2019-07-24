@@ -61,25 +61,26 @@ class DependencyGraph:
     )
 
     @classmethod
-    def from_paths(cls, paths: List[List[Tuple[str, str, str]]]) -> "DependencyGraph":
+    def from_paths(cls, direct_dependencies: List[Tuple[str, str, str]], paths: List[List[Tuple[str, str, str]]]) -> "DependencyGraph":
         """Construct dependency graph from paths."""
         packages_map = {}
         edges_map = {}
         direct_dependency_map = {}
 
+        for direct_dependency in direct_dependencies:
+            direct_dependency_node = packages_map.get(direct_dependency)
+            if direct_dependency_node is None:
+                direct_dependency_node = Node(direct_dependency)
+                packages_map[direct_dependency_node.package_tuple] = direct_dependency
+
+            if direct_dependency_node.package_tuple not in direct_dependency_map:
+                direct_dependency_map[
+                    direct_dependency_node.package_tuple
+                ] = direct_dependency_node
+
         for path in paths or []:
             if not path:
                 raise ValueError("Empty path supplied")
-
-            direct_dependency = packages_map.get(path[0])
-            if direct_dependency is None:
-                direct_dependency = Node(path[0])
-                packages_map[direct_dependency.package_tuple] = direct_dependency
-
-            if direct_dependency.package_tuple not in direct_dependency_map:
-                direct_dependency_map[
-                    direct_dependency.package_tuple
-                ] = direct_dependency
 
             previous = None
             for package_tuple in path:
