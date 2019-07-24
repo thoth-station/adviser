@@ -74,6 +74,10 @@ class StepContext(ContextBase):
             for path in dependency_paths:
                 path_tuples.append(path)
 
+        _LOGGER.debug(
+            "Total number of packages considered including all transitive dependencies: %d",
+            len(packages)
+        )
         _LOGGER.info(
             "Instantiating step context and constructing dependency graph adaptation"
         )

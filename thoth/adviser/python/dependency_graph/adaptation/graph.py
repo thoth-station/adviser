@@ -128,7 +128,6 @@ class DependencyGraph:
                ):
                     package_node2.incoming_edges[package_node1.package_tuple[0]][package_node1.package_tuple] = edge
 
-        _LOGGER.debug("Graph adaptation has been created")
         return cls(
             packages_map=packages_map,
             edges_map=edges_map,
