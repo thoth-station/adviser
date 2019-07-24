@@ -169,23 +169,38 @@ class Pipeline:
         step_context = self._resolve_transitive_dependencies(direct_dependencies)
         return step_context
 
-    @staticmethod
-    def _finalize_stepping(step_context: StepContext) -> DependencyGraphWalker:
+    def _finalize_stepping(
+        self,
+        step_context: StepContext,
+        count: int
+    ) -> Tuple[DependencyGraphWalker, StackCandidates]:
         """Finalize pipeline - run dependency graph to resolve fully pinned down stacks."""
         _LOGGER.debug("Finalizing stepping...")
+        direct_dependencies_map = {
+            v.to_tuple(): v for v in step_context.iter_direct_dependencies()
+        }
+        transitive_dependencies_map = {
+            v.to_tuple(): v for v in step_context.iter_transitive_dependencies()
+        }
+
+        stack_candidates = StackCandidates(
+            input_project=self.project,
+            count=count,
+            direct_dependencies_map=direct_dependencies_map,
+            transitive_dependencies_map=transitive_dependencies_map,
+        )
+
         scored_package_tuple_pairs = (
             step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs()
         )
+
         # It's important to have this sort stable so that we reflect relative ordering of paths
         # based on for example semver sort which have same score.
         paths = sorted(scored_package_tuple_pairs, key=operator.itemgetter(0))
         # We don't need actual score of paths and remove paths which are direct dependencies.
-        direct_dependencies = list(
-            set(path[1][1] for path in paths if path[1][0] is None)
-        )
         paths = [path[1] for path in paths if path[1][0] is not None]
         dependency_graph = DependencyGraphWalker(
-            direct_dependencies=direct_dependencies, paths=paths
+            direct_dependencies=list(direct_dependencies_map.keys()), paths=paths
         )
 
         estimated = dependency_graph.stacks_estimated
@@ -194,7 +209,7 @@ class Pipeline:
             estimated,
             estimated,
         )
-        return dependency_graph
+        return dependency_graph, stack_candidates
 
     def _instantiate_strides(self) -> List[Stride]:
         """Instantiate stride classes with configuration supplied."""
@@ -290,21 +305,9 @@ class Pipeline:
 
         stacks_seen = 0
         stacks_added = 0
-        direct_dependencies_map = {
-            v.to_tuple(): v for v in step_context.iter_direct_dependencies()
-        }
-        transitive_dependencies_map = {
-            v.to_tuple(): v for v in step_context.iter_transitive_dependencies()
-        }
-        stack_candidates = StackCandidates(
-            input_project=self.project,
-            count=count,
-            direct_dependencies_map=direct_dependencies_map,
-            transitive_dependencies_map=transitive_dependencies_map,
-        )
         if len(strides) > 0:
             _LOGGER.info("Running strides on stack candidates")
-        dependency_graph = self._finalize_stepping(step_context)
+        dependency_graph, stack_candidates = self._finalize_stepping(step_context, count)
         try:
             for stack_candidate in dependency_graph.walk():
                 stacks_seen += 1

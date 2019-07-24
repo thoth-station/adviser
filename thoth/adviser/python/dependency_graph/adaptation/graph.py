@@ -122,11 +122,8 @@ class DependencyGraph:
             if package_node1.package_tuple[0] not in package_node2.incoming_edges:
                 package_node2.incoming_edges[package_node1.package_tuple[0]] = {}
 
-            if (
-                    package_node1.package_tuple
-                    not in package_node2.incoming_edges[package_node1.package_tuple[0]]
-               ):
-                    package_node2.incoming_edges[package_node1.package_tuple[0]][package_node1.package_tuple] = edge
+            if package_node1.package_tuple not in package_node2.incoming_edges[package_node1.package_tuple[0]]:
+                package_node2.incoming_edges[package_node1.package_tuple[0]][package_node1.package_tuple] = edge
 
         return cls(
             packages_map=packages_map,
