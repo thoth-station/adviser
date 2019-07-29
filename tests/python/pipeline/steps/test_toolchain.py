@@ -37,32 +37,27 @@ class TestCutToolchain(AdviserTestCase):
 
         In other words - always keep latest toolchain.
         """
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("flask", "0.12", "https://pypi.org/simple"): PackageVersion(
                 name="flask",
                 version="==0.12",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        ]
+        }
 
-        paths = [
-            [
-                ("flask", "0.12", "https://pypi.org/simple"),
-                ("werkzeug", "0.15.1", "https://pypi.org/simple"),
-                ("wheel", "1.12.0", "https://pypi.org/simple"),
+        paths = {
+            ("flask", "0.12", "https://pypi.org/simple"): [
+                (("flask", "0.12", "https://pypi.org/simple"),
+                 ("werkzeug", "0.15.1", "https://pypi.org/simple")),
+                (("werkzeug", "0.15.1", "https://pypi.org/simple"),
+                 ("wheel", "1.12.0", "https://pypi.org/simple")),
+                (("werkzeug", "0.15.1", "https://pypi.org/simple"),
+                 ("six", "1.12.1", "https://pypi.org/simple")),
+                (("werkzeug", "0.15.1", "https://pypi.org/simple"),
+                 ("wheel", "1.12.1", "https://pypi.org/simple")),
             ],
-            [
-                ("flask", "0.12", "https://pypi.org/simple"),
-                ("werkzeug", "0.15.1", "https://pypi.org/simple"),
-                ("six", "1.12.1", "https://pypi.org/simple"),
-            ],
-            [
-                ("flask", "0.12", "https://pypi.org/simple"),
-                ("werkzeug", "0.15.1", "https://pypi.org/simple"),
-                ("wheel", "1.12.1", "https://pypi.org/simple"),
-            ],
-        ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
@@ -86,41 +81,31 @@ class TestCutToolchain(AdviserTestCase):
 
     def test_remove_multi(self):
         """Check all types of "toolchain" packages get removed."""
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("goblinoid", "1.0.0", "https://pypi.org/simple"): PackageVersion(
                 name="goblinoid",
                 version="==1.0.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        ]
+        }
 
-        paths = [
-            [
-                ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                ("wheel", "1.0.0", "https://pypi.org/simple"),
-            ],
-            [
-                ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                ("wheel", "2.0.0", "https://pypi.org/simple"),
-            ],
-            [
-                ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                ("setuptools", "1.0.0", "https://pypi.org/simple"),
-            ],
-            [
-                ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                ("setuptools", "2.0.0", "https://pypi.org/simple"),
-            ],
-            [
-                ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                ("pip", "1.0.0", "https://pypi.org/simple"),
-            ],
-            [
-                ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                ("pip", "2.0.0", "https://pypi.org/simple"),
-            ],
-        ]
+        paths = {
+            ("goblinoid", "1.0.0", "https://pypi.org/simple"): [
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("wheel", "1.0.0", "https://pypi.org/simple")),
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("wheel", "2.0.0", "https://pypi.org/simple")),
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("setuptools", "1.0.0", "https://pypi.org/simple")),
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("setuptools", "2.0.0", "https://pypi.org/simple")),
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("pip", "1.0.0", "https://pypi.org/simple")),
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("pip", "2.0.0", "https://pypi.org/simple")),
+            ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
@@ -143,21 +128,21 @@ class TestCutToolchain(AdviserTestCase):
 
     def test_no_remove(self):
         """Make sure packages which are not toolchain do not get removed."""
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("goblinoid", "1.0.0", "https://pypi.org/simple"): PackageVersion(
                 name="goblinoid",
                 version="==1.0.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        ]
+        }
 
-        paths = [
-            [
-                ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                ("foo", "1.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("goblinoid", "1.0.0", "https://pypi.org/simple"): [
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("foo", "1.0.0", "https://pypi.org/simple")),
             ]
-        ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 

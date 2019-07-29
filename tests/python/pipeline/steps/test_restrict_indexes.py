@@ -51,31 +51,29 @@ tensorflow = "==2.0.0"
 
     def test_remove_direct(self):
         """Test removal of direct dependencies which do not correspond to restricted indexes."""
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): PackageVersion(
                 name="tensorflow",
                 version="==2.0.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             ),
-            PackageVersion(
+            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): PackageVersion(
                 name="tensorflow",
                 version="==2.0.0",
                 index=Source("https://thoth-station.ninja/simple"),
                 develop=False,
             ),
-        ]
+        }
 
-        paths = [
-            [
-                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): [
+                (("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                 ("numpy", "1.0.0", "https://pypi.org/simple")),
+                (("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                 ("numpy", "2.0.0", "https://pypi.org/simple")),
             ],
-            [
-                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                ("numpy", "2.0.0", "https://pypi.org/simple"),
-            ],
-        ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
@@ -103,31 +101,23 @@ tensorflow = "==2.0.0"
 
     def test_remove_transitive(self):
         """Test removal of indirect dependencies which do not correspond to restricted indexes."""
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): PackageVersion(
                 name="tensorflow",
                 version="==2.0.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             ),
-            PackageVersion(
-                name="tensorflow",
-                version="==1.9.0",
-                index=Source("https://pypi.org/simple"),
-                develop=False,
-            ),
-        ]
+        }
 
-        paths = [
-            [
-                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): [
+                (("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                 ("numpy", "1.0.0", "https://pypi.org/simple")),
+                (("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                 ("numpy", "2.0.0", "https://thoth-station.ninja/simple")),
             ],
-            [
-                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                ("numpy", "2.0.0", "https://thoth-station.ninja/simple"),
-            ],
-        ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
@@ -143,47 +133,45 @@ tensorflow = "==2.0.0"
             (0.0, (None, ('tensorflow', '2.0.0', 'https://pypi.org/simple'))),
             (0.0, (('tensorflow', '2.0.0', 'https://pypi.org/simple'),
                    ('numpy', '1.0.0', 'https://pypi.org/simple'))),
-            (0.0, (None, ('tensorflow', '1.9.0', 'https://pypi.org/simple')))
         ]
         assert (
-            len(list(step_context.iter_direct_dependencies())) == 2
+            len(list(step_context.iter_direct_dependencies())) == 1
         ), "Wrong number of direct dependencies"
+        assert list(step_context.iter_direct_dependencies_tuple()) == [
+            ('tensorflow', '2.0.0', 'https://pypi.org/simple')
+        ]
 
     def test_remove2(self):
         """Test removal of both, direct and transitive dependencies in one run."""
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): PackageVersion(
                 name="tensorflow",
                 version="==2.0.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             ),
-            PackageVersion(
+            ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"): PackageVersion(
                 name="tensorflow",
                 version="==1.9.0",
                 index=Source("https://thoth-station.ninja/simple"),
                 develop=False,
             ),
-        ]
+        }
 
-        paths = [
-            [
-                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): [
+                (("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                 ("numpy", "1.0.0", "https://pypi.org/simple")),
+                (("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                 ("numpy", "2.0.0", "https://thoth-station.ninja/simple")),
             ],
-            [
-                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                ("numpy", "2.0.0", "https://thoth-station.ninja/simple"),
+            ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"): [
+                (("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
+                 ("numpy", "2.0.0", "https://thoth-station.ninja/simple")),
+                (("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
+                 ("numpy", "1.0.0", "https://pypi.org/simple")),
             ],
-            [
-                ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "2.0.0", "https://thoth-station.ninja/simple"),
-            ],
-            [
-                ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
-            ],
-        ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
@@ -206,25 +194,23 @@ tensorflow = "==2.0.0"
 
     def test_remove_all_transitive_error(self):
         """Test raising of an error if all the transitive deps of a type were removed."""
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): PackageVersion(
                 name="tensorflow",
                 version="==2.0.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        ]
+        }
 
-        paths = [
-            [
-                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                ("numpy", "1.0.0", "https://thoth-station.ninja/simple"),
+        paths = {
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): [
+                (("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                 ("numpy", "1.0.0", "https://thoth-station.ninja/simple")),
+                (("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                 ("numpy", "2.0.0", "https://thoth-station.ninja/simple")),
             ],
-            [
-                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                ("numpy", "2.0.0", "https://thoth-station.ninja/simple"),
-            ],
-        ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
@@ -240,27 +226,27 @@ tensorflow = "==2.0.0"
 
     def test_remove_all_direct_error(self):
         """Test raising an error if all the direct deps of a type were removed."""
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"): PackageVersion(
                 name="tensorflow",
                 version="==1.9.0",
                 index=Source("https://thoth-station.ninja/simple"),
                 develop=False,
             ),
-            PackageVersion(
+            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): PackageVersion(
                 name="tensorflow",
                 version="==2.0.0",
                 index=Source("https://thoth-station.ninja/simple"),
                 develop=False,
             ),
-        ]
+        }
 
-        paths = [
-            [
-                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                ("absl-py", "1.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [
+                (("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                 ("absl-py", "1.0.0", "https://pypi.org/simple")),
             ]
-        ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 

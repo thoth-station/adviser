@@ -32,31 +32,33 @@ class TestLimitLatestVersions(AdviserTestCase):
 
     def test_limit_direct(self):
         """Test cutting off latest versions for a direct dependency of a type."""
-        direct_dependencies = [
-            PackageVersion(
+        index_aicoe =Source("https://thoth-station.ninja/simple")
+
+        direct_dependencies = {
+            ("tensorflow", "1.9.0", index_aicoe.url): PackageVersion(
                 name="tensorflow",
                 version="==1.9.0",
-                index=Source("https://thoth-station.ninja/simple"),
+                index=index_aicoe,
                 develop=False,
             ),
-            PackageVersion(
+            ("tensorflow", "2.0.0", index_aicoe.url): PackageVersion(
                 name="tensorflow",
                 version="==2.0.0",
                 index=Source("https://thoth-station.ninja/simple"),
                 develop=False,
             ),
-        ]
+        }
 
-        paths = [
-            [
-                ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"): [
+                (("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
+                 ("numpy", "1.0.0", "https://pypi.org/simple"))
             ],
-            [
-                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
+            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [
+                (("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.0.0", "https://pypi.org/simple")),
             ],
-        ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
@@ -95,25 +97,25 @@ class TestLimitLatestVersions(AdviserTestCase):
 
     def test_limit_transitive(self):
         """Test cutting of latest versions for transitive dependencies."""
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): PackageVersion(
                 name="tensorflow",
                 version="==2.0.0",
                 index=Source("https://thoth-station.ninja/simple"),
                 develop=False,
             )
-        ]
+        }
 
-        paths = [
-            [
-                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [
+                (("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.0.0", "https://pypi.org/simple")),
             ],
-            [
-                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "2.0.0", "https://pypi.org/simple"),
+            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [
+                (("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "2.0.0", "https://pypi.org/simple")),
             ],
-        ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
@@ -152,39 +154,36 @@ class TestLimitLatestVersions(AdviserTestCase):
 
     def test_limit_all(self):
         """Test cutting of latest versions for direct and transitive dependencies."""
-        direct_dependencies = [
-            PackageVersion(
+        source = Source("https://thoth-station.ninja/simple")
+        direct_dependencies = {
+            ("tensorflow", "1.9.0", source.url): PackageVersion(
                 name="tensorflow",
                 version="==1.9.0",
-                index=Source("https://thoth-station.ninja/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("tensorflow", "2.0.0", source.url): PackageVersion(
                 name="tensorflow",
                 version="==2.0.0",
                 index=Source("https://thoth-station.ninja/simple"),
                 develop=False,
             ),
-        ]
+        }
 
-        paths = [
-            [
-                ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"): [
+                (("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
+                 ("numpy", "1.0.0", "https://pypi.org/simple")),
+                (("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
+                 ("numpy", "2.0.0", "https://pypi.org/simple")),
             ],
-            [
-                ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "2.0.0", "https://pypi.org/simple"),
-            ],
-            [
-                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
-            ],
-            [
-                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "2.0.0", "https://pypi.org/simple"),
-            ],
-        ]
+            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [
+                (("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                 ("numpy", "1.0.0", "https://pypi.org/simple")),
+                (("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                 ("numpy", "2.0.0", "https://pypi.org/simple")),
+            ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
@@ -223,39 +222,37 @@ class TestLimitLatestVersions(AdviserTestCase):
 
     def test_limit_no_change(self):
         """Test cutting off latest versions without any change."""
-        direct_dependencies = [
-            PackageVersion(
+        source = Source("https://thoth-station.ninja/simple")
+        direct_dependencies = {
+            ("tensorflow", "1.9.0", source.url): PackageVersion(
                 name="tensorflow",
                 version="==1.9.0",
-                index=Source("https://thoth-station.ninja/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("tensorflow", "2.0.0", source.url): PackageVersion(
                 name="tensorflow",
                 version="==2.0.0",
-                index=Source("https://thoth-station.ninja/simple"),
+                index=source,
                 develop=False,
             ),
-        ]
+        }
 
-        paths = [
-            [
-                ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"): [
+                (("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
+                 ("numpy", "1.0.0", "https://pypi.org/simple")),
+                (("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
+                 ("numpy", "2.0.0", "https://pypi.org/simple")),
             ],
-            [
-                ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "2.0.0", "https://pypi.org/simple"),
-            ],
-            [
-                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
-            ],
-            [
-                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-                ("numpy", "2.0.0", "https://pypi.org/simple"),
-            ],
-        ]
+            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): {
+                (("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                 ("numpy", "1.0.0", "https://pypi.org/simple")),
+                (("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                 ("numpy", "2.0.0", "https://pypi.org/simple")),
+
+            }
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
@@ -267,27 +264,24 @@ class TestLimitLatestVersions(AdviserTestCase):
         limit_latest_versions.update_parameters({"limit_latest_versions": 2})
         limit_latest_versions.run(step_context)
 
-        pairs = list(sorted(
-            step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs(),
-            key=operator.itemgetter(0)
-        ))
+        pairs = step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs()
 
-        assert pairs == [
+        assert set(pairs) == {
             (0.0, (None, ('tensorflow', '1.9.0', 'https://thoth-station.ninja/simple'))),
+            (0.0, (None, ('tensorflow', '2.0.0', 'https://thoth-station.ninja/simple'))),
             (0.0, (('tensorflow', '1.9.0', 'https://thoth-station.ninja/simple'),
                    ('numpy', '1.0.0', 'https://pypi.org/simple'))),
             (0.0, (('tensorflow', '1.9.0', 'https://thoth-station.ninja/simple'),
                    ('numpy', '2.0.0', 'https://pypi.org/simple'))),
-            (0.0, (None, ('tensorflow', '2.0.0', 'https://thoth-station.ninja/simple'))),
+            (0.0, (('tensorflow', '2.0.0', 'https://thoth-station.ninja/simple'),
+                   ('numpy', '2.0.0', 'https://pypi.org/simple'))),
             (0.0, (('tensorflow', '2.0.0', 'https://thoth-station.ninja/simple'),
                    ('numpy', '1.0.0', 'https://pypi.org/simple'))),
-            (0.0, (('tensorflow', '2.0.0', 'https://thoth-station.ninja/simple'),
-                   ('numpy', '2.0.0', 'https://pypi.org/simple')))
-        ]
+        }
 
-        assert list(
+        assert set(
             pv.to_tuple() for pv in step_context.iter_direct_dependencies()
-        ) == [
+        ) == {
             ("tensorflow", "1.9.0", "https://thoth-station.ninja/simple"),
             ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
-        ]
+        }

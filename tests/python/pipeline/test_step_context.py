@@ -32,42 +32,29 @@ class TestStepContext(AdviserTestCase):
     """Test step context - manipulation on paths."""
 
     @staticmethod
-    def _prepare_step_context():
+    def _prepare_step_context() -> StepContext:
         """Prepare step context for test scenarios."""
-        direct_dependencies = []
-        paths = []
-        for version_identifier in ("==0.12.1", "==1.0.1"):
-            direct_dependencies.append(
-                PackageVersion(
-                    name="flask",
-                    version=version_identifier,
-                    index=Source("https://pypi.org/simple"),
-                    develop=False,
-                )
+        direct_dependencies = {}
+        paths = {}
+        source = Source("https://pypi.org/simple")
+
+        for version_identifier in ("0.12.1", "1.0.1"):
+            package_tuple = ("flask", version_identifier, source.url)
+            direct_dependencies[package_tuple] = PackageVersion(
+                name="flask",
+                version="==" + version_identifier,
+                index=source.url,
+                develop=False,
             )
 
-            paths.extend([
-                [
-                    ("flask", version_identifier[2:], "https://pypi.org/simple"),
-                    ("werkzeug", "0.13", "https://pypi.org/simple"),
-                    ("six", "1.7.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", version_identifier[2:], "https://pypi.org/simple"),
-                    ("werkzeug", "0.13", "https://pypi.org/simple"),
-                    ("six", "1.8.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", version_identifier[2:], "https://pypi.org/simple"),
-                    ("werkzeug", "0.14", "https://pypi.org/simple"),
-                    ("six", "1.7.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", version_identifier[2:], "https://pypi.org/simple"),
-                    ("werkzeug", "0.14", "https://pypi.org/simple"),
-                    ("six", "1.8.0", "https://pypi.org/simple"),
-                ],
-            ])
+            paths[package_tuple] = [
+                (package_tuple, ("werkzeug", "0.13", "https://pypi.org/simple")),
+                (package_tuple, ("werkzeug", "0.14", "https://pypi.org/simple")),
+                (("werkzeug", "0.13", "https://pypi.org/simple"), ("six", "1.7.0", "https://pypi.org/simple")),
+                (("werkzeug", "0.13", "https://pypi.org/simple"), ("six", "1.8.0", "https://pypi.org/simple")),
+                (("werkzeug", "0.14", "https://pypi.org/simple"), ("six", "1.7.0", "https://pypi.org/simple")),
+                (("werkzeug", "0.14", "https://pypi.org/simple"), ("six", "1.8.0", "https://pypi.org/simple")),
+             ]
 
         return StepContext.from_paths(direct_dependencies, paths)
 
@@ -112,39 +99,41 @@ class TestStepContext(AdviserTestCase):
         assert original_direct_deps_len == len(
             list(step_context.iter_direct_dependencies())
         ), "No direct dependencies should be removed"
+
         assert original_transitive_deps_len - 1 == len(
             list(step_context.iter_transitive_dependencies_tuple())
         )
+
         assert to_remove not in list(step_context.iter_transitive_dependencies_tuple())
+
         assert len(list(step_context.iter_direct_dependencies())) == len(
             list(step_context.iter_direct_dependencies_tuple())
         )
+
         assert len(list(step_context.iter_transitive_dependencies())) == len(
             list(step_context.iter_transitive_dependencies_tuple())
         )
 
     def test_remove_package_tuple_transitive_with_direct_change(self):
         """Test removal of a transitive dependency which leads to removal of a direct dependency candidate."""
-        direct_dependencies = []
-        for version_identifier in ("==0.12.1", "==1.0.1"):
-            direct_dependencies.append(
-                PackageVersion(
-                    name="flask",
-                    version=version_identifier,
-                    index=Source("https://pypi.org/simple"),
-                    develop=False,
-                )
+        paths = {}
+        direct_dependencies = {}
+        source = Source("https://pypi.org/simple")
+        for version_identifier in ("0.12.1", "1.0.1"):
+            package_tuple = ("flask", version_identifier, source.url)
+
+            direct_dependencies[package_tuple] = PackageVersion(
+                name="flask",
+                version="==" + version_identifier,
+                index=Source("https://pypi.org/simple"),
+                develop=False,
             )
 
-        paths = [
-            [
-                ("flask", "0.12.1", "https://pypi.org/simple"),
-                ("werkzeug", "0.13", "https://pypi.org/simple"),
-            ],
-            [
-                ("flask", "1.0.1", "https://pypi.org/simple"),
-                ("werkzeug", "0.14", "https://pypi.org/simple"),
-            ],
+        paths[("flask", "0.12.1", "https://pypi.org/simple")] = [
+            (("flask", "0.12.1", "https://pypi.org/simple"), ("werkzeug", "0.13", "https://pypi.org/simple"))
+        ]
+        paths[("flask", "1.0.1", "https://pypi.org/simple")] = [
+            (("flask", "1.0.1", "https://pypi.org/simple"), ("werkzeug", "0.14", "https://pypi.org/simple"))
         ]
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
@@ -163,29 +152,25 @@ class TestStepContext(AdviserTestCase):
 
     def test_remove_package_tuple_transitive_with_direct_error(self):
         """Test removal of a package which does not have any candidate of direct dependency."""
-        direct_dependencies = []
-        for version_identifier in ("==0.12.1", "==1.0.1"):
-            direct_dependencies.append(
-                PackageVersion(
-                    name="flask",
-                    version=version_identifier,
-                    index=Source("https://pypi.org/simple"),
-                    develop=False,
-                )
+        paths = {}
+        direct_dependencies = {}
+        source = Source("https://pypi.org/simple")
+        for version_identifier in ("0.12.1", "1.0.1"):
+            package_tuple = ("flask", version_identifier, source.url)
+
+            direct_dependencies[package_tuple] = PackageVersion(
+                name="flask",
+                version="==" + version_identifier,
+                index=source.url,
+                develop=False,
             )
 
-        paths = [
-            [
-                ("flask", "0.12.1", "https://pypi.org/simple"),
-                ("werkzeug", "0.13", "https://pypi.org/simple"),
-                ("six", "1.0.0", "https://pypi.org/simple"),
-            ],
-            [
-                ("flask", "1.0.1", "https://pypi.org/simple"),
-                ("werkzeug", "0.14", "https://pypi.org/simple"),
-                ("six", "1.0.0", "https://pypi.org/simple"),
-            ],
-        ]
+            paths[package_tuple] = [
+                (package_tuple, ("werkzeug", "0.13", "https://pypi.org/simple")),
+                (package_tuple, ("werkzeug", "0.14", "https://pypi.org/simple")),
+                (("werkzeug", "0.13", "https://pypi.org/simple"), ("six", "1.0.0", "https://pypi.org/simple")),
+                (("werkzeug", "0.14", "https://pypi.org/simple"), ("six", "1.0.0", "https://pypi.org/simple")),
+            ]
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
@@ -195,27 +180,23 @@ class TestStepContext(AdviserTestCase):
 
     def test_remove_package_tuple_transitive_with_direct_diamond_error(self):
         """Test removal of a package which does not have any candidate of direct dependency."""
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("flask", "0.12.1", "https://pypi.org/simple"): PackageVersion(
                 name="flask",
                 version="==0.12.1",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        ]
+        }
 
-        paths = [
-            [
-                ("flask", "0.12.1", "https://pypi.org/simple"),
-                ("werkzeug", "0.13", "https://pypi.org/simple"),
-                ("six", "1.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("flask", "0.12.1", "https://pypi.org/simple"): [
+                (("flask", "0.12.1", "https://pypi.org/simple"), ("werkzeug", "0.13", "https://pypi.org/simple")),
+                (("werkzeug", "0.13", "https://pypi.org/simple"), ("six", "1.0.0", "https://pypi.org/simple")),
+                (("flask", "0.12.1", "https://pypi.org/simple"), ("werkzeug", "0.14", "https://pypi.org/simple")),
+                (("werkzeug", "0.14", "https://pypi.org/simple"), ("six", "1.0.0", "https://pypi.org/simple")),
             ],
-            [
-                ("flask", "0.12.1", "https://pypi.org/simple"),
-                ("werkzeug", "0.14", "https://pypi.org/simple"),
-                ("six", "1.0.0", "https://pypi.org/simple"),
-            ],
-        ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths)
 
@@ -225,16 +206,21 @@ class TestStepContext(AdviserTestCase):
 
     def test_remove_package_tuple_direct_error(self):
         """Test removal of a package which is a direct dependency and causes issues."""
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("flask", "0.12.1", "https://pypi.org/simple"): PackageVersion(
                 name="flask",
                 version="==0.12.1",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        ]
+        }
 
-        step_context = StepContext.from_paths(direct_dependencies, paths=[])
+        step_context = StepContext.from_paths(
+            direct_dependencies,
+            paths={
+                ("flask", "0.12.1", "https://pypi.org/simple"): []
+            }
+        )
 
         with pytest.raises(CannotRemovePackage):
             with step_context.remove_package_tuples(("flask", "0.12.1", "https://pypi.org/simple")):
@@ -242,22 +228,21 @@ class TestStepContext(AdviserTestCase):
 
     def test_remove_package_tuple_transitive_error(self):
         """Remove a transitive dependency which will cause error during removal."""
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("flask", "0.12.1", "https://pypi.org/simple"): PackageVersion(
                 name="flask",
                 version="==0.12.1",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        ]
+        }
 
-        paths = [
-            [
-                ("flask", "0.12.1", "https://pypi.org/simple"),
-                ("werkzeug", "0.13", "https://pypi.org/simple"),
-                ("six", "1.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("flask", "0.12.1", "https://pypi.org/simple"): [
+                (("flask", "0.12.1", "https://pypi.org/simple"), ("werkzeug", "0.13", "https://pypi.org/simple")),
+                (("werkzeug", "0.13", "https://pypi.org/simple"), ("six", "1.0.0", "https://pypi.org/simple")),
             ]
-        ]
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths=paths)
 
@@ -266,41 +251,40 @@ class TestStepContext(AdviserTestCase):
                 pass
 
     def test_iter_dependencies(self):
-        direct_dependencies = [
-            PackageVersion(
+        source = Source("https://pypi.org/simple")
+
+        direct_dependencies = {
+            ("flask", "0.12.1", "https://pypi.org/simple"): PackageVersion(
                 name="flask",
                 version="==0.12.1",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("pytest", "5.0.1", "https://pypi.org/simple"): PackageVersion(
                 name="pytest",
                 version="==5.0.1",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=True,
             ),
-            PackageVersion(
+            ("flask", "1.0.2", "https://pypi.org/simple"): PackageVersion(
                 name="flask",
                 version="==1.0.2",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-        ]
+        }
 
-        paths = [
-            [
-                ("flask", "0.12.1", "https://pypi.org/simple"),
-                ("werkzeug", "0.15.5", "https://pypi.org/simple"),
+        paths = {
+            ("flask", "0.12.1", "https://pypi.org/simple"): [
+                (("flask", "0.12.1", "https://pypi.org/simple"), ("werkzeug", "0.15.5", "https://pypi.org/simple")),
             ],
-            [
-                ("flask", "1.0.2", "https://pypi.org/simple"),
-                ("werkzeug", "0.15.5", "https://pypi.org/simple"),
+            ("flask", "1.0.2", "https://pypi.org/simple"): [
+                (("flask", "1.0.2", "https://pypi.org/simple"), ("werkzeug", "0.15.5", "https://pypi.org/simple")),
             ],
-            [
-                ("pytest", "5.0.1", "https://pypi.org/simple"),
-                ("pytest-cov", "2.7.1", "https://pypi.org/simple"),
-            ]
-        ]
+            ("pytest", "5.0.1", "https://pypi.org/simple"): [
+                (("pytest", "5.0.1", "https://pypi.org/simple"), ("pytest-cov", "2.7.1", "https://pypi.org/simple")),
+            ],
+        }
 
         step_context = StepContext.from_paths(direct_dependencies, paths=paths)
 
