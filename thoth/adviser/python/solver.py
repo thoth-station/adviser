@@ -126,6 +126,10 @@ class PythonPackageGraphSolver:
             solver_kwargs=solver_kwargs,
             runtime_environment=runtime_environment,
         )
+        # Do not instantiate multiple objects for same python package tuple to optimize memory usage.
+        self._package_versions = {}
+        # Have just one instance of Source object per python package source index url.
+        self._sources = {}
 
     def solve(
         self,
@@ -162,12 +166,22 @@ class PythonPackageGraphSolver:
                 list(resolved.values())[0] if all_versions else resolved.values()
             ):
                 # We only change version attribute that will be the resolved one.
-                package_version = PackageVersion(
-                    name=dependencies[0].name,
-                    version="==" + version,
-                    index=Source(index_url),
-                    develop=dependencies[0].develop,
-                )
+                package_tuple = (dependencies[0].name, version, index_url)
+                package_version = self._package_versions.get(package_tuple)
+                if not package_version:
+                    source = self._sources.get(index_url)
+                    if not source:
+                        source = Source(index_url)
+                        self._sources[index_url] = source
+
+                    package_version = PackageVersion(
+                        name=dependencies[0].name,
+                        version="==" + version,
+                        index=source,
+                        develop=dependencies[0].develop,
+                    )
+                    self._package_versions[package_tuple] = package_version
+
                 if all_versions:
                     result[package_version.name].append(package_version)
                 else:
@@ -189,14 +203,23 @@ class PythonPackageGraphSolver:
                 original_package = dependencies_map.pop(package_name)
                 result_versions = []
                 for version, index_url in versions if all_versions else [versions]:
-                    result_versions.append(
-                        PackageVersion(
+                    package_tuple = (original_package.name, version, index_url)
+                    package_version = self._package_versions.get(package_tuple)
+                    if not package_version:
+                        source = self._sources.get(index_url)
+                        if not source:
+                            source = Source(index_url)
+                            self._sources[index_url] = source
+
+                        package_version = PackageVersion(
                             name=original_package.name,
                             version="==" + version,
-                            index=Source(index_url),
+                            index=source,
                             develop=original_package.develop,
                         )
-                    )
+
+                    result_versions.append(package_version)
+
                 result[original_package.name] = result_versions
 
         return result
