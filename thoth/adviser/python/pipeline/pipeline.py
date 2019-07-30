@@ -136,6 +136,11 @@ class Pipeline:
                 ",".join(unresolved),
             )
 
+        # De-instantiate solver - this will cause solver cache to be dropped and references to PackageVersion
+        # from solver will no longer exist. The garbage collector will correctly clean unreferenced
+        # PackageVersions if they will be removed from the dependency graph in the pipeline steps.
+        del self._solver
+
         return direct_dependencies
 
     def _resolve_transitive_dependencies(
