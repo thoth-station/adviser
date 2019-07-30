@@ -46,6 +46,7 @@ from thoth.python import Pipfile
 from thoth.python import PipfileLock
 from thoth.python import Project
 from thoth.solver.python.base import SolverException
+from thoth.solver.python.base import NoReleasesFound
 
 init_logging()
 
@@ -405,6 +406,13 @@ def advise(
         _LOGGER.exception("Error during computing recommendation: %s", str(exc))
         result["error"] = True
         result["report"] = [([{"justification": f"{str(exc)}", "type": "ERROR"}], None)]
+    except NoReleasesFound as exc:
+        result["error"] = True
+        result["report"] = [([{
+            "justification": f"{str(exc)}; analysis of the missing package will be "
+                             f"automatically scheduled by the system",
+            "type": "ERROR"
+        }], None)]
     except (SolverException, UnableLock) as exc:
         result["error"] = True
         result["report"] = [([{"justification": str(exc), "type": "ERROR"}], None)]
