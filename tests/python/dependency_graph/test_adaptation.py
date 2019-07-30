@@ -28,15 +28,23 @@ from thoth.adviser.python.dependency_graph import CannotRemovePackage
 
 class TestDependencyGraphAdaptation(AdviserTestCase):
     def test_empty(self):
-        dg = DependencyGraphAdaptation.from_paths([])
+        with pytest.raises(ValueError):
+            DependencyGraphAdaptation.from_paths([], [])
+
+    def test_empty_paths(self):
+        direct_dependencies = [
+            ("selinon", "1.0.0", "https://pypi.org/simple")
+        ]
+        dg = DependencyGraphAdaptation.from_paths(direct_dependencies, [])
         pairs = dg.to_scored_package_tuple_pairs()
-        assert pairs == []
+        assert pairs == [(0.0, (None, ('selinon', '1.0.0', 'https://pypi.org/simple')))]
 
     def test_score_one(self):
         package_tuple = ("daiquiri", "1.5.0", "https://pypi.org/simple")
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple]
-        ])
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[package_tuple],
+            paths=[],
+        )
 
         dg.score_package_tuple(package_tuple, 2.0)
         dg.score_package_tuple(package_tuple, 1.0)
@@ -52,9 +60,13 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         package_tuple2 = ("werkzeug", "0.15.4", "https://pypi.org/simple")
         package_tuple3 = ("click", "0.1.2", "https://pypi.org/simple")
 
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple1, package_tuple2, package_tuple3]
-        ])
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[package_tuple1],
+            paths=[
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple3),
+            ]
+        )
 
         dg.score_package_tuple(package_tuple1, 2.0)
         dg.score_package_tuple(package_tuple2, 1.0)
@@ -76,13 +88,22 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         package_tuple4 = ("click", "0.2.0", "https://pypi.org/simple")
         package_tuple5 = ("werkzeug", "0.16.0", "https://pypi.org/simple")
 
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple0],
-            [package_tuple1, package_tuple2, package_tuple3],
-            [package_tuple1, package_tuple2, package_tuple4],
-            [package_tuple1, package_tuple5, package_tuple4],
-            [package_tuple1, package_tuple5, package_tuple3],
-        ])
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[
+                package_tuple0,
+                package_tuple1,
+            ],
+            paths=[
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple3),
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple4),
+                (package_tuple1, package_tuple5),
+                (package_tuple5, package_tuple4),
+                (package_tuple1, package_tuple5),
+                (package_tuple5, package_tuple3),
+            ]
+        )
 
         dg.score_package_tuple(package_tuple1, +2.0)
         dg.score_package_tuple(package_tuple2, +1.0)
@@ -108,9 +129,14 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         package_tuple1 = ("flask", "1.0.2", "https://pypi.org/simple")
         package_tuple2 = ("werkzeug", "0.15.4", "https://pypi.org/simple")
         package_tuple3 = ("click", "0.1.2", "https://pypi.org/simple")
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple1, package_tuple2, package_tuple3, package_tuple1]
-        ])
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[package_tuple1],
+            paths=[
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple3),
+                (package_tuple3, package_tuple1),
+            ]
+        )
 
         dg.score_package_tuple(package_tuple1, 2.0)
         dg.score_package_tuple(package_tuple2, 1.0)
@@ -129,9 +155,11 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         package_tuple1 = ("flask", "1.0.2", "https://pypi.org/simple")
         package_tuple2 = ("flask", "0.12.0", "https://pypi.org/simple")
         package_tuple3 = ("werkzeug", "0.15.4", "https://pypi.org/simple")
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple1, package_tuple3],
-            [package_tuple2, package_tuple3],
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[package_tuple1, package_tuple2],
+            paths=[
+                (package_tuple1, package_tuple3),
+                (package_tuple2, package_tuple3),
         ])
 
         with dg.remove_package_tuples(package_tuple1) as txn:
@@ -148,9 +176,12 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
     def test_remove_direct_one_error(self):
         package_tuple1 = ("flask", "1.0.2", "https://pypi.org/simple")
         package_tuple2 = ("werkzeug", "0.15.4", "https://pypi.org/simple")
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple1, package_tuple2],
-        ])
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[package_tuple1],
+            paths=[
+                (package_tuple1, package_tuple2)
+            ]
+        )
 
         with pytest.raises(CannotRemovePackage):
             with dg.remove_package_tuples(package_tuple1):
@@ -167,10 +198,13 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         package_tuple1 = ("flask", "1.0.2", "https://pypi.org/simple")
         package_tuple2 = ("flask", "0.12.0", "https://pypi.org/simple")
         package_tuple3 = ("werkzeug", "0.15.4", "https://pypi.org/simple")
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple1, package_tuple3],
-            [package_tuple2, package_tuple3],
-        ])
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[package_tuple1, package_tuple2],
+            paths=[
+                (package_tuple1, package_tuple3),
+                (package_tuple2, package_tuple3),
+            ]
+        )
 
         with dg.remove_package_tuples(package_tuple1) as txn:
             txn.commit()
@@ -191,13 +225,19 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         package_tuple4 = ("click", "0.2.0", "https://pypi.org/simple")
         package_tuple5 = ("werkzeug", "0.16.0", "https://pypi.org/simple")
 
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple0],
-            [package_tuple1, package_tuple2, package_tuple3],
-            [package_tuple1, package_tuple2, package_tuple4],
-            [package_tuple1, package_tuple5, package_tuple4],
-            [package_tuple1, package_tuple5, package_tuple3],
-        ])
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[package_tuple0, package_tuple1],
+            paths=[
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple3),
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple4),
+                (package_tuple1, package_tuple5),
+                (package_tuple5, package_tuple4),
+                (package_tuple1, package_tuple5),
+                (package_tuple5, package_tuple3),
+            ]
+        )
 
         with dg.remove_package_tuples(package_tuple2) as txn:
             txn.commit()
@@ -221,11 +261,15 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         package_tuple4 = ("click", "0.2.0", "https://pypi.org/simple")
         package_tuple5 = ("werkzeug", "0.16.0", "https://pypi.org/simple")
 
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple0],
-            [package_tuple1, package_tuple2, package_tuple3],
-            [package_tuple1, package_tuple2, package_tuple4],
-            [package_tuple1, package_tuple5, package_tuple3],
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[package_tuple0, package_tuple1],
+            paths=[
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple3),
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple4),
+                (package_tuple1, package_tuple5),
+                (package_tuple5, package_tuple3),
         ])
 
         with dg.remove_package_tuples(package_tuple2) as txn:
@@ -249,13 +293,19 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         package_tuple4 = ("click", "0.2.0", "https://pypi.org/simple")
         package_tuple5 = ("werkzeug", "0.16.0", "https://pypi.org/simple")
 
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple0],
-            [package_tuple1, package_tuple2, package_tuple3],
-            [package_tuple1, package_tuple2, package_tuple4],
-            [package_tuple1, package_tuple5, package_tuple4],
-            [package_tuple1, package_tuple5, package_tuple3],
-        ])
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[package_tuple0, package_tuple1],
+            paths=[
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple3),
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple4),
+                (package_tuple1, package_tuple5),
+                (package_tuple5, package_tuple4),
+                (package_tuple1, package_tuple5),
+                (package_tuple5, package_tuple3),
+            ]
+        )
 
         with dg.remove_package_tuples(package_tuple2, package_tuple4) as txn:
             txn.commit()
@@ -276,10 +326,13 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         package_tuple2 = ("werkzeug", "0.15.4", "https://pypi.org/simple")
         package_tuple3 = ("click", "0.1.2", "https://pypi.org/simple")
 
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple0],
-            [package_tuple1, package_tuple2, package_tuple3],
-        ])
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[package_tuple0, package_tuple1],
+            paths=[
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple3),
+            ]
+        )
 
         with pytest.raises(CannotRemovePackage):
             with dg.remove_package_tuples(package_tuple3):
@@ -293,11 +346,15 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         package_tuple4 = ("click", "0.2.0", "https://pypi.org/simple")
         package_tuple5 = ("werkzeug", "0.16.0", "https://pypi.org/simple")
 
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple0],
-            [package_tuple1, package_tuple2, package_tuple3],
-            [package_tuple1, package_tuple2, package_tuple4],
-            [package_tuple1, package_tuple5, package_tuple3],
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[package_tuple0, package_tuple1],
+            paths=[
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple3),
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple4),
+                (package_tuple1, package_tuple5),
+                (package_tuple5, package_tuple3),
         ])
 
         with pytest.raises(CannotRemovePackage):
@@ -311,10 +368,16 @@ class TestDependencyGraphAdaptation(AdviserTestCase):
         package_tuple4 = ("werkzeug", "0.16.0", "https://pypi.org/simple")
         package_tuple5 = ("click", "1.0.0", "https://pypi.org/simple")
 
-        dg = DependencyGraphAdaptation.from_paths([
-            [package_tuple1, package_tuple2, package_tuple3, package_tuple2],
-            [package_tuple1, package_tuple4, package_tuple5],
-        ])
+        dg = DependencyGraphAdaptation.from_paths(
+            direct_dependencies=[package_tuple1],
+            paths=[
+                (package_tuple1, package_tuple2),
+                (package_tuple2, package_tuple3),
+                (package_tuple3, package_tuple2),
+                (package_tuple1, package_tuple4),
+                (package_tuple4, package_tuple5),
+            ]
+        )
 
         with dg.remove_package_tuples(package_tuple3) as txn:
             txn.commit()

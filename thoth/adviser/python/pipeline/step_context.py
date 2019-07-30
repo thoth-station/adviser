@@ -49,36 +49,43 @@ class StepContext(ContextBase):
     @classmethod
     def from_paths(
         cls,
-        direct_dependencies: List[PackageVersion],
-        paths: List[List[Tuple[str, str, str]]],
+        direct_dependencies: Dict[Tuple[str, str, str], PackageVersion],
+        paths: Dict[Tuple[str, str, str], List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]],
     ) -> "StepContext":
         """Instantiate step context from paths."""
-        _LOGGER.debug("Preparing for instantiating step context")
-        packages = {p.to_tuple(): p for p in direct_dependencies}
-        for path in paths:
-            develop = packages[path[0]].develop
-            for package_tuple in path:
-                if package_tuple in packages:
-                    continue
+        packages = dict(direct_dependencies)
+        for direct_dependency_tuple, dependency_paths in paths.items():
+            for package_tuples in dependency_paths:
+                for package_tuple in package_tuples:
+                    if package_tuple in packages:
+                        continue
 
-                package_version = PackageVersion(
-                    name=package_tuple[0],
-                    version="==" + package_tuple[1],
-                    develop=develop,
-                    index=Source(package_tuple[2]),
-                )
-                packages[package_tuple] = package_version
+                    package_version = PackageVersion(
+                        name=package_tuple[0],
+                        version="==" + package_tuple[1],
+                        develop=direct_dependencies[direct_dependency_tuple].develop,
+                        index=Source(package_tuple[2]),
+                    )
+                    packages[package_tuple] = package_version
 
-        # Explicitly assign paths to direct dependencies to have them present even if they do not have any dependency.
-        for direct_dependency in direct_dependencies:
-            paths.append([direct_dependency.to_tuple()])
+        path_tuples = []
+        for dependency_paths in paths.values():
+            for path in dependency_paths:
+                path_tuples.append(path)
 
+        _LOGGER.debug(
+            "Total number of packages considered including all transitive dependencies: %d",
+            len(packages)
+        )
         _LOGGER.info(
             "Instantiating step context and constructing dependency graph adaptation"
         )
         return cls(
             packages=packages,
-            dependency_graph_adaptation=DependencyGraphAdaptation.from_paths(paths),
+            dependency_graph_adaptation=DependencyGraphAdaptation.from_paths(
+                direct_dependencies=direct_dependencies.keys(),
+                paths=path_tuples,
+            ),
         )
 
     @property

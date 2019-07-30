@@ -23,7 +23,6 @@ import flexmock
 from thoth.python import Project
 from thoth.python import Source
 from thoth.python import PackageVersion
-from thoth.adviser.python.dependency_graph import NoDependenciesError
 from thoth.adviser.python.dependency_graph import DependencyGraphWalker
 from thoth.adviser.python.dependency_graph import PrematureStreamEndError
 from thoth.adviser.python.pipeline import Pipeline
@@ -90,16 +89,17 @@ class TestPipeline(AdviserTestCase):
         """Test running a single step inside pipeline."""
         project = Project.from_strings(_PIPFILE_STR)
 
-        direct_dependencies = [
-            PackageVersion(
-                name="flask",
-                version="==1.0.2",
-                index=Source("https://pypi.org/simple"),
-                develop=False,
-            )
-        ]
+        direct_dependency = PackageVersion(
+            name="flask",
+            version="==1.0.2",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
 
-        step_context = StepContext.from_paths(direct_dependencies, [])
+        step_context = StepContext.from_paths(
+            {direct_dependency.to_tuple(): direct_dependency},
+            {direct_dependency.to_tuple(): []},
+        )
 
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
@@ -132,16 +132,17 @@ class TestPipeline(AdviserTestCase):
         """Test running a single stride inside pipeline."""
         project = Project.from_strings(_PIPFILE_STR)
 
-        direct_dependencies = [
-            PackageVersion(
-                name="flask",
-                version="==1.0.2",
-                index=Source("https://pypi.org/simple"),
-                develop=False,
-            )
-        ]
+        direct_dependency = PackageVersion(
+            name="flask",
+            version="==1.0.2",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
 
-        step_context = StepContext.from_paths(direct_dependencies, [])
+        step_context = StepContext.from_paths(
+            {direct_dependency.to_tuple(): direct_dependency},
+            {direct_dependency.to_tuple(): []}
+        )
 
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
@@ -174,16 +175,17 @@ class TestPipeline(AdviserTestCase):
     def test_stride_remove_stack(self):
         project = Project.from_strings(_PIPFILE_STR)
 
-        direct_dependencies = [
-            PackageVersion(
-                name="flask",
-                version="==1.0.2",
-                index=Source("https://pypi.org/simple"),
-                develop=False,
-            )
-        ]
+        direct_dependency = PackageVersion(
+            name="flask",
+            version="==1.0.2",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
 
-        step_context = StepContext.from_paths(direct_dependencies, [])
+        step_context = StepContext.from_paths(
+            {direct_dependency.to_tuple(): direct_dependency},
+            {direct_dependency.to_tuple(): []},
+        )
 
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
@@ -208,16 +210,17 @@ class TestPipeline(AdviserTestCase):
         """Test running step and stride at the same time."""
         project = Project.from_strings(_PIPFILE_STR)
 
-        direct_dependencies = [
-            PackageVersion(
-                name="flask",
-                version="==1.0.2",
-                index=Source("https://pypi.org/simple"),
-                develop=False,
-            )
-        ]
+        direct_dependency = PackageVersion(
+            name="flask",
+            version="==1.0.2",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
 
-        step_context = StepContext.from_paths(direct_dependencies, [])
+        step_context = StepContext.from_paths(
+            {direct_dependency.to_tuple(): direct_dependency},
+            {direct_dependency.to_tuple(): []},
+        )
 
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
@@ -263,16 +266,17 @@ class TestPipeline(AdviserTestCase):
             walk=raise_premature_stream_error,
         )
 
-        direct_dependencies = [
-            PackageVersion(
-                name="flask",
-                version="==1.0.2",
-                index=Source("https://pypi.org/simple"),
-                develop=False,
-            )
-        ]
+        direct_dependency = PackageVersion(
+            name="flask",
+            version="==1.0.2",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
 
-        step_context = StepContext.from_paths(direct_dependencies, [])
+        step_context = StepContext.from_paths(
+            {direct_dependency.to_tuple(): direct_dependency},
+            {direct_dependency.to_tuple(): []},
+        )
 
         flexmock(
             pipeline,
@@ -290,28 +294,3 @@ class TestPipeline(AdviserTestCase):
         assert "type" in stack_info_entry
         assert stack_info_entry["type"] == "WARNING"
         assert "justification" in stack_info_entry
-
-    def test_conduct_empty_error(self):
-        """Test the pipeline does not produce any products if nothing could be produced."""
-        project = Project.from_strings(_PIPFILE_STR)
-        flexmock(GraphDatabase)\
-            .should_receive("retrieve_transitive_dependencies_python_multi")\
-            .with_args(set())\
-            .and_return({})
-        pipeline = Pipeline(
-            graph=GraphDatabase(),  # We avoid low-level testing down to thoth-storages.
-            project=project,
-            steps=[],
-            strides=[],
-        )
-
-        step_context = StepContext.from_paths([], [])
-
-        flexmock(
-            pipeline,
-            _prepare_direct_dependencies=lambda with_devel: None,
-            _resolve_transitive_dependencies=lambda _: step_context,
-        )
-
-        with pytest.raises(NoDependenciesError):
-            pipeline.conduct(limit=None, count=None)

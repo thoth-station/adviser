@@ -61,72 +61,74 @@ class DependencyGraph:
     )
 
     @classmethod
-    def from_paths(cls, paths: List[List[Tuple[str, str, str]]]) -> "DependencyGraph":
+    def from_paths(
+        cls,
+        direct_dependencies: List[Tuple[str, str, str]],
+        paths: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]]
+    ) -> "DependencyGraph":
         """Construct dependency graph from paths."""
         packages_map = {}
         edges_map = {}
         direct_dependency_map = {}
 
-        for path in paths or []:
-            if not path:
-                raise ValueError("Empty path supplied")
+        if not direct_dependencies:
+            raise ValueError("No direct dependencies specified")
 
-            direct_dependency = packages_map.get(path[0])
-            if direct_dependency is None:
-                direct_dependency = Node(path[0])
-                packages_map[direct_dependency.package_tuple] = direct_dependency
+        for direct_dependency in direct_dependencies:
+            direct_dependency_node = packages_map.get(direct_dependency)
+            if direct_dependency_node is None:
+                direct_dependency_node = Node(direct_dependency)
+                packages_map[direct_dependency_node.package_tuple] = direct_dependency_node
 
-            if direct_dependency.package_tuple not in direct_dependency_map:
+            if direct_dependency_node.package_tuple not in direct_dependency_map:
                 direct_dependency_map[
-                    direct_dependency.package_tuple
-                ] = direct_dependency
+                    direct_dependency_node.package_tuple
+                ] = direct_dependency_node
 
-            previous = None
-            for package_tuple in path:
-                package_node = packages_map.get(package_tuple)
+            edge = edges_map.get((None, direct_dependency_node.package_tuple))
+            if not edge:
+                edge = Edge(source=None, target=direct_dependency_node)
+                edges_map[edge.get_edge_key()] = edge
+                direct_dependency_node.incoming_edges[None] = {}
+                direct_dependency_node.incoming_edges[None][None] = edge
 
-                if not package_node:
-                    package_node = Node(package_tuple)
-                    packages_map[package_tuple] = package_node
+        for path in paths or []:
+            if len(path) != 2:
+                raise ValueError("Path does not carry source and destination")
 
-                previous_package_tuple = (
-                    previous.package_tuple if previous is not None else None
-                )
-                previous_package_name = (
-                    previous_package_tuple[0] if previous_package_tuple else None
-                )
+            package_node1 = packages_map.get(path[0])
+            if not package_node1:
+                package_node1 = Node(path[0])
+                packages_map[package_node1.package_tuple] = package_node1
 
-                edge = edges_map.get(
-                    (previous_package_tuple, package_node.package_tuple)
-                )
-                if edge is None:
-                    edge = Edge(source=previous, target=package_node)
-                    edges_map[edge.get_edge_key()] = edge
+            package_node2 = packages_map.get(path[1])
+            if not package_node2:
+                package_node2 = Node(path[1])
+                packages_map[package_node2.package_tuple] = package_node2
 
-                if previous:
-                    if package_node.package_tuple[0] not in previous.outgoing_edges:
-                        previous.outgoing_edges[package_node.package_tuple[0]] = {}
+            edge = edges_map.get(
+                (package_node1.package_tuple, package_node2.package_tuple)
+            )
+            if edge is None:
+                edge = Edge(source=package_node1, target=package_node2)
+                edges_map[edge.get_edge_key()] = edge
 
-                    if (
-                        package_node.package_tuple
-                        not in previous.outgoing_edges[package_node.package_tuple[0]]
-                    ):
-                        previous.outgoing_edges[package_node.package_tuple[0]][
-                            package_node.package_tuple
-                        ] = edge
+            if package_node2.package_tuple[0] not in package_node1.outgoing_edges:
+                package_node1.outgoing_edges[package_node2.package_tuple[0]] = {}
 
-                if previous_package_name not in package_node.incoming_edges:
-                    package_node.incoming_edges[previous_package_name] = {}
-
-                if (
-                    edge.get_edge_key()
-                    not in package_node.incoming_edges[previous_package_name]
-                ):
-                    package_node.incoming_edges[previous_package_name][
-                        previous_package_tuple
+            if (
+                package_node2.package_tuple
+                not in package_node1.outgoing_edges[package_node2.package_tuple[0]]
+            ):
+                package_node1.outgoing_edges[package_node2.package_tuple[0]][
+                        package_node2.package_tuple
                     ] = edge
 
-                previous = package_node
+            if package_node1.package_tuple[0] not in package_node2.incoming_edges:
+                package_node2.incoming_edges[package_node1.package_tuple[0]] = {}
+
+            if package_node1.package_tuple not in package_node2.incoming_edges[package_node1.package_tuple[0]]:
+                package_node2.incoming_edges[package_node1.package_tuple[0]][package_node1.package_tuple] = edge
 
         return cls(
             packages_map=packages_map,

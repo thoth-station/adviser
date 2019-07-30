@@ -44,25 +44,21 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
 
     @staticmethod
     def _get_prepared_context():
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("flask", "0.12.0", "https://pypi.org/simple"): PackageVersion(
                 name="flask",
                 version="==0.12.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
-            ),
-        ]
+            )
+        }
 
-        paths = [
-            [
-                ("flask", "0.12.0", "https://pypi.org/simple"),
-                ("click", "2.0", "https://pypi.org/simple"),
+        paths = {
+            ("flask", "0.12.0", "https://pypi.org/simple"): [
+                (("flask", "0.12.0", "https://pypi.org/simple"), ("click", "2.0", "https://pypi.org/simple")),
+                (("flask", "0.12.0", "https://pypi.org/simple"), ("click", "2.1", "https://pypi.org/simple")),
             ],
-            [
-                ("flask", "0.12.0", "https://pypi.org/simple"),
-                ("click", "2.1", "https://pypi.org/simple"),
-            ],
-        ]
+        }
 
         return StepContext.from_paths(direct_dependencies, paths)
 

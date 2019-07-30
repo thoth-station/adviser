@@ -30,39 +30,37 @@ class TestObservationReduction(AdviserTestCase):
 
     def test_no_observation_latest(self):
         """Test that we always end up with the latest version possible if no observations are found."""
-        direct_dependencies = [
-            PackageVersion(
+        source = Source("https://pypi.org/simple")
+        direct_dependencies = {
+            ("tensorflow", "2.0.0", source.url): PackageVersion(
                 name="tensorflow",
                 version="==2.0.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             ),
-            PackageVersion(
+            ("tensorflow", "1.9.0", source.url): PackageVersion(
                 name="tensorflow",
                 version="==1.9.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             ),
-        ]
+        }
 
-        paths = [
-            [
-                ("tensorflow", "1.9.0", "https://pypi.org/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("tensorflow", "1.9.0", "https://pypi.org/simple"): [
+                (("tensorflow", "1.9.0", "https://pypi.org/simple"),
+                 ("numpy", "1.0.0", "https://pypi.org/simple")),
+                (("tensorflow", "1.9.0", "https://pypi.org/simple"),
+                ("numpy", "2.0.0", "https://pypi.org/simple")),
             ],
-            [
-                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                ("numpy", "2.0.0", "https://pypi.org/simple"),
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"): [
+                (("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                 ("numpy", "2.0.0", "https://pypi.org/simple")),
+                (("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                 ("numpy", "1.0.0", "https://pypi.org/simple")),
             ],
-            [
-                ("tensorflow", "1.9.0", "https://pypi.org/simple"),
-                ("numpy", "2.0.0", "https://pypi.org/simple"),
-            ],
-            [
-                ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                ("numpy", "1.0.0", "https://pypi.org/simple"),
-            ],
-        ]
+        }
+
         step_context = StepContext.from_paths(direct_dependencies, paths=paths)
 
         observation_reduction = ObservationReduction(
@@ -82,27 +80,28 @@ class TestObservationReduction(AdviserTestCase):
 
     def test_cyclic(self):
         """Test cyclic dependencies - test we actually break cycles."""
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("a", "2.0.0", "https://pypi.org/simple"): PackageVersion(
                 name="a",
                 version="==2.0.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             ),
-        ]
+        }
 
-        paths = [
-            [
-                ("a", "2.0.0", "https://pypi.org/simple"),
-                ("b", "2.0.0", "https://pypi.org/simple"),
-                ("c", "2.0.0", "https://pypi.org/simple"),
-                ("b", "2.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("a", "2.0.0", "https://pypi.org/simple"): [
+                (("a", "2.0.0", "https://pypi.org/simple"),
+                 ("b", "2.0.0", "https://pypi.org/simple")),
+                (("b", "2.0.0", "https://pypi.org/simple"),
+                 ("c", "2.0.0", "https://pypi.org/simple")),
+                (("c", "2.0.0", "https://pypi.org/simple"),
+                 ("b", "2.0.0", "https://pypi.org/simple")),
+                (("a", "2.0.0", "https://pypi.org/simple"),
+                 ("b", "1.0.0", "https://pypi.org/simple")),
             ],
-            [
-                ("a", "2.0.0", "https://pypi.org/simple"),
-                ("b", "1.0.0", "https://pypi.org/simple"),
-            ],
-        ]
+        }
+
         step_context = StepContext.from_paths(direct_dependencies, paths=paths)
 
         observation_reduction = ObservationReduction(
@@ -125,39 +124,36 @@ class TestObservationReduction(AdviserTestCase):
 
     def test_one_observation(self):
         """Test one observation and subsequent correct reduction."""
-        direct_dependencies = [
-            PackageVersion(
+        source = Source("https://pypi.org/simple")
+        direct_dependencies = {
+            ("a", "2.0.0", source.url): PackageVersion(
                 name="a",
                 version="==2.0.0",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("a", "1.0.0", source.url): PackageVersion(
                 name="a",
                 version="==1.0.0",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-        ]
+        }
 
-        paths = [
-            [
-                ("a", "2.0.0", "https://pypi.org/simple"),
-                ("b", "2.0.0", "https://pypi.org/simple"),
+        paths = {
+            ("a", "2.0.0", "https://pypi.org/simple"): [
+                (("a", "2.0.0", "https://pypi.org/simple"),
+                 ("b", "2.0.0", "https://pypi.org/simple")),
+                (("a", "2.0.0", "https://pypi.org/simple"),
+                 ("b", "1.0.0", "https://pypi.org/simple")),
             ],
-            [
-                ("a", "2.0.0", "https://pypi.org/simple"),
-                ("b", "1.0.0", "https://pypi.org/simple"),
+            ("a", "1.0.0", "https://pypi.org/simple"): [
+                (("a", "1.0.0", "https://pypi.org/simple"),
+                 ("b", "2.0.0", "https://pypi.org/simple")),
+                (("a", "1.0.0", "https://pypi.org/simple"),
+                 ("b", "1.0.0", "https://pypi.org/simple")),
             ],
-            [
-                ("a", "1.0.0", "https://pypi.org/simple"),
-                ("b", "2.0.0", "https://pypi.org/simple"),
-            ],
-            [
-                ("a", "1.0.0", "https://pypi.org/simple"),
-                ("b", "1.0.0", "https://pypi.org/simple"),
-            ],
-        ]
+        }
         step_context = StepContext.from_paths(direct_dependencies, paths=paths)
 
         step_context.score_package_tuple(("a", "1.0.0", "https://pypi.org/simple"), 2.0)
@@ -178,29 +174,30 @@ class TestObservationReduction(AdviserTestCase):
 
     def test_multiple_observation(self):
         """Test adjustment based on multiple observations.."""
-        direct_dependencies = [
-            PackageVersion(
+        source = Source("https://pypi.org/simple")
+        direct_dependencies = {
+            ("a", "2.0.0", source.url): PackageVersion(
                 name="a",
                 version="==2.0.0",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("a", "3.0.0", source.url): PackageVersion(
                 name="a",
                 version="==3.0.0",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("a", "1.0.0", source.url): PackageVersion(
                 name="a",
                 version="==1.0.0",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-        ]
+        }
 
         from itertools import product
-        paths = list(product(
+        paths_long = list(product(
             (
                 ("a", "3.0.0", "https://pypi.org/simple"),
                 ("a", "2.0.0", "https://pypi.org/simple"),
@@ -217,6 +214,14 @@ class TestObservationReduction(AdviserTestCase):
                 ("c", "1.0.0", "https://pypi.org/simple"),
             ),
         ))
+        paths = {}
+        for item in paths_long:
+            if item[0] not in paths:
+                paths[item[0]] = []
+
+            for idx in range(len(item) - 1):
+                paths[item[0]].append((item[idx], item[idx + 1]))
+
         step_context = StepContext.from_paths(direct_dependencies, paths=paths)
 
         #       Possibly resolved  |   Score     |  A    B    C   |

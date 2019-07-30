@@ -59,38 +59,33 @@ class TestCvePenalization(AdviserTestCase):
 
     @staticmethod
     def _get_prepared_step_context() -> StepContext:
-        direct_dependencies = [
-            PackageVersion(
+        source = Source("https://pypi.org/simple")
+        direct_dependencies = {
+            ("flask", "0.12.0", "https://pypi.org/simple"): PackageVersion(
                 name="flask",
                 version="==0.12.0",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("flask", "0.13.0", "https://pypi.org/simple"): PackageVersion(
                 name="flask",
                 version="==0.13.0",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-        ]
+        }
 
-        paths = [
-            [
-                ("flask", "0.12.0", "https://pypi.org/simple"),
-                ("click", "2.0", "https://pypi.org/simple"),
-                ("pyyaml", "3.12", "https://pypi.org/simple"),
+        paths = {
+            ("flask", "0.12.0", "https://pypi.org/simple"): [
+                (("flask", "0.12.0", "https://pypi.org/simple"), ("click", "2.0", "https://pypi.org/simple")),
+                (("click", "2.0", "https://pypi.org/simple"), ("pyyaml", "3.12", "https://pypi.org/simple")),
             ],
-            [
-                ("flask", "0.13.0", "https://pypi.org/simple"),
-                ("click", "2.0", "https://pypi.org/simple"),
-                ("pyyaml", "3.12", "https://pypi.org/simple"),
+            ("flask", "0.13.0", "https://pypi.org/simple"): [
+                (("flask", "0.13.0", "https://pypi.org/simple"), ("click", "2.0", "https://pypi.org/simple")),
+                (("click", "2.0", "https://pypi.org/simple"), ("pyyaml", "3.12", "https://pypi.org/simple")),
+                (("click", "2.0", "https://pypi.org/simple"), ("pyyaml", "4.0", "https://pypi.org/simple")),
             ],
-            [
-                ("flask", "0.13.0", "https://pypi.org/simple"),
-                ("click", "2.0", "https://pypi.org/simple"),
-                ("pyyaml", "4.0", "https://pypi.org/simple"),
-            ],
-        ]
+        }
 
         return StepContext.from_paths(direct_dependencies, paths)
 
@@ -127,26 +122,26 @@ class TestCvePenalization(AdviserTestCase):
         ))
 
         # All paths with Flask and CVE get penalized (all of them).
-        assert pairs == [
+        assert list(pairs) == [
             (-0.2, (None, ('flask', '0.12.0', 'https://pypi.org/simple'))),
+            (-0.2, (None, ('flask', '0.13.0', 'https://pypi.org/simple'))),
             (-0.2, (('click', '2.0', 'https://pypi.org/simple'),
                     ('pyyaml', '3.12', 'https://pypi.org/simple'))),
-            (-0.2, (None, ('flask', '0.13.0', 'https://pypi.org/simple'))),
             (-0.2, (('click', '2.0', 'https://pypi.org/simple'),
                     ('pyyaml', '4.0', 'https://pypi.org/simple'))),
             (0.0, (('flask', '0.12.0', 'https://pypi.org/simple'),
                    ('click', '2.0', 'https://pypi.org/simple'))),
             (0.0, (('flask', '0.13.0', 'https://pypi.org/simple'),
-                    ('click', '2.0', 'https://pypi.org/simple')))
+                   ('click', '2.0', 'https://pypi.org/simple')))
         ]
 
         # All paths with Flask (direct dependency) get equally penalized.
-        assert list(
+        assert set(
             pv.to_tuple() for pv in step_context.iter_direct_dependencies()
-        ) == [
+        ) == {
             ("flask", "0.12.0", "https://pypi.org/simple"),
             ("flask", "0.13.0", "https://pypi.org/simple"),
-        ]
+        }
 
     def test_score_some(self):
         """Make sure the more CVEs are found in stack, the bigger penalization is."""
@@ -194,12 +189,12 @@ class TestCvePenalization(AdviserTestCase):
                    ('click', '2.0', 'https://pypi.org/simple')))
         ]
 
-        assert list(
+        assert set(
             pv.to_tuple() for pv in step_context.iter_direct_dependencies()
-        ) == [
+        ) == {
             ("flask", "0.12.0", "https://pypi.org/simple"),
             ("flask", "0.13.0", "https://pypi.org/simple"),
-        ]
+        }
 
     def test_no_score(self):
         """Make sure no CVEs do not affect CVE scoring."""
@@ -236,23 +231,23 @@ class TestCvePenalization(AdviserTestCase):
         # Make sure paths are untouched.
         assert pairs == [
             (0.0, (None, ('flask', '0.12.0', 'https://pypi.org/simple'))),
+            (0.0, (None, ('flask', '0.13.0', 'https://pypi.org/simple'))),
             (0.0, (('flask', '0.12.0', 'https://pypi.org/simple'),
                    ('click', '2.0', 'https://pypi.org/simple'))),
             (0.0, (('click', '2.0', 'https://pypi.org/simple'),
                    ('pyyaml', '3.12', 'https://pypi.org/simple'))),
-            (0.0, (None, ('flask', '0.13.0', 'https://pypi.org/simple'))),
             (0.0, (('flask', '0.13.0', 'https://pypi.org/simple'),
                    ('click', '2.0', 'https://pypi.org/simple'))),
             (0.0, (('click', '2.0', 'https://pypi.org/simple'),
                    ('pyyaml', '4.0', 'https://pypi.org/simple')))
         ]
 
-        assert list(
+        assert set(
             pv.to_tuple() for pv in step_context.iter_direct_dependencies()
-        ) == [
+        ) == {
             ("flask", "0.12.0", "https://pypi.org/simple"),
             ("flask", "0.13.0", "https://pypi.org/simple"),
-        ]
+        }
 
     def test_indirect(self):
         """Make sure sorting is done if an indirect dependency has issue."""
@@ -290,21 +285,21 @@ class TestCvePenalization(AdviserTestCase):
             (-0.2, (('click', '2.0', 'https://pypi.org/simple'),
                     ('pyyaml', '4.0', 'https://pypi.org/simple'))),
             (0.0, (None, ('flask', '0.12.0', 'https://pypi.org/simple'))),
+            (0.0, (None, ('flask', '0.13.0', 'https://pypi.org/simple'))),
             (0.0, (('flask', '0.12.0', 'https://pypi.org/simple'),
                    ('click', '2.0', 'https://pypi.org/simple'))),
             (0.0, (('click', '2.0', 'https://pypi.org/simple'),
                    ('pyyaml', '3.12', 'https://pypi.org/simple'))),
-            (0.0, (None, ('flask', '0.13.0', 'https://pypi.org/simple'))),
             (0.0, (('flask', '0.13.0', 'https://pypi.org/simple'),
                    ('click', '2.0', 'https://pypi.org/simple')))
         ]
 
-        assert list(
+        assert set(
             pv.to_tuple() for pv in step_context.iter_direct_dependencies()
-        ) == [
+        ) == {
             ("flask", "0.12.0", "https://pypi.org/simple"),
             ("flask", "0.13.0", "https://pypi.org/simple"),
-        ]
+        }
 
     def test_direct(self):
         """Make sure direct dependencies are adjusted based on CVEs found."""
@@ -351,9 +346,9 @@ class TestCvePenalization(AdviserTestCase):
                    ('pyyaml', '4.0', 'https://pypi.org/simple')))
         ]
 
-        assert list(
+        assert set(
             pv.to_tuple() for pv in step_context.iter_direct_dependencies()
-        ) == [
+        ) == {
             ("flask", "0.12.0", "https://pypi.org/simple"),
             ("flask", "0.13.0", "https://pypi.org/simple"),
-        ]
+        }
