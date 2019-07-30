@@ -71,6 +71,9 @@ class DependencyGraph:
         edges_map = {}
         direct_dependency_map = {}
 
+        if not direct_dependencies:
+            raise ValueError("No direct dependencies specified")
+
         for direct_dependency in direct_dependencies:
             direct_dependency_node = packages_map.get(direct_dependency)
             if direct_dependency_node is None:
@@ -86,6 +89,8 @@ class DependencyGraph:
             if not edge:
                 edge = Edge(source=None, target=direct_dependency_node)
                 edges_map[edge.get_edge_key()] = edge
+                direct_dependency_node.incoming_edges[None] = {}
+                direct_dependency_node.incoming_edges[None][None] = edge
 
         for path in paths or []:
             if len(path) != 2:
