@@ -9,6 +9,7 @@ Information about implementation
    dependency_graph
    dependency_monkey
    libdependency_graph
+   performance
    pipeline
    provenance_checks
 
