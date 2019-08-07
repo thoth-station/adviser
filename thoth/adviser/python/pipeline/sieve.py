@@ -15,20 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A base for a pipeline unit context - stride or step context."""
+"""A base class for implementing sieves to filter out direct dependencies."""
 
 import abc
 
 import attr
 
+from .unit_base import PipelineUnitBase
+from .sieve_context import SieveContext
+
 
 @attr.s(slots=True)
-class ContextBase(metaclass=abc.ABCMeta):
-    """A base for a pipeline unit context."""
+class Sieve(PipelineUnitBase, metaclass=abc.ABCMeta):
+    """Filter out direct dependencies based on the given criteria."""
 
-    _stats = attr.ib(default=None)
-
-    @property
-    def stats(self):
-        """Retrieve statistics for the current running step."""
-        return self._stats
+    @abc.abstractmethod
+    def run(self, sieve_context: SieveContext) -> None:
+        """Filter out package versions based on sieve implementation."""
+        # Even though this class derives from PipelineUnitBase, the run method has a different
+        # signature - this should be fixed.
+        raise NotImplementedError
