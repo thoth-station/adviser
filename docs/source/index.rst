@@ -12,6 +12,7 @@ Information about implementation
    performance
    pipeline
    provenance_checks
+   source
 
 Crossroad
 =========

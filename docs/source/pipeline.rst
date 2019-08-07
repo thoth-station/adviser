@@ -7,52 +7,302 @@ In this section, one can find the developer's introduction to stack generation
 pipeline used in Thoth's adviser to generate stacks.
 
 The pipeline is used to prepare, generate, filter and score software stacks.
-Input to the pipeline is Thoth's `Project` abstraction carrying information
-about direct dependencies for an application together optional additional
-vector stating runtime environment and hardware available. An optional
-parameter is also library usage, which is an output of tool called `Invectio
-https://github.com/thoth-station/invectio`_ (static source code analysis which
-states which relevant parts of libraries are used). The output of the pipeline
-is a list of generated `Project`s, but with dependencies locked to a specific
-version based on pipeline results. The pipeline is dynamically created based on
-attributes to the stack generation pipeline (direct dependencies, library
-usage, runtime environment characteristics, hardware used, ...).
+The input to the pipeline is Thoth's `Project` abstraction carrying information
+about direct dependencies for an application together with optional additional
+vector stating software environment, hardware available and also other
+information (see bellow for a complete listing).
 
-The pipeline consists of the following two types of units (see Thoth's
-`PipelineUnitBase` base class):
+The output of the pipeline is a list of generated `Project` instances, with
+dependencies locked to a specific version based on pipeline results together
+with a score and justification on why a certain stack is better than another
+one.  The pipeline is dynamically created based on the incoming vector to the
+stack generation pipeline.
+
+The pipeline consists of the following three types of units:
+
+* :class:`Sieve <thoth.adviser.python.pipeline.sieve.Sieve>`
 
 * :class:`Step <thoth.adviser.python.pipeline.step.Step>`
 
 * :class:`Stride <thoth.adviser.python.pipeline.stride.Stride>`
 
-These units are provided as a list of steps or strides to :class:`Pipeline
+These units are provided as a list of concrete sieve, step and stride
+implementations to :class:`Pipeline
 <thoth.adviser.python.pipeline.pipeline.Pipeline>` constructor. They are
-executed respecting their relative order in the supplied list.
+executed respecting their relative order in the supplied list (this is a lot of
+times important relation as they might depend on each other).
+
+The vector coming into the recommendation pipeline consists of the following
+features:
+
+* direct dependencies for the application - *required*
+* recommendation type - *required*
+* static source code analysis - library usage - *optional*
+* software environment - *optional*
+* hardware environment - *optional*
+
+A more detailed description of each feature is described bellow.
+
+Direct dependencies for the application
+#######################################
+
+Direct dependencies of the application - these dependencies are coming to the
+resolver but they can also be used in the pipeline builder to configure stack
+generation pipeline (sieves, steps and strides) to be configured for a
+specific application.
+
+Static source code analysis - library usage
+###########################################
+
+A user can use static source code analysis on the client side when asking for
+advises. In that case, sources are scanned for library imports and
+calls (`Invectio https://github.com/thoth-station/invectio`_ is used). The
+gathered library usage captures libraries and what symbols are used from these
+libraries in sources. This information can be subsequently used in recommendations
+(in stack generation pipeline) to target recommendations specific to user's application.
+
+Recommendation type
+###################
+
+To target user specific requirements for the recommended application stack, there
+were introduced three types of recommendations:
+
+* **LATEST**
+* **TESTING**
+* **STABLE**
+
+**Latest** recommendations recommend the most latest versions of libraries. This
+functionality somehow mimics raw pip or Pipenv but recommended latest versions are
+already analyzed by Thoth and respect package source index configuration the user used.
+
+**Stable** recommendations target the most suited software stacks which, based on
+Thoth's gathered observations, are considered as stable - always running in
+the given runtime environment.
+
+**Testing** recommendation types recommend software for which there are no negative
+observations but they might not behave stable in all cases.
+
+Software environment
+####################
+
+Software environment is yet another vector coming to the recommendation engine.
+It states additional software present in the environment, such as operating
+system, Python interpreter version or IPython information in case of Jupyter
+Notebooks.
+
+Software environment can be automatically detected by `Thamos
+<https://github.com/thoth-station/thamos>`_ - a user can use Thoth to get
+recommendations for the same application when running in different software
+(and also hardware) environments (for example different setup for a cluster
+and a local desktop run).
+
+Software environment together with hardware environment form "*runtime environment*".
+
+Hardware environment
+####################
+
+Hardware environment is stating what hardware is present to run the given
+application. `Thamos <https://github.com/thoth-station/thamos>`_ is capable to
+perform hardware discovery as well (besides software environment discovery). An
+example of hardware environment configuration can be GPU or CPU type.
+
+Pipeline units
+==============
+
+The whole recommendation engine is designed as a pipeline which is made out of
+3 unit types described in the upcoming sections. The configuration of pipeline
+(how these units are grouped together and how are they relatively organized) is
+determined dynamically on user request based on the vector described above to
+target user specific requirements for the application and runtime environment
+where the application runs in.
+
+The order of pipeline unit types is set by stack generation pipeline
+implementation to semantically distinguish how pipeline units form and score
+the produced software stacks:
+
+#. *Sieves* on direct dependencies
+#. *Steps* on dependency graph
+#. *Strides* on produced software stacks
+
+The order of each pipeline unit implementation inside the group is then formed
+in the stack generation pipeline builder respecting the input vector (see below).
+
+Sieve
+#####
+
+The very first type of a pipeline unit is called :class:`Sieve
+<thoth.adviser.python.pipeline.sieve.Sieve>`. This pipeline unit works on a
+list of direct dependencies in specific versions (which were resolved based on
+Thoth's knowledge base) and its aim is to filter out direct dependencies which
+are not suitable. An example can be a sieve that filters out direct
+dependencies which are known for issues based on supplied user's library usage.
+
+.. note::
+
+  When to use a sieve?
+
+  If you want to do operations solely on direct dependencies. Each sieve can be written as a step, but by using a sieve you will reduce the overhead needed to construct additional data structures for dependency graph and optimize some of the queries done to the Thoth's knowledge base.
+
+**Example**
+
+See `this upstream issue
+<https://github.com/tensorflow/tensorflow/issues/30990>`_. In summary, if user
+uses `LSTM` and `ModelCheckpoint` in a TensorFlow application at the same time
+the model does not work well. An example implementation of a sieve to target
+this issue can be (note the implementation is artificial as the issue was
+present only in nightly builds):
+
+.. code-block:: python
+
+  import logging
+  from typing import List
+
+  from thoth.python import PackageVersion
+  from thoth.adviser.python.pipeline import Sieve
+  from thoth.adviser.python.pipeline import SieveContext
+
+  _LOGGER = logging.getLogger(__name__)
+
+
+  class LSTMModelCheckpointIssue(Sieve):
+      """Filter out direct dependencies based on TensorFlow issue #30990."""
+
+      def run(self, sieve_context: SieveContext) -> None:
+          """Filter out TensorFlow releases which have issues with LSTM and ModelCheckpoint use."""
+          tensorflow_usage = self.library_usage["report"].get("tensorflow", [])
+          if "tensorflow.keras.callbacks.ModelCheckpoint" in tensorflow_usage and "tensorflow.python.keras.layers.LSTM" in tensorflow_usage:
+              for package_version in sieve_context.iter_package_versions():
+                  if package_version.name != "tensorflow" or list(package_version.semantic_version) != [2, 0, 0, None, None]:
+                      # Not 2.0.0 release with the given issue.
+                      _LOGGER.debug("Package %r not affecting issue #30990", package_version.to_tuple())
+                  else:
+                      try:
+                          sieve_context.remove_package_version(package_version)
+                          _LOGGER.debug("Package %r excluded due to LSTM and ModelCheckpoint issue #30990", package_version.to_tuple())
+                      except CannotRemovePackage as exc:
+                          # Removing would cause invalidity - e.g. all direct dependencies of type TensorFlow would be removed.
+                          _LOGGER.warning("Cannot remove package %r, user might encounter TensorFlow issue #30990: %s", package_version.to_tuple(), str(exc))
+          else:
+              _LOGGER.debug("ModelCheckPoint and LSTM not used at the same time")
+
+Note the sieve can be added to the stack generation pipeline by pipeline
+builder only if `ModelCheckpoint` and `LSTM` are used together to reduce
+overhead running this sieve in cases when its not desired (see bellow for
+more info).
+
+A `CannotRemovePackage` exception can be raised if the given package cannot be
+removed.
+
+Once all sieves are run, Thoth obtains the whole dependency graph out of its
+knowledge base and next pipeline units can be run - steps.
 
 Steps
 #####
 
-A :class:`Step <thoth.adviser.python.pipeline.step.Step>` abstracts away simple
-operations on "paths" - paths stating serialized dependency graph into a list
-of package tuples, where each package tuple (made out of package name, version
-and index URL) states how a resolution might look like. A list of these lists
-is in fact serialized dependency graph which is being traversed in dependency
-graph implemented in :ref:`libdependency_graph.so <libdependency_graph>`.
+A :class:`Step <thoth.adviser.python.pipeline.step.Step>` abstracts away
+operations on top of dependency graph. One can perform transactional operations
+on top of dependency graph - mark some of the nodes for
+removal in a transaction and once the transaction is committed the logic behind step context
+:class:`step context <thoth.adviser.python.pipeline.step_context.StepContext>`
+ensures the validity of the transaction.
 
-Before a first step is executed, there is run initialization (called
-"initialize stepping" in sources) which queries graph database (respecting
-solver information) and returns back a list of paths for the given set of
-direct dependencies of the supplied project.
+Besides removal of packages in the dependency graph, one can also score some of
+the packages. When scoring the dependency graph is adjusted in a way the better
+a package score has the higher precedence it has in the final resolution (the
+dependency graph is weighted graph). The score can be positive, but also
+negative (penalize the given package in resolution).
 
-A step then operates on a context called :class:`step context
-<thoth.adviser.python.pipeline.step_context.StepContext>` which provides core
-routines on paths and packages which are candidates for resolution (together
-with all their transitive dependencies). The main aim of a step implementation
-can be:
+.. note::
 
-* Prioritize packages in the output project stream which have some impact on software stacks (e.g. make sure first stacks generated out of pipeline have packages or group of packages which have positive performance impact)
+  When to use a step?
 
-* Remove packages and paths which have bad impact on generated software stacks (e.g. some packages cannot run together because of API incompatibility which is captured in Thoth's knowledge base)
+  If you want to:
+
+  * Filter out packages from resolution (e.g. installation-time errors)
+  * Penalize packages in resolved software stacks (e.g. security vulnerabilities)
+  * Prioritize packages in resolved software stacks (e.g. good performance)
+
+**Example**
+
+An example implementation of a step can be found below. The implementation of
+the step iterates over all packages present in the dependency graph and
+packages which are pre-releases based on semantic version are removed.
+
+.. code-block:: python
+
+  import logging
+  from typing import Tuple
+
+  from thoth.adviser.python.dependency_graph import CannotRemovePackage
+
+  from thoth.adviser.python.pipeline import Step
+  from thoth.adviser.python.pipeline import StepContext
+
+  _LOGGER = logging.getLogger(__name__)
+
+  class CutPreReleases(Step):
+      """Cut-off pre-releases if project does not explicitly allows them."""
+
+      def run(self, step_context: StepContext) -> None:
+          """Cut-off pre-releases if project does not explicitly allows them."""
+          if self.project.prereleases_allowed:
+              _LOGGER.info(
+                  "Project accepts pre-releases, skipping cutting pre-releases step"
+              )
+              return
+
+          for package_version in step_context.iter_all_dependencies():
+              if (
+                  package_version.semantic_version.prerelease
+                  or package_version.semantic_version.build
+              ):
+                  package_tuple = package_version.to_tuple()
+                  _LOGGER.debug(
+                      "Removing package %r - pre-releases are disabled", package_tuple
+                  )
+                  try:
+                      with step_context.remove_package_tuples(package_tuple) as txn:
+                          txn.commit()
+                  except CannotRemovePackage as exc:
+                      _LOGGER.error("Cannot produce stack with removing all pre-releases: %s", str(exc))
+                      raise
+
+The context manager used when accessing :func:`StepContext
+<thoth.adviser.python.pipeline.step_context.StepContext.remove_package_tuples>` is acting as a
+transaction on top of dependency graph. You can stack multiple removals of
+packages. Once the transaction gets committed, all the packages are removed in order they
+were scheduled to be removed. If some of the packages causes invalidity to
+dependency graph, the transaction fails (no changes to dependency graph are
+done and all the changes done until reaching the package which would cause
+dependency graph invalidity are rolled back):
+
+.. code-block:: python
+
+    try:
+        with step_context.remove_package_tuples(package_tuple1, package_tuple2) as txn:
+            print(txn.to_remove_nodes)
+            print(txn.to_remove_edges)
+            txn.commit()
+            # or txn.abort() in case of cancelling the transaction.
+    except CannotRemovePackage as exc:
+         # The message carried in exception would be something like:
+         #   "Cannot remove package <pkg>, removing this package would lead "
+         #   "to removal of all direct dependencies of package <direct-requirement>"
+        _LOGGER.info("Transaction for removal of packages was aborted: %s", str(exc))
+    else:
+        _LOGGER.info(
+            "All the packages from %r were removed successfully from dependency graph",
+            some_package_tuples
+        )
+
+
+Once all steps are executed, there is executed :ref:`libdependency_graph.so <libdependency_graph>`
+which generates stack candidates based on traversals of the dependency graph. The produced stack
+candidates are in parallel scored in next pipeline units - strides.
+
+.. note::
+
+  You can access additional step properties such as software environment, hardware environment, library usage to create complex steps removing based on observations stored in the knowledge base.
 
 Strides
 #######
@@ -65,222 +315,62 @@ implementation
 stride is a fully resolved software stack encapsulated in :class:`stride
 context <thoth.adviser.python.pipeline.stride_context.StrideContext>` (each and
 every package is locked to a specific version coming from a specific Python
-package index). Stride is then used to:
-
-* Decide whether the resolved software stack should be included in the output (e.g. random sampling of generated software stacks on :ref:`on Dependency Monkey runs <dependency_monkey>`)
-
-* Score the resulting software stack (e.g. performance based scoring) - once the stack generation pipeline is finished, the pipeline generates recommended pinned down software stacks
-
-Pipeline Architecture - Dynamic Pipeline Creation
-###################################################
-
-How pipeline looks like - what steps and what strides (pipeline units) create pipeline, is determined dynamically based on:
-
-#. Static analysis of user's source code using `Invectio <https://github.com/thoth-station/invectio/>`_ to find out which library parts are used by user's application so a specific pipeline units are picked to construct the pipeline
-
-#. Direct dependencies of user's application
-
-#. Hardware used to run the application
-
-#. Software environment - environment in which the user's application runs in
-
-#. Additional feature which is also one of:
-
-  #. Recommendation type (e.g. testing, stable, latest, ...) - used for adviser specific stack generation pipelines (see below)
-
-  #. Decision function - used in :ref:`Dependency Monkey <dependency_monkey>` to judge which software stack will be inspected on Amun service to gather more observations to Thoth's knowledge base or to save computational resources (see below)
-
-This dynamic pipeline creation is done in :class:`pipeline builder
-<thoth.adviser.python.builder.PipelineBuilder>`. The main aim of this
-builder is to construct pipeline steps, respecting their relative order and
-their parameters.
-
-The pipeline builder has two main methods:
-
-* :func:`get_adviser_pipeline_config <thoth.adviser.python.builder.PipelineBuilder.get_adviser_pipeline_config>` - this method constructs pipeline steps and strides for an adviser run
-
-* :func:`get_dependency_monkey_pipeline_config <thoth.adviser.python.builder.PipelineBuilder.get_dependency_monkey_pipeline_config>` - this method constructs pipeline steps and strides for a Dependency Monkey run
+package index).
 
 .. note::
 
-  Pipeline builder has attributes such as graph database which can be used to derive additional information. You can query graph database for observations to judge which pipeline units should be excluded or included together with their parameters.
+  When to use a stride?
 
-.. image:: _static/pipeline.png
-   :target: _static/pipeline.png
-   :alt: Stack generation pipeline
+  If you want to:
 
-If you take a look at the builder implementation, you can see that each step
-and stride accepts also configuration (which can be `None` or a dictionary).
-Pipeline builder can parametrize these pipeline units based on its input
-vectors (e.g. be less pedantic on security vulnerabilities for testing
-stacks).
+  * Filter our some software stacks because of some bad aspect (e.g. a group of packages are not installable into the given runtime environment).
+  * Prioritize some software stacks based on some characteristics (e.g. good performance).
+  * De-prioritize some software stacks based on some characteristics (e.g. bad performance).
+  * Notify user in the software stack justification about some fact (e.g. warning that Thoth does not have relevant data for some resovled packages).
+  * Adding additional justification to the resolved stack (this will be shown to the user)
 
-Developing own pipeline units
-#############################
-
-As stated earlier, there are two core building blogs (units) of in a stack generation pipeline:
-
-#. Steps
-#. Strides
-
-**When do I want to implement a step?**
-
-Steps work on packages (one or multiple) or paths in dependency graph - they
-adjust dependency graph structure *before the actual resoltion*. Thus a
-use-case for a step would be:
-
-#. You want to filter out packages from resolution (e.g. installation-time errors).
-
-#. You want to penalize packages in resolved software stacks (e.g. security vulnerabilities).
-
-#. You want to prioritize packages in resolved software stacks (e.g. good performance).
-
-**When do I want to implement a stride?**
-
-Strides operate on fully resolved software stacks - they accept a list of
-pinned down packages which should be included in the final software stack. An
-example ucases would be:
-
-#. You want to filter our some software stacks because of some bad aspect (e.g. a group of packages are not installable into the given runtime environment).
-
-#. You want to prioritze some software stacks based on some characteristics (e.g. good performance).
-
-#. You want to de-prioritize some software stacks based on some characteristics (e.g. bad performance).
-
-#. You want to notify user in the software stack justification about some fact (e.g. warning that Thoth does not have relevant data for some resovled packages).
-
-In both cases, steps and strides should be atomic pieces and `they should do
-one thing and do it well <https://en.wikipedia.org/wiki/Unix_philosophy>`_.
-
-Steps are instantiated once and each one is run once for step context passed
-between them - the execution respects relative positioning of steps in the step
-lists as created by pipeline builder.
-
-Strides are instantiated once per a pipeline run, so they can keep state on
-stacks which were passed during pipeline run. As in case of steps, the relative
-positioning of strides (as ordered by pipeline builder) is respected.
-
-Developing own pipeline step
-============================
-
-To implement a pipeline step, simply derive from :class:`StepContext
-<thoth.adviser.python.pipeline.step_context.StepContext>` and implement the
-``run`` method:
+An example of a stride which penalizes packages with a CVE can be found below:
 
 .. code-block:: python
 
   import logging
-  import random
+  from typing import Tuple
 
-  from thoth.adviser.python.pipeline import Step
-  from thoth.adviser.python.pipeline import StepContext
-  from thoth.adviser.python.dependency_graph import CannotRemovePackage
+  from thoth.adviser.python.pipeline import Stride
+  from thoth.adviser.python.pipeline import StrideContext
+  # To remove a stack candidate, raise StrideRemoveStack:
+  # from thoth.adviser.python.pipeline.exceptions import StrideRemoveStack
 
   _LOGGER = logging.getLogger(__name__)
 
 
-  class Foo(Step):
-      """An example Foo step which is removing some packages randomly."""
+  class CveScoring(Stride):
+      """Penalization based on CVE being present in stack."""
 
-      def run(step_context: StepContext) -> None:
-            """Remove packages randomly from dependency graph."""
-            for package_tuple in step_context.iter_all_dependencies_tuple():
-                if not random.choice([True, False]):
-                   _LOGGER.info("Package %r will not be removed", package_tuple)
-                   continue
+      PARAMETERS_DEFAULT = {"cve_penalization": -0.2}
 
-                try:
-                   with step_context.change(graceful=False) as step_change:
-                       step_change.remove_package_tuple(package_tuple)
-                       _LOGGER.info("Package %r was removed", package_tuple)
-                except CannotRemovePackage as exc:
-                   _LOGGER.info("Package %r cannot be removed: %s", package_tuple, str(exc))
+      def run(self, stride_context: StrideContext) -> None:
+          """Score stacks with a CVE in a negative way."""
+          for package_tuple in stride_context.stack_candidate:
+              cve_records = self.graph.get_cve_records(package_name=package_tuple[0], package_version=package_tuple[1])
+              for cve_record in cve_records:
+                  _LOGGER.debug("Found a CVE for %r", package_tuple)
+                  # Add additional fields to the produced justification for user:
+                  cve_record.update(
+                      {
+                          "type": "WARNING",
+                          "justification": f"Found a CVE for package {package_tuple[0]} in version {package_tuple[1]}",
+                      }
+                  )
 
-The context manager used when accessing :func:`StepContext
-<thoth.adviser.python.pipeline.step_context.StepContext.change>` is acting as a
-transaction on top of dependency graph. You can stack multiple removals of
-packages. Once the context is left, all the packages are removed in order they
-were scheduled to be removed. If some of the packages causes invalidity to
-dependency graph, the transaction fails (no changes to dependency graph are
-done and all the changes done until reaching the package which would cause
-dependency graph invalidity are rolled back):
+                  # Penalize the resolved stack:
+                  stride_context.adjust_score(
+                      self.parameters["cve_penalization"], justification=[cve_record]
+                  )
 
-.. code-block:: python
-
-    try:
-        with step_context.change(graceful=False) as step_change:
-            for package_tuple in some_package_tuples:
-               step_change.remove_package_tuple(package_tuple)
-    except CannotRemovePackage as exc:
-         # The message carried in exception would be something like:
-         #   "Cannot remove package <pkg>, removing this package would lead "
-         #   "to removal of all direct dependencies of package <direct-requirement>"
-        _LOGGER.info("Transaction for removal of packages was aborted: %s", str(exc))
-    else:
-        _LOGGER.info(
-            "All the packages from %r were removed successfully from dependency graph",
-            some_package_tuples
-        )
-
-.. note::
-
-  Pipeline step has attribute to access graph database which can be used to derive additional information from Thoth's knowledge base. Taking benefits of using asyncio when querying graph database might be a good idea.
-
-In the example above we have shown how to remove a package or set of packages
-from dependency graph. The following example shows how to adjust dependency
-graph in a way, so that packages which have good impact on software stack will
-be prioritized to occur in the resulting pinned down software stack and
-packages which have bad impact on the resulting application are removed or
-de-prioritized:
-
-.. code-block:: python
-
-   import logging
-
-   from ..step import Step
-   from ..step_context import StepContext
-   from ..units import get_cve_records
-
-   _LOGGER = logging.getLogger(__name__)
-
-
-   class CvePenalization(Step):
-       """Penalization based on CVE being present in stack."""
-
-       # These are default parameters, they can be adjusted in the pipeline
-       # builder as desired (e.g. based on recommendation type requested).
-       PARAMETERS_DEFAULT = {"cve_penalization": -0.2}
-
-       def run(self, step_context: StepContext) -> None:
-           """Penalize stacks with a CVE."""
-           for package_tuple in step_context.iter_all_dependencies_tuple():
-               cve_records = self.graph.get_cve_records(
-                   package_name=package_tuple[0],
-                   package_version=package_tuple[1],
-                   index_url=package_tuple[2]
-                )
-                if cve_records:
-                   _LOGGER.debug("Found a CVEs for %r: %r", package_tuple, cve_records)
-                   # Positive score adjusts dependency graph in a way positive
-                   # the "positive" packages will occur in the resolved stacks
-                   # sooner (will take precedence):
-                   step_context.score_package_tuple(
-                       package_tuple, self.parameters["cve_penalization"]
-                   )
-
-.. note::
-
-  You can access additional step properties such as runtime sorfware information, hardware information (runtime environment), library usage to create complex steps adjusting dependency graph.
-
-Make sure your implementation fits into project structure, that is, place your
-step implementation into thoth/adviser/python/pipeline/steps/ directory.
-
-Developing own pipeline stride
-==============================
-
-To develop a pipeline stride, derive from :class:`Stride
-<thoth.adviser.python.pipeline.stride.Stride>` and implement the ``run`` method
-as shown bellow:
+The stride implementation can raise :class:`StrideRemoveStack
+<thoth.adviser.python.pipeline.step_context.StepContext>` which will cause
+removal of the produced stack candidate:
 
 .. code-block:: python
 
@@ -301,31 +391,81 @@ as shown bellow:
 
 .. note::
 
-  Pipeline stride has attributes such as graph database which can be used to derive additional information from Thoth's knowledge base. Taking benefits of using asyncio when querying graph database might be a good idea.
+  You can access additional stride properties such as software environment, hardware environment, library usage to create complex strides filtering or scoring stack candidates based on observations in Thoth's knowledge base.
 
-In the example below, we are creating a scoring stride, which scores based on library usage:
+Once all the strides are executed (due to limit for number of software stacks
+produced or all the stacks were already generated), stack candidates are turned
+into :class:`pipeline products
+<thoth.adviser.python.pipeline.product.PipelineProduct>`.
 
-.. code-block:: python
+Pipeline Architecture - Dynamic Pipeline Creation
+###################################################
 
-  from thoth.adviser.python.pipeline import Stride
-  from thoth.adviser.python.pipeline import StrideContext
+The dynamic pipeline creation is done in :class:`pipeline builder
+<thoth.adviser.python.builder.PipelineBuilder>`. The main aim of this
+builder is to construct pipeline sieves, steps and strides respecting
+their relative order and adjust their parameters, if needed.
 
-  class UsagePrioritization(Stride):
-      def run(stride_context: StrideContext) -> None:
-          for package_tuple in stride_context.stack_candidate:
-            if self.graph.has_good_usage(package_tuple):
-                stride_context.adjust_score(
-                   +2.0,
-                   justification=[{
-                       "type": "INFO",
-                       "justification": f"Package {package_tuple} is popular",
-                   }]
-                )
+The pipeline builder has two main methods:
+
+* :func:`get_adviser_pipeline_config <thoth.adviser.python.builder.PipelineBuilder.get_adviser_pipeline_config>` - this method constructs pipeline steps and strides for an adviser run
+
+* :func:`get_dependency_monkey_pipeline_config <thoth.adviser.python.builder.PipelineBuilder.get_dependency_monkey_pipeline_config>` - this method constructs pipeline steps and strides for a Dependency Monkey run
 
 .. note::
 
-  You can access additional stride properties such as runtime sorfware information, hardware information (runtime environment), library usage to create complex strides filtering or scoring software stacks.
+  Pipeline builder has attributes graph database, project (stating runtime environment) and library_usage which can be used during pipeline configuration creation.
 
-Implementations of all strides live in
-``thoth/adviser/python/pipeline/strides/``. Make sure you place implementation
-there to respect project structure and integrate with other parts of adviser.
+.. image:: _static/pipeline.png
+   :target: _static/pipeline.png
+   :alt: Stack generation pipeline
+
+If you take a look at the builder implementation, you can see that each sieve,
+step and stride accepts also configuration (which can be `None` or a
+dictionary).  Pipeline builder can parametrize these pipeline units based on
+its input vectors (e.g. be less pedantic on security vulnerabilities for
+testing stacks).
+
+Creating adviser's pipeline configuration programmatically
+##########################################################
+
+If you would like to experiment with adviser and recommendations interactively
+(e.g. from within Jupyter Notebooks), you can use prepared methods to do so:
+
+.. code-block:: python
+
+  from thoth.adviser.python import Adviser
+  from thoth.adviser.enums import RecommendationType
+  from thoth.adviser.python.pipeline import Pipeline
+  import thoth.adviser.python.pipeline.sieves as sieves
+  import thoth.adviser.python.pipeline.steps as steps
+  import thoth.adviser.python.pipeline.strides as strides
+
+  # Get top 10 stacks found, limit scoring to 100 stacks found for STABLE recommendations:
+  adviser = Adviser(
+      count=10,
+      limit=100,
+      recommendation_type=RecommendationType.STABLE,
+  )
+  # Add sieves, steps and strides for pipeline configuration as desired:
+  pipeline = Pipeline(
+      sieves=[
+        (sieve.ExampleSieve1, {"param1": 3.14}),
+        (sieve.ExampleSieve2, None),
+      ],
+      steps=[
+        (steps.ExampleStep1, None),
+      ],
+      strides=[
+        (strides.ExampleStride1, {"penalization": -0.2}),
+        (strides.ExampleStride2, None),
+      ],
+  )
+  report = adviser.compute_using_pipeline(pipeline=Pipeline)
+
+
+This is especially useful when developing or experimenting with new pipeline units.
+
+.. note::
+
+  In all cases, sieves, steps and strides should be atomic pieces and `they should do one thing and do it well <https://en.wikipedia.org/wiki/Unix_philosophy>`_.
