@@ -11,6 +11,7 @@ Information about implementation
    libdependency_graph
    pipeline
    provenance_checks
+   source
 
 Crossroad
 =========
