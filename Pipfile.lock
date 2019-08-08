@@ -401,11 +401,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:16dceb409b17564ac1763cb2b10bd16020fec8fc41a3af5cd30d83d4703058e2",
-                "sha256:fa2a2240582bb23297c0606aa31191aee570ec11fd2b1448a1a294ee6ce28d1d"
+                "sha256:0b4b875f3fd4975e57f5f0e884040c88e775e7d9871cbe6352447b42d59f8777",
+                "sha256:8d381746565430ad50e131ada7a330bd47d6f9387f491ed84127f8f21ff12d5f"
             ],
             "index": "pypi",
-            "version": "==0.18.3"
+            "version": "==0.18.4"
         },
         "timestamp": {
             "hashes": [
