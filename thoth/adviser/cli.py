@@ -176,6 +176,12 @@ def cli(ctx=None, verbose=False, metadata=None):
     is_flag=True,
     help="Requirements passed represent paths to files on local filesystem.",
 )
+@click.option(
+    "--metadata",
+    "-m",
+    help="Metadata for provenance",
+    envvar="THOTH_ADVISER_METADATA",
+)
 def provenance(
     click_ctx,
     requirements,
@@ -184,10 +190,11 @@ def provenance(
     output=None,
     files=False,
     no_pretty=False,
+    metadata="{}",
 ):
     """Check provenance of packages based on configuration."""
     _LOGGER.debug("Passed arguments: %s", locals())
-
+    metadata = json.loads(metadata)
     whitelisted_sources = whitelisted_sources.split(",") if whitelisted_sources else []
     result = {
         "error": None,
@@ -224,6 +231,7 @@ def provenance(
         analyzer_version=analyzer_version,
         output=output,
         pretty=not no_pretty,
+        metadata=metadata,
     )
     return int(result["error"] is True)
 
