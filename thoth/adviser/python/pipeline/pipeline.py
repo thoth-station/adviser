@@ -201,11 +201,12 @@ class Pipeline:
 
         # It's important to have this sort stable so that we reflect relative ordering of paths
         # based on for example semver sort which have same score.
-        paths = sorted(scored_package_tuple_pairs, key=operator.itemgetter(0))
-        # We don't need actual score of paths and remove paths which are direct dependencies.
+        paths = list(sorted(scored_package_tuple_pairs, key=operator.itemgetter(0)))
+        # The actual score is not required. Also, make sure direct dependencies are passed sorted based on the score.
+        direct_dependencies = [path[1][1] for path in paths if path[1][0] is None]
         paths = [path[1] for path in paths if path[1][0] is not None]
         dependency_graph = DependencyGraphWalker(
-            direct_dependencies=list(direct_dependencies_map.keys()), paths=paths
+            direct_dependencies=direct_dependencies, paths=paths
         )
 
         estimated = dependency_graph.stacks_estimated
