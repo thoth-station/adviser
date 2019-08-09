@@ -112,7 +112,7 @@ class StepContext(ContextBase):
                 yield package_version
 
     def iter_direct_dependencies_tuple(
-        self
+        self,
     ) -> Generator[Tuple[str, str, str], None, None]:
         """Iterate over direct dependencies, respect their ordering and return a package tuple."""
         # Cast to list is required due to possible removals which would

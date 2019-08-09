@@ -447,8 +447,10 @@ If you would like to experiment with adviser and recommendations interactively
       limit=100,
       recommendation_type=RecommendationType.STABLE,
   )
+
   # Add sieves, steps and strides for pipeline configuration as desired:
   pipeline = Pipeline(
+      library_usage={},  # Provide if you have some.
       sieves=[
         (sieve.ExampleSieve1, {"param1": 3.14}),
         (sieve.ExampleSieve2, None),
