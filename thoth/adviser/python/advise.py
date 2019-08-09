@@ -72,6 +72,7 @@ class Adviser:
             self.recommendation_type, limit_latest_versions=limit_latest_versions
         )
         pipeline = Pipeline(
+            sieves=pipeline_config.sieves,
             steps=pipeline_config.steps,
             strides=pipeline_config.strides,
             graph=graph,

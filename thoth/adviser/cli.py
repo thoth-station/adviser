@@ -585,7 +585,7 @@ def dependency_monkey(
             try:
                 library_usage = json.loads(Path(library_usage).read_text())
             except Exception as exc:
-                _LOGGER.error("Failed to load library usage file %r", library_usage)
+                _LOGGER.error("Failed to load library usage file %r: %s", library_usage, str(exc))
                 raise
         else:
             library_usage = json.loads(library_usage)
