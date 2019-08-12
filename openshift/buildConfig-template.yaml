@@ -75,6 +75,18 @@ objects:
               value: "1"
             - name: UPGRADE_PIP_TO_LATEST
               value: ""
+            - name: "THOTH_DRY_RUN"
+              value: "1"
+            - name: "THOTH_ADVISE"
+              value: "1"
+            - name: "THAMOS_VERBOSE"
+              value: "1"
+            - name: "THAMOS_DEBUG"
+              value: "1"
+            - name: "THAMOS_CONFIG_TEMPLATE"
+              value: ".thoth_template.yaml"
+            - name: "THAMOS_CONFIG_EXPAND_ENV"
+              value: "1"
       triggers:
         - imageChange: {}
           type: ImageChange
