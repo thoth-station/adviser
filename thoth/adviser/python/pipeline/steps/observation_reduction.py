@@ -30,6 +30,7 @@ from functools import partial
 from thoth.adviser.python.pipeline.units import semver_cmp_package_version
 from thoth.adviser.python.dependency_graph.adaptation.elements import Node
 from thoth.adviser.python.dependency_graph import CannotRemovePackage
+from thoth.adviser.python.dependency_graph import PackageNotFound
 
 from ..step import Step
 from ..step_context import StepContext
@@ -98,6 +99,12 @@ class ObservationReduction(Step):
                             list(txn.iter_package_tuples())
                         )
                         txn.commit()
+            except PackageNotFound as exc:
+                _LOGGER.debug(
+                    "Package %r was removed by one of the previous sub-graph removals: %s",
+                    package_tuple,
+                    str(exc)
+                )
             except CannotRemovePackage as exc:
-                _LOGGER.debug("Cannot remove sub-graph: %s", str(exc))
+                _LOGGER.debug("Cannot remove sub-graph, queing dependencies for sub-graph removals: %s", str(exc))
                 queue.extend(self._sorted_dependencies(step_context, node))
