@@ -249,6 +249,9 @@ class DependencyGraph:
                 if package_node.package_tuple in all_to_remove_nodes:
                     continue
 
+                if package_node.package_tuple in self.direct_dependencies_map:
+                    continue
+
                 all_dependencies = set(package_node.all_dependency_package_tuples)
                 if (
                     all_dependencies
