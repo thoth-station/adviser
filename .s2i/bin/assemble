@@ -1,0 +1,51 @@
+#!/usr/bin/bash
+
+set -ex
+
+echo "Checking if there is a need to lock dependencies..."
+
+pushd /tmp/src
+
+THOTH_DRY_RUN=${THOTH_DRY_RUN:-0}
+THOTH_ADVISE=${THOTH_ADVISE:-1}
+THOTH_FROM_MASTER=${THOTH_FROM_MASTER:-0}
+export THOTH_HOST=${THOTH_HOST:-khemenu.thoth-station.ninja}
+# Disable progressbar for thamos.
+export THAMOS_NO_PROGRESSBAR=${THAMOS_NO_PROGRESSBAR:-1}
+
+# Make a backup of the Pipfile.lock present in the git root.
+[[ ${THOTH_DRY_RUN} -ne 0 && -f Pipfile.lock ]] && cp Pipfile.lock ../
+
+[[ ( -f Pipfile && ! -f Pipfile.lock ) || ${THOTH_ADVISE} -ne 0 ]] && {
+  echo "Updating pip and installing Thamos..."
+  # Enable pip3.
+  pip install --upgrade pip
+
+  if [[ ${THOTH_FROM_MASTER} -eq 1 ]]; then
+      pip3 install git+https://github.com/thoth-station/thamos
+      pip3 install git+https://github.com/thoth-station/invectio
+  else
+      pip3 install thamos
+  fi
+
+  echo ">>> Performing hardware and software discovery..."
+  thamos config --no-interactive
+  echo ">>> Thoth's configuration file after hardware and software discovery:"
+  cat .thoth.yaml
+  echo ">>> Asking Thoth for advise..."
+  if [[ ${THOTH_DRY_RUN} -eq 0 ]]; then
+      thamos advise
+  else
+      thamos advise --no-wait
+  fi
+}
+
+# Restore previous Pipfile.lock, do not use the original one on dry run.
+[[ ${THOTH_DRY_RUN} -ne 0 ]] && {
+    echo "Restoring previous Pipfile.lock as THOTH_DRY_RUN was set" >&2
+    cat Pipfile.lock || true
+    [[ -f ../Pipfile.lock ]] && cp ../Pipfile.lock .
+}
+
+popd
+exec /usr/libexec/s2i/assemble
