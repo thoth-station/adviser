@@ -46,10 +46,7 @@ class CutPreReleases(Step):
             self._DEBUG_SKIP_REPORTED = False
 
         for package_version in step_context.iter_all_dependencies():
-            if (
-                package_version.semantic_version.prerelease
-                or package_version.semantic_version.build
-            ):
+            if package_version.semantic_version.prerelease:
                 package_tuple = package_version.to_tuple()
                 _LOGGER.debug(
                     "Removing package %r - pre-releases are disabled", package_tuple

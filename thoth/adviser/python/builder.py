@@ -27,6 +27,7 @@ from thoth.adviser.enums import RecommendationType
 from thoth.storages import GraphDatabase
 from thoth.python import Project
 
+# from .pipeline.sieves import OperatingSystemSieve
 from .pipeline.steps import BuildtimeErrorFiltering
 from .pipeline.steps import CutPreReleases
 from .pipeline.steps import CutToolchain
@@ -34,17 +35,17 @@ from .pipeline.steps import CutUnreachable
 from .pipeline.steps import CvePenalization
 from .pipeline.steps import LimitLatestVersions
 from .pipeline.steps import ObservationReduction
-from .pipeline.steps import PerformanceAdjustment
+# from .pipeline.steps import PerformanceAdjustment
 from .pipeline.steps import RestrictIndexes
 from .pipeline.steps import RuntimeErrorFiltering
 from .pipeline.steps import SemverSort
 from .pipeline.strides import CveScoring
-from .pipeline.strides import PerformanceScoring
+# from .pipeline.strides import PerformanceScoring
 from .pipeline.strides import RandomDecision
 from .pipeline.strides import ScoreFiltering
 
 
-PipelineConfig = namedtuple("PipelineConfig", "steps, strides")
+PipelineConfig = namedtuple("PipelineConfig", "sieves, steps, strides")
 
 
 @attr.s(slots=True)
@@ -62,6 +63,9 @@ class PipelineBuilder:
         """Get pipeline configuration for an adviser run."""
         if recommendation_type == RecommendationType.LATEST:
             pipeline_config = PipelineConfig(
+                sieves=[
+                    # (OperatingSystemSieve, None),
+                ],
                 steps=[
                     (CutPreReleases, None),
                     (CutToolchain, None),
@@ -80,6 +84,9 @@ class PipelineBuilder:
                 )
         elif recommendation_type == RecommendationType.TESTING:
             pipeline_config = PipelineConfig(
+                sieves=[
+                    # (OperatingSystemSieve, None),
+                ],
                 steps=[
                     (BuildtimeErrorFiltering, None),
                     (CutPreReleases, None),
@@ -101,6 +108,9 @@ class PipelineBuilder:
                 )
         elif recommendation_type == RecommendationType.STABLE:
             pipeline_config = PipelineConfig(
+                sieves=[
+                    # (OperatingSystemSieve, None),
+                ],
                 steps=[
                     (BuildtimeErrorFiltering, None),
                     (CutPreReleases, None),
@@ -141,6 +151,9 @@ class PipelineBuilder:
         """Get pipeline configuration for a dependency monkey run."""
         if decision_type == DecisionType.ALL:
             pipeline_config = PipelineConfig(
+                sieves=[
+                    # (OperatingSystemSieve, None),
+                ],
                 steps=[
                     (CutPreReleases, None),
                     (RestrictIndexes, None),
@@ -151,6 +164,9 @@ class PipelineBuilder:
             )
         elif decision_type == DecisionType.RANDOM:
             pipeline_config = PipelineConfig(
+                sieves=[
+                    # (OperatingSystemSieve, None),
+                ],
                 steps=[
                     (CutPreReleases, None),
                     (RestrictIndexes, None),

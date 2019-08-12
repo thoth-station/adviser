@@ -28,6 +28,7 @@ from voluptuous import Schema
 
 from thoth.storages import GraphDatabase
 from thoth.python import Project
+from thoth.python import PackageVersion
 
 from .context_base import ContextBase
 
@@ -40,7 +41,7 @@ class PipelineUnitBase(metaclass=abc.ABCMeta):
 
     graph = attr.ib(type=GraphDatabase)
     project = attr.ib(type=Project)
-    library_usage = attr.ib(type=dict)
+    library_usage = attr.ib(type=dict, default=attr.Factory(dict))
     _parameters = attr.ib(type=dict)
     _name = attr.ib(type=str, default=None)
 
@@ -101,6 +102,40 @@ class PipelineUnitBase(metaclass=abc.ABCMeta):
     def to_dict(self) -> dict:
         """Turn this pipeline step into its dictionary representation."""
         return attr.asdict(self)
+
+    @staticmethod
+    def is_aicoe_release(package_version: PackageVersion) -> bool:
+        """Check if the given package-version is AICoE release."""
+        return package_version.index.url.startswith("https://tensorflow.pypi.thoth-station.ninja/")
+
+    @classmethod
+    def get_aicoe_configuration(cls, package_version: PackageVersion) -> Optional[dict]:
+        """Get AICoE specific configuration encoded in the AICoE index URL."""
+        if not package_version.index.url.startswith("https://tensorflow.pypi.thoth-station.ninja/index/"):
+            return None
+
+        index_url = package_version.index.url[len("https://tensorflow.pypi.thoth-station.ninja/index/"):]
+        conf_parts = index_url.strip("/").split("/")  # the last is always "simple"
+
+        if len(conf_parts) == 3:
+            # No OS specific release.
+            return {
+                "os_name": None,
+                "os_version": None,
+                "configuration": conf_parts[1],
+            }
+        elif len(conf_parts) == 4:
+            return {
+                "os_name": conf_parts[0],
+                "os_version": conf_parts[1],
+                "configuration": conf_parts[2],
+            }
+
+        _LOGGER.warning(
+            "Failed to parse AICoE specific package source index configuration: %r",
+            package_version.index.url
+        )
+        return None
 
     @abc.abstractmethod
     def run(self, context: ContextBase) -> None:

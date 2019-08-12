@@ -23,7 +23,6 @@ from typing import Generator
 from typing import List
 from typing import Tuple
 from typing import Dict
-from itertools import chain
 import operator
 import logging
 from time import monotonic
@@ -39,6 +38,8 @@ from thoth.python import Project
 from thoth.solver.python.base import SolverException
 from thoth.storages import GraphDatabase
 
+from .sieve import Sieve
+from .sieve_context import SieveContext
 from .step import Step
 from .step_context import StepContext
 from .stride import Stride
@@ -54,15 +55,23 @@ _LOGGER = logging.getLogger(__name__)
 class Pipeline:
     """A stack generation pipeline."""
 
-    graph = attr.ib(type=GraphDatabase)
     project = attr.ib(type=Project)
+    sieves = attr.ib(type=List[Tuple[type, dict]], default=attr.Factory(list))
     steps = attr.ib(type=List[Tuple[type, dict]], default=attr.Factory(list))
     strides = attr.ib(type=List[Tuple[type, dict]], default=attr.Factory(list))
+    graph = attr.ib(type=GraphDatabase)
     library_usage = attr.ib(type=dict, default=attr.Factory(dict))
     _solver = attr.ib(type=PythonPackageGraphSolver, default=None)
     _stack_info = attr.ib(type=List[Dict], default=attr.Factory(list))
 
     _LIVENESS_PROBE_KILL_FILE = "/tmp/thoth_adviser_cpu_timeout"
+
+    @graph.default
+    def graph_default(self):
+        """Get default graph instance if no explicitly provided."""
+        graph = GraphDatabase()
+        graph.connect()
+        return graph
 
     @property
     def solver(self) -> PythonPackageGraphSolver:
@@ -85,6 +94,10 @@ class Pipeline:
     def get_configuration(self) -> dict:
         """Get a serialized configuration of this pipeline."""
         return {
+            "sieves": [{
+                "name": sieve_entry[0].__name__,
+                "configuration": sieve_entry[0].compute_expanded_parameters(sieve_entry[1]),
+            } for sieve_entry in self.sieves],
             "steps": [{
                 "name": step_entry[0].__name__,
                 "configuration": step_entry[0].compute_expanded_parameters(step_entry[1]),
@@ -150,7 +163,7 @@ class Pipeline:
         _LOGGER.info("Retrieving transitive dependencies of direct dependencies")
         _LOGGER.debug(
             "Direct dependencies considered: %r (count: %d)",
-            direct_dependencies,
+            list(dd.to_tuple() for dd in direct_dependencies),
             len(direct_dependencies),
         )
 
@@ -166,13 +179,6 @@ class Pipeline:
         )
 
         return StepContext.from_paths(direct_dependencies_dict, paths)
-
-    def _initialize_stepping(self) -> StepContext:
-        """Initialize pipeline - resolve direct dependencies and all the transitive dependencies."""
-        _LOGGER.debug("Initializing pipeline")
-        direct_dependencies = self._prepare_direct_dependencies(with_devel=True)
-        step_context = self._resolve_transitive_dependencies(direct_dependencies)
-        return step_context
 
     def _finalize_stepping(
         self,
@@ -240,62 +246,36 @@ class Pipeline:
             msg += f", limit for number of stacks scored in total is set to {limit}"
         _LOGGER.info(msg)
 
-    def conduct(
-        self, count: int = None, limit: int = None
-    ) -> Generator[PipelineProduct, None, None]:
-        """Chain execution of each step and filter in a pipeline and execute it."""
+    def _do_sieves(self) -> StepContext:
+        """Resolve direct dependencies, run sieves and resolve all the transitive dependencies."""
+        _LOGGER.debug("Initializing pipeline")
         start_time = monotonic()
-
-        # Load file-dump if configured so.
-        if os.getenv("THOTH_ADVISER_FILEDUMP") and os.path.isfile(
-            os.getenv("THOTH_ADVISER_FILEDUMP")
-        ):
-            _LOGGER.warning(
-                "Loading filedump %r as per user request",
-                os.environ["THOTH_ADVISER_FILEDUMP"],
+        direct_dependencies = self._prepare_direct_dependencies(with_devel=True)
+        _LOGGER.debug("Total number of direct dependencies before running sieves: %d", len(direct_dependencies))
+        _LOGGER.info("Preparing pipeline sieves")
+        sieve_context = SieveContext.from_package_versions(direct_dependencies)
+        for sieve_class, parameters_dict in self.sieves:
+            sieve_instance: Sieve = sieve_class(
+                graph=self.graph, project=self.project, library_usage=self.library_usage
             )
-            with open(os.getenv("THOTH_ADVISER_FILEDUMP"), "rb") as file_dump:
-                step_context = pickle.load(file_dump)
-        else:
-            step_context = self._initialize_stepping()
-            if os.getenv("THOTH_ADVISER_FILEDUMP"):
-                _LOGGER.warning(
-                    "Storing filedump %r as per user request",
-                    os.environ["THOTH_ADVISER_FILEDUMP"],
-                )
-                import sys
+            _LOGGER.info("Running pipeline sieve %r", sieve_instance.name)
+            if parameters_dict:
+                sieve_instance.update_parameters(parameters_dict)
 
-                sys.setrecursionlimit(5000)
-                with open(os.getenv("THOTH_ADVISER_FILEDUMP"), "wb") as file_dump:
-                    pickle.dump(step_context, file_dump)
+            sieve_instance.run(sieve_context)
 
-        strides = self._instantiate_strides()
+        direct_dependencies = list(sieve_context.iter_direct_dependencies())
+        _LOGGER.debug(
+            "Total number of direct dependencies after running sieves: %d, sieves took %f seconds",
+            len(direct_dependencies),
+            monotonic() - start_time
+        )
+        step_context = self._resolve_transitive_dependencies(direct_dependencies)
+        return step_context
 
-        if count is not None and count <= 0:
-            raise ValueError(
-                "Number of projects produced by pipeline (count) has to be higher than 0"
-            )
-
-        if limit is not None and limit <= 0:
-            raise ValueError(
-                "Number of projects scored by pipeline (limit) has to be higher than 0"
-            )
-
-        if count is not None and limit is not None and count > limit:
-            _LOGGER.warning(
-                "Cannot return more stacks (%d) than scored (%d), adjusting count to %d based on limit provided",
-                count,
-                limit,
-                limit,
-            )
-            count = limit
-
-        # Explicitly call garbage collector to be more efficient with memory before actually running the pipeline.
-        _LOGGER.debug("Explicitly calling garbage collector before pipeline")
-        gc.collect()
-
+    def _do_steps(self, step_context: StepContext) -> None:
+        """Run steps on the dependency graph."""
         _LOGGER.info("Preparing pipeline steps")
-        self._log_pipeline_msg(count, limit)
         step_context.stats.start_timer()
         for step_class, parameters_dict in self.steps:
             step_instance: Step = step_class(
@@ -309,11 +289,19 @@ class Pipeline:
 
         step_context.stats.log_report()
 
+    def _do_strides(
+        self,
+        dependency_graph: DependencyGraphWalker,
+        stack_candidates: StackCandidates,
+        limit: int = None
+    ) -> None:
+        """Run dependency graph and do strides on the generated candidates."""
         stacks_seen = 0
         stacks_added = 0
+        strides = self._instantiate_strides()
+
         if len(strides) > 0:
             _LOGGER.info("Running strides on stack candidates")
-        dependency_graph, stack_candidates = self._finalize_stepping(step_context, count)
         try:
             for stack_candidate in dependency_graph.walk():
                 stacks_seen += 1
@@ -327,7 +315,7 @@ class Pipeline:
 
                 stride_context.stats.start_timer()
                 for stride_instance in strides:
-                    _LOGGER.debug("Running stride %r", stride_instance.name)
+                    _LOGGER.info("Running stride %r", stride_instance.name)
                     stride_context.stats.reset_stats(stride_instance)
                     try:
                         stride_instance.run(stride_context)
@@ -359,9 +347,67 @@ class Pipeline:
                 _LOGGER.debug("No strides were configured")
 
             _LOGGER.info(
-                "Pipeline produced %d stacks in total in %.4f seconds, %d stacks were discarded by strides",
+                "Pipeline produced %d stacks in total, %d stacks were discarded by strides",
                 stacks_added,
-                monotonic() - start_time,
                 stacks_seen - stacks_added,
             )
-            return stack_candidates.generate_pipeline_products()
+
+    def conduct(
+        self, count: int = None, limit: int = None
+    ) -> Generator[PipelineProduct, None, None]:
+        """Chain execution of each step and filter in a pipeline and execute it."""
+        start_time = monotonic()
+
+        # Load file-dump if configured so.
+        if os.getenv("THOTH_ADVISER_FILEDUMP") and os.path.isfile(
+            os.getenv("THOTH_ADVISER_FILEDUMP")
+        ):
+            _LOGGER.warning(
+                "Loading filedump %r as per user request",
+                os.environ["THOTH_ADVISER_FILEDUMP"],
+            )
+            with open(os.getenv("THOTH_ADVISER_FILEDUMP"), "rb") as file_dump:
+                step_context = pickle.load(file_dump)
+        else:
+            step_context = self._do_sieves()
+            if os.getenv("THOTH_ADVISER_FILEDUMP"):
+                _LOGGER.warning(
+                    "Storing filedump %r as per user request",
+                    os.environ["THOTH_ADVISER_FILEDUMP"],
+                )
+                import sys
+
+                sys.setrecursionlimit(5000)
+                with open(os.getenv("THOTH_ADVISER_FILEDUMP"), "wb") as file_dump:
+                    pickle.dump(step_context, file_dump)
+
+        if count is not None and count <= 0:
+            raise ValueError(
+                "Number of projects produced by pipeline (count) has to be higher than 0"
+            )
+
+        if limit is not None and limit <= 0:
+            raise ValueError(
+                "Number of projects scored by pipeline (limit) has to be higher than 0"
+            )
+
+        if count is not None and limit is not None and count > limit:
+            _LOGGER.warning(
+                "Cannot return more stacks (%d) than scored (%d), adjusting count to %d based on limit provided",
+                count,
+                limit,
+                limit,
+            )
+            count = limit
+
+        # Explicitly call garbage collector to be more efficient with memory before actually running the pipeline.
+        _LOGGER.debug("Explicitly calling garbage collector before pipeline")
+        gc.collect()
+
+        self._log_pipeline_msg(count, limit)
+        self._do_steps(step_context)
+
+        dependency_graph, stack_candidates = self._finalize_stepping(step_context, count)
+        self._do_strides(dependency_graph, stack_candidates, limit)
+        _LOGGER.debug("Pipeline ran for %f seconds", monotonic() - start_time)
+        return stack_candidates.generate_pipeline_products()

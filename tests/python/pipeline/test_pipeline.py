@@ -17,7 +17,6 @@
 
 """Test pipeline run."""
 
-import pytest
 import flexmock
 
 from thoth.python import Project
@@ -32,7 +31,6 @@ from thoth.adviser.python.pipeline import StrideContext
 from thoth.adviser.python.pipeline.step import Step
 from thoth.adviser.python.pipeline.stride import Stride
 from thoth.adviser.python.pipeline.exceptions import StrideRemoveStack
-from thoth.storages import GraphDatabase
 
 from base import AdviserTestCase
 
@@ -104,6 +102,7 @@ class TestPipeline(AdviserTestCase):
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
             project=project,
+            sieves=[],
             steps=[
                 (_MockStep, _MOCK_STEP_PARAMETERS)
             ],
@@ -112,7 +111,7 @@ class TestPipeline(AdviserTestCase):
 
         flexmock(
             pipeline,
-            _prepare_direct_dependencies=lambda with_devel: None,
+            _prepare_direct_dependencies=lambda with_devel: [direct_dependency],
             _resolve_transitive_dependencies=lambda _: step_context,
         )
 
@@ -147,6 +146,7 @@ class TestPipeline(AdviserTestCase):
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
             project=project,
+            sieves=[],
             steps=[
                 (_MockStep, _MOCK_STEP_PARAMETERS)
             ],
@@ -157,7 +157,7 @@ class TestPipeline(AdviserTestCase):
 
         flexmock(
             pipeline,
-            _prepare_direct_dependencies=lambda with_devel: None,
+            _prepare_direct_dependencies=lambda with_devel: [direct_dependency],
             _resolve_transitive_dependencies=lambda _: step_context,
         )
 
@@ -190,6 +190,7 @@ class TestPipeline(AdviserTestCase):
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
             project=project,
+            sieves=[],
             steps=[],
             strides=[
                 (_MockStrideRemoveStack, None)
@@ -198,7 +199,7 @@ class TestPipeline(AdviserTestCase):
 
         flexmock(
             pipeline,
-            _prepare_direct_dependencies=lambda with_devel: None,
+            _prepare_direct_dependencies=lambda with_devel: [direct_dependency],
             _resolve_transitive_dependencies=lambda _: step_context,
         )
 
@@ -225,6 +226,7 @@ class TestPipeline(AdviserTestCase):
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
             project=project,
+            sieves=[],
             steps=[],
             strides=[
                 (_MockStride, _MOCK_STRIDE_PARAMETERS)
@@ -233,7 +235,7 @@ class TestPipeline(AdviserTestCase):
 
         flexmock(
             pipeline,
-            _prepare_direct_dependencies=lambda with_devel: None,
+            _prepare_direct_dependencies=lambda with_devel: [direct_dependency],
             _resolve_transitive_dependencies=lambda _: step_context,
         )
 
@@ -257,6 +259,7 @@ class TestPipeline(AdviserTestCase):
         pipeline = Pipeline(
             graph=None,  # We avoid low-level testing down to thoth-storages.
             project=project,
+            sieves=[],
             steps=[],
             strides=[],
         )
@@ -280,7 +283,7 @@ class TestPipeline(AdviserTestCase):
 
         flexmock(
             pipeline,
-            _prepare_direct_dependencies=lambda with_devel: None,
+            _prepare_direct_dependencies=lambda with_devel: [direct_dependency],
             _resolve_transitive_dependencies=lambda _: step_context,
         )
 

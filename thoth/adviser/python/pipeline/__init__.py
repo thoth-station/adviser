@@ -20,6 +20,7 @@
 
 from .pipeline import Pipeline
 from .step import Step
+from .sieve import Sieve
 from .step_context import StepContext
 from .stride import Stride
 from .stride_context import StrideContext

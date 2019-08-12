@@ -15,20 +15,5 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A base for a pipeline unit context - stride or step context."""
 
-import abc
-
-import attr
-
-
-@attr.s(slots=True)
-class ContextBase(metaclass=abc.ABCMeta):
-    """A base for a pipeline unit context."""
-
-    _stats = attr.ib(default=None)
-
-    @property
-    def stats(self):
-        """Retrieve statistics for the current running step."""
-        return self._stats
+"""Test of stride units in stack generation pipeline."""
