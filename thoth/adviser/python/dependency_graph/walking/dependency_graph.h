@@ -192,9 +192,9 @@ void DependencyGraph::expand_state() {
 
     if (std::find(expanded->begin(), expanded->end(), to_expand) != expanded->end()) {
         // The given package was already introduced in the stack, continue without any additional changes.
-        // The type has to be already present.:
+        // The type has to be already present.
         // Place it back for processing later on.
-        this->traversal_stack.push_front(stack_item);
+        this->traversal_stack.push_back(stack_item);
         return;
     }
 
@@ -209,7 +209,7 @@ void DependencyGraph::expand_state() {
     if (this->dependencies_mapping[to_expand]->size() == 0) {
         // There are no dependencies to process, mark the package as expanded and continue with the next one.
         stack_item->mark_package_expanded(to_expand, to_expand_type);
-        this->traversal_stack.push_front(stack_item);
+        this->traversal_stack.push_back(stack_item);
         return;
     }
 
@@ -232,7 +232,7 @@ void DependencyGraph::expand_state() {
             new_stack_item = stack_item;
 
         new_stack_item->add_to_expanded(*it);
-        this->traversal_stack.push_front(new_stack_item);
+        this->traversal_stack.push_back(new_stack_item);
     }
 }
 
