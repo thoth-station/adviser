@@ -234,6 +234,7 @@ packages which are pre-releases based on semantic version are removed.
   from typing import Tuple
 
   from thoth.adviser.python.dependency_graph import CannotRemovePackage
+  from thoth.adviser.python.dependency_graph import PackageNotFound
 
   from thoth.adviser.python.pipeline import Step
   from thoth.adviser.python.pipeline import StepContext
@@ -251,7 +252,7 @@ packages which are pre-releases based on semantic version are removed.
               )
               return
 
-          for package_version in step_context.iter_all_dependencies():
+          for package_version in list(step_context.iter_all_dependencies()):
               if (
                   package_version.semantic_version.prerelease
                   or package_version.semantic_version.build
@@ -263,6 +264,9 @@ packages which are pre-releases based on semantic version are removed.
                   try:
                       with step_context.remove_package_tuples(package_tuple) as txn:
                           txn.commit()
+                  except PackageNotFound as exc:
+                      _LOGGER.debug("Package %r was already removed as part of one of the sub-graphs", package_tuple)
+                      continue
                   except CannotRemovePackage as exc:
                       _LOGGER.error("Cannot produce stack with removing all pre-releases: %s", str(exc))
                       raise
@@ -272,7 +276,7 @@ The context manager used when accessing :func:`StepContext
 transaction on top of dependency graph. You can stack multiple removals of
 packages. Once the transaction gets committed, all the packages are removed in order they
 were scheduled to be removed. If some of the packages causes invalidity to
-dependency graph, the transaction fails (no changes to dependency graph are
+the dependency graph, the transaction fails (no changes to the dependency graph are
 done and all the changes done until reaching the package which would cause
 dependency graph invalidity are rolled back):
 
@@ -284,6 +288,9 @@ dependency graph invalidity are rolled back):
             print(txn.to_remove_edges)
             txn.commit()
             # or txn.abort() in case of cancelling the transaction.
+    except PackageNotFound as exc:
+        _LOGGER.debug("Package %r was already removed as part of one of the sub-graphs", package_tuple)
+        continue
     except CannotRemovePackage as exc:
          # The message carried in exception would be something like:
          #   "Cannot remove package <pkg>, removing this package would lead "
@@ -295,6 +302,10 @@ dependency graph invalidity are rolled back):
             some_package_tuples
         )
 
+Note that a package can be removed as part of a sub-graph of a previously removed package (it would be stated in the ``to_remove_nodes`` property of the transaction). For this reason, a developer of a step implantation needs to ensure two things:
+
+* As the actual listing of packages present in the dependency graph changes over the iteration in removals, generators returned by ``iter_*`` methods provided by :class:`step context <thoth.adviser.python.pipeline.step_context.StepContext>` need to be explicitly casted to a list (not to encounter runtime errors reporting the iterator is iterating over a structure which changes over time).
+* As the listing of packages that is obtained by the ``iter_*`` methods captures also packages that are part of sub-graphs which could be removed in one of the iterations, there needs to be explicitly captured exception ``PackageNotFound`` as shown above.
 
 Once all steps are executed, there is executed :ref:`libdependency_graph.so <libdependency_graph>`
 which generates stack candidates based on traversals of the dependency graph. The produced stack
