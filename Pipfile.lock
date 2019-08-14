@@ -628,11 +628,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:36b8c84ee223379a30b008a0666b3c5a25b5ddd7697e53087cdd7e14f547f9d5",
-                "sha256:c1f00dfd5afe2f47a4063a51c988910518cab5f90e0f4e82ac0371229be797e6"
+                "sha256:04095c19692de34c1f06975a92b4bfdc1c30973aba7e5ece2e3ce70a563355c9",
+                "sha256:91c6c4bac7aff458946cee618531f5dc6b1fd7078509a78dd5828e889816fe66"
             ],
             "index": "pypi",
-            "version": "==0.18.5"
+            "version": "==0.18.6"
         },
         "timestamp": {
             "hashes": [
