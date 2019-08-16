@@ -56,6 +56,10 @@ class StackCandidates:
         type=List[Tuple[float, List[Tuple[str, str, str]]]], default=attr.Factory(list)
     )
 
+    def size(self) -> int:
+        """Get number of stack candidates kept so far."""
+        return len(self._stack_candidates)
+
     def add(self, stride_context: StrideContext) -> None:
         """Add the given stack candidate to candidate listing."""
         # We add length of heapq to tuple to make sure items pop'ed out first are the ones

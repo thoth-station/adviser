@@ -33,6 +33,7 @@ from thoth.storages import GraphDatabase
 from .builder import PipelineBuilder
 from .builder import PipelineConfig
 from .pipeline import Pipeline
+from .adviser_report import AdviserReport
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -44,29 +45,55 @@ class Adviser:
 
     count = attr.ib(type=int, default=None)
     limit = attr.ib(type=int, default=None)
-    recommendation_type = attr.ib(
-        type=RecommendationType, default=RecommendationType.STABLE
-    )
-    _computed_stacks_heap = attr.ib(type=RuntimeEnvironment, default=attr.Factory(list))
-    _visited = attr.ib(type=int, default=0)
+    recommendation_type = attr.ib(type=RecommendationType, default=RecommendationType.STABLE)
 
-    def compute_using_pipeline(self, pipeline: Pipeline) -> Tuple[List[Tuple[Dict, Project, float]], List[Dict]]:
-        """Compute recommendations using a custom pipeline configuration."""
+    def compute_using_pipeline(self, pipeline: Pipeline) -> AdviserReport:
+        """Perform actual computing using the given pipeline and return report."""
         result = []
         for product in pipeline.conduct(count=self.count, limit=self.limit):
             product.finalize(pipeline.graph)
-            result.append((product.justification, product.project, product.score))
+            result.append(product.to_dict())
 
-        return result, pipeline.get_stack_info()
+        configuration_check_report = pipeline.project.get_configuration_check_report()
+        advised_configuration = None
+        if configuration_check_report:
+            advised_configuration, configuration_check_report = configuration_check_report
+
+        report = AdviserReport(
+            products=result,
+            pipeline_configuration=pipeline.get_configuration(),
+            advised_configuration=advised_configuration,
+            library_usage=pipeline.library_usage,
+            stack_info=pipeline.get_stack_info() + (configuration_check_report or []),
+            was_oom_killed=pipeline.was_oom_killed,
+            was_cpu_time_exhausted_killed=pipeline.was_cpu_time_exhausted_killed,
+        )
+
+        if pipeline.project.runtime_environment.python_version and not pipeline.project.python_version:
+            report.stack_info.append(
+                {
+                    "type": "WARNING",
+                    "justification": "Use specific Python version in Pipfile based on Thoth's configuration to "
+                    "ensure correct Python version usage on deployment",
+                }
+            )
+            pipeline.project.set_python_version(pipeline.project.runtime_environment.python_version)
+
+        return report
 
     def compute(
         self,
-        graph: GraphDatabase,
+        *,
         project: Project,
+        graph: GraphDatabase = None,
         limit_latest_versions: int = None,
         library_usage: dict = None,
-    ) -> Tuple[Tuple[List[Tuple[Dict, Project, float]], List[Dict]], Dict]:
+    ) -> AdviserReport:
         """Compute recommendations for the given project."""
+        if not graph:
+            graph = GraphDatabase()
+            graph.connect()
+
         builder = PipelineBuilder(graph, project, library_usage)
         pipeline_config: PipelineConfig = builder.get_adviser_pipeline_config(
             self.recommendation_type, limit_latest_versions=limit_latest_versions
@@ -80,55 +107,4 @@ class Adviser:
             library_usage=library_usage,
         )
 
-        return self.compute_using_pipeline(pipeline), pipeline.get_configuration()
-
-    @classmethod
-    def compute_on_project(
-        cls,
-        project: Project,
-        *,
-        recommendation_type: RecommendationType,
-        library_usage: dict = None,
-        count: int = None,
-        limit: int = None,
-        limit_latest_versions: int = None,
-        graph: GraphDatabase = None,
-    ) -> tuple:
-        """Compute recommendations for the given project, a syntax sugar for the compute method."""
-        stack_info = []
-
-        instance = cls(
-            count=count, limit=limit, recommendation_type=recommendation_type
-        )
-
-        if project.runtime_environment.python_version and not project.python_version:
-            stack_info.append(
-                {
-                    "type": "WARNING",
-                    "justification": "Use specific Python version in Pipfile based on Thoth's configuration to "
-                    "ensure correct Python version usage on deployment",
-                }
-            )
-            project.set_python_version(project.runtime_environment.python_version)
-
-        if not graph:
-            graph = GraphDatabase()
-            graph.connect()
-
-        result, pipeline_configuration = instance.compute(
-            graph,
-            project,
-            limit_latest_versions=limit_latest_versions,
-            library_usage=library_usage,
-        )
-
-        report, stack_info = result
-        advised_configuration = None
-        configuration_check_report = project.get_configuration_check_report()
-        if configuration_check_report:
-            advised_configuration, configuration_check_report = (
-                configuration_check_report
-            )
-            stack_info.extend(configuration_check_report)
-
-        return stack_info, advised_configuration, report, pipeline_configuration
+        return self.compute_using_pipeline(pipeline)

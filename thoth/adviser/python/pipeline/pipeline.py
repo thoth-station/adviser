@@ -61,6 +61,10 @@ class Pipeline:
     strides = attr.ib(type=List[Tuple[type, dict]], default=attr.Factory(list))
     graph = attr.ib(type=GraphDatabase)
     library_usage = attr.ib(type=dict, default=attr.Factory(dict))
+    _stacks_computed = attr.ib(type=int, default=0)
+    _stacks_discarded = attr.ib(type=int, default=0)
+    _was_oom_killed = attr.ib(type=bool, default=False)
+    _was_cpu_time_exhausted_killed = attr.ib(type=bool, default=False)
     _solver = attr.ib(type=PythonPackageGraphSolver, default=None)
     _stack_info = attr.ib(type=List[Dict], default=attr.Factory(list))
 
@@ -83,6 +87,29 @@ class Pipeline:
             )
 
         return self._solver
+
+    def stack_computed(self) -> int:
+        """Get number of stacks computed and kept in this pipeline run."""
+        return self._stacks_computed
+
+    def stack_discarded(self) -> int:
+        """Get number of stacks discarded in this pipeline run (discarded by strides)."""
+        return self._stacks_discarded
+
+    @property
+    def was_premature_killed(self) -> bool:
+        """Check if pipeline was prematurely killed."""
+        return self._was_oom_killed or self._was_cpu_time_exhausted_killed
+
+    @property
+    def was_oom_killed(self) -> bool:
+        """Check if pipeline was OOM killed."""
+        return self._was_oom_killed
+
+    @property
+    def was_cpu_time_exhausted_killed(self) -> bool:
+        """Check if pipeline was killed because of CPU time expired."""
+        return self._was_cpu_time_exhausted_killed
 
     def get_stack_info(self) -> List[Dict]:
         """Get report of a pipeline run.
@@ -108,14 +135,16 @@ class Pipeline:
             } for stride_entry in self.strides],
         }
 
-    @classmethod
-    def _get_premature_stream_log_msg(cls) -> str:
-        if os.path.isfile(cls._LIVENESS_PROBE_KILL_FILE):
+    def _get_premature_stream_log_msg_and_assign_flags(self) -> str:
+        """Check what caused premature stream and and assign corresponding flags to this instance."""
+        if os.path.isfile(self._LIVENESS_PROBE_KILL_FILE):
+            self._was_cpu_time_exhausted_killed = True
             return (
                 "Stack producer was killed as allocated CPU time was exceeded, consider "
                 "decreasing limit for latest versions"
             )
 
+        self._was_oom_killed = True
         return "Exceeded memory, consider decreasing latest versions considered to score more stacks"
 
     def _prepare_direct_dependencies(self, *, with_devel: bool) -> List[PackageVersion]:
@@ -296,16 +325,14 @@ class Pipeline:
         limit: int = None
     ) -> None:
         """Run dependency graph and do strides on the generated candidates."""
-        stacks_seen = 0
-        stacks_added = 0
         strides = self._instantiate_strides()
 
         if len(strides) > 0:
             _LOGGER.info("Running strides on stack candidates")
         try:
             for stack_candidate in dependency_graph.walk():
-                stacks_seen += 1
-                if stacks_seen == 1:
+                self._stacks_computed += 1
+                if self._stacks_computed == 1:
                     _LOGGER.info(
                         "Stack producer started producing stacks, scoring and filtering produced stacks "
                         "from stack stream in strides..."
@@ -326,18 +353,18 @@ class Pipeline:
                             stack_candidate,
                             str(exc),
                         )
+                        self._stacks_discarded += 1
                         break
                 else:
                     stack_candidates.add(stride_context)
-                    stacks_added += 1
-                    if limit is not None and stacks_added >= limit:
+                    if limit is not None and stack_candidates.size() >= limit:
                         break
 
                 if len(strides) > 0:
                     stride_context.stats.log_report()
         except PrematureStreamEndError as exc:
             _LOGGER.debug("Stack stream closed prematurely: %s", str(exc))
-            reported_message = self._get_premature_stream_log_msg()
+            reported_message = self._get_premature_stream_log_msg_and_assign_flags()
             _LOGGER.warning(reported_message)
             self._stack_info.append(
                 {"type": "WARNING", "justification": reported_message}
@@ -348,8 +375,8 @@ class Pipeline:
 
             _LOGGER.info(
                 "Pipeline produced %d stacks in total, %d stacks were discarded by strides",
-                stacks_added,
-                stacks_seen - stacks_added,
+                self._stacks_computed,
+                self._stacks_discarded,
             )
 
     def conduct(

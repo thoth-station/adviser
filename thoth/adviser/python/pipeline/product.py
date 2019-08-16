@@ -89,3 +89,7 @@ class PipelineProduct:
     def finalize(self, graph: GraphDatabase) -> None:
         """Finalize creation of a pipeline product."""
         self._fill_package_digests(graph)
+
+    def to_dict(self) -> dict:
+        """Serialize product into a dictionary."""
+        return {k: v for k, v in attr.asdict(self).items() if not k.startswith("_")}
