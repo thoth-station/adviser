@@ -1,5 +1,6 @@
 import os
 import sys
+from setuptools import find_namespace_packages
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
@@ -63,7 +64,7 @@ setup(
     author='Fridolin Pokorny',
     author_email='fridolin@redhat.com',
     license='GPLv3+',
-    packages=['thoth.adviser', 'thoth.adviser.python'],
+    packages=find_namespace_packages(include=["thoth.*"]),
     entry_points={
         'console_scripts': ['thoth-adviser=thoth.adviser.cli:cli']
     },
