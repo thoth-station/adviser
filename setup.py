@@ -1,6 +1,5 @@
 import os
 import sys
-from setuptools import find_namespace_packages
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
@@ -64,7 +63,18 @@ setup(
     author='Fridolin Pokorny',
     author_email='fridolin@redhat.com',
     license='GPLv3+',
-    packages=find_namespace_packages(include=["thoth.*"]),
+    packages=[
+        'thoth.adviser',
+        'thoth.adviser.python',
+        'thoth.adviser.python.pipeline',
+        'thoth.adviser.python.dependency_graph',
+        'thoth.adviser.python.pipeline.steps',
+        'thoth.adviser.python.pipeline.units',
+        'thoth.adviser.python.pipeline.sieves',
+        'thoth.adviser.python.pipeline.strides',
+        'thoth.adviser.python.dependency_graph.walking',
+        'thoth.adviser.python.dependency_graph.adaptation',
+    ],
     entry_points={
         'console_scripts': ['thoth-adviser=thoth.adviser.cli:cli']
     },
