@@ -8,6 +8,7 @@ Information about implementation
 
    dependency_graph
    dependency_monkey
+   integration
    libdependency_graph
    performance
    pipeline
