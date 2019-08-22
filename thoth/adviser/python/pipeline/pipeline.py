@@ -147,7 +147,7 @@ class Pipeline:
                 if runtime_environment.python_version:
                     error_msg += f" for Python in version {runtime_environment.python_version!r}"
 
-                _LOGGER.error(error_msg)
+                _LOGGER.warning(error_msg)
                 continue
 
             direct_dependencies.extend(package_versions)
