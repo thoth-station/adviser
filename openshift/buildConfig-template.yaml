@@ -64,6 +64,10 @@ objects:
           uri: ${GITHUB_URL}
           ref: ${GITHUB_REF}
         type: Git
+        secrets:
+        - destinationDir: dgraph-secrets
+          secret:
+            name: dgraph-tls
       strategy:
         type: Source
         sourceStrategy:
@@ -87,6 +91,15 @@ objects:
               value: ".thothTemplate.yaml"
             - name: "THAMOS_CONFIG_EXPAND_ENV"
               value: "1"
+            - name: "THOTH_STORAGES_CACHE_CONFIG"
+              value: "cache_config.yaml"
+            - name: GRAPH_SERVICE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: graph-service-host
+                  name: thoth
+            - name: GRAPH_TLS_PATH
+              value: "secrets-dgraph"
       triggers:
         - imageChange: {}
           type: ImageChange
