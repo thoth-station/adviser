@@ -38,28 +38,13 @@ class PipelineProduct:
     score = attr.ib(type=float)
     justification = attr.ib(type=typing.List[typing.Dict])
 
-    @staticmethod
-    @lru_cache()
-    def _do_get_python_package_version_hashes_sha256(
-        graph: GraphDatabase, package_name: str, package_version: str, index_url: str
-    ) -> typing.List[str]:
-        """A wrapper for ensuring cached results when querying graph database."""
-        digests = graph.get_python_package_version_hashes_sha256(
-            package_name, package_version, index_url
-        )
-
-        if not digests:
-            _LOGGER.warning(
-                "No hashes found for package %r in version %r from index %r",
-                package_name,
-                package_version,
-                index_url,
-            )
-
-        return digests
-
     def _fill_package_digests(self, graph: GraphDatabase) -> None:
         """Fill package digests stated in Pipfile.lock from graph database."""
+        @lru_cache()
+        def _do_get_python_package_version_hashes_sha256(pn: str, pv: str, iu: str) -> typing.List[str]:
+            """A wrapper for ensuring cached results when querying graph database."""
+            return graph.get_python_package_version_hashes_sha256(pn, pv, iu)
+
         if bool(os.getenv("THOTH_ADVISER_NO_DIGESTS", 0)):
             _LOGGER.warning("No digests will be provided as per user request")
             return
@@ -76,12 +61,20 @@ class PipelineProduct:
                 package_version.index.url,
             )
 
-            digests = self._do_get_python_package_version_hashes_sha256(
-                graph,
+            digests = _do_get_python_package_version_hashes_sha256(
                 package_version.name,
                 package_version.locked_version,
                 package_version.index.url,
             )
+
+            if not digests:
+                _LOGGER.warning(
+                    "No hashes found for package %r in version %r from index %r",
+                    package_version.name,
+                    package_version.locked_version,
+                    package_version.index.url,
+                )
+                continue
 
             for digest in digests:
                 package_version.hashes.append("sha256:" + digest)
