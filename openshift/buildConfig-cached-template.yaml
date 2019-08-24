@@ -4,15 +4,15 @@ metadata:
   name: adviser-buildconfig
   annotations:
     description: >
-      This is Thoth Adviser BuildConfig, this template is meant to be used by Bots, but could also be
-      used by humans...
+      This is Thoth Adviser BuildConfig for building adviser with cache, this
+      template is meant to be used by Bots, but could also be used by humans...
     openshift.io/display-name: "Thoth: Adviser BuildConfig"
     version: 0.4.1
     tags: thoth,ai-stacks,adviser
     template.openshift.io/documentation-url: https://github.com/Thoth-Station
     template.openshift.io/long-description: >
-      This is Thoth Adviser BuildConfig, this template is meant to be
-      used by Bots, but could also be used by humans...
+      This is Thoth Adviser BuildConfig for building adviser with cache, this
+      template is meant to be used by Bots, but could also be used by humans...
     template.openshift.io/provider-display-name: "Red Hat, Inc."
   labels:
     template: adviser-buildconfig
@@ -20,18 +20,6 @@ metadata:
     component: adviser
 
 parameters:
-  - description: Git repository for Thoth's Adviser
-    displayName: Thoth Adviser git repository
-    required: true
-    name: GITHUB_URL
-    value: "https://github.com/thoth-station/adviser"
-
-  - description: Git repository for Thoth's Adviser
-    displayName: Thoth Adviser git reference
-    required: true
-    name: GITHUB_REF
-    value: "master"
-
   - description: Tag of the output ImageStream the resulting container image should go to
     displayName: ImageStream Tag
     required: true
@@ -45,7 +33,7 @@ objects:
       labels:
         app: thoth
         component: adviser
-      name: adviser
+      name: adviser-cached
     spec:
       resources:
         limits:
@@ -57,38 +45,41 @@ objects:
       output:
         to:
           kind: ImageStreamTag
-          name: "adviser:${IMAGE_STREAM_TAG}"
+          name: "adviser-cached:${IMAGE_STREAM_TAG}"
       runPolicy: Serial
       source:
         git:
-          uri: ${GITHUB_URL}
-          ref: ${GITHUB_REF}
+          # Not needed as we have adjusted assemble to just build cache
+          # (the application is already installed).
+          uri: "https://github.com/thoth-station/adviser"
+          ref: "master"
         type: Git
+        secrets:
+        - destinationDir: secrets-dgraph
+          secret:
+            name: dgraph-tls
       strategy:
         type: Source
         sourceStrategy:
           from:
             kind: ImageStreamTag
-            name: s2i-thoth-ubi8-py36:latest
+            name: adviser:latest
           env:
-            - name: ENABLE_PIPENV
+            - name: THOTH_ADVISER_BUILD_CACHE
               value: "1"
-            - name: UPGRADE_PIP_TO_LATEST
-              value: ""
-            - name: "THOTH_DRY_RUN"
-              value: "1"
-            - name: "THOTH_ADVISE"
-              value: "1"
-            - name: "THAMOS_VERBOSE"
-              value: "1"
-            - name: "THAMOS_DEBUG"
-              value: "1"
-            - name: "THAMOS_CONFIG_TEMPLATE"
-              value: ".thothTemplate.yaml"
-            - name: "THAMOS_CONFIG_EXPAND_ENV"
-              value: "1"
+            - name: THOTH_STORAGES_GRAPH_CACHE_CONFIG
+              value: "cache_config.yaml"
+            - name: THOTH_LOG_STORAGES
+              value: DEBUG
             - name: THOTH_STORAGES_GRAPH_CACHE
               value: "graph_cache.sqlite3"
+            - name: GRAPH_SERVICE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: graph-service-host
+                  name: thoth
+            - name: GRAPH_TLS_PATH
+              value: "secrets-dgraph"
       triggers:
         - imageChange: {}
           type: ImageChange

@@ -4,10 +4,12 @@
 
 set -ex
 
-sh /usr/libexec/s2i/assemble
+THOTH_ADVISER_BUILD_CACHE=${THOTH_ADVISER_BUILD_CACHE:-0}
 
-pushd /opt/app-root/src
-# Arguments are passed via environment variables.
-echo "Creating adviser graph cache..."
-pipenv run thoth-storages graph-cache
-popd
+if [[ ${THOTH_ADVISER_BUILD_CACHE} -eq 0 ]]; then
+    exec /usr/libexec/s2i/assemble
+else
+    echo "---> Building graph cache..." >&2
+    pushd /opt/app-root/src
+    exec pipenv run thoth-storages graph-cache
+fi
