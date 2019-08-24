@@ -1,0 +1,13 @@
+python-packages:
+ - tensorflow
+ - pytorch
+   # Add Thoth packages as we manage Thoth repositories:
+ - invectio
+ - thamos
+ - thoth-adviser
+ - thoth-analyzer
+ - thoth-common
+ - thoth-lab
+ - thoth-python
+ - thoth-solver
+ - thoth-storages
