@@ -55,9 +55,9 @@ objects:
           ref: "master"
         type: Git
         secrets:
-        - destinationDir: secrets-dgraph
-          secret:
-            name: dgraph-tls
+          - destinationDir: secrets-dgraph
+            secret:
+              name: dgraph-tls
       strategy:
         type: Source
         sourceStrategy:
