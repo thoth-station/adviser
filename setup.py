@@ -63,7 +63,18 @@ setup(
     author='Fridolin Pokorny',
     author_email='fridolin@redhat.com',
     license='GPLv3+',
-    packages=['thoth.adviser', 'thoth.adviser.python'],
+    packages=[
+        'thoth.adviser',
+        'thoth.adviser.python',
+        'thoth.adviser.python.pipeline',
+        'thoth.adviser.python.dependency_graph',
+        'thoth.adviser.python.pipeline.steps',
+        'thoth.adviser.python.pipeline.units',
+        'thoth.adviser.python.pipeline.sieves',
+        'thoth.adviser.python.pipeline.strides',
+        'thoth.adviser.python.dependency_graph.walking',
+        'thoth.adviser.python.dependency_graph.adaptation',
+    ],
     entry_points={
         'console_scripts': ['thoth-adviser=thoth.adviser.cli:cli']
     },

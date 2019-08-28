@@ -126,7 +126,7 @@ class Pipeline:
         direct_dependencies = []
         resolved_direct_dependencies = self.solver.solve(
             list(self.project.iter_dependencies(with_devel=with_devel)),
-            graceful=False,
+            graceful=True,
             all_versions=True,
         )
 
@@ -136,17 +136,26 @@ class Pipeline:
                 # This means that there were found versions in the graph
                 # database but none was matching the given version range.
                 unresolved.append(package_name)
-                _LOGGER.error(
-                    "No versions were found for direct dependency %r", package_name
-                )
+
+                error_msg = f"No versions were found for direct dependency {package_name!r}"
+                runtime_environment = self.project.runtime_environment
+                if runtime_environment.operating_system.name:
+                    error_msg += f"; operating system {runtime_environment.operating_system.name!r}"
+                    if runtime_environment.operating_system.version:
+                        error_msg += f" in OS version {runtime_environment.operating_system.version!r}"
+
+                if runtime_environment.python_version:
+                    error_msg += f" for Python in version {runtime_environment.python_version!r}"
+
+                _LOGGER.warning(error_msg)
                 continue
 
             direct_dependencies.extend(package_versions)
 
         if unresolved:
             raise SolverException(
-                "Unable to resolve all direct dependencies, no versions were found for packages %s",
-                ",".join(unresolved),
+                "Unable to resolve all direct dependencies, no versions "
+                "were found for packages %s" % ", ".join(unresolved),
             )
 
         # De-instantiate solver - this will cause solver cache to be dropped and references to PackageVersion

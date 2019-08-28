@@ -69,7 +69,7 @@ objects:
         sourceStrategy:
           from:
             kind: ImageStreamTag
-            name: python-36-centos7:latest
+            name: s2i-thoth-ubi8-py36:latest
           env:
             - name: ENABLE_PIPENV
               value: "1"
