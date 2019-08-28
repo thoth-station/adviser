@@ -73,7 +73,37 @@ objects:
               value: DEBUG
             - name: THOTH_STORAGES_GRAPH_CACHE
               value: "graph_cache.sqlite3"
-            - name: GRAPH_SERVICE_HOST
+            - name: THOTH_DEPLOYMENT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: storage-bucket-name
+                  name: thoth
+            - name: THOTH_S3_ENDPOINT_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: ceph-host
+                  name: thoth
+            - name: THOTH_CEPH_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  key: ceph-bucket-name
+                  name: thoth
+            - name: THOTH_CEPH_BUCKET_PREFIX
+              valueFrom:
+                configMapKeyRef:
+                  key: ceph-bucket-prefix
+                  name: thoth
+            - name: THOTH_CEPH_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: thoth
+                  key: ceph-key-id
+            - name: THOTH_CEPH_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: thoth
+                  key: ceph-secret-key
+          - name: GRAPH_SERVICE_HOST
               valueFrom:
                 configMapKeyRef:
                   key: graph-service-host
