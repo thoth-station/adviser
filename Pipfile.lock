@@ -60,17 +60,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:366a1f3ec37b9434f25247cbe876f9ca1b53d35e35af18f74c735445100b4bc4",
-                "sha256:e7718b48cd073ad59a99a33d14252319dfaf550be3682b0c6a58da052fb05fcc"
+                "sha256:09cf39452a8a45e6e91ba64486e1861e0d6466d50b046d445627cc1cbdde29a1",
+                "sha256:274708f2103e42fac72ad2b56681c26b70909594bef146a99d376c52df4ded04"
             ],
-            "version": "==1.9.217"
+            "version": "==1.9.218"
         },
         "botocore": {
             "hashes": [
-                "sha256:68a0a22ca4e0e7e7ab482f63e21debfe402841fc49b8503dec0a7307b565d774",
-                "sha256:7a213b876e58b1b5380cf30faa05ba45073692ad4a3cc803ba763082a36436bb"
+                "sha256:aba87b5c594ec33deb679eda0a19b32e654bf781ff1dd8f1b53dffcd7c8a4dd9",
+                "sha256:c66f4ffccb57dcca45b0f279e7fafc0ee83dab2a37aaeb047acb2543c8408439"
             ],
-            "version": "==1.12.217"
+            "version": "==1.12.218"
         },
         "cachetools": {
             "hashes": [
@@ -569,11 +569,11 @@
         },
         "semantic-version": {
             "hashes": [
-                "sha256:b2bfae7622c37f1931c9f5e21a5fd37075fd4901b9e4c294fe276b60acf87c9b",
-                "sha256:f146691ecc623183beeda656ff9d17d230a5bba1ea2a0b8d96f893ca1dc065d4"
+                "sha256:2e28e4d2e2b2a0a102ad7fe5c6912700a35681c94c4b4f628b317853d1ebd179",
+                "sha256:35f8b1f37e8a1d0b6e476b3b55546d0de572bb345b4ff8e82faddb799d614888"
             ],
             "index": "pypi",
-            "version": "==2.7.1"
+            "version": "==2.8.0"
         },
         "sentry-sdk": {
             "hashes": [
