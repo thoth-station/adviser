@@ -31,6 +31,7 @@ from thoth.python import Project
 from .pipeline.steps import BuildtimeErrorFiltering
 from .pipeline.steps import CutPreReleases
 from .pipeline.steps import CutToolchain
+from .pipeline.steps import CutUnsolved
 from .pipeline.steps import CutUnreachable
 from .pipeline.steps import CvePenalization
 from .pipeline.steps import LimitLatestVersions
@@ -67,6 +68,7 @@ class PipelineBuilder:
                     # (OperatingSystemSieve, None),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (CutPreReleases, None),
                     (CutToolchain, None),
                     (CutUnreachable, None),
@@ -88,6 +90,7 @@ class PipelineBuilder:
                     # (OperatingSystemSieve, None),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (BuildtimeErrorFiltering, None),
                     (CutPreReleases, None),
                     (CutUnreachable, None),
@@ -112,6 +115,7 @@ class PipelineBuilder:
                     # (OperatingSystemSieve, None),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (BuildtimeErrorFiltering, None),
                     (CutPreReleases, None),
                     (CutUnreachable, None),
@@ -155,6 +159,7 @@ class PipelineBuilder:
                     # (OperatingSystemSieve, None),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (CutPreReleases, None),
                     (RestrictIndexes, None),
                     (CutUnreachable, None),
@@ -168,6 +173,7 @@ class PipelineBuilder:
                     # (OperatingSystemSieve, None),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (CutPreReleases, None),
                     (RestrictIndexes, None),
                     (CutUnreachable, None),
