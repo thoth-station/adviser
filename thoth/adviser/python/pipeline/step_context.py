@@ -22,6 +22,7 @@ from typing import Generator
 from typing import List
 from typing import Tuple
 from typing import Callable
+from typing import Union
 from itertools import chain
 import logging
 
@@ -34,6 +35,7 @@ from thoth.adviser.python.dependency_graph import DependencyGraphTransaction
 
 from .step_stats import StepStats
 from .context_base import ContextBase
+from .unsolved_package import UnsolvedPackage
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,6 +45,7 @@ class StepContext(ContextBase):
     """A wrapper representing stack stack candidates."""
 
     packages = attr.ib(type=Dict[Tuple[str, str, str], PackageVersion])
+    unsolved_packages = attr.ib(type=Dict[Tuple[str, str, None], UnsolvedPackage])
     dependency_graph_adaptation = attr.ib(type=DependencyGraphAdaptation, default=None)
     _stats = attr.ib(type=StepStats, default=attr.Factory(StepStats))
 
@@ -54,19 +57,30 @@ class StepContext(ContextBase):
     ) -> "StepContext":
         """Instantiate step context from paths."""
         packages = dict(direct_dependencies)
+        unsolved_packages = {}
         for direct_dependency_tuple, dependency_paths in paths.items():
             for package_tuples in dependency_paths:
                 for package_tuple in package_tuples:
                     if package_tuple in packages:
                         continue
 
-                    package_version = PackageVersion(
-                        name=package_tuple[0],
-                        version="==" + package_tuple[1],
-                        develop=direct_dependencies[direct_dependency_tuple].develop,
-                        index=Source(package_tuple[2]),
-                    )
-                    packages[package_tuple] = package_version
+                    if cls.is_unsolved_package_tuple(package_tuple):
+                        # Not fully resolved yet.
+                        key = (package_tuple[0], package_tuple[1], None)
+                        if key not in unsolved_packages:
+                            unsolved_packages[key] = UnsolvedPackage(
+                                package_name=package_tuple[0],
+                                package_version=package_tuple[1],
+                                develop=direct_dependencies[direct_dependency_tuple].develop,
+                            )
+                    else:
+                        package_version = PackageVersion(
+                            name=package_tuple[0],
+                            version="==" + package_tuple[1],
+                            develop=direct_dependencies[direct_dependency_tuple].develop,
+                            index=Source(package_tuple[2]),
+                        )
+                        packages[package_tuple] = package_version
 
         path_tuples = []
         for dependency_paths in paths.values():
@@ -77,11 +91,16 @@ class StepContext(ContextBase):
             "Total number of packages considered including all transitive dependencies: %d",
             len(packages)
         )
+        _LOGGER.debug(
+            "Total number of unsolved packages in the dependency graph: %d",
+            len(unsolved_packages)
+        )
         _LOGGER.info(
             "Instantiating step context and constructing dependency graph adaptation"
         )
         return cls(
             packages=packages,
+            unsolved_packages=unsolved_packages,
             dependency_graph_adaptation=DependencyGraphAdaptation.from_paths(
                 direct_dependencies=direct_dependencies.keys(),
                 paths=path_tuples,
@@ -92,6 +111,12 @@ class StepContext(ContextBase):
     def stats(self) -> StepStats:
         """Retrieve statistics kept during steps computation."""
         return self._stats
+
+    @staticmethod
+    def is_unsolved_package_tuple(package_tuple: Tuple[str, Union[None, str], Union[None, str]]) -> bool:
+        """Check if the given package tuple represents an unsolved package."""
+        # We could just check for the third (index_url) entry, but to be verbose.
+        return package_tuple[2] is None or package_tuple[1] is None
 
     def sort_paths(
         self,
@@ -121,15 +146,21 @@ class StepContext(ContextBase):
             self.dependency_graph_adaptation.iter_direct_dependencies_tuple()
         )
 
-    def iter_transitive_dependencies(self, develop: bool = None) -> Generator[PackageVersion, None, None]:
+    def iter_transitive_dependencies(
+        self,
+        develop: bool = None
+    ) -> Generator[Union[PackageVersion, UnsolvedPackage], None, None]:
         """Iterate over indirect (transitive) dependencies, respect their ordering."""
         for package_tuple in self.iter_transitive_dependencies_tuple():
-            package_version = self.packages[package_tuple]
-            if develop is not None:
-                if package_version.develop == develop:
-                    yield package_version
+            if self.is_unsolved_package_tuple(package_tuple):
+                to_yield = self.unsolved_packages[package_tuple]
             else:
-                yield package_version
+                to_yield = self.packages[package_tuple]
+            if develop is not None:
+                if to_yield.develop == develop:
+                    yield to_yield
+            else:
+                yield to_yield
 
     def iter_transitive_dependencies_tuple(
         self
