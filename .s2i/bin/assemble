@@ -2,7 +2,7 @@
 # Copyright(C) 2019 Fridolin Pokorny
 # Adjusted assemble script to OpenShift s2i build.
 
-set -ex
+set -x
 
 THOTH_ADVISER_BUILD_CACHE=${THOTH_ADVISER_BUILD_CACHE:-0}
 
@@ -11,7 +11,7 @@ if [[ ${THOTH_ADVISER_BUILD_CACHE} -eq 0 ]]; then
 else
     echo "---> Building graph cache..." >&2
     pushd /opt/app-root/src
-    exec pipenv run thoth-storages restore-cache || true
-    exec pipenv run thoth-storages create-cache
-    exec pipenv run thoth-storages store-cache
+    pipenv run thoth-storages restore-cache
+    pipenv run thoth-storages create-cache || exit 1
+    pipenv run thoth-storages store-cache || exit 2
 fi
