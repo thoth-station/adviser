@@ -32,6 +32,7 @@ import attr
 
 from thoth.python import Project
 from thoth.python import PackageVersion
+from thoth.storages import GraphDatabase
 
 from .stride_context import StrideContext
 from .product import PipelineProduct
@@ -79,7 +80,7 @@ class StackCandidates:
         except KeyError:
             return self.direct_dependencies_map[package_tuple]
 
-    def generate_pipeline_products(self) -> Generator[PipelineProduct, None, None]:
+    def generate_pipeline_products(self, graph: GraphDatabase) -> Generator[PipelineProduct, None, None]:
         """Generate projects in stack candidates.
 
         All the candidates are discarded after calling this function.
@@ -106,5 +107,5 @@ class StackCandidates:
             )
 
             yield PipelineProduct(
-                project=project, score=score, justification=justification
+                project=project, score=score, justification=justification, graph=graph
             )

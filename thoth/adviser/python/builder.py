@@ -28,6 +28,8 @@ from thoth.storages import GraphDatabase
 from thoth.python import Project
 
 # from .pipeline.sieves import OperatingSystemSieve
+from .pipeline.sieves import PackageIndexSieve
+from .pipeline.sieves import BuildErrorSieve
 from .pipeline.steps import BuildtimeErrorFiltering
 from .pipeline.steps import CutPreReleases
 from .pipeline.steps import CutToolchain
@@ -64,6 +66,8 @@ class PipelineBuilder:
             pipeline_config = PipelineConfig(
                 sieves=[
                     # (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (BuildErrorSieve, None),
                 ],
                 steps=[
                     (CutUnsolved, None),
@@ -86,6 +90,8 @@ class PipelineBuilder:
             pipeline_config = PipelineConfig(
                 sieves=[
                     # (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (BuildErrorSieve, None),
                 ],
                 steps=[
                     (CutUnsolved, None),
@@ -111,6 +117,8 @@ class PipelineBuilder:
             pipeline_config = PipelineConfig(
                 sieves=[
                     # (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (BuildErrorSieve, None),
                 ],
                 steps=[
                     (CutUnsolved, None),
@@ -152,6 +160,8 @@ class PipelineBuilder:
             pipeline_config = PipelineConfig(
                 sieves=[
                     # (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (BuildErrorSieve, None),
                 ],
                 steps=[
                     (CutUnsolved, None),
@@ -166,6 +176,8 @@ class PipelineBuilder:
             pipeline_config = PipelineConfig(
                 sieves=[
                     # (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (BuildErrorSieve, None),
                 ],
                 steps=[
                     (CutUnsolved, None),

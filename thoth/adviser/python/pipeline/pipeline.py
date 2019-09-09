@@ -419,4 +419,4 @@ class Pipeline:
         dependency_graph, stack_candidates = self._finalize_stepping(step_context, count)
         self._do_strides(dependency_graph, stack_candidates, limit)
         _LOGGER.debug("Pipeline ran for %f seconds", monotonic() - start_time)
-        return stack_candidates.generate_pipeline_products()
+        return stack_candidates.generate_pipeline_products(self.graph)
