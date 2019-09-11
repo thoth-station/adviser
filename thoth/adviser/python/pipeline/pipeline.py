@@ -261,6 +261,15 @@ class Pipeline:
         start_time = monotonic()
         direct_dependencies = self._prepare_direct_dependencies(with_devel=True)
         _LOGGER.debug("Total number of direct dependencies before running sieves: %d", len(direct_dependencies))
+        # Print out packages if user requested so.
+        if bool(os.getenv("THOTH_ADVISER_SHOW_PACKAGES", 0)):
+            _LOGGER.info(
+                "All direct dependencies considered before running pipeline (count: %d):",
+                len(direct_dependencies)
+            )
+            for item in direct_dependencies:
+                _LOGGER.info("    %r", item.to_tuple())
+
         _LOGGER.info("Preparing pipeline sieves")
         sieve_context = SieveContext.from_package_versions(direct_dependencies)
         for sieve_class, parameters_dict in self.sieves:
@@ -274,6 +283,11 @@ class Pipeline:
             sieve_instance.run(sieve_context)
 
         direct_dependencies = list(sieve_context.iter_direct_dependencies())
+        if bool(os.getenv("THOTH_ADVISER_SHOW_PACKAGES", 0)):
+            _LOGGER.info("Direct dependencies after running sieves (count: %d):", len(direct_dependencies))
+            for direct_dependency in direct_dependencies:
+                _LOGGER.info("    %r", direct_dependency.to_tuple())
+
         _LOGGER.debug(
             "Total number of direct dependencies after running sieves: %d, sieves took %f seconds",
             len(direct_dependencies),
