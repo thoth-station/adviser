@@ -17,7 +17,7 @@
 
 """Implementation of sieves used to filter out direct dependencies."""
 
-from .build_error import BuildErrorSieve
+from .solved import SolvedSieve
 from .index_enabled import PackageIndexSieve
 from .os_sieve import OperatingSystemSieve
 

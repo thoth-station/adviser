@@ -19,21 +19,42 @@
 
 import logging
 
+from thoth.storages.exceptions import NotFoundError
+
 from ..sieve import Sieve
 from ..sieve_context import SieveContext
-from ..exceptions import CannotRemovePackage
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class BuildErrorSieve(Sieve):
+class SolvedSieve(Sieve):
     """Filter out build time/installation errors of Python packages."""
+
+    PARAMETERS_DEFAULT = {"without_error": True}
 
     def run(self, sieve_context: SieveContext) -> None:
         """Filter out packages based on build time/installation issues.."""
+        environment = {
+            "os_name": self.project.runtime_environment.operating_system.name,
+            "os_version": self.project.runtime_environment.operating_system.version,
+            "python_version": self.project.runtime_environment.python_version,
+        }
+
         for package_version in list(sieve_context.iter_direct_dependencies()):
             try:
-                # TODO: implement
+                has_error = self.graph.has_python_solver_error(*package_version.to_tuple(), **environment)
+            except NotFoundError as exc:
+                _LOGGER.debug(
+                    "Removing package %r as it was not by solver: %s",
+                    package_version.to_tuple(), str(exc)
+                )
                 sieve_context.remove_package(package_version)
-            except CannotRemovePackage as exc:
-                pass
+                continue
+
+            if has_error and self.parameters["without_error"]:
+                _LOGGER.debug(
+                    "Removing package %r due to build time error on %r",
+                    package_version.to_tuple(),
+                    environment,
+                )
+                sieve_context.remove_package(package_version)
