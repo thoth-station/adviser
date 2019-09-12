@@ -170,17 +170,27 @@ objects:
                     secretKeyRef:
                       name: thoth
                       key: sentry-dsn
-                - name: GRAPH_SERVICE_HOST
+                - name: POSTGRESQL_SERVICE_HOST
+                  value: postgresql
+                - name: POSTGRESQL_SERVICE_PORT
+                  value: "5432"
+                - name: POSTGRESQL_SSL_DISABLED
+                  value: "1"
+                - name: POSTGRESQL_USER
                   valueFrom:
-                    configMapKeyRef:
-                      key: graph-service-host
-                      name: thoth
-                - name: GRAPH_TLS_PATH
-                  value: "/var/run/secrets/dgraph"
-              volumeMounts:
-                - mountPath: /var/run/secrets/dgraph
-                  name: dgraph-tls-secrets
-                  readOnly: true
+                    secretKeyRef:
+                      name: postgresql
+                      key: database-user
+                - name: POSTGRESQL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql
+                      key: database-password
+                - name: POSTGRESQL_DATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql
+                      key: database-name
               resources:
                 limits:
                   memory: "1Gi"
@@ -188,8 +198,3 @@ objects:
                 requests:
                   memory: "1Gi"
                   cpu: 1.5
-          volumes:
-            - name: dgraph-tls-secrets
-              secret:
-                defaultMode: 420
-                secretName: dgraph-tls
