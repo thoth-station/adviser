@@ -19,6 +19,5 @@
 
 
 from .cve import CveScoring
-from .performance_scoring import PerformanceScoring
 from .random_decision import RandomDecision
 from .score_filter import ScoreFiltering
