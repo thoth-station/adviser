@@ -36,12 +36,10 @@ from .pipeline.steps import CutUnreachable
 from .pipeline.steps import CvePenalization
 from .pipeline.steps import LimitLatestVersions
 from .pipeline.steps import ObservationReduction
-# from .pipeline.steps import PerformanceAdjustment
 from .pipeline.steps import RestrictIndexes
 from .pipeline.steps import RuntimeErrorFiltering
 from .pipeline.steps import SemverSort
 from .pipeline.strides import CveScoring
-# from .pipeline.strides import PerformanceScoring
 from .pipeline.strides import RandomDecision
 from .pipeline.strides import ScoreFiltering
 
@@ -126,7 +124,6 @@ class PipelineBuilder:
                     (ObservationReduction, None),
                 ],
                 strides=[
-                    # (PerformanceScoring, None),
                     (CveScoring, None),
                     (ScoreFiltering, None),
                 ],
@@ -139,8 +136,6 @@ class PipelineBuilder:
                         {"limit_latest_versions": limit_latest_versions},
                     )
                 )
-
-            # pipeline_config.steps.append((PerformanceAdjustment, None))
         else:
             raise ValueError(
                 f"No stack generation pipeline configuration defined for recommendation type {recommendation_type.name}"
