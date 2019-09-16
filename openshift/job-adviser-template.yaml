@@ -170,23 +170,23 @@ objects:
                     secretKeyRef:
                       name: thoth
                       key: sentry-dsn
-                - name: POSTGRESQL_SERVICE_HOST
+                - name: KNOWLEDGE_GRAPH_HOST
                   value: postgresql
-                - name: POSTGRESQL_SERVICE_PORT
+                - name: KNOWLEDGE_GRAPH_PORT
                   value: "5432"
-                - name: POSTGRESQL_SSL_DISABLED
+                - name: KNOWLEDGE_GRAPH_SSL_DISABLED
                   value: "1"
-                - name: POSTGRESQL_USER
+                - name: KNOWLEDGE_GRAPH_USER
                   valueFrom:
                     secretKeyRef:
                       name: postgresql
                       key: database-user
-                - name: POSTGRESQL_PASSWORD
+                - name: KNOWLEDGE_GRAPH_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       name: postgresql
                       key: database-password
-                - name: POSTGRESQL_DATABASE
+                - name: KNOWLEDGE_GRAPH_DATABASE
                   valueFrom:
                     secretKeyRef:
                       name: postgresql
