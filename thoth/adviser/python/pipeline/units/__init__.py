@@ -22,6 +22,4 @@ These classes are meant to be used for sharing code between strides and steps se
 
 
 from .cve import get_cve_records
-from .performance import get_performance
-from .performance import get_performance_impact_packages
 from .semver import semver_cmp_package_version
