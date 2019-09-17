@@ -28,9 +28,12 @@ from thoth.storages import GraphDatabase
 from thoth.python import Project
 
 # from .pipeline.sieves import OperatingSystemSieve
+from .pipeline.sieves import PackageIndexSieve
+from .pipeline.sieves import SolvedSieve
 from .pipeline.steps import BuildtimeErrorFiltering
 from .pipeline.steps import CutPreReleases
 from .pipeline.steps import CutToolchain
+from .pipeline.steps import CutUnsolved
 from .pipeline.steps import CutUnreachable
 from .pipeline.steps import CvePenalization
 from .pipeline.steps import LimitLatestVersions
@@ -63,8 +66,11 @@ class PipelineBuilder:
             pipeline_config = PipelineConfig(
                 sieves=[
                     # (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (SolvedSieve, {"without_error": True}),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (CutPreReleases, None),
                     (CutToolchain, None),
                     (CutUnreachable, None),
@@ -84,8 +90,11 @@ class PipelineBuilder:
             pipeline_config = PipelineConfig(
                 sieves=[
                     # (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (SolvedSieve, {"without_error": True}),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (BuildtimeErrorFiltering, None),
                     (CutPreReleases, None),
                     (CutUnreachable, None),
@@ -108,8 +117,11 @@ class PipelineBuilder:
             pipeline_config = PipelineConfig(
                 sieves=[
                     # (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (SolvedSieve, {"without_error": True}),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (BuildtimeErrorFiltering, None),
                     (CutPreReleases, None),
                     (CutUnreachable, None),
@@ -148,8 +160,11 @@ class PipelineBuilder:
             pipeline_config = PipelineConfig(
                 sieves=[
                     # (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (SolvedSieve, {"without_error": True}),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (CutPreReleases, None),
                     (RestrictIndexes, None),
                     (CutUnreachable, None),
@@ -161,8 +176,11 @@ class PipelineBuilder:
             pipeline_config = PipelineConfig(
                 sieves=[
                     # (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (SolvedSieve, {"without_error": True}),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (CutPreReleases, None),
                     (RestrictIndexes, None),
                     (CutUnreachable, None),

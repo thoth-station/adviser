@@ -61,10 +61,8 @@ class SieveContext(ContextBase):
 
         if len(self.packages[package_tuple[0]]) <= 1:
             raise CannotRemovePackage(
-                "Cannot remove package %r - by removing this package all direct "
-                "dependencies of package %r would be removed",
-                package_tuple,
-                package_tuple[0]
+                f"Cannot remove package {package_tuple!r} - by removing this package all direct "
+                f"dependencies of package {package_tuple[0]!r} would be removed",
             )
 
         self.packages[package_tuple[0]].pop(package_tuple)

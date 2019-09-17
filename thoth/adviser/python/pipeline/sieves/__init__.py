@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of sieves used to filter out direct dependencie."""
+"""Implementation of sieves used to filter out direct dependencies."""
 
+from .solved import SolvedSieve
+from .index_enabled import PackageIndexSieve
 from .os_sieve import OperatingSystemSieve
