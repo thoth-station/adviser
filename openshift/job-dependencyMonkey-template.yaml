@@ -120,6 +120,11 @@ objects:
                 failureThreshold: 1
                 periodSeconds: 10
               env:
+                - name: THOTH_DEPLOYMENT_NAME
+                  valueFrom:
+                    configMapKeyRef:
+                      key: storage-bucket-name
+                      name: thoth
                 - name: THOTH_LOG_ADVISER
                   value: "${THOTH_LOG_ADVISER}"
                 - name: THOTH_ADVISER_REQUIREMENTS
