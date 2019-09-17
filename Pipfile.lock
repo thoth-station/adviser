@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e2c6168449bb809c75261c673f0733c4607b47f3504855d373ae87493469acbf"
+            "sha256": "b4d377e7a3b90f955511590dcf10060e4d1066d0dade013b42d80464c0eb1c1b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -357,6 +357,7 @@
                 "sha256:0876910f21f11ce196d7208bd73076b9296b52cec44a21d2a0e8db0a7169eab7",
                 "sha256:197f2304dd3d78c95119b31d457996280af03e04a001855f5da04a5af693da20"
             ],
+            "index": "pypi",
             "version": "==0.1.0"
         },
         "oauthlib": {
@@ -371,6 +372,13 @@
                 "sha256:8465c3ffafab9ac54fda32253cecc4645a181dd276426132caf45be1e85200dd"
             ],
             "version": "==0.8.0"
+        },
+        "packaging": {
+            "hashes": [
+                "sha256:a7ac867b97fdc07ee80a8058fe4435ccd274ecc3b0ed61d852d7d53055528cf9",
+                "sha256:c491ca87294da7cc01902edbe30a5bc6c4c28172b5138ab4e4aa1b9d7bfaeafe"
+            ],
+            "version": "==19.1"
         },
         "pexpect": {
             "hashes": [
@@ -489,12 +497,25 @@
             ],
             "version": "==2.0.2"
         },
+        "pyelftools": {
+            "hashes": [
+                "sha256:89c6da6f56280c37a5ff33468591ba9a124e17d71fe42de971818cbff46c1b24"
+            ],
+            "version": "==0.25"
+        },
         "pyjwt": {
             "hashes": [
                 "sha256:5c6eca3c2940464d106b99ba83b00c6add741c9becaec087fb7ccdefea71350e",
                 "sha256:8d59a976fb773f3e6a39c85636357c4f0e242707394cadadd9814f5cbaa20e96"
             ],
             "version": "==1.7.1"
+        },
+        "pyparsing": {
+            "hashes": [
+                "sha256:6f98a7b9397e206d78cc01df10131398f1c8b8510a2f4d97d9abd82e1aacdd80",
+                "sha256:d9338df12903bbf5d65a0e4e87c2161968b10d2e489652bb47001d82a9b028b4"
+            ],
+            "version": "==2.4.2"
         },
         "python-dateutil": {
             "hashes": [
@@ -664,11 +685,11 @@
         },
         "thoth-python": {
             "hashes": [
-                "sha256:3cdf1d9936279dff9733aa7438d0af0b82e48d2b683ca7b963092e35a2058748",
-                "sha256:6aa4d1d541416faf55913497a7e3926767da9d1b8ddf46c9262fce5298975a01"
+                "sha256:49ac84870fc744598ad1f7779c3539ebb1f7b1de846a2affc36410a78e13ad9d",
+                "sha256:4d47f531959d61073f697a9ede76477eb9f995f8931f0b0764e8a605fabcb7fe"
             ],
             "index": "pypi",
-            "version": "==0.6.1"
+            "version": "==0.6.2"
         },
         "thoth-solver": {
             "hashes": [

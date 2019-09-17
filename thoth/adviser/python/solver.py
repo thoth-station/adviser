@@ -68,9 +68,6 @@ class GraphReleasesFetcher(ReleasesFetcher):
             os_name=self.runtime_environment.operating_system.name,
             os_version=self.runtime_environment.operating_system.version,
             python_version=self.runtime_environment.python_version,
-            without_error=True,
-            only_known_index=True,
-            only_solved=True,
         )
         return package_name, result
 

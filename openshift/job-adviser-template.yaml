@@ -113,7 +113,8 @@ objects:
           automountServiceAccountToken: false
           containers:
             - name: adviser
-              image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/adviser:${IMAGE_STREAM_TAG}"
+              # image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/adviser:${IMAGE_STREAM_TAG}"
+              image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/adviser-cached:${IMAGE_STREAM_TAG}"
               livenessProbe:
                 # Give analyzer specified seconds to compute results, kill
                 # stack producer so the main process reports scored results.

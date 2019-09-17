@@ -48,12 +48,8 @@ class MockedGraphDatabase:
         os_version: str = None,
         python_version: str = None,
         without_error: bool = True,
-        only_known_index: bool = False,
-        only_solved: bool = False,
     ) -> typing.List[tuple]:
         """Get all versions for the given Python package."""
-        assert only_solved
-        assert only_known_index
         result = []
         for version, info in self.db.get(package_name, {}).items():
             for entry in info:

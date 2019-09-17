@@ -54,7 +54,7 @@ class Adviser:
         """Compute recommendations using a custom pipeline configuration."""
         result = []
         for product in pipeline.conduct(count=self.count, limit=self.limit):
-            product.finalize(pipeline.graph)
+            product.finalize()
             result.append((product.justification, product.project, product.score))
 
         return result, pipeline.get_stack_info()

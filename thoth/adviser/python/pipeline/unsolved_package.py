@@ -15,18 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of steps used in stack generators pipeline."""
+"""Representation of an unsolved package in dependency graph."""
+
+from typing import Tuple
+
+import attr
 
 
-from .buildtime_error import BuildtimeErrorFiltering
-from .cve import CvePenalization
-from .limit_latest_versions import LimitLatestVersions
-from .observation_reduction import ObservationReduction
-from .prereleases import CutPreReleases
-from .restrict_indexes import RestrictIndexes
-from .runtime_error import RuntimeErrorFiltering
-from .score_cutoff import ScoreCutoff
-from .semver_sort import SemverSort
-from .toolchain import CutToolchain
-from .unreachable import CutUnreachable
-from .unsolved import CutUnsolved
+@attr.s(slots=True)
+class UnsolvedPackage:
+    """Representation of an unsolved package in the dependency graph."""
+
+    package_name = attr.ib(type=str)
+    package_version = attr.ib(type=str, default=None)
+    develop = attr.ib(type=bool, default=False)
+
+    def to_tuple(self) -> Tuple[str, str, None]:
+        """Convert this package to a tuple representation.
+
+        To be fully compliant with PackageVersion, provide None index explictly
+        """
+        return self.package_name, self.package_version, None

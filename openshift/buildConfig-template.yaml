@@ -87,6 +87,8 @@ objects:
               value: ".thothTemplate.yaml"
             - name: "THAMOS_CONFIG_EXPAND_ENV"
               value: "1"
+            - name: THOTH_STORAGES_GRAPH_CACHE
+              value: "graph_cache.sqlite3"
       triggers:
         - imageChange: {}
           type: ImageChange
