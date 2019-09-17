@@ -91,7 +91,7 @@ def _instantiate_project(
     project = Project(
         pipfile=pipfile,
         pipfile_lock=pipfile_lock,
-        runtime_environment=runtime_environment,
+        runtime_environment=runtime_environment or RuntimeEnvironment.from_dict({}),
     )
 
     return project
