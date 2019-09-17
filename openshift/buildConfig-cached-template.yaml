@@ -65,6 +65,11 @@ objects:
             kind: ImageStreamTag
             name: adviser:latest
           env:
+            - name: THOTH_DEPLOYMENT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: storage-bucket-name
+                  name: thoth
             - name: THOTH_ADVISER_BUILD_CACHE
               value: "1"
             - name: THOTH_STORAGES_GRAPH_CACHE_CONFIG
