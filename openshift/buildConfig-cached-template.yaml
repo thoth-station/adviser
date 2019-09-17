@@ -65,6 +65,11 @@ objects:
             kind: ImageStreamTag
             name: adviser:latest
           env:
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: thoth
+                  key: sentry-dsn
             - name: THOTH_DEPLOYMENT_NAME
               valueFrom:
                 configMapKeyRef:
