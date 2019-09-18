@@ -701,11 +701,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:4038293e60eae7e165c6b157d8e365e9995c5bf7c340cdec51f49350616148d0",
-                "sha256:cb9bceba088a652da32a616e15aeffe9656033dfb634ff14c0927a12d64ce79d"
+                "sha256:8ce8fe716ff7010dc628f97351fa5b395c5bfc8422701d54004ad7932c2b3213",
+                "sha256:9a488cddeef9246977866bfb22cb9526ae050ccaeee0a0f5f2cefbe9b5e8b124"
             ],
             "index": "pypi",
-            "version": "==0.19.4"
+            "version": "==0.19.5"
         },
         "timestamp": {
             "hashes": [
