@@ -29,9 +29,9 @@ are subsequently validated and scored in the `Amun
 all the possible software stacks, we can find the best software stack for an
 application by validating it in a CI (or Amun in case of Thoth), running the
 application in the specific runtime environment (e.g. Fedora 28 with installed
-native packages - RPMs) on some specific hardware conifguration. Generating and
+native packages - RPMs) on some specific hardware configuration. Generating and
 scoring all the possible software stacks is, however, most often not doable in
-a reasonable time. For this purpose, Dependnecy Monkey can create a sample of
+a reasonable time. For this purpose, Dependency Monkey can create a sample of
 software stacks (see the ``distribution`` and ``seed`` parameters) that can be
 taken as representatives. These representatives are scored and aggregated data
 are used for predicting the best application stack (again, generated and run
@@ -47,10 +47,10 @@ aggregated knowledge stored in the graph database, provide the best application
 stack with reasoning on why the given software stack is used. There is reused
 the N-ary dependency graph implementation stated above to compute possible
 candidates of software stacks and based on data aggregated, there is performed
-scoring of software stacks based on solaly package-level data (e.g. the given
+scoring of software stacks based on solely package-level data (e.g. the given
 package cannot be installed into the given runtime environment) or software
 stack information - the combination of packages cannot be assembled together or
-there were spotted issues when the some packages were used together in some
+there were spotted issues when the same packages were used together in some
 specific versions.
 
 Provenance Checks
@@ -63,7 +63,7 @@ for more info.
 Package source configuration
 ############################
 
-When Thoth is deployed in your infrasture that restricts packages installed
+When Thoth is deployed in your infrastracture that restricts packages installed
 to only trusted package source indexes, you can disable untrusted package
 source indexes by setting ``THOTH_WHITELISTED_SOURCES`` environment variable.
 This variable holds a comma separated list of URLs pointing to whitelisted
