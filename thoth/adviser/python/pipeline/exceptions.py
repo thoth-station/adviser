@@ -39,3 +39,11 @@ class PackageNotFound(PipelineExceptionBase):
 
 class NotAICoERelease(PipelineExceptionBase):
     """Raised if the given package is not AICoE release."""
+
+
+class NotResolvedError(PipelineExceptionBase):
+    """Raised if trying to run stack generation pipeline without fully resolved dependency.
+
+    As produced stacks should be fully resolved, packages which are not resolved yet should be filtered
+    out in the pipeline units.
+    """
