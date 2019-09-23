@@ -23,6 +23,12 @@
             ],
             "version": "==1.2.2"
         },
+        "alembic": {
+            "hashes": [
+                "sha256:5609afbb2ab142a991b15ae436347c475f8a517f1610f2fd1b09cdca7c311f3f"
+            ],
+            "version": "==1.2.0"
+        },
         "amun": {
             "hashes": [
                 "sha256:05cc96ff6caee7e8b36ca379e434e6f831145c88f2fc2ea860ff49d2e3d8d0bf",
@@ -319,6 +325,12 @@
             ],
             "version": "==4.4.1"
         },
+        "mako": {
+            "hashes": [
+                "sha256:a36919599a9b7dc5d86a7a8988f23a9a3a3d083070023bab23d64f7f1d1e0a4b"
+            ],
+            "version": "==1.1.0"
+        },
         "markupsafe": {
             "hashes": [
                 "sha256:00bc623926325b26bb9605ae9eae8a215691f33cae5df11ca5424f06f2d1f473",
@@ -525,6 +537,14 @@
             "markers": "python_version >= '2.7'",
             "version": "==2.8.0"
         },
+        "python-editor": {
+            "hashes": [
+                "sha256:1bf6e860a8ad52a14c3ee1252d5dc25b2030618ed80c022598f00176adc8367d",
+                "sha256:51fda6bcc5ddbbb7063b2af7509e43bd84bfc32a4ff71349ec7847713882327b",
+                "sha256:5f98b069316ea1c2ed3f67e7f5df6c0d8f10b689964a4a811ff64f0106819ec8"
+            ],
+            "version": "==1.0.4"
+        },
         "python-string-utils": {
             "hashes": [
                 "sha256:05d24a8d884b629b534af992dc1f35dc4de4c73678ffdffa0efcbe667058af1f"
@@ -702,11 +722,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:8ce8fe716ff7010dc628f97351fa5b395c5bfc8422701d54004ad7932c2b3213",
-                "sha256:9a488cddeef9246977866bfb22cb9526ae050ccaeee0a0f5f2cefbe9b5e8b124"
+                "sha256:0a7ddffd58c552d2da8530121640d1ae0f53e09c3c01788f0be27e6013b2d0da",
+                "sha256:ab20a983d5f5ab3a5d9b9a52de8b7c4f8461d9091e3b1c254f3ccda1e7590c2f"
             ],
             "index": "pypi",
-            "version": "==0.19.5"
+            "version": "==0.19.6"
         },
         "timestamp": {
             "hashes": [
