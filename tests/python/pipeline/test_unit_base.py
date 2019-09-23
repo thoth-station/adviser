@@ -82,6 +82,15 @@ class TestPipelineUnitBase(AdviserTestCase):
             ),
             {"os_name": None, "os_version": None, "configuration": "cuda", "platform_tag": "manylinux2010"},
         ),
+        (
+            PackageVersion(
+                name="tensorflow",
+                version="1.11.0",
+                index=Source("https://pypi.org/simple"),
+                develop=False
+            ),
+            None,
+        ),
     ])
     def test_get_aicoe_configuration(self, package_version, expected):
         """Check parsing of AICoE specific configuration encoded in the URL."""
