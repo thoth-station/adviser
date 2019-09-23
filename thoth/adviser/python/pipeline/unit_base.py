@@ -118,17 +118,27 @@ class PipelineUnitBase(metaclass=abc.ABCMeta):
         conf_parts = index_url.strip("/").split("/")  # the last is always "simple"
 
         if len(conf_parts) == 3:
-            # No OS specific release.
+            # No OS specific release - e.g. manylinux compliant release.
+            if not conf_parts[0].startswith("manylinux"):
+                _LOGGER.warning("Failed to parse a platform tag")
+                return None
+
             return {
                 "os_name": None,
                 "os_version": None,
                 "configuration": conf_parts[1],
+                "platform_tag": conf_parts[0],
             }
-        elif len(conf_parts) == 4:
+        elif len(conf_parts) == 5:
+            if conf_parts[0] != "os":
+                _LOGGER.warning("Failed to parse operating system specific URL of AICoE index")
+                return None
+
             return {
-                "os_name": conf_parts[0],
-                "os_version": conf_parts[1],
-                "configuration": conf_parts[2],
+                "os_name": conf_parts[1],
+                "os_version": conf_parts[2],
+                "configuration": conf_parts[3],
+                "platform_tag": None,
             }
 
         _LOGGER.warning(
