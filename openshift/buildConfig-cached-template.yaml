@@ -114,7 +114,10 @@ objects:
                   name: thoth
                   key: ceph-secret-key
             - name: KNOWLEDGE_GRAPH_HOST
-              value: postgresql
+              valueFrom:
+                configMapKeyRef:
+                  key: postgresql-host
+                  name: thoth
             - name: KNOWLEDGE_GRAPH_PORT
               value: "5432"
             - name: KNOWLEDGE_GRAPH_SSL_DISABLED
