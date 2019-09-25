@@ -20,6 +20,8 @@
 from typing import List
 from typing import Tuple
 from typing import Generator
+from typing import Callable
+from functools import cmp_to_key
 import logging
 from thoth.python import PackageVersion
 
@@ -38,9 +40,9 @@ class SieveContext(ContextBase):
 
     packages = attr.ib(type=dict, default=attr.Factory(dict))
 
-    @classmethod
-    def from_package_versions(cls, package_versions: List[PackageVersion]) -> "SieveContext":
-        """Instantiate from a list of package-versions."""
+    @staticmethod
+    def _construct_packages_dict(package_versions: List[PackageVersion]) -> dict:
+        """Construct dict as stored in this sieve context."""
         packages_dict = dict.fromkeys(
             (package_version.name for package_version in package_versions),
             {}
@@ -52,7 +54,12 @@ class SieveContext(ContextBase):
 
             packages_dict[package_version.name][package_version.to_tuple()] = package_version
 
-        return cls(packages=packages_dict)
+        return packages_dict
+
+    @classmethod
+    def from_package_versions(cls, package_versions: List[PackageVersion]) -> "SieveContext":
+        """Instantiate from a list of package-versions."""
+        return cls(packages=cls._construct_packages_dict(package_versions))
 
     def remove_package_tuple(self, package_tuple: Tuple[str, str, str]) -> None:
         """Remove the given package tuple."""
@@ -88,3 +95,22 @@ class SieveContext(ContextBase):
         for entry in self.packages.values():
             for package_tuple in entry.keys():
                 yield package_tuple
+
+    def sort_packages(
+        self,
+        comparision_func: Callable[[PackageVersion, PackageVersion], int],
+        reverse: bool = True,
+    ) -> None:
+        """Sort packages based on the comparision function.
+
+        The sorting is stable, meaning, it reflects previous relative order of packages so its completely
+        fine to perform multiple sorts in sieves - the more recent sieve will have higher priority.
+        """
+        # We expect Python 3.6+ where order in dict is preserved.
+        packages = []
+        for package_name in self.packages:
+            for package_version in self.packages[package_name].values():
+                packages.append(package_version)
+
+        packages.sort(reverse=reverse, key=cmp_to_key(comparision_func))
+        self.packages = self._construct_packages_dict(packages)
