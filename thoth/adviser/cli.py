@@ -46,6 +46,7 @@ from thoth.python import Pipfile
 from thoth.python import PipfileLock
 from thoth.python import Project
 from thoth.solver.python.base import SolverException
+from thoth.solver.python.base import NoReleasesFound
 
 init_logging()
 
@@ -90,7 +91,7 @@ def _instantiate_project(
     project = Project(
         pipfile=pipfile,
         pipfile_lock=pipfile_lock,
-        runtime_environment=runtime_environment,
+        runtime_environment=runtime_environment or RuntimeEnvironment.from_dict({}),
     )
 
     return project
@@ -355,6 +356,7 @@ def advise(
         "report": [],
         "stack_info": None,
         "advised_configuration": None,
+        "pipeline_configuration": None,
         "parameters": {
             "runtime_environment": runtime_environment.to_dict(),
             "recommendation_type": recommendation_type.name,
@@ -383,11 +385,11 @@ def advise(
         if library_usage:
             _LOGGER.info(
                 "Library usage:\n%s",
-                json.dumps(library_usage, sort_keys=True, indent=2)
+                json.dumps(library_usage, sort_keys=True, indent=2),
             )
         else:
             _LOGGER.info("No library usage supplied")
-        stack_info, advised_configuration, report = Adviser.compute_on_project(
+        stack_info, advised_configuration, report, pipeline_configuration = Adviser.compute_on_project(
             project,
             recommendation_type=recommendation_type,
             library_usage=library_usage,
@@ -404,18 +406,33 @@ def advise(
         _LOGGER.exception("Error during computing recommendation: %s", str(exc))
         result["error"] = True
         result["report"] = [([{"justification": f"{str(exc)}", "type": "ERROR"}], None)]
+    except NoReleasesFound as exc:
+        result["error"] = True
+        result["report"] = [([{
+            "justification": f"{str(exc)}; analysis of the missing package will be "
+                             f"automatically scheduled by the system",
+            "type": "ERROR"
+        }], None)]
     except (SolverException, UnableLock) as exc:
         result["error"] = True
         result["report"] = [([{"justification": str(exc), "type": "ERROR"}], None)]
     else:
-        result["error"] = False
-        result["stack_info"] = stack_info
-        result["advised_configuration"] = advised_configuration
         # Convert report to a dict so its serialized.
         result["report"] = [
             (justification, project.to_dict(), overall_score)
             for justification, project, overall_score in report
         ]
+        # Report error if we did not find any recommendation to the user, the
+        # stack_info carries information on why it hasn't been found.
+        result["error"] = len(result["report"]) == 0
+        result["stack_info"] = stack_info
+        if result["error"]:
+            result["stack_info"].append({
+                "type": "ERROR",
+                "justification": "Recommendation engine did not produce any stacks"
+            })
+        result["advised_configuration"] = advised_configuration
+        result["pipeline_configuration"] = pipeline_configuration
 
     print_command_result(
         click_ctx,
@@ -544,7 +561,9 @@ def dependency_monkey(
     # cannot pass empty string as an int as env variable.
     seed = int(seed) if seed else None
     count = int(count) if count else None
-    limit_latest_versions = int(limit_latest_versions) if limit_latest_versions else None
+    limit_latest_versions = (
+        int(limit_latest_versions) if limit_latest_versions else None
+    )
 
     # A special value of -1 signalizes no limit, this is a workaround for Click's option parser.
     if count == -1:
@@ -566,7 +585,7 @@ def dependency_monkey(
             try:
                 library_usage = json.loads(Path(library_usage).read_text())
             except Exception as exc:
-                _LOGGER.error("Failed to load library usage file %r", library_usage)
+                _LOGGER.error("Failed to load library usage file %r: %s", library_usage, str(exc))
                 raise
         else:
             library_usage = json.loads(library_usage)
@@ -580,8 +599,7 @@ def dependency_monkey(
         _LOGGER.info("No runtime environment configuration supplied")
     if library_usage:
         _LOGGER.info(
-            "Library usage:\n%s",
-            json.dumps(library_usage, sort_keys=True, indent=2)
+            "Library usage:\n%s", json.dumps(library_usage, sort_keys=True, indent=2)
         )
     else:
         _LOGGER.info("No library usage supplied")

@@ -1,0 +1,14 @@
+host: '{THOTH_HOST}'
+tls_verify: false
+requirements_format: pipenv
+
+runtime_environments:
+  - name: '{os_name}:{os_version}'
+    operating_system:
+      name: 'ubi'
+      version: '8'
+    hardware:
+      cpu_family: {cpu_family}
+      cpu_model: {cpu_model}
+    python_version: '{python_version}'
+    recommendation_type: STABLE

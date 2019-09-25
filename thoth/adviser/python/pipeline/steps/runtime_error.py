@@ -19,6 +19,8 @@
 
 import logging
 
+from thoth.adviser.python.dependency_graph import CannotRemovePackage
+
 from ..step import Step
 from ..step_context import StepContext
 

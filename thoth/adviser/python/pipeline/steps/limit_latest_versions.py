@@ -26,7 +26,7 @@ import logging
 
 from ..step import Step
 from ..step_context import StepContext
-from ..exceptions import CannotRemovePackage
+from thoth.adviser.python.dependency_graph import CannotRemovePackage
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class LimitLatestVersions(Step):
         if limit_latest_versions < 1:
             raise ValueError(
                 "Number of latest versions has to be non-negative number bigger than 0, got %d",
-                self._parameters["limit_latest_versions"],
+                limit_latest_versions,
             )
 
         versions_seen = {}
@@ -63,10 +63,17 @@ class LimitLatestVersions(Step):
 
             if versions_seen[package_version.name] > limit_latest_versions:
                 try:
-                    step_context.remove_package_tuple(package_version.to_tuple())
-                    continue
+                    with step_context.remove_package_tuples(
+                        package_version.to_tuple()
+                    ) as txn:
+                        if len(txn.to_remove_nodes) > 1:
+                            txn.rollback()
+                        else:
+                            txn.commit()
                 except CannotRemovePackage as exc:
-                    _LOGGER.debug(f"Cannot remove package {package_version.to_tuple()}: {str(exc)}")
+                    _LOGGER.debug(
+                        f"Cannot remove package {package_version.to_tuple()}: {str(exc)}"
+                    )
                     continue
 
             versions_seen[package_version.name] += 1

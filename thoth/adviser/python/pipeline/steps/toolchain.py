@@ -18,12 +18,12 @@
 """A step which reduces some of the toolchains to make sure they are always locked to a latest working version."""
 
 import logging
+from typing import Tuple
 
-from thoth.python import PackageVersion
+from thoth.adviser.python.dependency_graph import CannotRemovePackage
 
 from ..step import Step
 from ..step_context import StepContext
-from ..exceptions import CannotRemovePackage
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,19 +36,24 @@ class CutToolchain(Step):
 
     _TOOLCHAIN_PACKAGE_NAMES = frozenset(("setuptools", "wheel", "pip"))
 
-    def is_toolchain(self, package_version: PackageVersion):
+    def is_toolchain(self, package_tuple: Tuple[str, str, str]):
         """Check if the given package is a toolchain package."""
-        return package_version.name in self._TOOLCHAIN_PACKAGE_NAMES
+        return package_tuple[0] in self._TOOLCHAIN_PACKAGE_NAMES
 
     def run(self, step_context: StepContext):
         """Cut off packages from toolchain."""
         # reversed() to remove from the oldest ones so we keep new ones.
         # We cut off toolchain packages only in transitive dependency listing.
-        for package_version in reversed(list(step_context.iter_transitive_dependencies())):
-            package_tuple = package_version.to_tuple()
-            if self.is_toolchain(package_version):
+        for package_tuple in step_context.iter_transitive_dependencies_tuple():
+            if self.is_toolchain(package_tuple):
                 _LOGGER.debug("Removing package %r - toolchain package", package_tuple)
                 try:
-                    step_context.remove_package_tuple(package_tuple)
+                    with step_context.remove_package_tuples(package_tuple) as txn:
+                        if len(txn.to_remove_nodes) == 1:
+                            txn.commit()
+                        else:
+                            txn.rollback()
                 except CannotRemovePackage as exc:
-                    _LOGGER.debug("Keeping toolchain package %r: %s", package_tuple, str(exc))
+                    _LOGGER.debug(
+                        "Keeping toolchain package %r: %s", package_tuple, str(exc)
+                    )

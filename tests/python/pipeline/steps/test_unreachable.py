@@ -31,46 +31,42 @@ class TestCutUnreachable(AdviserTestCase):
 
     def test_remove_single(self):
         """Test removing a single dependency from paths based on locked down direct dependency to a specific version."""
-        step_context = StepContext()
-        direct_dependencies = [
-            PackageVersion(
+        source = Source("https://pypi.org/simple")
+        direct_dependencies = {
+            ("flask", "0.12", source.url): PackageVersion(
                 name="flask",
                 version="==0.12",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("flask", "0.12.1", source.url): PackageVersion(
                 name="flask",
                 version="==0.12.1",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("six", "1.12.0", source.url): PackageVersion(
                 name="six",
                 version="==1.12.0",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-        ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
+        }
 
-        step_context.add_paths(
-            [
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("six", "1.12.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("six", "1.11.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", "0.12.1", "https://pypi.org/simple"),
-                    ("six", "1.12.0", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+        paths = {
+            ("flask", "0.12", "https://pypi.org/simple"): [
+                (("flask", "0.12", "https://pypi.org/simple"),
+                 ("six", "1.11.0", "https://pypi.org/simple")),
+                (("flask", "0.12", "https://pypi.org/simple"),
+                 ("six", "1.12.0", "https://pypi.org/simple")),
+            ],
+            ("flask", "0.12.1", "https://pypi.org/simple"): [
+                (("flask", "0.12.1", "https://pypi.org/simple"),
+                 ("six", "1.12.0", "https://pypi.org/simple")),
+            ],
+        }
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
 
         cut_unreachable = CutUnreachable(
             graph=None,
@@ -79,58 +75,58 @@ class TestCutUnreachable(AdviserTestCase):
         )
         cut_unreachable.run(step_context)
 
-        assert (
-            len(step_context.raw_paths) == 2
-        ), "Unreachable dependency was not removed"
-        for path in step_context.raw_paths:
-            assert (
-                "six",
-                "1.12.0",
-                "https://pypi.org/simple",
-            ) in path, "Removed wrong path"
-        assert (
-            len(list(step_context.iter_direct_dependencies())) == 3
-        ), "Removed direct dependency which should not be removed"
+        pairs = step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs()
+
+        # Six in version 1.11.0 should be removed.
+        assert set(pairs) == {
+            (0.0, (None, ('flask', '0.12', 'https://pypi.org/simple'))),
+            (0.0, (('flask', '0.12', 'https://pypi.org/simple'),
+                   ('six', '1.12.0', 'https://pypi.org/simple'))),
+            (0.0, (None, ('flask', '0.12.1', 'https://pypi.org/simple'))),
+            (0.0, (('flask', '0.12.1', 'https://pypi.org/simple'),
+                   ('six', '1.12.0', 'https://pypi.org/simple'))),
+            (0.0, (None, ('six', '1.12.0', 'https://pypi.org/simple')))
+        }
 
     def test_no_remove(self):
         """Check there is not removed any dependency if no unreachable cutoff is applicable."""
-        step_context = StepContext()
-        direct_dependencies = [
-            PackageVersion(
+        source = Source("https://pypi.org/simple")
+        direct_dependencies = {
+            ("flask", "0.12", source.url): PackageVersion(
                 name="flask",
                 version="==0.12",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("flask", "0.12.1", source.url): PackageVersion(
                 name="flask",
                 version="==0.12.1",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("six", "0.12.1", source.url): PackageVersion(
                 name="six",
-                version="==1.12.0",
-                index=Source("https://pypi.org/simple"),
+                version="==1.12.1",
+                index=source,
                 develop=False,
             ),
-        ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
+        }
 
-        step_context.add_paths(
-            [
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("six", "1.12.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("werkzeug", "2.2.0", "https://pypi.org/simple"),
-                    ("six", "1.12.0", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+        paths = {
+            ("flask", "0.12", "https://pypi.org/simple"): [
+                (("flask", "0.12", "https://pypi.org/simple"),
+                 ("six", "1.12.0", "https://pypi.org/simple")),
+                (("flask", "0.12", "https://pypi.org/simple"),
+                 ("werkzeug", "2.2.0", "https://pypi.org/simple")),
+                (("werkzeug", "2.2.0", "https://pypi.org/simple"),
+                 ("six", "1.12.0", "https://pypi.org/simple")),
+            ],
+            ("flask", "0.12.1", "https://pypi.org/simple"): [],
+            ("six", "0.12.1", "https://pypi.org/simple"): [],
+        }
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
+
         cut_unreachable = CutUnreachable(
             graph=None,
             project=None,
@@ -139,62 +135,59 @@ class TestCutUnreachable(AdviserTestCase):
 
         cut_unreachable.run(step_context)
 
-        assert (
-            len(step_context.raw_paths) == 2
-        ), "Removed path which should not be removed"
-        assert (
-            len(list(step_context.iter_direct_dependencies())) == 3
-        ), "Removed direct dependency which should not be removed"
+        pairs = step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs()
+
+        # flask==0.12 should be removed because of direct dependency six==0.12.1
+        assert set(pairs) == {
+            (0.0, (None, ('flask', '0.12.1', 'https://pypi.org/simple'))),
+            (0.0, (None, ('six', '0.12.1', 'https://pypi.org/simple')))
+        }
 
     def test_remove_multi(self):
         """Test removal of multiple paths based on locked down direct dependencies."""
-        step_context = StepContext()
-        direct_dependencies = [
-            PackageVersion(
+        source = Source("https://pypi.org/simple")
+        direct_dependencies = {
+            ("flask", "0.12", source.url): PackageVersion(
                 name="flask",
                 version="==0.12",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("werkzeug", "0.15.1", source.url): PackageVersion(
                 name="werkzeug",
                 version="==0.15.1",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-            PackageVersion(
+            ("six", "1.12.0", source.url): PackageVersion(
                 name="six",
                 version="==1.12.0",
-                index=Source("https://pypi.org/simple"),
+                index=source,
                 develop=False,
             ),
-        ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
+        }
 
-        step_context.add_paths(
-            [
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("six", "1.12.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("werkzeug", "0.13.0", "https://pypi.org/simple"),
-                    ("six", "1.12.1", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("werkzeug", "0.15.1", "https://pypi.org/simple"),
-                    ("six", "1.12.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("werkzeug", "0.13.0", "https://pypi.org/simple"),
-                    ("six", "1.12.0", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+        paths = {
+            ("flask", "0.12", "https://pypi.org/simple"): [
+                (("flask", "0.12", "https://pypi.org/simple"),
+                 ("six", "1.12.0", "https://pypi.org/simple")),
+                (("flask", "0.12", "https://pypi.org/simple"),
+                 ("werkzeug", "0.13.0", "https://pypi.org/simple")),
+                (("werkzeug", "0.13.0", "https://pypi.org/simple"),
+                 ("six", "1.12.1", "https://pypi.org/simple")),
+                (("flask", "0.12", "https://pypi.org/simple"),
+                 ("werkzeug", "0.15.1", "https://pypi.org/simple")),
+                (("werkzeug", "0.15.1", "https://pypi.org/simple"),
+                 ("six", "1.12.0", "https://pypi.org/simple")),
+                (("flask", "0.12", "https://pypi.org/simple"),
+                 ("werkzeug", "0.13.0", "https://pypi.org/simple")),
+                (("werkzeug", "0.13.0", "https://pypi.org/simple"),
+                 ("six", "1.12.0", "https://pypi.org/simple")),
+            ],
+        }
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
+
         cut_unreachable = CutUnreachable(
             graph=None,
             project=None,
@@ -203,49 +196,17 @@ class TestCutUnreachable(AdviserTestCase):
 
         cut_unreachable.run(step_context)
 
-        assert (
-            len(step_context.raw_paths) == 2
-        ), "Not all paths were removed based on cut-off"
-        assert (
-            len(list(step_context.iter_direct_dependencies())) == 3
-        ), "Removed direct dependency which should not be removed"
+        pairs = step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs()
 
-    def test_cutoff_error(self):
-        """Mark error when cutting off dependency which is required by dependency graph."""
-        step_context = StepContext()
-        direct_dependencies = [
-            PackageVersion(
-                name="flask",
-                version="==0.12",
-                index=Source("https://pypi.org/simple"),
-                develop=False,
-            ),
-            PackageVersion(
-                name="werkzeug",
-                version="==0.15.1",
-                index=Source("https://pypi.org/simple"),
-                develop=False,
-            ),
-        ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
-
-        step_context.add_paths(
-            [
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("six", "1.12.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("werkzeug", "0.15.1", "https://pypi.org/simple"),
-                    ("six", "1.12.1", "https://pypi.org/simple"),
-                ],
-            ]
-        )
-        cut_unreachable = CutUnreachable(
-            graph=None,
-            project=None,
-            library_usage=None,
-        )
-        cut_unreachable.run(step_context)
+        # werkzeug and flask are used only in one version based on direct dependencies
+        assert set(pairs) == {
+            (0.0, (None, ('flask', '0.12', 'https://pypi.org/simple'))),
+            (0.0, (('flask', '0.12', 'https://pypi.org/simple'),
+                   ('six', '1.12.0', 'https://pypi.org/simple'))),
+            (0.0, (('flask', '0.12', 'https://pypi.org/simple'),
+                   ('werkzeug', '0.15.1', 'https://pypi.org/simple'))),
+            (0.0, (('werkzeug', '0.15.1', 'https://pypi.org/simple'),
+                   ('six', '1.12.0', 'https://pypi.org/simple'))),
+            (0.0, (None, ('werkzeug', '0.15.1', 'https://pypi.org/simple'))),
+            (0.0, (None, ('six', '1.12.0', 'https://pypi.org/simple')))
+        }

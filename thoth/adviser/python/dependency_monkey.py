@@ -107,7 +107,7 @@ def _do_dependency_monkey(
     # many stacks are discarded - we want all which went through the pipeline.
     for pipeline_product in pipeline.conduct(count=count, limit=count):
         computed += 1
-        pipeline_product.finalize(graph)
+        pipeline_product.finalize()
 
         if not dry_run:
             entry = output_function(pipeline_product.project, count=computed)

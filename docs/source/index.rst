@@ -8,9 +8,12 @@ Information about implementation
 
    dependency_graph
    dependency_monkey
+   integration
    libdependency_graph
+   performance
    pipeline
    provenance_checks
+   source
 
 Crossroad
 =========

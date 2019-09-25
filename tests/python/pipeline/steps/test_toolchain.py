@@ -32,52 +32,35 @@ from base import AdviserTestCase
 class TestCutToolchain(AdviserTestCase):
     """Test sorting of packages in the dependency graph (paths) based on semantic version."""
 
-    @staticmethod
-    def in_any_path(
-        package_tuple: Tuple[str, str, str], paths: List[List[Tuple[str, str, str]]]
-    ):
-        """Check if the given package tuple is present in any path."""
-        for path in paths:
-            if package_tuple in path:
-                return True
-        return False
-
     def test_remove_single22(self):
         """Test removing one single dependency from dependency paths, keep paths with same package of a type.
 
         In other words - always keep latest toolchain.
         """
-        step_context = StepContext()
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("flask", "0.12", "https://pypi.org/simple"): PackageVersion(
                 name="flask",
                 version="==0.12",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
+        }
 
-        step_context.add_paths(
-            [
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("werkzeug", "0.15.1", "https://pypi.org/simple"),
-                    ("wheels", "1.12.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("werkzeug", "0.15.1", "https://pypi.org/simple"),
-                    ("six", "1.12.1", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", "0.12", "https://pypi.org/simple"),
-                    ("werkzeug", "0.15.1", "https://pypi.org/simple"),
-                    ("wheels", "1.12.1", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+        paths = {
+            ("flask", "0.12", "https://pypi.org/simple"): [
+                (("flask", "0.12", "https://pypi.org/simple"),
+                 ("werkzeug", "0.15.1", "https://pypi.org/simple")),
+                (("werkzeug", "0.15.1", "https://pypi.org/simple"),
+                 ("wheel", "1.12.0", "https://pypi.org/simple")),
+                (("werkzeug", "0.15.1", "https://pypi.org/simple"),
+                 ("six", "1.12.1", "https://pypi.org/simple")),
+                (("werkzeug", "0.15.1", "https://pypi.org/simple"),
+                 ("wheel", "1.12.1", "https://pypi.org/simple")),
+            ],
+        }
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
+
         cut_toolchain = CutToolchain(
             graph=None,
             project=None,
@@ -86,55 +69,45 @@ class TestCutToolchain(AdviserTestCase):
         cut_toolchain.run(step_context)
 
         # We always expect the latest one to be present.
-        assert self.in_any_path(
-            ("wheels", "1.12.1", "https://pypi.org/simple"), step_context.raw_paths
-        )
-        assert self.in_any_path(
-            ("six", "1.12.1", "https://pypi.org/simple"), step_context.raw_paths
-        )
+        assert step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs() == [
+            (0.0, (None, ('flask', '0.12', 'https://pypi.org/simple'))),
+            (0.0, (('flask', '0.12', 'https://pypi.org/simple'),
+                   ('werkzeug', '0.15.1', 'https://pypi.org/simple'))),
+            (0.0, (('werkzeug', '0.15.1', 'https://pypi.org/simple'),
+                   ('six', '1.12.1', 'https://pypi.org/simple'))),
+            (0.0, (('werkzeug', '0.15.1', 'https://pypi.org/simple'),
+                   ('wheel', '1.12.1', 'https://pypi.org/simple')))
+        ]
 
     def test_remove_multi(self):
         """Check all types of "toolchain" packages get removed."""
-        step_context = StepContext()
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("goblinoid", "1.0.0", "https://pypi.org/simple"): PackageVersion(
                 name="goblinoid",
                 version="==1.0.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
+        }
 
-        step_context.add_paths(
-            [
-                [
-                    ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                    ("wheel", "2.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                    ("wheel", "1.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                    ("setuptools", "2.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                    ("setuptools", "1.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                    ("pip", "2.0.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                    ("pip", "1.0.0", "https://pypi.org/simple"),
-                ],
+        paths = {
+            ("goblinoid", "1.0.0", "https://pypi.org/simple"): [
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("wheel", "1.0.0", "https://pypi.org/simple")),
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("wheel", "2.0.0", "https://pypi.org/simple")),
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("setuptools", "1.0.0", "https://pypi.org/simple")),
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("setuptools", "2.0.0", "https://pypi.org/simple")),
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("pip", "1.0.0", "https://pypi.org/simple")),
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("pip", "2.0.0", "https://pypi.org/simple")),
             ]
-        )
+        }
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
 
         cut_toolchain = CutToolchain(
             graph=None,
@@ -143,40 +116,36 @@ class TestCutToolchain(AdviserTestCase):
         )
         cut_toolchain.run(step_context)
 
-        assert len(step_context.raw_paths) == 3, "Wrong number of paths removed"
-        # We always expect the latest one to be present.
-        assert self.in_any_path(
-            ("wheel", "2.0.0", "https://pypi.org/simple"), step_context.raw_paths
-        )
-        assert self.in_any_path(
-            ("setuptools", "2.0.0", "https://pypi.org/simple"), step_context.raw_paths
-        )
-        assert self.in_any_path(
-            ("pip", "2.0.0", "https://pypi.org/simple"), step_context.raw_paths
-        )
+        assert step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs() == [
+            (0.0, (None, ('goblinoid', '1.0.0', 'https://pypi.org/simple'))),
+            (0.0, (('goblinoid', '1.0.0', 'https://pypi.org/simple'),
+                   ('wheel', '2.0.0', 'https://pypi.org/simple'))),
+            (0.0, (('goblinoid', '1.0.0', 'https://pypi.org/simple'),
+                   ('setuptools', '2.0.0', 'https://pypi.org/simple'))),
+            (0.0, (('goblinoid', '1.0.0', 'https://pypi.org/simple'),
+                   ('pip', '2.0.0', 'https://pypi.org/simple')))
+        ]
 
     def test_no_remove(self):
         """Make sure packages which are not toolchain do not get removed."""
-        step_context = StepContext()
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("goblinoid", "1.0.0", "https://pypi.org/simple"): PackageVersion(
                 name="goblinoid",
                 version="==1.0.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
             )
-        ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
+        }
 
-        step_context.add_paths(
-            [
-                [
-                    ("goblinoid", "1.0.0", "https://pypi.org/simple"),
-                    ("foo", "1.0.0", "https://pypi.org/simple"),
-                ]
+        paths = {
+            ("goblinoid", "1.0.0", "https://pypi.org/simple"): [
+                (("goblinoid", "1.0.0", "https://pypi.org/simple"),
+                 ("foo", "1.0.0", "https://pypi.org/simple")),
             ]
-        )
+        }
+
+        step_context = StepContext.from_paths(direct_dependencies, paths)
+
         cut_toolchain = CutToolchain(
             graph=None,
             project=None,
@@ -184,4 +153,8 @@ class TestCutToolchain(AdviserTestCase):
         )
         cut_toolchain.run(step_context)
 
-        assert len(step_context.raw_paths) == 1, "Wrong number of paths removed"
+        assert step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs() == [
+            (0.0, (None, ('goblinoid', '1.0.0', 'https://pypi.org/simple'))),
+            (0.0, (('goblinoid', '1.0.0', 'https://pypi.org/simple'),
+                   ('foo', '1.0.0', 'https://pypi.org/simple'))),
+        ]

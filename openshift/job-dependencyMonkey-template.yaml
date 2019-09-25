@@ -120,6 +120,11 @@ objects:
                 failureThreshold: 1
                 periodSeconds: 10
               env:
+                - name: THOTH_DEPLOYMENT_NAME
+                  valueFrom:
+                    configMapKeyRef:
+                      key: storage-bucket-name
+                      name: thoth
                 - name: THOTH_LOG_ADVISER
                   value: "${THOTH_LOG_ADVISER}"
                 - name: THOTH_ADVISER_REQUIREMENTS
@@ -161,17 +166,30 @@ objects:
                     secretKeyRef:
                       name: thoth
                       key: sentry-dsn
-                - name: GRAPH_SERVICE_HOST
+                - name: KNOWLEDGE_GRAPH_HOST
                   valueFrom:
                     configMapKeyRef:
-                      key: graph-service-host
+                      key: postgresql-host
                       name: thoth
-                - name: GRAPH_TLS_PATH
-                  value: "/var/run/secrets/dgraph"
-              volumeMounts:
-                - mountPath: /var/run/secrets/dgraph
-                  name: dgraph-tls-secrets
-                  readOnly: true
+                - name: KNOWLEDGE_GRAPH_PORT
+                  value: "5432"
+                - name: KNOWLEDGE_GRAPH_SSL_DISABLED
+                  value: "1"
+                - name: KNOWLEDGE_GRAPH_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql
+                      key: database-user
+                - name: KNOWLEDGE_GRAPH_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql
+                      key: database-password
+                - name: KNOWLEDGE_GRAPH_DATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql
+                      key: database-name
               resources:
                 limits:
                   memory: "8Gi"
@@ -179,8 +197,3 @@ objects:
                 requests:
                   memory: "8Gi"
                   cpu: 1
-          volumes:
-            - name: dgraph-tls-secrets
-              secret:
-                defaultMode: 420
-                secretName: dgraph-tls

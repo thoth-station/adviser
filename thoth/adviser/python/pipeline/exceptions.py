@@ -31,3 +31,11 @@ class StrideRemoveStack(PipelineExceptionBase):
 
 class CannotRemovePackage(PipelineExceptionBase):
     """Raised if the given package cannot be removed from paths due to dependencies."""
+
+
+class PackageNotFound(PipelineExceptionBase):
+    """Raised if the given package cannot be found (mostly internal error)."""
+
+
+class NotAICoERelease(PipelineExceptionBase):
+    """Raised if the given package is not AICoE release."""

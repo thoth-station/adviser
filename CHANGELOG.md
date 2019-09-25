@@ -355,3 +355,69 @@
 * Introduce dependency graph
 * Introduce graph Python solver
 * reading README from file, its the long_description...
+
+## Release 0.5.0 (2019-07-30T11:12:42)
+* :pushpin: Automatic update of dependency thoth-storages from 0.16.0 to 0.17.0
+* Deinstantiate solver once it is no longer needed
+* Fix instantiation of edges
+* Adjust testsuite so that it works with new implementation
+* :pushpin: Automatic update of dependency thoth-storages from 0.15.2 to 0.16.0
+* Fix handling of additional pytest arguments in setup.py test
+* Fix handling of additional pytest arguments in setup.py test
+* Move logic of stack candidates preparation to finalization part
+* :pushpin: Automatic dependency re-locking
+* Remove unused import
+* Improve some logger messages
+* Rewrite core adviser logic for dependency graph manipulation
+* Optimize retrieval of transitive dependencies to avoid list copies
+* Optimize instantiation of objects when resolved from graph database
+* :pushpin: Automatic update of dependency thoth-storages from 0.15.1 to 0.15.2
+* :pushpin: Automatic update of dependency thoth-python from 0.5.0 to 0.6.0
+* :pushpin: Automatic update of dependency thoth-solver from 1.2.1 to 1.2.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.15.0 to 0.15.1
+* Inform user that the missing release will be analyzed later on
+* Remove invalid configuration entry APP_FILE in build config
+* :pushpin: Automatic update of dependency thoth-storages from 0.14.8 to 0.15.0
+* Fix transitive query - correctly propagate runtime information
+* Improve warning message
+* :pushpin: Automatic update of dependency thoth-common from 0.9.3 to 0.9.4
+* Adjust testing recommendation type for now
+* Remove score based cut-off step, observation reduction takes its position
+* Add tests for observation based reduction
+* Introduce observation reduction step to reduce subgraphs with no observations
+* Add error message if no stacks were produced
+* Report error if no recommendation was produced
+* Introduce routines for iterating over develop and non-develop deps
+* :sparkles: added the standard github configuration and a CODEOWNERS file
+* Update lockfile
+* Report used pipeline configuration of adviser to user
+* Additional fixes and additions
+* Minor changes
+* Use CXXABI_1.3.8
+* Use black for formatting
+* Rework optimizations
+* Adjust testsuite for new implementation
+* Implement structure for dependency graph adjustment
+* Report packages forming a found stack inside to a log
+* Print out estimated number of stacks in scientific form
+* Use only packages with known index
+* Increase default adviser's requests and limits
+* :pushpin: Automatic update of dependency thoth-storages from 0.11.4 to 0.14.1
+* :pushpin: Automatic update of dependency thoth-common from 0.8.11 to 0.9.0
+* Add build trigger using generic webhook
+* :pushpin: Automatic update of dependency pytest from 4.6.2 to 4.6.3
+* Updated Readme to Dgraph examples
+* :pushpin: Automatic update of dependency thoth-common from 0.8.7 to 0.8.11
+* :pushpin: Automatic update of dependency pytest from 4.5.0 to 4.6.2
+* Optimize package removal by working on indexes instead of package tuples
+* Keep stats for package removals per step run
+* Update documentation to respect current state
+* Use uint16_t for representing packages in libdependency graph
+* Simplify module structure to libdependency_graph library
+* :pushpin: Automatic update of dependency thoth-common from 0.8.5 to 0.8.7
+* Give adviser more time to process rest of the stacks in queue
+* Provide better report to user on why adviser has stopped prematurely
+* Use defaults of -1 for "unlimited" numbers in the cluster
+* Parse a special value of -1 in the cluster to workaround click's errors
+* Be more user-friendly in cluster logs
+* Place toolchain cut after semver sort
