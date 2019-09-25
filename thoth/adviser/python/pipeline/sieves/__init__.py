@@ -21,3 +21,4 @@ from .solved import SolvedSieve
 from .index_enabled import PackageIndexSieve
 from .os_sieve import OperatingSystemSieve
 from .semver_sort import SemverSortSieve
+from .limit_latest_versions import LimitLatestVersionsSieve
