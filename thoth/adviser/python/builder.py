@@ -27,7 +27,7 @@ from thoth.adviser.enums import RecommendationType
 from thoth.storages import GraphDatabase
 from thoth.python import Project
 
-# from .pipeline.sieves import OperatingSystemSieve
+from .pipeline.sieves import OperatingSystemSieve
 from .pipeline.sieves import PackageIndexSieve
 from .pipeline.sieves import SolvedSieve
 from .pipeline.steps import BuildtimeErrorFiltering
@@ -65,7 +65,7 @@ class PipelineBuilder:
         if recommendation_type == RecommendationType.LATEST:
             pipeline_config = PipelineConfig(
                 sieves=[
-                    # (OperatingSystemSieve, None),
+                    (OperatingSystemSieve, None),
                     (PackageIndexSieve, None),
                     (SolvedSieve, {"without_error": True}),
                 ],
@@ -89,7 +89,7 @@ class PipelineBuilder:
         elif recommendation_type == RecommendationType.TESTING:
             pipeline_config = PipelineConfig(
                 sieves=[
-                    # (OperatingSystemSieve, None),
+                    (OperatingSystemSieve, None),
                     (PackageIndexSieve, None),
                     (SolvedSieve, {"without_error": True}),
                 ],
@@ -116,7 +116,7 @@ class PipelineBuilder:
         elif recommendation_type == RecommendationType.STABLE:
             pipeline_config = PipelineConfig(
                 sieves=[
-                    # (OperatingSystemSieve, None),
+                    (OperatingSystemSieve, None),
                     (PackageIndexSieve, None),
                     (SolvedSieve, {"without_error": True}),
                 ],
@@ -159,7 +159,7 @@ class PipelineBuilder:
         if decision_type == DecisionType.ALL:
             pipeline_config = PipelineConfig(
                 sieves=[
-                    # (OperatingSystemSieve, None),
+                    (OperatingSystemSieve, None),
                     (PackageIndexSieve, None),
                     (SolvedSieve, {"without_error": True}),
                 ],
@@ -175,7 +175,7 @@ class PipelineBuilder:
         elif decision_type == DecisionType.RANDOM:
             pipeline_config = PipelineConfig(
                 sieves=[
-                    # (OperatingSystemSieve, None),
+                    (OperatingSystemSieve, None),
                     (PackageIndexSieve, None),
                     (SolvedSieve, {"without_error": True}),
                 ],
