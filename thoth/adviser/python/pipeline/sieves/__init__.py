@@ -20,4 +20,5 @@
 from .solved import SolvedSieve
 from .index_enabled import PackageIndexSieve
 from .os_sieve import OperatingSystemSieve
+from .prereleases import CutPreReleasesSieve
 from .limit_latest_versions import LimitLatestVersionsSieve
