@@ -102,13 +102,13 @@ pytest = "*"
             PackageVersion(
                 name="tensorflow",
                 version="==1.9.0",
-                index=Source("https://tensorflow.pypi.thoth-station.ninja/index/fedora/30/jemalloc/simple/"),
+                index=Source("https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple/"),
                 develop=False,
             ),
             PackageVersion(
                 name="tensorflow",
                 version="==1.9.0",
-                index=Source("https://tensorflow.pypi.thoth-station.ninja/index/rhel/7.6/jemalloc/simple/"),
+                index=Source("https://tensorflow.pypi.thoth-station.ninja/index/os/rhel/7.6/jemalloc/simple/"),
                 develop=False,
             ),
             PackageVersion(
@@ -170,8 +170,8 @@ pytest = "*"
             # Filtering out this entry is left on another sieve which ensures runtime environment compatibility.
             ("tensorflow", "1.9.0", "https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/jemalloc/simple/"),
             # These are filtered out:
-            # ("tensorflow", "1.9.0", "https://tensorflow.pypi.thoth-station.ninja/index/fedora/30/jemalloc/simple/"),
-            # ("tensorflow", "1.9.0", "https://tensorflow.pypi.thoth-station.ninja/index/rhel/7.6/jemalloc/simple/")
+            # ("tensorflow", "1.9.0", "https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple/"),
+            # ("tensorflow", "1.9.0", "https://tensorflow.pypi.thoth-station.ninja/index/os/rhel/7.6/jemalloc/simple/")
         }
 
         assert set(sieve_context.iter_direct_dependencies_tuple()) == expected

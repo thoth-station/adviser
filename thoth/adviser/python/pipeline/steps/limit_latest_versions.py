@@ -52,7 +52,7 @@ class LimitLatestVersions(Step):
         if limit_latest_versions < 1:
             raise ValueError(
                 "Number of latest versions has to be non-negative number bigger than 0, got %d",
-                self._parameters["limit_latest_versions"],
+                limit_latest_versions,
             )
 
         versions_seen = {}
