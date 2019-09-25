@@ -17,9 +17,12 @@
 
 """Test filtering out buildtime errors."""
 
+import pytest
+
 from base import AdviserTestCase
 
 from thoth.adviser.python.pipeline.sieves import OperatingSystemSieve
+from thoth.adviser.python.pipeline.exceptions import CannotRemovePackage
 from thoth.adviser.python.pipeline.sieve_context import SieveContext
 from thoth.python import Project
 from thoth.python import Source
@@ -131,7 +134,7 @@ pytest = "*"
 
         assert {pv.to_tuple() for pv in package_versions} == set(sieve_context.iter_direct_dependencies_tuple())
 
-    def test_noop_no_aiceo(self):
+    def test_noop_no_aicoe(self):
         """Test no changes are made if no AICoE releases are found."""
         package_versions = self._get_packages_no_aicoe()
         sieve_context = SieveContext.from_package_versions(package_versions)
@@ -213,3 +216,31 @@ pytest = "*"
         }
 
         assert set(sieve_context.iter_direct_dependencies_tuple()) == expected
+
+    def test_os_sieve_no_error(self):
+        """Test no error raised if no packages satisfy OS specific requirements."""
+        package_versions = [
+            PackageVersion(
+                name="tensorflow",
+                version="==1.9.0",
+                index=Source("https://tensorflow.pypi.thoth-station.ninja/index/fedora/30/jemalloc/simple/"),
+                develop=False,
+            )
+        ]
+
+        sieve_context = SieveContext.from_package_versions(package_versions)
+        project = Project.from_strings(
+           pipfile_str=self._PIPFILE_CONTENT_AICOE,
+           runtime_environment=RuntimeEnvironment.from_dict({
+               "operating_system": {
+                   "name": "ubi",
+                   "version": "9"
+               }
+           })
+        )
+        os_sieve = OperatingSystemSieve(graph=None, project=project)
+        os_sieve.run(sieve_context)
+
+        assert set(sieve_context.iter_direct_dependencies_tuple()) == {
+            ("tensorflow", "1.9.0", "https://tensorflow.pypi.thoth-station.ninja/index/fedora/30/jemalloc/simple/"),
+        }
