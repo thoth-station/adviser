@@ -46,6 +46,7 @@ from .stride import Stride
 from .stride_context import StrideContext
 from .stack_candidates import StackCandidates
 from .exceptions import StrideRemoveStack
+from .exceptions import NotResolvedError
 from .product import PipelineProduct
 
 _LOGGER = logging.getLogger(__name__)
@@ -218,10 +219,38 @@ class Pipeline:
         # based on for example semver sort which have same score.
         paths = list(sorted(scored_package_tuple_pairs, key=operator.itemgetter(0)))
         # The actual score is not required. Also, make sure direct dependencies are passed sorted based on the score.
-        direct_dependencies = [path[1][1] for path in paths if path[1][0] is None]
-        paths = [path[1] for path in paths if path[1][0] is not None]
+        direct_dependencies = []
+        walker_paths = []
+        for path in paths:
+            if path[1][0] is None:
+                # This is direct dependency, add it.
+                direct_dependency = path[1][1]
+
+                if direct_dependency[1] is None or direct_dependency[2] is None:
+                    raise NotResolvedError(
+                        f"Direct dependency {direct_dependency!r} is not resolved, "
+                        "cannot use it in dependency graph traversals"
+                    )
+
+                direct_dependencies.append(direct_dependency)
+                continue
+
+            package, dependency = path[1]
+
+            if package[1] is None or package[2] is None:
+                raise NotResolvedError(
+                    f"Package {package!r} is not resolved, cannot use it in dependency graph traversals"
+                )
+
+            if dependency[1] is None or dependency[2] is None:
+                raise NotResolvedError(
+                    f"Package {dependency!r} is not resolved, cannot use it in dependency graph traversals"
+                )
+
+            walker_paths.append(path[1])
+
         dependency_graph = DependencyGraphWalker(
-            direct_dependencies=direct_dependencies, paths=paths
+            direct_dependencies=direct_dependencies, paths=walker_paths
         )
 
         estimated = dependency_graph.stacks_estimated

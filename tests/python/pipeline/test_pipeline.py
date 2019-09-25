@@ -18,6 +18,7 @@
 """Test pipeline run."""
 
 import flexmock
+import pytest
 
 from thoth.python import Project
 from thoth.python import Source
@@ -31,6 +32,7 @@ from thoth.adviser.python.pipeline import StrideContext
 from thoth.adviser.python.pipeline.step import Step
 from thoth.adviser.python.pipeline.stride import Stride
 from thoth.adviser.python.pipeline.exceptions import StrideRemoveStack
+from thoth.adviser.python.pipeline.exceptions import NotResolvedError
 
 from base import AdviserTestCase
 
@@ -297,3 +299,54 @@ class TestPipeline(AdviserTestCase):
         assert "type" in stack_info_entry
         assert stack_info_entry["type"] == "WARNING"
         assert "justification" in stack_info_entry
+
+    def test_not_fully_resolved_error(self):
+        """Test trying to running pipeline with unresolved package produces an error."""
+        project = Project.from_strings(_PIPFILE_STR)
+        pipeline = Pipeline(
+            graph=None,  # We avoid low-level testing down to thoth-storages.
+            project=project,
+            sieves=[],
+            steps=[],
+            strides=[],
+        )
+
+        direct_dependency = PackageVersion(
+            name="flask",
+            version="==1.0.2",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
+
+        step_context = StepContext.from_paths(
+            {direct_dependency.to_tuple(): direct_dependency},
+            {direct_dependency.to_tuple(): [
+                (("flask", "1.0.2", "https://pypi.org/simple"), ("werkzeug", None, None))
+            ]},
+        )
+
+        flexmock(
+            pipeline,
+            _prepare_direct_dependencies=lambda with_devel: [direct_dependency],
+            _resolve_transitive_dependencies=lambda _: step_context,
+        )
+
+        with pytest.raises(NotResolvedError):
+            pipeline.conduct(limit=None, count=None)
+
+        # Try again, now with first item in the tuple list - same error should be produced.
+        step_context = StepContext.from_paths(
+            {direct_dependency.to_tuple(): direct_dependency},
+            {direct_dependency.to_tuple(): [
+                (("flask", None, None), ("werkzeug", "0.15.6", "https://pypi.org/simple"))
+            ]},
+        )
+
+        flexmock(
+            pipeline,
+            _prepare_direct_dependencies=lambda with_devel: [direct_dependency],
+            _resolve_transitive_dependencies=lambda _: step_context,
+        )
+
+        with pytest.raises(NotResolvedError):
+            pipeline.conduct(limit=None, count=None)
