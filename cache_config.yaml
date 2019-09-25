@@ -1,6 +1,8 @@
 python-packages:
  - tensorflow
  - pytorch
+ - seldon
+ - seldon-core
  - invectio
  - thamos
  - thoth-adviser
