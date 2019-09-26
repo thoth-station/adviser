@@ -21,6 +21,7 @@ import os
 import json
 import sys
 import logging
+import time
 import typing
 import traceback
 from pathlib import Path
@@ -187,6 +188,7 @@ def provenance(
     no_pretty=False,
 ):
     """Check provenance of packages based on configuration."""
+    start_time = time.monotonic()
     _LOGGER.debug("Passed arguments: %s", locals())
 
     whitelisted_sources = whitelisted_sources.split(",") if whitelisted_sources else []
@@ -218,12 +220,14 @@ def provenance(
         result["error"] = False
         result["report"] = report
 
+    duration = start_time - time.monotonic()
     print_command_result(
         click_ctx,
         result,
         analyzer=analyzer_name,
         analyzer_version=analyzer_version,
         output=output,
+        duration=duration,
         pretty=not no_pretty,
     )
     return int(result["error"] is True)
@@ -326,6 +330,7 @@ def advise(
     limit_latest_versions=None,
 ):
     """Advise package and package versions in the given stack or on solely package only."""
+    start_time = time.monotonic()
     _LOGGER.debug("Passed arguments: %s", locals())
     limit = int(limit) if limit else None
     count = int(count) if count else None
@@ -433,13 +438,14 @@ def advise(
             })
         result["advised_configuration"] = advised_configuration
         result["pipeline_configuration"] = pipeline_configuration
-
+    duration = start_time - time.monotonic()
     print_command_result(
         click_ctx,
         result,
         analyzer=analyzer_name,
         analyzer_version=analyzer_version,
         output=output,
+        duration=duration,
         pretty=not no_pretty,
     )
     return int(result["error"] is True)
@@ -559,6 +565,7 @@ def dependency_monkey(
     """Generate software stacks based on all valid resolutions that conform version ranges."""
     # We cannot have these as ints in click because they are optional and we
     # cannot pass empty string as an int as env variable.
+    start_time = time.monotonic()
     seed = int(seed) if seed else None
     count = int(count) if count else None
     limit_latest_versions = (
@@ -644,13 +651,14 @@ def dependency_monkey(
     except SolverException:
         _LOGGER.exception("An error occurred during dependency monkey run")
         result["error"] = traceback.format_exc()
-
+    duration = start_time - time.monotonic()
     print_command_result(
         click_ctx,
         result,
         analyzer=analyzer_name,
         analyzer_version=analyzer_version,
         output=report_output,
+        duration=duration,
         pretty=not no_pretty,
     )
 
