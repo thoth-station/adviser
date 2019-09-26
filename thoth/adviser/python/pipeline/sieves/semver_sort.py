@@ -15,9 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of strides used to filter out resolved stacks."""
+"""Sort direct dependencies based on semver."""
+
+import logging
+
+from ..sieve import Sieve
+from ..sieve_context import SieveContext
+from thoth.adviser.python.pipeline.units import semver_cmp_package_version
+
+_LOGGER = logging.getLogger(__name__)
 
 
-from .cve import CveScoring
-from .random_decision import RandomDecision
-from .score_filter import ScoreFiltering
+class SemverSortSieve(Sieve):
+    """Sort direct dependencies based on semver."""
+
+    def run(self, sieve_context: SieveContext) -> None:
+        """Sort direct dependencies based on semantic version."""
+        sieve_context.sort_packages(semver_cmp_package_version, reverse=False)

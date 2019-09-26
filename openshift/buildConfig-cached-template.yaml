@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: adviser-buildconfig
+  annotations:
+    description: >
+      This is Thoth Adviser BuildConfig for building adviser with cache, this
+      template is meant to be used by Bots, but could also be used by humans...
+    openshift.io/display-name: "Thoth: Adviser BuildConfig"
+    version: 0.4.1
+    tags: thoth,ai-stacks,adviser
+    template.openshift.io/documentation-url: https://github.com/Thoth-Station
+    template.openshift.io/long-description: >
+      This is Thoth Adviser BuildConfig for building adviser with cache, this
+      template is meant to be used by Bots, but could also be used by humans...
+    template.openshift.io/provider-display-name: "Red Hat, Inc."
+  labels:
+    template: adviser-buildconfig
+    app: thoth
+    component: adviser
+
+parameters:
+  - description: Tag of the output ImageStream the resulting container image should go to
+    displayName: ImageStream Tag
+    required: true
+    name: IMAGE_STREAM_TAG
+    value: "latest"
+
+objects:
+  - apiVersion: v1
+    kind: BuildConfig
+    metadata:
+      labels:
+        app: thoth
+        component: adviser
+      name: adviser-cached
+    spec:
+      resources:
+        limits:
+          cpu: 2000m
+          memory: 768Mi
+        requests:
+          cpu: 2000m
+          memory: 768Mi
+      output:
+        to:
+          kind: ImageStreamTag
+          name: "adviser-cached:${IMAGE_STREAM_TAG}"
+      runPolicy: Serial
+      source:
+        git:
+          # Not needed as we have adjusted assemble to just build cache
+          # (the application is already installed).
+          uri: "https://github.com/thoth-station/adviser"
+          ref: "master"
+        type: Git
+        secrets:
+          - destinationDir: secrets-dgraph
+            secret:
+              name: dgraph-tls
+      strategy:
+        type: Source
+        sourceStrategy:
+          from:
+            kind: ImageStreamTag
+            name: adviser:latest
+          env:
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: thoth
+                  key: sentry-dsn
+            - name: THOTH_DEPLOYMENT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: storage-bucket-name
+                  name: thoth
+            - name: THOTH_ADVISER_BUILD_CACHE
+              value: "1"
+            - name: THOTH_STORAGES_GRAPH_CACHE_CONFIG
+              value: "cache_config.yaml"
+            - name: THOTH_LOG_STORAGES
+              value: DEBUG
+            - name: THOTH_STORAGES_GRAPH_CACHE
+              value: "graph_cache.sqlite3"
+            - name: THOTH_DEPLOYMENT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: storage-bucket-name
+                  name: thoth
+            - name: THOTH_S3_ENDPOINT_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: ceph-host
+                  name: thoth
+            - name: THOTH_CEPH_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  key: ceph-bucket-name
+                  name: thoth
+            - name: THOTH_CEPH_BUCKET_PREFIX
+              valueFrom:
+                configMapKeyRef:
+                  key: ceph-bucket-prefix
+                  name: thoth
+            - name: THOTH_CEPH_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: thoth
+                  key: ceph-key-id
+            - name: THOTH_CEPH_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: thoth
+                  key: ceph-secret-key
+            - name: KNOWLEDGE_GRAPH_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: postgresql-host
+                  name: thoth
+            - name: KNOWLEDGE_GRAPH_PORT
+              value: "5432"
+            - name: KNOWLEDGE_GRAPH_SSL_DISABLED
+              value: "1"
+            - name: KNOWLEDGE_GRAPH_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: database-user
+            - name: KNOWLEDGE_GRAPH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: database-password
+            - name: KNOWLEDGE_GRAPH_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: database-name
+      triggers:
+        - imageChange: {}
+          type: ImageChange
+        - type: "Generic"
+          generic:
+            secretReference:
+              name: generic-webhook-secret

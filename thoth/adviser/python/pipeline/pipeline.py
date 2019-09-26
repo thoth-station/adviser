@@ -46,6 +46,7 @@ from .stride import Stride
 from .stride_context import StrideContext
 from .stack_candidates import StackCandidates
 from .exceptions import StrideRemoveStack
+from .exceptions import NotResolvedError
 from .product import PipelineProduct
 
 _LOGGER = logging.getLogger(__name__)
@@ -218,10 +219,38 @@ class Pipeline:
         # based on for example semver sort which have same score.
         paths = list(sorted(scored_package_tuple_pairs, key=operator.itemgetter(0)))
         # The actual score is not required. Also, make sure direct dependencies are passed sorted based on the score.
-        direct_dependencies = [path[1][1] for path in paths if path[1][0] is None]
-        paths = [path[1] for path in paths if path[1][0] is not None]
+        direct_dependencies = []
+        walker_paths = []
+        for path in paths:
+            if path[1][0] is None:
+                # This is direct dependency, add it.
+                direct_dependency = path[1][1]
+
+                if direct_dependency[1] is None or direct_dependency[2] is None:
+                    raise NotResolvedError(
+                        f"Direct dependency {direct_dependency!r} is not resolved, "
+                        "cannot use it in dependency graph traversals"
+                    )
+
+                direct_dependencies.append(direct_dependency)
+                continue
+
+            package, dependency = path[1]
+
+            if package[1] is None or package[2] is None:
+                raise NotResolvedError(
+                    f"Package {package!r} is not resolved, cannot use it in dependency graph traversals"
+                )
+
+            if dependency[1] is None or dependency[2] is None:
+                raise NotResolvedError(
+                    f"Package {dependency!r} is not resolved, cannot use it in dependency graph traversals"
+                )
+
+            walker_paths.append(path[1])
+
         dependency_graph = DependencyGraphWalker(
-            direct_dependencies=direct_dependencies, paths=paths
+            direct_dependencies=direct_dependencies, paths=walker_paths
         )
 
         estimated = dependency_graph.stacks_estimated
@@ -261,6 +290,15 @@ class Pipeline:
         start_time = monotonic()
         direct_dependencies = self._prepare_direct_dependencies(with_devel=True)
         _LOGGER.debug("Total number of direct dependencies before running sieves: %d", len(direct_dependencies))
+        # Print out packages if user requested so.
+        if bool(os.getenv("THOTH_ADVISER_SHOW_PACKAGES", 0)):
+            _LOGGER.info(
+                "All direct dependencies considered before running pipeline (count: %d):",
+                len(direct_dependencies)
+            )
+            for item in direct_dependencies:
+                _LOGGER.info("    %r", item.to_tuple())
+
         _LOGGER.info("Preparing pipeline sieves")
         sieve_context = SieveContext.from_package_versions(direct_dependencies)
         for sieve_class, parameters_dict in self.sieves:
@@ -274,6 +312,11 @@ class Pipeline:
             sieve_instance.run(sieve_context)
 
         direct_dependencies = list(sieve_context.iter_direct_dependencies())
+        if bool(os.getenv("THOTH_ADVISER_SHOW_PACKAGES", 0)):
+            _LOGGER.info("Direct dependencies after running sieves (count: %d):", len(direct_dependencies))
+            for direct_dependency in direct_dependencies:
+                _LOGGER.info("    %r", direct_dependency.to_tuple())
+
         _LOGGER.debug(
             "Total number of direct dependencies after running sieves: %d, sieves took %f seconds",
             len(direct_dependencies),
@@ -419,4 +462,4 @@ class Pipeline:
         dependency_graph, stack_candidates = self._finalize_stepping(step_context, count)
         self._do_strides(dependency_graph, stack_candidates, limit)
         _LOGGER.debug("Pipeline ran for %f seconds", monotonic() - start_time)
-        return stack_candidates.generate_pipeline_products()
+        return stack_candidates.generate_pipeline_products(self.graph)

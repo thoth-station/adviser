@@ -135,3 +135,49 @@ class TestSieveContext(AdviserTestCase):
 
         with pytest.raises(PackageNotFound):
             sieve_context.remove_package(to_remove)
+
+    def test_sort_packages(self):
+        a_pkg = PackageVersion(
+            name="a",
+            version="==1.0.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
+        b_pkg = PackageVersion(
+            name="b",
+            version="==2.0.0",
+            index=Source("https://tensorflow.pypi.thoth-station.ninja/simple"),
+            develop=False,
+        )
+        c_pkg = PackageVersion(
+            name="c",
+            version="==1.0.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
+        packages = [a_pkg, c_pkg, b_pkg]
+
+        sieve_context = SieveContext.from_package_versions(packages)
+        # (a.name > b.name) - (a.name < b.name) is idiom for C-style like strcmp()
+        sieve_context.sort_packages(lambda a, b: (a.name > b.name) - (a.name < b.name), reverse=True)
+        assert list(sieve_context.iter_direct_dependencies()) == [c_pkg, b_pkg, a_pkg]
+
+        sieve_context.sort_packages(lambda a, b: (a.name > b.name) - (a.name < b.name), reverse=False)
+        result = list(sieve_context.iter_direct_dependencies())
+        assert result == [a_pkg, b_pkg, c_pkg]
+
+        # Now we sort based on version - as sorting is stable, we should preserve relative order of a and c.
+        sieve_context.sort_packages(
+            lambda a, b: (a.semantic_version > b.semantic_version) - (a.semantic_version < b.semantic_version),
+            reverse=False,
+        )
+        result = list(sieve_context.iter_direct_dependencies())
+        assert result == [a_pkg, c_pkg, b_pkg], "Sorting of packages is not stable"
+
+        sieve_context.sort_packages(
+            lambda a, b: (a.semantic_version > b.semantic_version) - (a.semantic_version < b.semantic_version),
+            reverse=True,
+        )
+        result = list(sieve_context.iter_direct_dependencies())
+        assert result == [b_pkg, a_pkg, c_pkg], "Sorting of packages is not stable"
+

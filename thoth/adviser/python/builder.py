@@ -27,20 +27,21 @@ from thoth.adviser.enums import RecommendationType
 from thoth.storages import GraphDatabase
 from thoth.python import Project
 
-# from .pipeline.sieves import OperatingSystemSieve
+from .pipeline.sieves import OperatingSystemSieve
+from .pipeline.sieves import PackageIndexSieve
+from .pipeline.sieves import SolvedSieve
 from .pipeline.steps import BuildtimeErrorFiltering
 from .pipeline.steps import CutPreReleases
 from .pipeline.steps import CutToolchain
+from .pipeline.steps import CutUnsolved
 from .pipeline.steps import CutUnreachable
 from .pipeline.steps import CvePenalization
 from .pipeline.steps import LimitLatestVersions
 from .pipeline.steps import ObservationReduction
-# from .pipeline.steps import PerformanceAdjustment
 from .pipeline.steps import RestrictIndexes
 from .pipeline.steps import RuntimeErrorFiltering
 from .pipeline.steps import SemverSort
 from .pipeline.strides import CveScoring
-# from .pipeline.strides import PerformanceScoring
 from .pipeline.strides import RandomDecision
 from .pipeline.strides import ScoreFiltering
 
@@ -64,9 +65,12 @@ class PipelineBuilder:
         if recommendation_type == RecommendationType.LATEST:
             pipeline_config = PipelineConfig(
                 sieves=[
-                    # (OperatingSystemSieve, None),
+                    (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (SolvedSieve, {"without_error": True}),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (CutPreReleases, None),
                     (CutToolchain, None),
                     (CutUnreachable, None),
@@ -85,9 +89,12 @@ class PipelineBuilder:
         elif recommendation_type == RecommendationType.TESTING:
             pipeline_config = PipelineConfig(
                 sieves=[
-                    # (OperatingSystemSieve, None),
+                    (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (SolvedSieve, {"without_error": True}),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (BuildtimeErrorFiltering, None),
                     (CutPreReleases, None),
                     (CutUnreachable, None),
@@ -109,9 +116,12 @@ class PipelineBuilder:
         elif recommendation_type == RecommendationType.STABLE:
             pipeline_config = PipelineConfig(
                 sieves=[
-                    # (OperatingSystemSieve, None),
+                    (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (SolvedSieve, {"without_error": True}),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (BuildtimeErrorFiltering, None),
                     (CutPreReleases, None),
                     (CutUnreachable, None),
@@ -122,7 +132,6 @@ class PipelineBuilder:
                     (ObservationReduction, None),
                 ],
                 strides=[
-                    # (PerformanceScoring, None),
                     (CveScoring, None),
                     (ScoreFiltering, None),
                 ],
@@ -135,8 +144,6 @@ class PipelineBuilder:
                         {"limit_latest_versions": limit_latest_versions},
                     )
                 )
-
-            # pipeline_config.steps.append((PerformanceAdjustment, None))
         else:
             raise ValueError(
                 f"No stack generation pipeline configuration defined for recommendation type {recommendation_type.name}"
@@ -152,9 +159,12 @@ class PipelineBuilder:
         if decision_type == DecisionType.ALL:
             pipeline_config = PipelineConfig(
                 sieves=[
-                    # (OperatingSystemSieve, None),
+                    (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (SolvedSieve, {"without_error": True}),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (CutPreReleases, None),
                     (RestrictIndexes, None),
                     (CutUnreachable, None),
@@ -165,9 +175,12 @@ class PipelineBuilder:
         elif decision_type == DecisionType.RANDOM:
             pipeline_config = PipelineConfig(
                 sieves=[
-                    # (OperatingSystemSieve, None),
+                    (OperatingSystemSieve, None),
+                    (PackageIndexSieve, None),
+                    (SolvedSieve, {"without_error": True}),
                 ],
                 steps=[
+                    (CutUnsolved, None),
                     (CutPreReleases, None),
                     (RestrictIndexes, None),
                     (CutUnreachable, None),

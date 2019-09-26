@@ -15,9 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of strides used to filter out resolved stacks."""
+"""Representation of an unsolved package in dependency graph."""
+
+from typing import Tuple
+
+import attr
 
 
-from .cve import CveScoring
-from .random_decision import RandomDecision
-from .score_filter import ScoreFiltering
+@attr.s(slots=True)
+class UnsolvedPackage:
+    """Representation of an unsolved package in the dependency graph."""
+
+    package_name = attr.ib(type=str)
+    package_version = attr.ib(type=str, default=None)
+    develop = attr.ib(type=bool, default=False)
+
+    def to_tuple(self) -> Tuple[str, str, None]:
+        """Convert this package to a tuple representation.
+
+        To be fully compliant with PackageVersion, provide None index explictly
+        """
+        return self.package_name, self.package_version, None
