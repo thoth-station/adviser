@@ -437,14 +437,13 @@ def advise(
             })
         result["advised_configuration"] = advised_configuration
         result["pipeline_configuration"] = pipeline_configuration
-    duration = start_time - time.monotonic()
     print_command_result(
         click_ctx,
         result,
         analyzer=analyzer_name,
         analyzer_version=analyzer_version,
         output=output,
-        duration=duration,
+        duration=time.monotonic() - start_time,
         pretty=not no_pretty,
     )
     return int(result["error"] is True)
@@ -650,14 +649,13 @@ def dependency_monkey(
     except SolverException:
         _LOGGER.exception("An error occurred during dependency monkey run")
         result["error"] = traceback.format_exc()
-    duration = start_time - time.monotonic()
     print_command_result(
         click_ctx,
         result,
         analyzer=analyzer_name,
         analyzer_version=analyzer_version,
         output=report_output,
-        duration=duration,
+        duration=time.monotonic() - start_time,
         pretty=not no_pretty,
     )
 
