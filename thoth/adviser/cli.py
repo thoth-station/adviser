@@ -220,14 +220,13 @@ def provenance(
         result["error"] = False
         result["report"] = report
 
-    duration = start_time - time.monotonic()
     print_command_result(
         click_ctx,
         result,
         analyzer=analyzer_name,
         analyzer_version=analyzer_version,
         output=output,
-        duration=duration,
+        duration=time.monotonic() - start_time,
         pretty=not no_pretty,
     )
     return int(result["error"] is True)
