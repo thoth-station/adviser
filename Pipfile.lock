@@ -553,10 +553,10 @@
         },
         "pytz": {
             "hashes": [
-                "sha256:26c0b32e437e54a18161324a2fca3c4b9846b74a8dccddd843113109e1116b32",
-                "sha256:c894d57500a4cd2d5c71114aaab77dbab5eabd9022308ce5ac9bb93a60a6f0c7"
+                "sha256:1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d",
+                "sha256:b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be"
             ],
-            "version": "==2019.2"
+            "version": "==2019.3"
         },
         "pyyaml": {
             "hashes": [
@@ -698,11 +698,11 @@
         },
         "thoth-common": {
             "hashes": [
-                "sha256:8fe97df6e2ff7dafc3ebb1a4cf669434b5cfc1219956c6832835844af32111dc",
-                "sha256:cc002fd4a19ddb1d96410d80d4e53fcfb061118728a3b63d8e9fef9d427543af"
+                "sha256:23990f2ff8b089cdfd8fd61274b86ef8338297b60ffa0c533e1e0c8c44ec2757",
+                "sha256:9e21afff3ef540fce2c0c0c545e089c1f71341e57dfc7d32f0d8c197c689883e"
             ],
             "index": "pypi",
-            "version": "==0.9.11"
+            "version": "==0.9.12"
         },
         "thoth-python": {
             "hashes": [
