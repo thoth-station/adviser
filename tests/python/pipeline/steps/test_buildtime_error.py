@@ -17,6 +17,8 @@
 
 """Test filtering out buildtime errors."""
 
+from itertools import chain
+
 from base import AdviserTestCase
 
 import pytest
@@ -24,7 +26,7 @@ from flexmock import flexmock
 
 from thoth.adviser.python.pipeline.step_context import StepContext
 from thoth.adviser.python.pipeline.steps import BuildtimeErrorFiltering
-from thoth.adviser.python.exceptions import UnableLock
+from thoth.adviser.python.dependency_graph import CannotRemovePackage
 
 from thoth.storages import GraphDatabase
 from thoth.common import RuntimeEnvironment
@@ -42,55 +44,46 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
 
     @staticmethod
     def _get_prepared_context():
-        step_context = StepContext()
-        direct_dependencies = [
-            PackageVersion(
+        direct_dependencies = {
+            ("flask", "0.12.0", "https://pypi.org/simple"): PackageVersion(
                 name="flask",
                 version="==0.12.0",
                 index=Source("https://pypi.org/simple"),
                 develop=False,
-            ),
-        ]
-        for package_version in direct_dependencies:
-            step_context.add_resolved_direct_dependency(package_version)
+            )
+        }
 
-        step_context.add_paths(
-            [
-                [
-                    ("flask", "0.12.0", "https://pypi.org/simple"),
-                    ("click", "2.0", "https://pypi.org/simple"),
-                ],
-                [
-                    ("flask", "0.12.0", "https://pypi.org/simple"),
-                    ("click", "2.1", "https://pypi.org/simple"),
-                ],
-            ]
-        )
+        paths = {
+            ("flask", "0.12.0", "https://pypi.org/simple"): [
+                (("flask", "0.12.0", "https://pypi.org/simple"), ("click", "2.0", "https://pypi.org/simple")),
+                (("flask", "0.12.0", "https://pypi.org/simple"), ("click", "2.1", "https://pypi.org/simple")),
+            ],
+        }
 
-        return step_context
+        return StepContext.from_paths(direct_dependencies, paths)
 
     def test_remove_simple(self):
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "flask",
-            "0.12.0",
-            "https://pypi.org/simple",
+            package_name="flask",
+            package_version="0.12.0",
+            index_url="https://pypi.org/simple",
             os_name=None,
             os_version=None,
             python_version=None
         ).and_return(False).ordered()
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "click",
-            "2.0",
-            "https://pypi.org/simple",
+            package_name="click",
+            package_version="2.0",
+            index_url="https://pypi.org/simple",
             os_name=None,
             os_version=None,
             python_version=None
         ).and_return(True).ordered()
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "click",
-            "2.1",
-            "https://pypi.org/simple",
+            package_name="click",
+            package_version="2.1",
+            index_url="https://pypi.org/simple",
             os_name=None,
             os_version=None,
             python_version=None
@@ -105,31 +98,33 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
         )
         buildtime_error_filtering.run(step_context)
 
-        assert len(step_context.raw_paths) == 1, "Wrong number of paths removed"
-        assert ("click", "2.0", "https://pypi.org/simple") not in step_context.raw_paths[0], "Wrong path removed"
+        pairs = step_context.dependency_graph_adaptation.to_scored_package_tuple_pairs()
+        assert len(pairs) == 2, "Wrong number of paths removed"
+        pairs = chain(pair[1] for pair in pairs)
+        assert ("click", "2.0", "https://pypi.org/simple") not in pairs, "Wrong path removed"
 
     def test_remove_error(self):
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "flask",
-            "0.12.0",
-            "https://pypi.org/simple",
+            package_name="flask",
+            package_version="0.12.0",
+            index_url="https://pypi.org/simple",
             os_name=None,
             os_version=None,
             python_version=None
         ).and_return(True).ordered()
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "click",
-            "2.0",
-            "https://pypi.org/simple",
+            package_name="click",
+            package_version="2.0",
+            index_url="https://pypi.org/simple",
             os_name=None,
             os_version=None,
             python_version=None
         ).and_return(False).ordered()
         GraphDatabase.should_receive("has_python_solver_error").with_args(
-            "click",
-            "2.1",
-            "https://pypi.org/simple",
+            package_name="click",
+            package_version="2.1",
+            index_url="https://pypi.org/simple",
             os_name=None,
             os_version=None,
             python_version=None,
@@ -143,5 +138,5 @@ class TestBuildtimeErrorFiltering(AdviserTestCase):
             library_usage=None,
         )
 
-        with pytest.raises(UnableLock):
+        with pytest.raises(CannotRemovePackage):
             buildtime_error_filtering.run(step_context)

@@ -26,7 +26,7 @@ import attr
 class ContextBase(metaclass=abc.ABCMeta):
     """A base for a pipeline unit context."""
 
-    _stats = attr.ib()
+    _stats = attr.ib(default=None)
 
     @property
     def stats(self):

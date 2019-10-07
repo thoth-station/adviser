@@ -31,3 +31,19 @@ class StrideRemoveStack(PipelineExceptionBase):
 
 class CannotRemovePackage(PipelineExceptionBase):
     """Raised if the given package cannot be removed from paths due to dependencies."""
+
+
+class PackageNotFound(PipelineExceptionBase):
+    """Raised if the given package cannot be found (mostly internal error)."""
+
+
+class NotAICoERelease(PipelineExceptionBase):
+    """Raised if the given package is not AICoE release."""
+
+
+class NotResolvedError(PipelineExceptionBase):
+    """Raised if trying to run stack generation pipeline without fully resolved dependency.
+
+    As produced stacks should be fully resolved, packages which are not resolved yet should be filtered
+    out in the pipeline units.
+    """

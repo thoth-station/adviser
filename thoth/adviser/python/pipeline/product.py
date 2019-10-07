@@ -20,7 +20,7 @@
 import os
 import logging
 import typing
-from functools import lru_cache
+from methodtools import lru_cache
 
 import attr
 
@@ -30,21 +30,21 @@ from thoth.python import Project
 _LOGGER = logging.getLogger(__name__)
 
 
-@attr.s(slots=True)
+@attr.s()
 class PipelineProduct:
     """One product of stack generation pipeline."""
 
     project = attr.ib(type=Project)
     score = attr.ib(type=float)
     justification = attr.ib(type=typing.List[typing.Dict])
+    graph = attr.ib(type=GraphDatabase)
 
-    @staticmethod
     @lru_cache()
     def _do_get_python_package_version_hashes_sha256(
-        graph: GraphDatabase, package_name: str, package_version: str, index_url: str
+        self, package_name: str, package_version: str, index_url: str
     ) -> typing.List[str]:
         """A wrapper for ensuring cached results when querying graph database."""
-        digests = graph.get_python_package_version_hashes_sha256(
+        digests = self.graph.get_python_package_version_hashes_sha256(
             package_name, package_version, index_url
         )
 
@@ -58,7 +58,7 @@ class PipelineProduct:
 
         return digests
 
-    def _fill_package_digests(self, graph: GraphDatabase) -> None:
+    def _fill_package_digests(self) -> None:
         """Fill package digests stated in Pipfile.lock from graph database."""
         if bool(os.getenv("THOTH_ADVISER_NO_DIGESTS", 0)):
             _LOGGER.warning("No digests will be provided as per user request")
@@ -77,7 +77,6 @@ class PipelineProduct:
             )
 
             digests = self._do_get_python_package_version_hashes_sha256(
-                graph,
                 package_version.name,
                 package_version.locked_version,
                 package_version.index.url,
@@ -86,6 +85,6 @@ class PipelineProduct:
             for digest in digests:
                 package_version.hashes.append("sha256:" + digest)
 
-    def finalize(self, graph: GraphDatabase) -> None:
+    def finalize(self) -> None:
         """Finalize creation of a pipeline product."""
-        self._fill_package_digests(graph)
+        self._fill_package_digests()

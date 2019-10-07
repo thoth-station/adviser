@@ -35,8 +35,9 @@ class CvePenalization(Step):
         """Penalize stacks with a CVE."""
         for package_version in step_context.iter_all_dependencies():
             package_tuple = package_version.to_tuple()
-            if get_cve_records(self.graph, package_tuple):
-                _LOGGER.debug("Found a CVE for %r", package_tuple)
+            cve_records = get_cve_records(self.graph, package_tuple)
+            if cve_records:
+                _LOGGER.debug("Found a CVEs for %r: %r", package_tuple, cve_records)
                 step_context.score_package_tuple(
                     package_tuple, self.parameters["cve_penalization"]
                 )

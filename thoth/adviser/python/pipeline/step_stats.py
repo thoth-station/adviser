@@ -40,7 +40,7 @@ class StepStats(StatsBase):
             if len(self._packages_removed_count.get(step_name, set())) > 0:
                 _LOGGER.debug(
                     "     -> number of packages removed from dependency graph: %d",
-                    len(self._packages_removed_count[step_name])
+                    len(self._packages_removed_count[step_name]),
                 )
             total += step_duration
 
