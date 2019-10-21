@@ -708,11 +708,11 @@
         },
         "thoth-python": {
             "hashes": [
-                "sha256:075b048c550be4a7cedee9972b20eeeb5aa2ba91e7b25dbca663e8030fb7946e",
-                "sha256:63e75994bbc67f0dc85c09f41468b91390ec04443ce6bc2ef1285e6cc742caf7"
+                "sha256:1129f12b9bae8cb736cfe1a26a2575b3f481ee24bba931ad63c363cdceee26b2",
+                "sha256:54ff73a74859e28a7dfc5dc587e8f9191287299f51380a9f838f28b418c1b6eb"
             ],
             "index": "pypi",
-            "version": "==0.6.4"
+            "version": "==0.6.5"
         },
         "thoth-solver": {
             "hashes": [
