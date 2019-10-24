@@ -59,17 +59,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:2edee79d0e78c08b6d14d4dd91c0e4b3438dd4c90c859f06a397268b1cac17b2",
-                "sha256:3cd2078144c10417eb04e4bb263ea8e50a21c4aceafb52db33e3fe71e73b48aa"
+                "sha256:2904bfb928116fea3a83247de6c3687eb9bf942d764e361f5574d5ac11be2ad3",
+                "sha256:77806f23320554b5d3175f4ef864e4ca6eb04d97a95ad6d2b3e3ef7736472c35"
             ],
-            "version": "==1.10.0"
+            "version": "==1.10.1"
         },
         "botocore": {
             "hashes": [
-                "sha256:507b8f13583a64ec2c9c112ff6e3dd8b548060adc7e1f57f25fda9fa34c2dfdb",
-                "sha256:c4b2ffb0f6ed7169beb260485bf5a42ee72a0a02f49f48b0557ed5e32bcf9e79"
+                "sha256:05d42876001fe6513742edcdb550f0aeabff2b123678a6b661cfeb6c26066b8e",
+                "sha256:acceec0b79df7e5f8b15eab3033f6a7c7f69d0bc27aa01d65aa5ba4d90742787"
             ],
-            "version": "==1.13.0"
+            "version": "==1.13.1"
         },
         "cachetools": {
             "hashes": [
@@ -382,11 +382,10 @@
         },
         "methodtools": {
             "hashes": [
-                "sha256:0876910f21f11ce196d7208bd73076b9296b52cec44a21d2a0e8db0a7169eab7",
-                "sha256:197f2304dd3d78c95119b31d457996280af03e04a001855f5da04a5af693da20"
+                "sha256:09d0d979eb752da6998e598b8c0eca65b7ced56aebc9bf30dfd13a39e454142f"
             ],
             "index": "pypi",
-            "version": "==0.1.0"
+            "version": "==0.1.1"
         },
         "oauthlib": {
             "hashes": [
@@ -797,9 +796,9 @@
         },
         "wirerope": {
             "hashes": [
-                "sha256:448bb9eaf08d2fce611bccde832e48887339cfda5c4277c07e116167d94329c1"
+                "sha256:a8cb4642c83a55add676923059b4f9c61d785ac6dc71ff1d9de2aac4aed4a517"
             ],
-            "version": "==0.2.1"
+            "version": "==0.3.0"
         }
     },
     "develop": {
