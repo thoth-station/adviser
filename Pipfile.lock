@@ -384,10 +384,10 @@
         },
         "methodtools": {
             "hashes": [
-                "sha256:09d0d979eb752da6998e598b8c0eca65b7ced56aebc9bf30dfd13a39e454142f"
+                "sha256:03e05f69150cb2a931f71dc542ee80856e91ae00e179c1df384285078b0dc118"
             ],
             "index": "pypi",
-            "version": "==0.1.1"
+            "version": "==0.1.2"
         },
         "oauthlib": {
             "hashes": [
@@ -798,9 +798,9 @@
         },
         "wirerope": {
             "hashes": [
-                "sha256:a8cb4642c83a55add676923059b4f9c61d785ac6dc71ff1d9de2aac4aed4a517"
+                "sha256:0ca7c9af15b04b7c21e254d910d658eef908646ae74beb86cc4981b281df2a91"
             ],
-            "version": "==0.3.0"
+            "version": "==0.3.1"
         }
     },
     "develop": {
