@@ -40,9 +40,9 @@ parameters:
     value: "latest"
 
   - description: Thamos Advise setup tag value
-    displayName: THOTH_ADVISE_VALUE
+    displayName: THOTH_ADVISE
     required: true
-    name: THOTH_ADVISE_VALUE
+    name: THOTH_ADVISE
     value: "1"
 
 objects:
@@ -87,7 +87,7 @@ objects:
             - name: "THOTH_DRY_RUN"
               value: "1"
             - name: "THOTH_ADVISE"
-              value: ${THOTH_ADVISE_VALUE}
+              value: ${THOTH_ADVISE}
             - name: "THAMOS_VERBOSE"
               value: "1"
             - name: "THAMOS_DEBUG"
