@@ -14,14 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# type: ignore
 
-"""A base class for implementing adviser's test cases."""
+"""Implementation of sieves used in adviser pipeline."""
 
-import os
+from .index_enabled import PackageIndexSieve
+from .prereleases import CutPreReleasesSieve
+from .solved import SolvedSieve
 
 
-class AdviserTestCase:
-    """A base class for implementing adviser's test cases."""
-
-    data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+__all__ = ["CutPreReleasesSieve", "PackageIndexSieve", "SolvedSieve"]

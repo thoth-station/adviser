@@ -50,6 +50,24 @@ parameters:
   - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
     required: false
     description: Runtime environment for which the dependency monkey should be run.
+  - name: THOTH_ADVISER_SEED
+    required: true
+    description: Random seed to run adviser with.
+    displayName: Random seed
+    # Keep seed constant across adviser runs so that two runs with same knowledge base report same results to user.
+    # Not to answer with a different stack each time a request is made.
+    value: "42"
+  - name: THOTH_ADVISER_PLOT_HISTORY
+    required: false
+    description: A path to history file to store annealing progress history.
+    displayName: History plot file
+    # TODO: Let's keep history for debugging purposes for now.
+    value: "history.png"
+  - name: THOTH_ADVISER_BEAM_WIDTH
+    required: true
+    description: Adviser's beam width to restrict memory requirements with states generated.
+    displayName: Beam width
+    value: "-1"
   - name: THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT
     required: false
     description: A URL to Amun API where the given stack should be inspected or - for stdout.
@@ -136,6 +154,12 @@ objects:
                   value: "dependency-monkey"
                 - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
                   value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
+                - name: THOTH_ADVISER_SEED
+                  value: "${THOTH_ADVISER_SEED}"
+                - name: THOTH_ADVISER_PLOT_HISTORY
+                  value: "${THOTH_ADVISER_PLOT_HISTORY}"
+                - name: THOTH_ADVISER_BEAM_WIDTH
+                  value: "${THOTH_ADVISER_BEAM_WIDTH}"
                 - name: THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT
                   value: "${THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT}"
                 - name: THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT

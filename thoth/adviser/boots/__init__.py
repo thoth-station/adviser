@@ -14,14 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# type: ignore
 
-"""A base class for implementing adviser's test cases."""
+"""Boot units implemented in adviser."""
 
-import os
+from typing import List
 
-
-class AdviserTestCase:
-    """A base class for implementing adviser's test cases."""
-
-    data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+__all__: List[str] = []

@@ -63,6 +63,24 @@ parameters:
     required: false
     description: Runtime environment to create recommendation for
     displayName: Runtime environment
+  - name: THOTH_ADVISER_SEED
+    required: true
+    description: Random seed to run adviser with.
+    displayName: Random seed
+    # Keep seed constant across adviser runs so that two runs with same knowledge base report same results to user.
+    # Not to answer with a different stack each time a request is made.
+    value: "42"
+  - name: THOTH_ADVISER_PLOT_HISTORY
+    required: false
+    description: A path to history file to store annealing progress history.
+    displayName: History plot file
+    # TODO: Let's keep history for debugging purposes for now.
+    value: "history.png"
+  - name: THOTH_ADVISER_BEAM_WIDTH
+    required: true
+    description: Adviser's beam width to restrict memory requirements with states generated.
+    displayName: Beam width
+    value: "-1"
   - name: THOTH_LOG_ADVISER
     required: false
     description: Log adviser actions
@@ -82,7 +100,6 @@ parameters:
     required: false
     description: Limit number of versions starting from latest in stacks.
     displayName: Limit latest versions
-    # A workaround for click which is complaining about bad integer if empty value is provided.
     default: "-1"
   - name: THOTH_ADVISER_TIMEOUT_SECONDS
     required: true
@@ -152,6 +169,12 @@ objects:
                   value: "${THOTH_ADVISER_RECOMMENDATION_TYPE}"
                 - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
                   value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
+                - name: THOTH_ADVISER_SEED
+                  value: "${THOTH_ADVISER_SEED}"
+                - name: THOTH_ADVISER_PLOT_HISTORY
+                  value: "${THOTH_ADVISER_PLOT_HISTORY}"
+                - name: THOTH_ADVISER_BEAM_WIDTH
+                  value: "${THOTH_ADVISER_BEAM_WIDTH}"
                 - name: THOTH_ADVISER_SUBCOMMAND
                   value: "advise"
                 - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS

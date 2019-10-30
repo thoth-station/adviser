@@ -25,7 +25,7 @@ class _ExtendedEnum(Enum):
     """A custom enum with extended functionality."""
 
     @classmethod
-    def by_name(cls, name: str):
+    def by_name(cls, name: str) -> "Enum":
         """Retrieve enum based on its name."""
         try:
             return cls.__members__[name.upper()]

@@ -14,14 +14,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# type: ignore
 
-"""A base class for implementing adviser's test cases."""
+"""A base class for implementing boot units."""
 
-import os
+import abc
+
+import attr
+
+from .unit import Unit
 
 
-class AdviserTestCase:
-    """A base class for implementing adviser's test cases."""
+@attr.s(slots=True)
+class Boot(Unit):
+    """Boot base class implementation."""
 
-    data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+    @abc.abstractmethod
+    def run(self) -> None:
+        """Main entry-point for boot units to filter and score packages."""
