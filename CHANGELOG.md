@@ -542,3 +542,126 @@
 * :pushpin: Automatic update of dependency thoth-storages from 0.18.1 to 0.18.3
 * :pushpin: Automatic update of dependency thoth-storages from 0.18.0 to 0.18.1
 * :pushpin: Automatic update of dependency thoth-storages from 0.17.0 to 0.18.0
+
+## Release 0.6.0 (2019-11-01T15:47:13)
+* Start using adaptive simulated annealing
+* Release of version 0.6.0
+* Use THOTH_ADVISE variable for consistency
+* updated templates with annotations and param thoth-advise-value
+* :pushpin: Automatic update of dependency methodtools from 0.1.1 to 0.1.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.11 to 0.19.12
+* Do not use cached adviser
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.10 to 0.19.11
+* :pushpin: Automatic update of dependency pytest from 5.2.1 to 5.2.2
+* :pushpin: Automatic update of dependency methodtools from 0.1.0 to 0.1.1
+* Pin thoth libraries which will have incompatible release
+* :pushpin: Automatic update of dependency thoth-python from 0.6.4 to 0.6.5
+* :pushpin: Automatic update of dependency pylint from 2.4.2 to 2.4.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.9 to 0.19.10
+* :pushpin: Automatic update of dependency thoth-python from 0.6.3 to 0.6.4
+* Add spaces to fix toml issues
+* :pushpin: Automatic update of dependency thoth-common from 0.9.12 to 0.9.14
+* :pushpin: Automatic update of dependency thoth-common from 0.9.11 to 0.9.12
+* :pushpin: Automatic update of dependency pytest from 5.2.0 to 5.2.1
+* :pushpin: Automatic update of dependency pytest-cov from 2.8.0 to 2.8.1
+* :pushpin: Automatic update of dependency pytest-cov from 2.7.1 to 2.8.0
+* :pushpin: Automatic update of dependency thoth-common from 0.9.10 to 0.9.11
+* :pushpin: Automatic update of dependency pylint from 2.4.1 to 2.4.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.8 to 0.19.9
+* :pushpin: Automatic update of dependency pytest from 5.1.3 to 5.2.0
+* Fix duration
+* :pushpin: Automatic update of dependency thoth-analyzer from 0.1.3 to 0.1.4
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.7 to 0.19.8
+* Fix duration calculation
+* Add duration to Adviser
+* Re-anable operating system sieve
+* Check we do not raise exception if os sieve wants to filter out all packages
+* Introduce sieve for limiting number of latest versions in direct dependencies
+* Add a new sieve for limiting pre-releases in direct dependencies
+* Introduce semver sorting on direct dependnecies - sieve
+* Just a minor change to make code great again
+* :pushpin: Automatic update of dependency pylint from 2.4.0 to 2.4.1
+* Introduce a stable sorting of packages in sieve context
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.6 to 0.19.7
+* :pushpin: Automatic update of dependency pylint from 2.3.1 to 2.4.0
+* use postgresql hostname from thoth configmap
+* Add check for upstream tensorflow parsing
+* :pushpin: Automatic update of dependency thoth-python from 0.6.2 to 0.6.3
+* Adjust os sieve testsuite to reflect changes
+* Introduce tests for checking correct parsing of AICoE releases
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.5 to 0.19.6
+* :pushpin: Automatic update of dependency pytest from 5.1.2 to 5.1.3
+* :pushpin: Automatic update of dependency thoth-analyzer from 0.1.2 to 0.1.3
+* Add seldon and seldon-core to cached packages
+* Create a check and test case to handle errors when trying to resolve unsolved packages
+* :pushpin: Automatic update of dependency thoth-common from 0.9.9 to 0.9.10
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.4 to 0.19.5
+* :pushpin: Automatic update of dependency thoth-common from 0.9.8 to 0.9.9
+* Corrected typos
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.3 to 0.19.4
+* Add Sentry DSN to build of adviser-cached
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.2 to 0.19.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.1 to 0.19.2
+* Propagate deployment name to have reports when cache is built
+* Propagate deployment name for sentry environment
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.0 to 0.19.1
+* Fix testsuite
+* Make coala happy
+* Fix indentation issues
+* Relock requirements
+* Fix exception message
+* Print out packages before each pipeline unit
+* Implement solved sieve
+* Changes needed for PostgreSQL migration
+* Add a pipeline step which removes unsolved packages
+* Do not use -e flag
+* Store and restore cache on builds
+* Add more packages to cache config file
+* Adjust cache not to cache graph database adapter
+* Create adviser cache during container build
+* :pushpin: Automatic update of dependency thoth-python from 0.6.1 to 0.6.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.18.6 to 0.19.0
+* Propagate runtime environment explicitly
+* Use more generic env var names
+* Remove performance related tests
+* Drop generic performance querying
+* Start using PostgreSQL in deployment
+* :pushpin: Automatic update of dependency semantic-version from 2.8.1 to 2.8.2
+* :pushpin: Automatic update of dependency pytest from 5.1.1 to 5.1.2
+* :pushpin: Automatic update of dependency semantic-version from 2.8.0 to 2.8.1
+* :pushpin: Automatic update of dependency semantic-version from 2.7.1 to 2.8.0
+* :pushpin: Automatic update of dependency semantic-version from 2.7.0 to 2.7.1
+* :pushpin: Automatic update of dependency semantic-version from 2.6.0 to 2.7.0
+* Turn error into warning
+* :pushpin: Automatic update of dependency pytest from 5.1.0 to 5.1.1
+* Improve error message reported if no releases were found
+* State how to integrate with Thoth in docs
+* Do not use setuptools.find_namespace_packages() for now
+* Start using Thoth's s2i base image
+* Fix missing packages in adviser's package
+* :pushpin: Automatic update of dependency pytest from 5.0.1 to 5.1.0
+* :pushpin: Automatic update of dependency pydocstyle from 4.0.0 to 4.0.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.18.5 to 0.18.6
+* :pushpin: Automatic update of dependency thoth-common from 0.9.7 to 0.9.8
+* :pushpin: Automatic update of dependency thoth-common from 0.9.6 to 0.9.7
+* Document how to make changes in the dependency graph while it changes
+* A package can be removed in the previous sub-graphs removals
+* :pushpin: Automatic update of dependency voluptuous from 0.11.5 to 0.11.7
+* :pushpin: Automatic update of dependency thoth-python from 0.6.0 to 0.6.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.18.4 to 0.18.5
+* Change name of Thoth template to make Coala happy
+* Start using Thoth in OpenShift's s2i
+* Adjust testsuite to use only_solved flag
+* Ask graph database only for packages which were already solved
+* Do not remove package tuples which are direct dependencies
+* Do not treat builds as pre-releases
+* Fix reference to variable - do not pass class
+* Fix resolving direct dependencies based on the score
+* :pushpin: Automatic update of dependency thoth-storages from 0.18.3 to 0.18.4
+* Introduce sieves
+* :pushpin: Automatic update of dependency thoth-common from 0.9.5 to 0.9.6
+* Update docs with sieves
+* Add docs for performance indicators
+* :pushpin: Automatic update of dependency thoth-storages from 0.18.1 to 0.18.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.18.0 to 0.18.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.17.0 to 0.18.0
