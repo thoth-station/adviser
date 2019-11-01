@@ -41,7 +41,7 @@ class MockedGraphDatabase:
     def connect(self):
         pass
 
-    def get_all_versions_python_package(
+    def get_python_packages_all_versions(
         self,
         package_name: str,
         os_name: str = None,

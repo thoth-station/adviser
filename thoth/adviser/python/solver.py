@@ -63,7 +63,7 @@ class GraphReleasesFetcher(ReleasesFetcher):
         #   https://www.python.org/dev/peps/pep-0503/#normalized-names
         package_name = Source.normalize_package_name(package_name)
         # We hard-code without error to true here as we do not use this query in any other way.
-        result = self.graph_db.get_all_versions_python_package(
+        result = self.graph_db.get_python_packages_all_versions(
             package_name,
             os_name=self.runtime_environment.operating_system.name,
             os_version=self.runtime_environment.operating_system.version,
