@@ -14,14 +14,25 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# type: ignore
 
-"""A base class for implementing adviser's test cases."""
+"""A base class for implementing strides."""
 
-import os
+import abc
+
+import attr
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+
+from .state import State
+from .unit import Unit
 
 
-class AdviserTestCase:
-    """A base class for implementing adviser's test cases."""
+@attr.s(slots=True)
+class Stride(Unit):
+    """Stride base class implementation."""
 
-    data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+    @abc.abstractmethod
+    def run(self, state: State) -> Optional[Tuple[float, List[Dict[str, str]]]]:
+        """Main entry-point for strides."""

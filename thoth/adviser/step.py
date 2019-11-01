@@ -14,14 +14,29 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# type: ignore
 
-"""A base class for implementing adviser's test cases."""
+"""A base class for implementing steps."""
 
-import os
+import abc
+
+import attr
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+
+from thoth.python import PackageVersion
+
+from .state import State
+from .unit import Unit
 
 
-class AdviserTestCase:
-    """A base class for implementing adviser's test cases."""
+@attr.s(slots=True)
+class Step(Unit):
+    """Step base class implementation."""
 
-    data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+    @abc.abstractmethod
+    def run(
+        self, state: State, package_version: PackageVersion
+    ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
+        """Main entry-point for steps to filter and score packages."""

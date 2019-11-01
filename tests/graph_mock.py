@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
+# type: ignore
 
 """Mocking responses from the graph database."""
 
@@ -22,7 +23,7 @@ import typing
 from collections import deque
 
 import yaml
-from base import AdviserTestCase
+from .base import AdviserTestCase
 
 
 class MockedGraphDatabase:
@@ -41,7 +42,7 @@ class MockedGraphDatabase:
     def connect(self):
         pass
 
-    def get_all_versions_python_package(
+    def get_solved_python_package_versions_all(
         self,
         package_name: str,
         os_name: str = None,
@@ -53,7 +54,7 @@ class MockedGraphDatabase:
         result = []
         for version, info in self.db.get(package_name, {}).items():
             for entry in info:
-                result.append((version, entry["index_url"]))
+                result.append((package_name, version, entry["index_url"]))
 
         return result
 

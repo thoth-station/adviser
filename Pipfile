@@ -1,28 +1,30 @@
 [[source]]
-url = "https://pypi.python.org/simple"
-verify_ssl = true
 name = "pypi"
-
-[packages]
-click = "<6.7"
-thoth-analyzer = "*"
-thoth-common = "*"
-thoth-solver = "*"
-semantic-version = "*"
-contoml = "*"
-thoth-storages = "<0.20"
-thoth-python = "<0.7"
-voluptuous = "*"
-methodtools = "*"
+url = "https://pypi.org/simple"
+verify_ssl = true
 
 [dev-packages]
-flexmock = "*"
 pytest = "*"
 pytest-timeout = "*"
 pytest-cov = "*"
-pydocstyle = "*"
-pylint = "*"
-mock = "*"
+hypothesis-auto = "*"
+hypothesis = "*"
+flexmock = "*"
+pytest-mypy = "*"
+typeshed = "*"
+
+[packages]
+click = "*"
+attrs = "*"
+thoth-python = "*"
+thoth-storages = "*"
+contoml = "==0.30"
+toml = "*"
+thoth-solver = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.6"
+
+[pipenv]
+allow_prereleases = false

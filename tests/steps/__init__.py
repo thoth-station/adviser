@@ -14,14 +14,5 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# type: ignore
 
-"""A base class for implementing adviser's test cases."""
-
-import os
-
-
-class AdviserTestCase:
-    """A base class for implementing adviser's test cases."""
-
-    data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+"""Tests related to adviser's steps implementation."""
