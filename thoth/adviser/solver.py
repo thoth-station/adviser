@@ -77,13 +77,27 @@ class GraphReleasesFetcher(ReleasesFetcher):
         # Make sure we have normalized names in the graph database according to PEP:
         #   https://www.python.org/dev/peps/pep-0503/#normalized-names
         package_name = Source.normalize_package_name(package_name)
-        # We hard-code without error to true here as we do not use this query in any other way.
-        result = self.graph_db.get_solved_python_package_versions_all(
-            package_name=package_name,
-            os_name=self.runtime_environment.operating_system.name,
-            os_version=self.runtime_environment.operating_system.version,
-            python_version=self.runtime_environment.python_version,
-        )
+
+        start_offset = 0
+        result = set()
+        while True:
+            query_result = self.graph_db.get_solved_python_package_versions_all(
+                package_name=package_name,
+                os_name=self.runtime_environment.operating_system.name,
+                os_version=self.runtime_environment.operating_system.version,
+                python_version=self.runtime_environment.python_version,
+                start_offset=start_offset,
+                count=self.graph_db.DEFAULT_COUNT,
+                distinct=True,
+            )
+
+            start_offset += 1
+            result.update(query_result)
+
+            # We have reached end of pagination or no versions were found.
+            if len(query_result) < self.graph_db.DEFAULT_COUNT:
+                break
+
         return package_name, [(version, index_url) for _, version, index_url in result]
 
 

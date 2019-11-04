@@ -29,6 +29,8 @@ from .base import AdviserTestCase
 class MockedGraphDatabase:
     """A mocked graph database using YAML files as data."""
 
+    DEFAULT_COUNT = 100
+
     def __init__(self, database_file: str):
         with open(
             os.path.join(AdviserTestCase.data_dir, "graph", database_file), "r"
@@ -49,6 +51,9 @@ class MockedGraphDatabase:
         os_version: str = None,
         python_version: str = None,
         without_error: bool = True,
+        count: bool = DEFAULT_COUNT,
+        start_offset: bool = 0,
+        distinct: bool = True,
     ) -> typing.List[tuple]:
         """Get all versions for the given Python package."""
         result = []
