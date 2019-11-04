@@ -23,6 +23,7 @@ from typing import Dict
 from typing import Optional
 from typing import TYPE_CHECKING
 
+import attr
 from thoth.python import PackageVersion
 from thoth.storages.exceptions import NotFoundError
 
@@ -35,6 +36,7 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+@attr.s(slots=True)
 class SolvedSieve(Sieve):
     """Filter out build time/installation errors of Python packages."""
 

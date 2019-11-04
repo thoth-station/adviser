@@ -23,6 +23,7 @@ from typing import Dict
 from typing import Any
 from typing import TYPE_CHECKING
 
+import attr
 from thoth.python import PackageVersion
 
 from ..exceptions import NotAcceptable
@@ -34,6 +35,7 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+@attr.s(slots=True)
 class CutPreReleasesSieve(Sieve):
     """Cut-off pre-releases if project does not explicitly allows them."""
 
