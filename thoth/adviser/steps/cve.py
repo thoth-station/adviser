@@ -26,6 +26,7 @@ from typing import Optional
 from typing import Tuple
 from typing import TYPE_CHECKING
 
+import attr
 from thoth.python import PackageVersion
 from thoth.storages.exceptions import NotFoundError
 
@@ -38,6 +39,7 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+@attr.s(slots=True)
 class CvePenalizationStep(Step):
     """Penalization based on CVE being present in stack."""
 

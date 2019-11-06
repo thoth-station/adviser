@@ -35,10 +35,11 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+@attr.s(slots=True)
 class ScoreFilteringStride(Stride):
     """Filtering of stacks which encountered runtime errors."""
 
-    _previous_stack_score = attr.ib(type=Optional[float], default=None)
+    _previous_stack_score = attr.ib(type=Optional[float], default=None, kw_only=True)
 
     @classmethod
     def should_include(

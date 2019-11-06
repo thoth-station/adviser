@@ -24,6 +24,8 @@ from typing import Dict
 from typing import Optional
 from typing import TYPE_CHECKING
 
+import attr
+
 from ..state import State
 from ..stride import Stride
 from ..exceptions import NotAcceptable
@@ -35,6 +37,7 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+@attr.s(slots=True)
 class RandomDecisionStride(Stride):
     """Filter out states randomly."""
 
