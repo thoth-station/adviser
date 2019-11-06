@@ -665,3 +665,25 @@
 * :pushpin: Automatic update of dependency thoth-storages from 0.18.1 to 0.18.3
 * :pushpin: Automatic update of dependency thoth-storages from 0.18.0 to 0.18.1
 * :pushpin: Automatic update of dependency thoth-storages from 0.17.0 to 0.18.0
+
+## Release 0.6.1 (2019-11-06T11:39:17)
+* :pushpin: Automatic update of dependency hypothesis from 4.43.4 to 4.43.5
+* :pushpin: Automatic update of dependency hypothesis from 4.43.3 to 4.43.4
+* :pushpin: Automatic update of dependency hypothesis from 4.43.2 to 4.43.3
+* Cache queries for retrieving enabled indexes
+* :pushpin: Automatic update of dependency hypothesis from 4.43.1 to 4.43.2
+* Use slots on pipeline unit instances
+* Fix resolving direct dependencies when pagination is used
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.14 to 0.19.15
+* :pushpin: Automatic update of dependency hypothesis from 4.43.0 to 4.43.1
+* :pushpin: Automatic update of dependency hypothesis from 4.42.10 to 4.43.0
+* :pushpin: Automatic update of dependency pytest-mypy from 0.4.1 to 0.4.2
+* :pushpin: Automatic update of dependency hypothesis from 4.42.9 to 4.42.10
+* :pushpin: Automatic update of dependency hypothesis from 4.42.8 to 4.42.9
+* :pushpin: Automatic update of dependency hypothesis from 4.42.7 to 4.42.8
+* :pushpin: Automatic update of dependency hypothesis from 4.42.6 to 4.42.7
+* :pushpin: Automatic update of dependency hypothesis from 4.42.5 to 4.42.6
+* :pushpin: Automatic update of dependency hypothesis from 4.42.4 to 4.42.5
+* Release of version 0.6.0
+* :pushpin: Automatic update of dependency hypothesis from 4.42.0 to 4.42.4
+* Start using adaptive simulated annealing
