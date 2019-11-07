@@ -27,12 +27,16 @@ version resolution is dynamic in case of Python).
 
 from typing import List
 from typing import Dict
-from typing import Optional
+from typing import Generator
+from typing import Tuple
 from typing import TYPE_CHECKING
 
+import attr
+from packaging.requirements import Requirement
 from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
 from thoth.python import Source
+from thoth.storages import GraphDatabase
 from thoth.solver.python.base import DependencyParser
 from thoth.solver.python.base import ReleasesFetcher
 from thoth.solver.python.base import Solver
@@ -44,33 +48,12 @@ if TYPE_CHECKING:
     from thoth.storages import GraphDatabase
 
 
+@attr.s(slots=True)
 class GraphReleasesFetcher(ReleasesFetcher):
     """Fetch releases for packages from the graph database."""
 
-    def __init__(
-        self,
-        *,
-        runtime_environment: Optional[RuntimeEnvironment] = None,
-        graph_db: Optional["GraphDatabase"] = None,
-    ) -> None:
-        """Initialize graph release fetcher."""
-        super().__init__()
-        self._graph_db = graph_db
-        self.runtime_environment = runtime_environment or RuntimeEnvironment.from_dict(
-            {}
-        )
-
-    @property
-    def graph_db(self) -> "GraphDatabase":
-        """Get instance of graph database adapter, lazily."""
-        # Place the import statement here to simplify mocks in the testsuite.
-        from thoth.storages import GraphDatabase
-
-        if not self._graph_db:
-            self._graph_db = GraphDatabase()
-            self._graph_db.connect()
-
-        return self._graph_db
+    graph = attr.ib(type=GraphDatabase, kw_only=True)
+    runtime_environment = attr.ib(type=RuntimeEnvironment, default=attr.Factory(RuntimeEnvironment.from_dict))
 
     def fetch_releases(self, package_name: str):
         """Fetch releases for the given package name."""
@@ -81,13 +64,13 @@ class GraphReleasesFetcher(ReleasesFetcher):
         start_offset = 0
         result = set()
         while True:
-            query_result = self.graph_db.get_solved_python_package_versions_all(
+            query_result = self.graph.get_solved_python_package_versions_all(
                 package_name=package_name,
                 os_name=self.runtime_environment.operating_system.name,
                 os_version=self.runtime_environment.operating_system.version,
                 python_version=self.runtime_environment.python_version,
                 start_offset=start_offset,
-                count=self.graph_db.DEFAULT_COUNT,
+                count=self.graph.DEFAULT_COUNT,
                 distinct=True,
             )
 
@@ -95,16 +78,17 @@ class GraphReleasesFetcher(ReleasesFetcher):
             result.update(query_result)
 
             # We have reached end of pagination or no versions were found.
-            if len(query_result) < self.graph_db.DEFAULT_COUNT:
+            if len(query_result) < self.graph.DEFAULT_COUNT:
                 break
 
         return package_name, [(version, index_url) for _, version, index_url in result]
 
 
+@attr.s(slots=True)
 class PackageVersionDependencyParser(DependencyParser):
     """Parse an instance of PackageVersion to Dependency object needed by solver."""
 
-    def parse(self, dependencies: List[PackageVersion]):
+    def parse(self, dependencies: List[PackageVersion]) -> Generator[Requirement, None, None]:
         """Parse the given list of PackageVersion objects."""
         for package_version in dependencies:
             version = package_version.version if package_version.version != "*" else ""
@@ -114,86 +98,60 @@ class PackageVersionDependencyParser(DependencyParser):
             yield dependency
 
 
+@attr.s(slots=True)
 class PythonGraphSolver(Solver):
     """Solve Python dependencies based on data available in the graph database."""
 
-    def __init__(
-        self,
-        *,
-        parser_kwargs: dict = None,
-        graph_db=None,
-        runtime_environment=None,
-        solver_kwargs: dict = None,
-    ):
-        """Initialize instance."""
-        super().__init__(
-            PackageVersionDependencyParser(**(parser_kwargs or {})),
-            GraphReleasesFetcher(
-                graph_db=graph_db, runtime_environment=runtime_environment
-            ),
-            **(solver_kwargs or {}),
-        )
+    dependency_parser = attr.ib(type=PackageVersionDependencyParser, kw_only=True)
+    releases_fetcher = attr.ib(type=GraphReleasesFetcher, kw_only=True)
 
 
+@attr.s(slots=True)
 class PythonPackageGraphSolver:
     """A wrapper to manipulate with Python packages using pure PackageVersion object interface."""
 
-    def __init__(
-        self,
-        *,
-        parser_kwargs: dict = None,
-        graph_db: dict = None,
-        solver_kwargs: dict = None,
-        runtime_environment: RuntimeEnvironment = None,
-    ):
-        """Get instance of the graph solver."""
-        self._solver = PythonGraphSolver(
-            parser_kwargs=parser_kwargs,
-            graph_db=graph_db,
-            solver_kwargs=solver_kwargs,
-            runtime_environment=runtime_environment,
-        )
-        # Do not instantiate multiple objects for same python package tuple to optimize memory usage.
-        self._package_versions = {}
-        # Have just one instance of Source object per python package source index url.
-        self._sources = {}
+    graph = attr.ib(type=GraphDatabase, kw_only=True)
+    runtime_environment = attr.ib(type=RuntimeEnvironment, kw_only=True, default=attr.Factory(RuntimeEnvironment.from_dict))
+    # Do not instantiate multiple objects for same python package tuple to optimize memory usage.
+    _package_versions = attr.ib(type=Dict[Tuple[str, str, str], PackageVersion], default=attr.Factory(dict), kw_only=True)
+    # Have just one instance of Source object per python package source index url.
+    _sources = attr.ib(type=Dict[str, Source], default=attr.Factory(dict), kw_only=True)
+    _solver = attr.ib(type=PythonGraphSolver, default=None, kw_only=True)
+
+    @property
+    def solver(self):
+        if not self._solver:
+            self._solver = PythonGraphSolver(
+                dependency_parser=PackageVersionDependencyParser(),
+                releases_fetcher=GraphReleasesFetcher(graph=self.graph, runtime_environment=self.runtime_environment)
+            )
+
+        return self._solver
 
     def solve(
         self,
         dependencies: List[PackageVersion],
         graceful: bool = True,
-        all_versions: bool = False,
     ) -> Dict[str, List[PackageVersion]]:
         """Solve the given dependencies and return object representation of packages."""
-        # A fast path - if there is only one package we can directly rely on solving.
-        # If there are multiple packages to be solved, construct a dictionary to optimize to
-        # O(1) for PackageVersion construction.
-        #
-        # Note changes in interface of solver - if there is all_versions passed, the
-        # resulting values is a list, otherwise string directly.
         result = {}
-        if len(dependencies) <= 1:
-            resolved = self._solver.solve(
-                dependencies, graceful=graceful, all_versions=all_versions
-            )
+        # First, construct the map for checking packages.
+        dependencies_map = {
+            dependency.name: dependency for dependency in dependencies
+        }
 
-            if not resolved:
-                return resolved
+        resolved = self.solver.solve(
+            dependencies, graceful=graceful
+        )
+        if not resolved:
+            return resolved
 
-            if len(resolved) != 1:
-                # It's ok, len(resolved) == 0 should be handled in the if above.
-                raise SolverException(
-                    f"Multiple packages resolved for one dependency {dependencies[0]!r}: {resolved!r}"
-                )
-
-            if all_versions:
-                result[dependencies[0].name] = []
-
-            for version, index_url in (
-                list(resolved.values())[0] if all_versions else resolved.values()
-            ):
-                # We only change version attribute that will be the resolved one.
-                package_tuple = (dependencies[0].name, version, index_url)
+        for package_name, versions in resolved.items():
+            # If this pop fails, it means that the package name has changed over the resolution.
+            original_package = dependencies_map.pop(package_name)
+            result_versions = []
+            for version, index_url in versions:
+                package_tuple = (original_package.name, version, index_url)
                 package_version = self._package_versions.get(package_tuple)
                 if not package_version:
                     source = self._sources.get(index_url)
@@ -202,51 +160,14 @@ class PythonPackageGraphSolver:
                         self._sources[index_url] = source
 
                     package_version = PackageVersion(
-                        name=dependencies[0].name,
+                        name=original_package.name,
                         version="==" + version,
                         index=source,
-                        develop=dependencies[0].develop,
+                        develop=original_package.develop,
                     )
-                    self._package_versions[package_tuple] = package_version
 
-                if all_versions:
-                    result[package_version.name].append(package_version)
-                else:
-                    result[package_version.name] = [package_version]
-        else:
-            # First, construct the map for checking packages.
-            dependencies_map = {
-                dependency.name: dependency for dependency in dependencies
-            }
+                result_versions.append(package_version)
 
-            resolved = self._solver.solve(
-                dependencies, graceful=graceful, all_versions=all_versions
-            )
-            if not resolved:
-                return resolved
-
-            for package_name, versions in resolved.items():
-                # If this pop fails, it means that the package name has changed over the resolution.
-                original_package = dependencies_map.pop(package_name)
-                result_versions = []
-                for version, index_url in versions if all_versions else [versions]:
-                    package_tuple = (original_package.name, version, index_url)
-                    package_version = self._package_versions.get(package_tuple)
-                    if not package_version:
-                        source = self._sources.get(index_url)
-                        if not source:
-                            source = Source(index_url)
-                            self._sources[index_url] = source
-
-                        package_version = PackageVersion(
-                            name=original_package.name,
-                            version="==" + version,
-                            index=source,
-                            develop=original_package.develop,
-                        )
-
-                    result_versions.append(package_version)
-
-                result[original_package.name] = result_versions
+            result[original_package.name] = result_versions
 
         return result

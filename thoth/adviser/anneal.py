@@ -196,7 +196,7 @@ class AdaptiveSimulatedAnnealing:
         """Get solver instance - solver implemented on top of graph database."""
         if not self._solver:
             self._solver = PythonPackageGraphSolver(
-                graph_db=self.graph,
+                graph=self.graph,
                 runtime_environment=self.project.runtime_environment,
             )
 
@@ -247,15 +247,14 @@ class AdaptiveSimulatedAnnealing:
 
     def _resolve_direct_dependencies(
         self, *, with_devel: bool
-    ) -> Dict[str, PackageVersion]:
+    ) -> Dict[str, List[PackageVersion]]:
         """Resolve all the direct dependencies based on the resolution and data available in the graph."""
         # It's important that solver preserves order in which packages were inserted.
         # This is also a requirement for running under Python3.6+!!!
         _LOGGER.info("Resolving direct dependencies")
-        resolved_direct_dependencies: Dict[str, PackageVersion] = self.solver.solve(
+        resolved_direct_dependencies: Dict[str, List[PackageVersion]] = self.solver.solve(
             list(self.project.iter_dependencies(with_devel=with_devel)),
             graceful=True,
-            all_versions=True,
         )
 
         if not resolved_direct_dependencies:
