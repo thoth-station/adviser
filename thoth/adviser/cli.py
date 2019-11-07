@@ -383,7 +383,7 @@ def advise(
     )
 
     parameters["project"] = project.to_dict()
-    parameters["runtime_environment"] = parameters["project"]["runtime_environment"]
+
     asa = partial(
         AdaptiveSimulatedAnnealing.compute_on_project,
         project=project,
