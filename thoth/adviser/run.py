@@ -73,6 +73,7 @@ def subprocess_run(
         except Exception as exc:
             _LOGGER.exception("Adviser raised an exception: %s", str(exc))
             result_dict.update(dict(error=True, error_msg=str(exc), report=None))
+            sys.exit(1)
 
         print_func(time.monotonic() - start_time, result_dict)
         sys.exit(0)
