@@ -19,6 +19,7 @@
 """Thoth-adviser CLI."""
 
 import json
+import sys
 import logging
 import os
 import time
@@ -418,7 +419,7 @@ def advise(
         result_dict={"parameters": parameters},
     )
 
-    click_ctx.exit(exit_code)
+    sys.exit(exit_code)
 
 
 @cli.command("dependency-monkey")
@@ -622,7 +623,7 @@ def dependency_monkey(
         plot_history=plot_history,
     )
 
-    click_ctx.exit(exit_code)
+    sys.exit(exit_code)
 
 
 __name__ == "__main__" and cli()
