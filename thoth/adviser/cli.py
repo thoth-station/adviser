@@ -204,12 +204,15 @@ def provenance(
     result = {
         "error": None,
         "report": [],
-        "parameters": {"whitelisted_indexes": whitelisted_sources},
+        "parameters": {
+            "whitelisted_indexes": whitelisted_sources,
+            "project": None,
+        },
         "input": None,
     }
     try:
         project = _instantiate_project(requirements, requirements_locked)
-        result["input"] = project.to_dict()
+        result["parameters"]["project"] = project.to_dict()
         report = project.check_provenance(
             whitelisted_sources=whitelisted_sources,
             digests_fetcher=GraphDigestsFetcher(),
@@ -383,7 +386,7 @@ def advise(
     )
 
     parameters["project"] = project.to_dict()
-    parameters["runtime_environment"] = parameters["project"]["runtime_environment"]
+
     asa = partial(
         AdaptiveSimulatedAnnealing.compute_on_project,
         project=project,
