@@ -106,17 +106,6 @@ class TestSolver(AdviserTestCase):
             )
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
-    def test_db_0_package_latest(self, graph):
-        """Check that resolving gets always the latest version (relying on internal python logic)."""
-        resolved = PythonPackageGraphSolver(graph=graph).solve(
-            [PackageVersion(name="a", version="*", index=None, develop=False)],
-            graceful=False,
-        )
-        assert len(resolved) == 1
-        assert resolved["a"][0].name == "a"
-        assert resolved["a"][0].version == "==1.2.0"
-
-    @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
     def test_db_0_all_package_versions(self, graph):
         """Check that resolving can gather all versions available in the graph database."""
         resolved = PythonPackageGraphSolver(graph=graph).solve(
