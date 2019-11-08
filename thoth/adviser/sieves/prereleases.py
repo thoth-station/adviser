@@ -57,7 +57,7 @@ class CutPreReleasesSieve(Sieve):
             )
             return None
 
-        if package_version.semantic_version.prerelease:
+        if package_version.semantic_version.is_prerelease:
             raise NotAcceptable(
                 f"Removing package {package_version.to_tuple()!r} - pre-releases are disabled"
             )
