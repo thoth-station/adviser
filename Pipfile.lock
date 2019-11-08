@@ -802,10 +802,10 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:afc3eae8cc0aad70711d01444a8516fcab52d1b9c8db2efbdf220da9e827d795"
+                "sha256:75eb3bc2deb43af0627063da3876dd5944bdc29be190805c9190039bb47920b9"
             ],
             "index": "pypi",
-            "version": "==0.19.17"
+            "version": "==0.19.18"
         },
         "timestamp": {
             "hashes": [
