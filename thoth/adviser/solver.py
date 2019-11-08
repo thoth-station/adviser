@@ -53,7 +53,9 @@ class GraphReleasesFetcher(ReleasesFetcher):
     """Fetch releases for packages from the graph database."""
 
     graph = attr.ib(type=GraphDatabase, kw_only=True)
-    runtime_environment = attr.ib(type=RuntimeEnvironment, default=attr.Factory(RuntimeEnvironment.from_dict))
+    runtime_environment = attr.ib(
+        type=RuntimeEnvironment, default=attr.Factory(RuntimeEnvironment.from_dict)
+    )
 
     def fetch_releases(self, package_name: str):
         """Fetch releases for the given package name."""
@@ -88,7 +90,9 @@ class GraphReleasesFetcher(ReleasesFetcher):
 class PackageVersionDependencyParser(DependencyParser):
     """Parse an instance of PackageVersion to Dependency object needed by solver."""
 
-    def parse(self, dependencies: List[PackageVersion]) -> Generator[Requirement, None, None]:
+    def parse(
+        self, dependencies: List[PackageVersion]
+    ) -> Generator[Requirement, None, None]:
         """Parse the given list of PackageVersion objects."""
         for package_version in dependencies:
             version = package_version.version if package_version.version != "*" else ""
@@ -111,38 +115,43 @@ class PythonPackageGraphSolver:
     """A wrapper to manipulate with Python packages using pure PackageVersion object interface."""
 
     graph = attr.ib(type=GraphDatabase, kw_only=True)
-    runtime_environment = attr.ib(type=RuntimeEnvironment, kw_only=True, default=attr.Factory(RuntimeEnvironment.from_dict))
+    runtime_environment = attr.ib(
+        type=RuntimeEnvironment,
+        kw_only=True,
+        default=attr.Factory(RuntimeEnvironment.from_dict),
+    )
     # Do not instantiate multiple objects for same python package tuple to optimize memory usage.
-    _package_versions = attr.ib(type=Dict[Tuple[str, str, str], PackageVersion], default=attr.Factory(dict), kw_only=True)
+    _package_versions = attr.ib(
+        type=Dict[Tuple[str, str, str], PackageVersion],
+        default=attr.Factory(dict),
+        kw_only=True,
+    )
     # Have just one instance of Source object per python package source index url.
     _sources = attr.ib(type=Dict[str, Source], default=attr.Factory(dict), kw_only=True)
     _solver = attr.ib(type=PythonGraphSolver, default=None, kw_only=True)
 
     @property
     def solver(self):
+        """Retrieve solver instance resolving using graph database."""
         if not self._solver:
             self._solver = PythonGraphSolver(
                 dependency_parser=PackageVersionDependencyParser(),
-                releases_fetcher=GraphReleasesFetcher(graph=self.graph, runtime_environment=self.runtime_environment)
+                releases_fetcher=GraphReleasesFetcher(
+                    graph=self.graph, runtime_environment=self.runtime_environment
+                ),
             )
 
         return self._solver
 
     def solve(
-        self,
-        dependencies: List[PackageVersion],
-        graceful: bool = True,
+        self, dependencies: List[PackageVersion], graceful: bool = True
     ) -> Dict[str, List[PackageVersion]]:
         """Solve the given dependencies and return object representation of packages."""
         result = {}
         # First, construct the map for checking packages.
-        dependencies_map = {
-            dependency.name: dependency for dependency in dependencies
-        }
+        dependencies_map = {dependency.name: dependency for dependency in dependencies}
 
-        resolved = self.solver.solve(
-            dependencies, graceful=graceful
-        )
+        resolved = self.solver.solve(dependencies, graceful=graceful)
         if not resolved:
             return resolved
 

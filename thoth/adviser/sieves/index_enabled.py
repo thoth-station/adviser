@@ -41,7 +41,9 @@ _LOGGER = logging.getLogger(__name__)
 class PackageIndexSieve(Sieve):
     """Filter out disabled Python package indexes."""
 
-    _cached_records: Dict[str, Optional[bool]] = attr.ib(default=attr.Factory(dict), kw_only=True)
+    _cached_records: Dict[str, Optional[bool]] = attr.ib(
+        default=attr.Factory(dict), kw_only=True
+    )
 
     @classmethod
     def should_include(
@@ -54,7 +56,9 @@ class PackageIndexSieve(Sieve):
         return None
 
     @staticmethod
-    def _evaluate_is_enabled(package_tuple: Tuple[str, str, str], is_enabled: Optional[bool]) -> None:
+    def _evaluate_is_enabled(
+        package_tuple: Tuple[str, str, str], is_enabled: Optional[bool]
+    ) -> None:
         """Evaluate the enabled flag."""
         if is_enabled is None:
             raise NotAcceptable(
