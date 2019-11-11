@@ -24,63 +24,26 @@ import logging
 from typing import Any
 from typing import Dict
 from typing import Optional
-from typing import List
-from typing import Tuple
 from functools import partial
 
 import attr
-import matplotlib
-from amun import inspect as amun_inspect
+import amun
 from thoth.python import Project
 
-from .anneal import AdaptiveSimulatedAnnealing
+from .dm_report import DependencyMonkeyReport
+from .predictor import Predictor
+from .resolver import Resolver
 from .enums import DecisionType
-from .plot import plot_history
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class DependencyMonkeyReport:
-    """Report produced by a Dependency Monkey run."""
-
-    _skipped = attr.ib(type=int, default=0)
-    _responses = attr.ib(type=List[str], default=attr.Factory(list))
-    _temperature_history = attr.ib(
-        type=Optional[List[Tuple[float, bool, float, int]]], default=None
-    )
-
-    def inc_skipped(self) -> None:
-        """Increment skipped stacks (e.g. due to API unavailability errors)."""
-        self._skipped += 1
-
-    def set_temperature_history(
-        self, temperature_history: List[Tuple[float, bool, float, int]]
-    ) -> None:
-        """Mark the temperature history during annealing."""
-        self._temperature_history = temperature_history
-
-    def add_response(self, response: str) -> None:
-        """Add a new response to response listing."""
-        self._responses.append(response)
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert report to a dict representation suitable for serialization."""
-        return {"skipped": self._skipped, "responses": self._responses}
-
-    def plot_history(
-        self, output_file: Optional[str] = None
-    ) -> matplotlib.figure.Figure:
-        """Plot history of temperature function."""
-        return plot_history(self._temperature_history, output_file)
-
-
-@attr.s(slots=True)
 class DependencyMonkey:
     """Dependency monkey creates stacks based on the configuration using ASA."""
 
-    asa = attr.ib(type=AdaptiveSimulatedAnnealing, kw_only=True)
+    resolver = attr.ib(type=Resolver, kw_only=True)
     stack_output = attr.ib(type=str, kw_only=True, default="-")
     context = attr.ib(
         type=Optional[Dict[Any, Any]], default=attr.Factory(dict), kw_only=True
@@ -88,7 +51,12 @@ class DependencyMonkey:
     dry_run = attr.ib(type=bool, default=False, kw_only=True)
     decision_type = attr.ib(type=DecisionType, default=DecisionType.ALL, kw_only=True)
 
-    def anneal(self, *, with_devel: bool = True) -> DependencyMonkeyReport:
+    @property
+    def predictor(self) -> Predictor:
+        """Get predictor for the current dependency monkey configuration."""
+        return self.resolver.predictor
+
+    def resolve(self, *, with_devel: bool = True) -> DependencyMonkeyReport:
         """Perform simulated annealing and run dependency monkey on products."""
         if self.stack_output == "-":
             _LOGGER.debug(
@@ -114,7 +82,7 @@ class DependencyMonkey:
 
         report = DependencyMonkeyReport()
         for count, product in enumerate(
-            self.asa.anneal_products(with_devel=with_devel)
+            self.resolver.resolve_products(with_devel=with_devel)
         ):
             count += 1
             _LOGGER.info(
@@ -128,14 +96,16 @@ class DependencyMonkey:
                 response: Optional[str] = output_func(count, product.project)
             except Exception as exc:
                 _LOGGER.exception("Failed to submit produced project: %s", str(exc))
-                report.inc_skipped()
+                report.skipped += 1
                 continue
 
             if response is not None:
                 _LOGGER.debug("Submitted results to %r", response)
-                report.add_response(response)
+                report.add_response(response, product)
 
-        report.set_temperature_history(self.asa.get_temperature_history())
+        # Call post-run report function with the report once all is done as we used lower
+        # level resolver method `resolve_products' and this object maintains report.
+        self.resolver.pipeline.call_post_run_report(report)
         return report
 
     @staticmethod
@@ -145,7 +115,7 @@ class DependencyMonkey:
         """A wrapper around Amun inspection call."""
         context = dict(context)
         context["python"] = generated_project.to_dict()
-        response = amun_inspect(output, **context)
+        response = amun.inspect(output, **context)
         _LOGGER.info(
             "Submitted Amun inspection #%d: %r", count, response["inspection_id"]
         )

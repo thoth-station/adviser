@@ -43,10 +43,10 @@ class ScoreFilteringStride(Stride):
 
     @classmethod
     def should_include(
-        cls, context: "PipelineBuilderContext"
+        cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
         """Remove CVEs only for advised stacks."""
-        if context.is_adviser_pipeline() and not context.is_included(cls):
+        if builder_context.is_adviser_pipeline() and not builder_context.is_included(cls):
             return {}
 
         return None

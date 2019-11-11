@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# type: ignore
 
 """Test implementation of Beam search part in adviser's implementation."""
 
@@ -32,19 +31,19 @@ class TestBeam(AdviserTestCase):
     """Test beam implementation."""
 
     @given(integers(min_value=1))
-    def test_initialization_positive(self, width: int):
+    def test_initialization_positive(self, width: int) -> None:
         """Test initialization of beam."""
         beam = Beam(width=width)
         assert beam.width == width
         assert beam.states == []
 
     @given(integers(max_value=0))
-    def test_initialization_not_positive_error(self, width: int):
+    def test_initialization_not_positive_error(self, width: int) -> None:
         """Test initialization of beam - passing negative or zero causes an exception being raised."""
         with pytest.raises(ValueError):
             Beam(width=width)
 
-    def test_add_state(self):
+    def test_add_state(self) -> None:
         """Test adding state to the beam - respect beam width."""
         beam = Beam(width=2)
         assert beam.width == 2
@@ -78,7 +77,7 @@ class TestBeam(AdviserTestCase):
         assert state1 not in beam.states
         assert state0 not in beam.states
 
-    def test_states(self):
+    def test_states(self) -> None:
         """Test asking for states returns a sorted list of states."""
         beam = Beam(width=4)
         assert beam.width == 4
@@ -94,7 +93,7 @@ class TestBeam(AdviserTestCase):
 
         assert beam.states == [state3, state2, state1, state0]
 
-    def test_add_state_order_multi(self):
+    def test_add_state_order_multi(self) -> None:
         """Test adding states to beam and order during addition when score is same."""
         beam = Beam(width=2)
 
@@ -116,7 +115,7 @@ class TestBeam(AdviserTestCase):
 
         assert beam.states == [state01, state02]
 
-    def test_add_state_order_single(self):
+    def test_add_state_order_single(self) -> None:
         """Test adding states to beam and order during addition when score is same."""
         beam = Beam(width=1)
 

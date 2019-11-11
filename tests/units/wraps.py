@@ -15,49 +15,51 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Filter out states randomly."""
+"""A generic unit representatives used for testing.."""
 
-import logging
-import random
 from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import TYPE_CHECKING
 
-import attr
-
-from ..state import State
-from ..stride import Stride
-from ..exceptions import NotAcceptable
-from ..enums import DecisionType
+from thoth.adviser.wrap import Wrap
+from thoth.adviser.state import State
 
 if TYPE_CHECKING:
-    from ..pipeline_builder import PipelineBuilderContext
-
-_LOGGER = logging.getLogger(__name__)
+    from thoth.adviser.pipeline_builder import PipelineBuilderContext
 
 
-@attr.s(slots=True)
-class RandomDecisionStride(Stride):
-    """Filter out states randomly."""
+class Wrap1(Wrap):
+    """A testing wrap implementation."""
+
+    CONFIGURATION_DEFAULT = {
+        "thoth": [2018, 2019],
+        "cities": ["Brno", "Bonn", "Boston", "Milan"],
+    }
 
     @classmethod
     def should_include(
         cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
-        """Remove CVEs only for advised stacks."""
-        if (
-            builder_context.is_dependency_monkey_pipeline()
-            and not builder_context.is_included(cls)
-            and builder_context.decision_type == DecisionType.RANDOM
-        ):
-            return {}
-
-        return None
+        """Check if this pipeline unit should be included in the pipeline configuration."""
 
     def run(self, state: State) -> None:
-        """Flip a coin and decide - tails are not acceptable."""
-        if bool(random.getrandbits(1)):
-            raise NotAcceptable(
-                f"State with score {state.score!r} was randomly discarded by flipping a coin"
-            )
+        """A noop method."""
+
+
+class Wrap2(Wrap):
+    """A testing wrap implementation."""
+
+    CONFIGURATION_DEFAULT: Dict[str, Any] = {}
+
+    @classmethod
+    def should_include(
+        cls, builder_context: "PipelineBuilderContext"
+    ) -> Optional[Dict[str, Any]]:
+        """Check if this pipeline unit should be included in the pipeline configuration."""
+
+    def run(self, state: State) -> None:
+        """A noop method."""
+
+
+__all__ = ["Wrap1", "Wrap2"]

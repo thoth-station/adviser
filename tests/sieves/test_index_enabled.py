@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# type: ignore
 
 """Test filtering out packages based on enabled or disabled Python package index."""
 
@@ -23,6 +22,8 @@ import flexmock
 
 from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.sieves import PackageIndexSieve
+from thoth.adviser.context import Context
+from thoth.adviser.enums import RecommendationType
 from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages import GraphDatabase
@@ -45,8 +46,10 @@ class TestPackageIndexSieve(AdviserTestCase):
             source.url
         ).and_return(True).once()
 
-        sieve = PackageIndexSieve(graph=GraphDatabase(), project=None)
-        assert sieve.run(package_version) is None
+        context = flexmock(graph=GraphDatabase())
+        with PackageIndexSieve.assigned_context(context):
+            sieve = PackageIndexSieve()
+            assert sieve.run(package_version) is None
 
     def test_sieve_index_disabled(self) -> None:
         """Test removals of Python package if Python package index used is disabled."""
@@ -61,9 +64,11 @@ class TestPackageIndexSieve(AdviserTestCase):
             source.url
         ).and_return(False).once()
 
-        sieve = PackageIndexSieve(graph=GraphDatabase(), project=None)
-        with pytest.raises(NotAcceptable):
-            sieve.run(package_version)
+        context = flexmock(graph=GraphDatabase())
+        with PackageIndexSieve.assigned_context(context):
+            sieve = PackageIndexSieve()
+            with pytest.raises(NotAcceptable):
+                sieve.run(package_version)
 
     def test_sieve_index_not_found(self) -> None:
         """Test removals of Python package if Python package index used is unknown."""
@@ -78,6 +83,8 @@ class TestPackageIndexSieve(AdviserTestCase):
             source.url
         ).and_raise(NotFoundError).once()
 
-        sieve = PackageIndexSieve(graph=GraphDatabase(), project=None)
-        with pytest.raises(NotAcceptable):
-            sieve.run(package_version)
+        context = flexmock(graph=GraphDatabase())
+        with PackageIndexSieve.assigned_context(context):
+            sieve = PackageIndexSieve()
+            with pytest.raises(NotAcceptable):
+                sieve.run(package_version)

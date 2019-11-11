@@ -14,10 +14,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# type: ignore
 
 """Test removing pre-releases in direct dependencies."""
 
+import flexmock
 import pytest
 
 from thoth.adviser.sieves import CutPreReleasesSieve
@@ -77,10 +77,10 @@ allow_prereleases = true
             develop=False,
         )
 
-        sieve = CutPreReleasesSieve(
-            graph=None, project=Project.from_strings(self._CASE_ALLOWED_PIPFILE)
-        )
-        assert sieve.run(tf_2_0_0rc) is None
+        context = flexmock(project=Project.from_strings(self._CASE_ALLOWED_PIPFILE))
+        with CutPreReleasesSieve.assigned_context(context):
+            sieve = CutPreReleasesSieve()
+            assert sieve.run(tf_2_0_0rc) is None
 
     def test_pre_releases_disallowed_noop(self) -> None:
         """Test no removals if pre-releases are allowed."""
@@ -93,10 +93,10 @@ allow_prereleases = true
             develop=False,
         )
 
-        sieve = CutPreReleasesSieve(
-            graph=None, project=Project.from_strings(self._CASE_DISALLOWED_PIPFILE)
-        )
-        assert sieve.run(tf_2_0_0) is None
+        context = flexmock(project=Project.from_strings(self._CASE_DISALLOWED_PIPFILE))
+        with CutPreReleasesSieve.assigned_context(context):
+            sieve = CutPreReleasesSieve()
+            assert sieve.run(tf_2_0_0) is None
 
     def test_pre_releases_disallowed_removal(self) -> None:
         """Test no removals if pre-releases are allowed."""
@@ -109,8 +109,8 @@ allow_prereleases = true
             develop=False,
         )
 
-        sieve = CutPreReleasesSieve(
-            graph=None, project=Project.from_strings(self._CASE_DISALLOWED_PIPFILE)
-        )
-        with pytest.raises(NotAcceptable):
-            sieve.run(tf_2_0_0rc0)
+        context = flexmock(project=Project.from_strings(self._CASE_DISALLOWED_PIPFILE))
+        with CutPreReleasesSieve.assigned_context(context):
+            sieve = CutPreReleasesSieve()
+            with pytest.raises(NotAcceptable):
+                sieve.run(tf_2_0_0rc0)

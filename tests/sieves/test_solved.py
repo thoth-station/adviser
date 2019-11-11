@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# type: ignore
 
 """Tests related to filtering out unsolved packages and packages with build-time error (installation issues)."""
 
@@ -24,6 +23,7 @@ from typing import Tuple
 
 from thoth.adviser.sieves import SolvedSieve
 from thoth.adviser.exceptions import NotAcceptable
+from thoth.common import RuntimeEnvironment
 from thoth.python import Source
 from thoth.python import PackageVersion
 from thoth.python import Project
@@ -75,14 +75,18 @@ tensorflow = "*"
             .once()
         )
 
-        sieve = SolvedSieve(project=project, graph=GraphDatabase())
-        with pytest.raises(NotAcceptable):
-            sieve.run(package_version)
+        context = flexmock(
+            graph=GraphDatabase(),
+            project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
+        )
+        with SolvedSieve.assigned_context(context):
+            sieve = SolvedSieve()
+            with pytest.raises(NotAcceptable):
+                sieve.run(package_version)
 
     def test_not_solved_without_error(self) -> None:
         """Test a not found package is not accepted by sieve."""
         package_version, project = self._get_case()
-        sieve = SolvedSieve(project=project, graph=GraphDatabase())
         (
             GraphDatabase.should_receive("has_python_solver_error")
             .with_args(
@@ -97,13 +101,18 @@ tensorflow = "*"
             .once()
         )
 
-        with pytest.raises(NotAcceptable):
-            sieve.run(package_version)
+        context = flexmock(
+            graph=GraphDatabase(),
+            project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
+        )
+        with SolvedSieve.assigned_context(context):
+            sieve = SolvedSieve()
+            with pytest.raises(NotAcceptable):
+                sieve.run(package_version)
 
     def test_acceptable_with_error(self) -> None:
         """Test accepted with an error."""
         package_version, project = self._get_case()
-        sieve = SolvedSieve(project=project, graph=GraphDatabase())
         (
             GraphDatabase.should_receive("has_python_solver_error")
             .with_args(
@@ -118,10 +127,16 @@ tensorflow = "*"
             .once()
         )
 
-        sieve.update_parameters({"without_error": False})
-        assert sieve.run(package_version) is None
+        context = flexmock(
+            graph=GraphDatabase(),
+            project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
+        )
+        with SolvedSieve.assigned_context(context):
+            sieve = SolvedSieve()
+            sieve.update_configuration({"without_error": False})
+            assert sieve.run(package_version) is None
 
-    def test_default_parameters(self) -> None:
-        """Test default parameters for an instantiated sieve."""
-        sieve = SolvedSieve(project=None, graph=None)
-        assert sieve.parameters == {"without_error": True}
+    def test_default_configuration(self) -> None:
+        """Test default configuration for an instantiated sieve."""
+        sieve = SolvedSieve()
+        assert sieve.configuration == {"without_error": True}

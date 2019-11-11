@@ -24,10 +24,10 @@ from thoth.adviser.exceptions import NotAcceptable  # type: ignore
 from thoth.adviser.state import State  # type: ignore
 from thoth.adviser.strides import RandomDecisionStride
 
-from ..base import AdviserTestCase  # type: ignore
+from ..base import AdviserTestCase
 
 
-class TestRandomDecision(AdviserTestCase):  # type: ignore
+class TestRandomDecision(AdviserTestCase):
     """Test randomly pickling up a stack coming out of pipeline.."""
 
     def test_accept(self) -> None:
@@ -36,7 +36,7 @@ class TestRandomDecision(AdviserTestCase):  # type: ignore
         random_state = random.getstate()
         random.seed(9)
         try:
-            stride = RandomDecisionStride(project=None, graph=None)
+            stride = RandomDecisionStride()
             assert stride.run(None) is None
         finally:
             # Recover to make sure there is no "implicit" random configuration other steps as a side effect.
@@ -48,7 +48,7 @@ class TestRandomDecision(AdviserTestCase):  # type: ignore
         random_state = random.getstate()
         random.seed(42)
         try:
-            stride = RandomDecisionStride(project=None, graph=None)
+            stride = RandomDecisionStride()
             with pytest.raises(NotAcceptable):
                 stride.run(State(score=666.0))
         finally:

@@ -29,17 +29,16 @@ class Test(TestCommand):
     """Introduce test command to run testsuite using pytest."""
 
     _IMPLICIT_PYTEST_ARGS = [
-        "tests/",
         "--timeout=2",
         "--cov=./thoth",
         "--mypy",
-        "thoth",
         "--capture=no",
         "--verbose",
         "-l",
         "-s",
         "-vv",
         "--hypothesis-show-statistics",
+        "tests/",
     ]
 
     user_options = [("pytest-args=", "a", "Arguments to pass into py.test")]
@@ -79,6 +78,7 @@ setup(
         "thoth.adviser.steps",
         "thoth.adviser.sieves",
         "thoth.adviser.strides",
+        "thoth.adviser.predictors",
     ],
     package_data={"thoth.adviser": ["py.typed"]},
     entry_points={"console_scripts": ["thoth-adviser=thoth.adviser.cli:cli"]},

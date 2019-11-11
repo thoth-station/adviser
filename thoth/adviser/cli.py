@@ -23,6 +23,7 @@ import sys
 import logging
 import os
 import time
+import random
 from functools import partial
 from pathlib import Path
 from typing import Any
@@ -39,7 +40,6 @@ from thoth.python import Pipfile
 from thoth.python import PipfileLock
 from thoth.python import Project
 
-from thoth.adviser.anneal import AdaptiveSimulatedAnnealing
 from thoth.adviser.dependency_monkey import DependencyMonkey
 from thoth.adviser.digests_fetcher import GraphDigestsFetcher
 from thoth.adviser.enums import DecisionType
@@ -47,12 +47,13 @@ from thoth.adviser.enums import PythonRecommendationOutput
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.exceptions import AdviserException
 from thoth.adviser.exceptions import InternalError
+from thoth.adviser import Resolver
 from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser import __version__ as analyzer_version
 from thoth.adviser.pipeline_builder import PipelineBuilder
 from thoth.adviser.run import subprocess_run
-from thoth.adviser.temperature import ASATemperatureFunction
 from thoth.storages import GraphDatabase
+import thoth.adviser.predictors as predictors
 
 init_logging()
 
@@ -205,10 +206,7 @@ def provenance(
     result = {
         "error": None,
         "report": [],
-        "parameters": {
-            "whitelisted_indexes": whitelisted_sources,
-            "project": None,
-        },
+        "parameters": {"whitelisted_indexes": whitelisted_sources, "project": None},
         "input": None,
     }
     try:
@@ -296,7 +294,7 @@ def provenance(
     type=int,
     envvar="THOTH_ADVISER_COUNT",
     help="Number of software stacks shown in the output.",
-    default=AdaptiveSimulatedAnnealing.DEFAULT_COUNT,
+    default=Resolver.DEFAULT_COUNT,
     show_default=True,
 )
 @click.option(
@@ -304,7 +302,7 @@ def provenance(
     type=int,
     envvar="THOTH_ADVISER_LIMIT",
     help="Number of software stacks that should be taken into account (stop after reaching the limit).",
-    default=AdaptiveSimulatedAnnealing.DEFAULT_LIMIT,
+    default=Resolver.DEFAULT_LIMIT,
     show_default=True,
 )
 @click.option(
@@ -327,25 +325,29 @@ def provenance(
     help="Runtime environment specification (file or directly JSON) to describe target environment.",
 )
 @click.option(
-    "--plot-history",
-    envvar="THOTH_ADVISER_PLOT_HISTORY",
-    type=str,
-    help="Plot temperature history during annealing.",
+    "--plot", envvar="THOTH_ADVISER_PLOT", type=str, help="Plot history of predictor."
 )
 @click.option(
     "--beam-width",
     "-b",
     envvar="THOTH_ADVISER_BEAM_WIDTH",
     type=int,
-    default=AdaptiveSimulatedAnnealing.DEFAULT_BEAM_WIDTH,
+    default=Resolver.DEFAULT_BEAM_WIDTH,
     help="Width of the beam used.",
 )
 @click.option(
     "--limit-latest-versions",
     envvar="THOTH_ADVISER_LIMIT_LATEST_VERSIONS",
     type=int,
-    default=AdaptiveSimulatedAnnealing.DEFAULT_LIMIT_LATEST_VERSIONS,
+    default=Resolver.DEFAULT_LIMIT_LATEST_VERSIONS,
     help="Limit number of latest versions considered for dependency graphs.",
+)
+@click.option(
+    "--predictor",
+    envvar="THOTH_ADVISER_PREDICTOR",
+    default="AdaptiveSimulatedAnnealing",
+    type=click.Choice(predictors.__all__),
+    help="Predictor to be used with the resolver.",
 )
 def advise(
     click_ctx: click.Context,
@@ -357,10 +359,11 @@ def advise(
     recommendation_type: str,
     requirements_format: str,
     requirements: str,
+    predictor: str,
     library_usage: Optional[str] = None,
     limit_latest_versions: Optional[int] = None,
     no_pretty: bool = False,
-    plot_history: Optional[str] = None,
+    plot: Optional[str] = None,
     requirements_locked: Optional[str] = None,
     runtime_environment: Optional[str] = None,
     seed: Optional[int] = None,
@@ -388,17 +391,20 @@ def advise(
 
     parameters["project"] = project.to_dict()
 
-    asa = partial(
-        AdaptiveSimulatedAnnealing.compute_on_project,
+    # Use current time to make sure we have possibly reproducible runs - the seed is reported.
+    seed = seed if seed is not None else int(time.time())
+    _LOGGER.info("Starting annealing with random seed set to %r", seed)
+    random.seed(seed)
+
+    resolver = Resolver.get_adviser_instance(
+        predictor=getattr(predictors, predictor)(),
         project=project,
-        recommendation_type=recommendation_type,
         library_usage=library_usage,
+        recommendation_type=recommendation_type,
         limit=limit,
-        limit_latest_versions=limit_latest_versions,
         count=count,
-        temperature_function=ASATemperatureFunction.exp,
-        seed=seed,
         beam_width=beam_width,
+        limit_latest_versions=limit_latest_versions,
     )
 
     print_func = _PrintFunc(
@@ -413,10 +419,7 @@ def advise(
     )
 
     exit_code = subprocess_run(
-        asa,
-        print_func,
-        plot_history=plot_history,
-        result_dict={"parameters": parameters},
+        resolver, print_func, plot=plot, result_dict={"parameters": parameters}
     )
 
     sys.exit(exit_code)
@@ -477,7 +480,7 @@ def advise(
     "--count",
     type=int,
     envvar="THOTH_DEPENDENCY_MONKEY_COUNT",
-    default=AdaptiveSimulatedAnnealing.DEFAULT_COUNT,
+    default=Resolver.DEFAULT_COUNT,
     help="Number of software stacks that should be computed.",
 )
 @click.option(
@@ -514,33 +517,38 @@ def advise(
     help="Runtime environment specification (file or directly JSON) to describe target environment.",
 )
 @click.option(
-    "--plot-history",
-    envvar="THOTH_ADVISER_PLOT_HISTORY",
-    type=str,
-    help="Plot temperature history during annealing.",
+    "--plot", envvar="THOTH_ADVISER_PLOT", type=str, help="Plot predictor history."
 )
 @click.option(
     "--beam-width",
     "-b",
     envvar="THOTH_ADVISER_BEAM_WIDTH",
     type=int,
-    default=AdaptiveSimulatedAnnealing.DEFAULT_BEAM_WIDTH,
+    default=Resolver.DEFAULT_BEAM_WIDTH,
     help="Width of the beam used.",
 )
 @click.option(
     "--limit-latest-versions",
     envvar="THOTH_ADVISER_LIMIT_LATEST_VERSIONS",
     type=int,
-    default=AdaptiveSimulatedAnnealing.DEFAULT_LIMIT_LATEST_VERSIONS,
+    default=Resolver.DEFAULT_LIMIT_LATEST_VERSIONS,
     help="Limit number of latest versions considered for dependency graphs.",
 )
 @click.option("--no-pretty", "-P", is_flag=True, help="Do not print results nicely.")
+@click.option(
+    "--predictor",
+    envvar="THOTH_ADVISER_PREDICTOR",
+    default="AdaptiveSimulatedAnnealing",
+    type=click.Choice(predictors.__all__),
+    help="Predictor to be used with the resolver.",
+)
 def dependency_monkey(
     click_ctx: click.Context,
     *,
     beam_width: int,
     count: int,
     decision_type: str,
+    predictor: str,
     report_output: str,
     requirements: str,
     requirements_format: str,
@@ -550,7 +558,7 @@ def dependency_monkey(
     library_usage: Optional[str] = None,
     limit_latest_versions: Optional[int] = None,
     no_pretty: bool = False,
-    plot_history: Optional[str] = None,
+    plot: Optional[str] = None,
     runtime_environment: str = None,
     seed: Optional[int] = None,
 ):
@@ -576,29 +584,23 @@ def dependency_monkey(
 
     parameters["project"] = project.to_dict()
 
-    graph = GraphDatabase()
-    graph.connect()
+    # Use current time to make sure we have possibly reproducible runs - the seed is reported.
+    seed = seed if seed is not None else int(time.time())
+    _LOGGER.info("Starting annealing with random seed set to %r", seed)
+    random.seed(seed)
 
-    pipeline = PipelineBuilder.get_dependency_monkey_config(
-        decision_type=decision_type,
-        graph=graph,
+    resolver = Resolver.get_dependency_monkey_instance(
+        predictor=getattr(predictors, predictor)(),
         project=project,
         library_usage=library_usage,
-    )
-
-    asa = AdaptiveSimulatedAnnealing(
-        pipeline=pipeline,
-        project=project,
-        library_usage=library_usage,
-        limit_latest_versions=limit_latest_versions,
         count=count,
-        temperature_function=ASATemperatureFunction.exp,
-        seed=seed,
         beam_width=beam_width,
+        limit_latest_versions=limit_latest_versions,
+        decision_type=decision_type,
     )
 
     dependency_monkey_runner = DependencyMonkey(
-        asa=asa,
+        resolver=resolver,
         stack_output=stack_output,
         context=context,
         dry_run=dry_run,
@@ -617,10 +619,10 @@ def dependency_monkey(
     )
 
     exit_code = subprocess_run(
-        partial(dependency_monkey_runner.anneal, with_devel=True),
+        dependency_monkey_runner,
         print_func,
         result_dict={"parameters": parameters},
-        plot_history=plot_history,
+        plot=plot,
     )
 
     sys.exit(exit_code)

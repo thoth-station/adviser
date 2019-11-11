@@ -15,12 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A base class for implementing adviser's test cases."""
+"""Implementation of predictors used with resolver.."""
 
-import os
+from .annealing import AdaptiveSimulatedAnnealing
 
 
-class AdviserTestCase:
-    """A base class for implementing adviser's test cases."""
-
-    data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+__all__ = ["AdaptiveSimulatedAnnealing"]

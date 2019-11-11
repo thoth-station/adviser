@@ -47,10 +47,10 @@ class PackageIndexSieve(Sieve):
 
     @classmethod
     def should_include(
-        cls, context: "PipelineBuilderContext"
+        cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
         """Remove indexes which are not enabled in pipeline configuration."""
-        if not context.is_included(cls):
+        if not builder_context.is_included(cls):
             return {}
 
         return None
@@ -76,7 +76,7 @@ class PackageIndexSieve(Sieve):
             is_enabled = self._cached_records[package_version.index.url]
         else:
             try:
-                is_enabled = self.graph.is_python_package_index_enabled(
+                is_enabled = self.context.graph.is_python_package_index_enabled(
                     package_version.index.url
                 )
             except NotFoundError:

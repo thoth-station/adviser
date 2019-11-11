@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# type: ignore
 
 """Test solver implementation on top Thoth's knowledge graph."""
 
@@ -35,12 +34,12 @@ class TestSolver(AdviserTestCase):
     """Test Thoth's solver implementation on top of Thoth's knowledge graph."""
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
-    def test_db_0_raises(self, graph):
+    def test_db_0_raises(self, graph: MockedGraphDatabase) -> None:
         """Check that there is raised an exception if no releases were found."""
         with pytest.raises(SolverException):
             PythonGraphSolver(
                 dependency_parser=PackageVersionDependencyParser(),
-                releases_fetcher=GraphReleasesFetcher(graph=graph)
+                releases_fetcher=GraphReleasesFetcher(graph=graph),
             ).solve(
                 [
                     PackageVersion(
@@ -54,21 +53,25 @@ class TestSolver(AdviserTestCase):
             )
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
-    def test_db_0(self, graph):
+    def test_db_0(self, graph: MockedGraphDatabase) -> None:
         """Check that resolving can gather all versions available in the graph database."""
         resolved = PythonGraphSolver(
             dependency_parser=PackageVersionDependencyParser(),
-            releases_fetcher=GraphReleasesFetcher(graph=graph)
+            releases_fetcher=GraphReleasesFetcher(graph=graph),
         ).solve(
             [PackageVersion(name="a", version="*", index=None, develop=False)],
             graceful=False,
         )
         assert len(resolved) == 1
         assert "a" in resolved
-        assert set(resolved["a"]) == {("1.0.0", "index1"), ("1.1.0", "index1"), ("1.2.0", "index2")}
+        assert set(resolved["a"]) == {
+            ("1.0.0", "index1"),
+            ("1.1.0", "index1"),
+            ("1.2.0", "index2"),
+        }
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
-    def test_db_0_multiple(self, graph):
+    def test_db_0_multiple(self, graph: MockedGraphDatabase) -> None:
         """Check that resolving can resolve multiple Python packages."""
         resolved = PythonGraphSolver(
             dependency_parser=PackageVersionDependencyParser(),
@@ -84,13 +87,17 @@ class TestSolver(AdviserTestCase):
         assert len(resolved) == 2
 
         assert "a" in resolved
-        assert set(resolved["a"]) == {("1.0.0", "index1"), ("1.1.0", "index1"), ("1.2.0", "index2")}
+        assert set(resolved["a"]) == {
+            ("1.0.0", "index1"),
+            ("1.1.0", "index1"),
+            ("1.2.0", "index2"),
+        }
 
         assert "b" in resolved
         assert set(resolved["b"]) == {("2.0.0", "index1"), ("3.0.0", "index2")}
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
-    def test_db_0_package_raises(self, graph):
+    def test_db_0_package_raises(self, graph: MockedGraphDatabase) -> None:
         """Check that there is raised an exception if no releases were found."""
         with pytest.raises(SolverException):
             PythonPackageGraphSolver(graph=graph).solve(
@@ -106,7 +113,7 @@ class TestSolver(AdviserTestCase):
             )
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
-    def test_db_0_all_package_versions(self, graph):
+    def test_db_0_all_package_versions(self, graph: MockedGraphDatabase) -> None:
         """Check that resolving can gather all versions available in the graph database."""
         resolved = PythonPackageGraphSolver(graph=graph).solve(
             [PackageVersion(name="a", version="*", index=None, develop=False)],
@@ -126,7 +133,7 @@ class TestSolver(AdviserTestCase):
         }
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
-    def test_db_0_package_multiple(self, graph):
+    def test_db_0_package_multiple(self, graph: MockedGraphDatabase) -> None:
         """Check that resolving can resolve multiple Python packages."""
         resolved = PythonPackageGraphSolver(graph=graph).solve(
             [
@@ -152,7 +159,7 @@ class TestSolver(AdviserTestCase):
         }
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
-    def test_db_0_multiple_times_error(self, graph):
+    def test_db_0_multiple_times_error(self, graph: MockedGraphDatabase) -> None:
         """Check that resolving can resolve multiple Python packages."""
         from thoth.solver.python.base import SolverException
 

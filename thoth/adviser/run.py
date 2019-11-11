@@ -35,8 +35,11 @@ import sys
 import time
 
 from thoth.common import init_logging
+
+from .dependency_monkey import DependencyMonkey
+from .dm_report import DependencyMonkeyReport
 from .report import Report
-from .dependency_monkey import DependencyMonkeyReport
+from .resolver import Resolver
 
 _LOGGER = logging.getLogger(__name__)
 # This file is created by OpenShift's liveness probe on timeout.
@@ -44,10 +47,10 @@ _LIVENESS_PROBE_KILL_FILE = "/tmp/thoth_adviser_cpu_timeout"
 
 
 def subprocess_run(
-    asa: Callable[[], Union[Report, DependencyMonkeyReport]],
+    resolver: Union[Resolver, DependencyMonkey],
     print_func: Callable[[float, Union[Dict[str, Any], List[Any]]], None],
     result_dict: Dict[str, Any],
-    plot_history: Optional[str] = None,
+    plot: Optional[str] = None,
 ) -> int:
     """Run the given function (partial annealing method) in a subprocess and output the produced report."""
     start_time = time.monotonic()
@@ -58,13 +61,13 @@ def subprocess_run(
         init_logging()
         _LOGGER.debug("Created a child process to compute report")
         try:
-            report = asa()
-            if plot_history:
+            report: Union[DependencyMonkeyReport, Report] = resolver.resolve(with_devel=True)
+            if plot:
                 try:
-                    report.plot_history(plot_history)
+                    resolver.predictor.plot(plot)
                 except Exception as exc:
                     _LOGGER.exception(
-                        "Failed to plot history to %r: %s", plot_history, str(exc)
+                        "Failed to plot history to %r: %s", plot, str(exc)
                     )
 
             result_dict.update(

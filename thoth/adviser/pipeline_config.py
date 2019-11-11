@@ -17,17 +17,26 @@
 
 """A base class for implementing sieves."""
 
+from itertools import chain
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import List
+from typing import TYPE_CHECKING
+from typing import Union
+
+import attr
 
 from .boot import Boot
+from .dm_report import DependencyMonkeyReport
 from .sieve import Sieve
 from .step import Step
 from .stride import Stride
+from .unit import Unit
 from .wrap import Wrap
 
-import attr
+if TYPE_CHECKING:
+    from .report import Report
 
 
 @attr.s(slots=True)
@@ -49,3 +58,22 @@ class PipelineConfig:
             "strides": [stride.to_dict() for stride in self.strides],
             "wraps": [wrap.to_dict() for wrap in self.wraps],
         }
+
+    def iter_units(self) -> Generator["Unit", None, None]:
+        """Iterate over units present in the configuration."""
+        yield from chain(self.boots, self.sieves, self.steps, self.strides, self.wraps)
+
+    def call_pre_run(self) -> None:
+        """Call pre-run method on all units registered in this configuration."""
+        for unit in self.iter_units():
+            unit.pre_run()
+
+    def call_post_run(self) -> None:
+        """Call post-run method on all units registered in this configuration."""
+        for unit in self.iter_units():
+            unit.post_run()
+
+    def call_post_run_report(self, report: Union["Report", DependencyMonkeyReport]) -> None:
+        """Call post-run method when report is generated."""
+        for unit in self.iter_units():
+            unit.post_run_report(report)

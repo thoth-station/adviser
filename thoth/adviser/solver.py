@@ -14,8 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# TODO: enable typing once we release libs with typing
-# type: ignore
 
 """Definition of package resolution based on precomputed data available in graph.
 
@@ -29,6 +27,7 @@ from typing import List
 from typing import Dict
 from typing import Generator
 from typing import Tuple
+from typing import Set
 from typing import TYPE_CHECKING
 
 import attr
@@ -40,7 +39,6 @@ from thoth.storages import GraphDatabase
 from thoth.solver.python.base import DependencyParser
 from thoth.solver.python.base import ReleasesFetcher
 from thoth.solver.python.base import Solver
-from thoth.solver.python.base import SolverException
 from thoth.solver.python import PythonDependencyParser
 
 
@@ -54,17 +52,19 @@ class GraphReleasesFetcher(ReleasesFetcher):
 
     graph = attr.ib(type=GraphDatabase, kw_only=True)
     runtime_environment = attr.ib(
-        type=RuntimeEnvironment, default=attr.Factory(RuntimeEnvironment.from_dict)
+        type=RuntimeEnvironment,
+        default=attr.Factory(RuntimeEnvironment.from_dict),
+        kw_only=True,
     )
 
-    def fetch_releases(self, package_name: str):
+    def fetch_releases(self, package_name: str) -> Tuple[str, List[Tuple[str, str]]]:
         """Fetch releases for the given package name."""
         # Make sure we have normalized names in the graph database according to PEP:
         #   https://www.python.org/dev/peps/pep-0503/#normalized-names
         package_name = Source.normalize_package_name(package_name)
 
         start_offset = 0
-        result = set()
+        result: Set[Tuple[str, str, str]] = set()
         while True:
             query_result = self.graph.get_solved_python_package_versions_all(
                 package_name=package_name,
@@ -90,7 +90,7 @@ class GraphReleasesFetcher(ReleasesFetcher):
 class PackageVersionDependencyParser(DependencyParser):
     """Parse an instance of PackageVersion to Dependency object needed by solver."""
 
-    def parse(
+    def parse(  # type: ignore
         self, dependencies: List[PackageVersion]
     ) -> Generator[Requirement, None, None]:
         """Parse the given list of PackageVersion objects."""
@@ -131,12 +131,12 @@ class PythonPackageGraphSolver:
     _solver = attr.ib(type=PythonGraphSolver, default=None, kw_only=True)
 
     @property
-    def solver(self):
+    def solver(self) -> PythonGraphSolver:
         """Retrieve solver instance resolving using graph database."""
         if not self._solver:
             self._solver = PythonGraphSolver(
                 dependency_parser=PackageVersionDependencyParser(),
-                releases_fetcher=GraphReleasesFetcher(
+                releases_fetcher=GraphReleasesFetcher(  # type: ignore
                     graph=self.graph, runtime_environment=self.runtime_environment
                 ),
             )
@@ -153,7 +153,7 @@ class PythonPackageGraphSolver:
 
         resolved = self.solver.solve(dependencies, graceful=graceful)
         if not resolved:
-            return resolved
+            return {}
 
         for package_name, versions in resolved.items():
             # If this pop fails, it means that the package name has changed over the resolution.
