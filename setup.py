@@ -76,9 +76,11 @@ setup(
     license="GPLv3+",
     packages=[
         "thoth.adviser",
+        "thoth.adviser.boots",
         "thoth.adviser.steps",
         "thoth.adviser.sieves",
         "thoth.adviser.strides",
+        "thoth.adviser.wraps",
     ],
     package_data={"thoth.adviser": ["py.typed"]},
     entry_points={"console_scripts": ["thoth-adviser=thoth.adviser.cli:cli"]},
