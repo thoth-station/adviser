@@ -758,9 +758,9 @@
         },
         "sqlalchemy": {
             "hashes": [
-                "sha256:0f0768b5db594517e1f5e1572c73d14cf295140756431270d89496dc13d5e46c"
+                "sha256:afa5541e9dea8ad0014251bc9d56171ca3d8b130c9627c6cb3681cff30be3f8a"
             ],
-            "version": "==1.3.10"
+            "version": "==1.3.11"
         },
         "sqlalchemy-utils": {
             "hashes": [
@@ -967,11 +967,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:32cf19242306f074804a6d36d99fff96da0dc02bc1bc440e326ce9d73e4398e4",
-                "sha256:88320b33f98b815168da4a4d862f971d90153e29fe16a75eeeada756554010ca"
+                "sha256:2dfa49672947796cf6555fe00658c2f3590018706f6bc90a3b79c157be7acb20",
+                "sha256:5caf0d4b52cf797cfcb6bcf7fc633dd97b23beb9c07a3c90fffe444e4ebb3de3"
             ],
             "index": "pypi",
-            "version": "==4.44.0"
+            "version": "==4.44.1"
         },
         "hypothesis-auto": {
             "hashes": [
