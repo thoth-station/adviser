@@ -153,9 +153,7 @@ class Unit(metaclass=abc.ABCMeta):
         ):
             return None
 
-        index_url = package_version.index.url[
-            len(cls._AICOE_PYTHON_PACKAGE_INDEX_URL) :
-        ]
+        index_url = package_version.index.url[len(cls._AICOE_PYTHON_PACKAGE_INDEX_URL):]
         conf_parts = index_url.strip("/").split("/")  # the last is always "simple"
 
         if len(conf_parts) == 3:

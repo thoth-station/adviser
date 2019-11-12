@@ -45,4 +45,3 @@ class DependencyMonkeyReport:
     def to_dict(self) -> Dict[str, Any]:
         """Convert report to a dict representation suitable for serialization."""
         return {"skipped": self.skipped, "responses": self._responses}
-

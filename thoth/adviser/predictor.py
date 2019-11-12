@@ -37,7 +37,7 @@ class Predictor:
         """Pre-initialize the predictor.
 
         This method is called before any resolving with a freshly instantiated context. The default operation is a noop,
-       but predictor can perform any initial setup in this method. This method should not raise any exception.
+        but predictor can perform any initial setup in this method. This method should not raise any exception.
         """
 
     @abc.abstractmethod
