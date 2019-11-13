@@ -590,6 +590,10 @@ class Resolver:
         start_time = time.monotonic()
         try:
             for final_state in self._do_resolve_states(with_devel=with_devel):
+                _LOGGER.info(
+                    "Pipeline created reached a new final state, yielding pipeline product with score %g",
+                    final_state.score
+                )
                 product = Product.from_final_state(
                     graph=self.graph,
                     project=self.project,
