@@ -529,6 +529,8 @@ class Resolver:
         self._run_boots()
         beam = self._prepare_initial_states(with_devel=with_devel)
 
+        _LOGGER.info("Hold tight, Thoth is computing recommendations for your application...")
+
         self.context.iteration = 0
         while True:
             if self.context.accepted_final_states_count >= self.limit:
