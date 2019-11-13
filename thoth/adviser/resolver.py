@@ -593,7 +593,7 @@ class Resolver:
         try:
             for final_state in self._do_resolve_states(with_devel=with_devel):
                 _LOGGER.info(
-                    "Pipeline created reached a new final state, yielding pipeline product with score %g",
+                    "Pipeline reached a new final state, yielding pipeline product with a score of %g",
                     final_state.score
                 )
                 product = Product.from_final_state(

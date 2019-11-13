@@ -81,7 +81,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
         k = count / limit
         temperature = t0 * (0.95 ** k)
         _LOGGER.debug(
-            "New temperature for (iteration=%d, t0=%d, count=%d, limit=%d, k=%f) = %g",
+            "New temperature for (iteration=%d, t0=%g, count=%d, limit=%d, k=%f) = %g",
             iteration,
             t0,
             count,
@@ -123,7 +123,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
 
         # If we are recommending latest software stack, always perform hill climbing by
         # default - expanding the highest rated stack.
-        if not context.recommendation_type == RecommendationType.LATEST:
+        if context.recommendation_type != RecommendationType.LATEST:
             # Pick a random state to be expanded if accepted.
             probable_state_idx = random.randrange(1, beam.size) if beam.size > 1 else 0
             probable_state = beam.get(probable_state_idx)
