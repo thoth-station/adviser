@@ -19,13 +19,15 @@
 
 import logging
 from typing import Any
+from typing import Optional
 from typing import Dict
 from typing import List
 
 import attr
 
-from thoth.storages import GraphDatabase
+from thoth.common import RuntimeEnvironment
 from thoth.python import Project
+from thoth.storages import GraphDatabase
 
 from .context import Context
 from .state import State
@@ -41,26 +43,34 @@ class Product:
     project = attr.ib(type=Project)
     score = attr.ib(type=float)
     justification = attr.ib(type=List[Dict[str, str]])
+    advised_runtime_environment = attr.ib(
+        type=Optional[RuntimeEnvironment], default=None
+    )
 
     @classmethod
     def from_final_state(
         cls, *, graph: GraphDatabase, project: Project, context: Context, state: State
     ) -> "Product":
         """Instantiate advised stack from final state produced by adviser's pipeline."""
+        assert state.is_final(), "Instantiating product from a non-final state"
+
         package_versions_locked = []
         for package_tuple in state.resolved_dependencies.values():
             package_version = context.get_package_version(package_tuple)
 
             # Fill package hashes before instantiating the final product.
-            package_version.hashes = graph.get_python_package_hashes_sha256(
-                *package_tuple
-            )
             if not package_version.hashes:
-                _LOGGER.warning("No hashes found for package %r", package_tuple)
+                # We can re-use already existing package-version - in that case it already keeps hashes from
+                # a previous product instantiation.
+                package_version.hashes = graph.get_python_package_hashes_sha256(
+                    *package_tuple
+                )
+
+                if not package_version.hashes:
+                    _LOGGER.warning("No hashes found for package %r", package_tuple)
 
             package_versions_locked.append(package_version)
 
-        # TODO: advised runtime environment
         advised_project = Project.from_package_versions(
             packages=list(project.iter_dependencies(with_devel=True)),
             packages_locked=package_versions_locked,
@@ -70,6 +80,7 @@ class Product:
             project=advised_project,
             score=state.score,
             justification=state.justification,
+            advised_runtime_environment=state.advised_runtime_environment,
         )
 
     def __lt__(self, other: "Product") -> bool:
@@ -78,8 +89,13 @@ class Product:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert this instance into a dictionary."""
+        advised_runtime_environment = None
+        if self.advised_runtime_environment:
+            advised_runtime_environment = self.advised_runtime_environment.to_dict()
+
         return {
             "project": self.project.to_dict(),
             "score": self.score,
             "justification": self.justification,
+            "advised_runtime_environment": advised_runtime_environment,
         }

@@ -19,24 +19,24 @@
 
 import pytest
 
-from thoth.adviser.exceptions import NotAcceptable  # type: ignore
-from thoth.adviser.state import State  # type: ignore
+from thoth.adviser.exceptions import NotAcceptable
+from thoth.adviser.state import State
 from thoth.adviser.strides import ScoreFilteringStride
 
-from ..base import AdviserTestCase  # type: ignore
+from ..base import AdviserTestCase
 
 
-class TestScoreFiltering(AdviserTestCase):  # type: ignore
+class TestScoreFiltering(AdviserTestCase):
     """Test randomly pickling up a stack coming out of pipeline.."""
 
     def test_accept_first(self) -> None:
         """Test accepting the very first result with a specific score."""
-        stride = ScoreFilteringStride(project=None, graph=None)
+        stride = ScoreFilteringStride()
         assert stride.run(State(score=0.02)) is None
 
     def test_reject_second(self) -> None:
         """Test accepting the very first result and rejecting a second one with same score."""
-        stride = ScoreFilteringStride(project=None, graph=None)
+        stride = ScoreFilteringStride()
 
         assert stride.run(State(score=0.02)) is None
 

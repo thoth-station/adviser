@@ -43,13 +43,13 @@ class RandomDecisionStride(Stride):
 
     @classmethod
     def should_include(
-        cls, context: "PipelineBuilderContext"
+        cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
         """Remove CVEs only for advised stacks."""
         if (
-            context.is_dependency_monkey_pipeline()
-            and not context.is_included(cls)
-            and context.decision_type == DecisionType.RANDOM
+            builder_context.is_dependency_monkey_pipeline()
+            and not builder_context.is_included(cls)
+            and builder_context.decision_type == DecisionType.RANDOM
         ):
             return {}
 

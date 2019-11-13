@@ -15,4 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Tests related to adviser's steps implementation."""
+"""Tests related to adviser's steps pipeline unit implementation."""

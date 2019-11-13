@@ -43,14 +43,14 @@ _LOGGER = logging.getLogger(__name__)
 class CvePenalizationStep(Step):
     """Penalization based on CVE being present in stack."""
 
-    PARAMETERS_DEFAULT = {"cve_penalization": -0.2}
+    CONFIGURATION_DEFAULT = {"cve_penalization": -0.2}
 
     @classmethod
     def should_include(
-        cls, context: "PipelineBuilderContext"
+        cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
         """Remove CVEs only for advised stacks."""
-        if context.is_adviser_pipeline() and not context.is_included(cls):
+        if builder_context.is_adviser_pipeline() and not builder_context.is_included(cls):
             return {}
 
         return None
@@ -60,7 +60,7 @@ class CvePenalizationStep(Step):
     ) -> Optional[Tuple[float, List[Dict[str, str]]]]:
         """Penalize stacks with a CVE."""
         try:
-            cve_records = self.graph.get_python_cve_records_all(
+            cve_records = self.context.graph.get_python_cve_records_all(
                 package_name=package_version.name,
                 package_version=package_version.locked_version,
             )
@@ -72,7 +72,7 @@ class CvePenalizationStep(Step):
             _LOGGER.debug(
                 "Found a CVEs for %r: %r", package_version.to_tuple(), cve_records
             )
-            penalization = len(cve_records) * self.parameters["cve_penalization"]
+            penalization = len(cve_records) * self.configuration["cve_penalization"]
             return penalization, cve_records
 
         return None

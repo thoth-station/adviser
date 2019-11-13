@@ -24,10 +24,10 @@ from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages import GraphDatabase
 
-from ..base import AdviserTestCase  # type: ignore
+from ..base import AdviserTestCase
 
 
-class TestCvePenalizationStep(AdviserTestCase):  # type: ignore
+class TestCvePenalizationStep(AdviserTestCase):
     """Test scoring (penalization) based on a CVE."""
 
     _CASE_CANDIDATES = [
@@ -58,13 +58,19 @@ class TestCvePenalizationStep(AdviserTestCase):  # type: ignore
             index=Source("https://pypi.org/simple"),
             develop=False,
         )
-        step = CvePenalizationStep(graph=GraphDatabase(), project=None)
 
-        result = step.run(None, package_version)
+        context = flexmock(graph=GraphDatabase())
+        with CvePenalizationStep.assigned_context(context):
+            step = CvePenalizationStep()
+            result = step.run(None, package_version)
+
         assert result is not None
         assert isinstance(result, tuple) and len(result) == 2
         assert isinstance(result[0], float)
-        assert result[0] == 1 * CvePenalizationStep.PARAMETERS_DEFAULT["cve_penalization"]
+        assert (
+            result[0]
+            == 1 * CvePenalizationStep.CONFIGURATION_DEFAULT["cve_penalization"]
+        )
         assert isinstance(result[1], list)
         assert result[1] == [self._FLASK_CVE]
 
@@ -81,7 +87,10 @@ class TestCvePenalizationStep(AdviserTestCase):  # type: ignore
             index=Source("https://pypi.org/simple"),
             develop=False,
         )
-        step = CvePenalizationStep(graph=GraphDatabase(), project=None)
 
-        result = step.run(None, package_version)
+        context = flexmock(graph=GraphDatabase())
+        with CvePenalizationStep.assigned_context(context):
+            step = CvePenalizationStep()
+            result = step.run(None, package_version)
+
         assert result is None

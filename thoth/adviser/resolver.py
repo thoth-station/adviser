@@ -15,22 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of Adaptive Simulated Annealing (ASA) used to resolve software stacks."""
+"""The main resolving algorithm working on top of states."""
 
 import time
-import os
 from typing import Generator
 from typing import Dict
-from typing import Callable
 from typing import Any
-from typing import Tuple
 from typing import Optional
 from typing import List
 import logging
 from itertools import chain
 from itertools import product as itertools_product
-from math import exp
-import random
 
 from thoth.python import PackageVersion
 from thoth.python import Project
@@ -39,45 +34,29 @@ from thoth.storages.exceptions import NotFoundError
 
 from .beam import Beam
 from .context import Context
+from .enums import DecisionType
 from .enums import RecommendationType
-from .exceptions import CannotProduceStack
-from .exceptions import NotAcceptable
-from .exceptions import UnresolvedDependencies
 from .exceptions import BootError
+from .exceptions import CannotProduceStack
+from .exceptions import EagerStopPipeline
+from .exceptions import NotAcceptable
 from .exceptions import SieveError
 from .exceptions import StepError
 from .exceptions import StrideError
-from .exceptions import EagerStopPipeline
+from .exceptions import UnresolvedDependencies
 from .exceptions import WrapError
-
 from .pipeline_builder import PipelineBuilder
 from .pipeline_config import PipelineConfig
+from .predictor import Predictor
 from .product import Product
 from .report import Report
-from .solver import PythonPackageGraphSolver  # type: ignore
+from .solver import PythonPackageGraphSolver
 from .state import State
-from .temperature import ASATemperatureFunction
 from .unit import Unit
 
 import attr
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def _keep_temperature_history(value: Any) -> bool:
-    """Check if the history should be kept.
-
-    If not set explicitly during invocation, check environment variable to turn of history tracking.
-    """
-    if value is None:
-        return not bool(int(os.getenv("THOTH_ADVISER_NO_HISTORY", 0)))
-
-    if isinstance(value, bool):
-        return value
-
-    raise ValueError(
-        f"Unknown keep temperature history value: {value!r} if of type {type(value)!r}"
-    )
 
 
 def _beam_width(value: Any) -> Optional[int]:
@@ -124,38 +103,44 @@ def _limit_latest_versions(value: Any) -> Optional[int]:
     return value
 
 
-@attr.s(slots=True)
-class AdaptiveSimulatedAnnealing:
-    """Implementation of adaptive simulated annealing looking for stacks based on the scoring function."""
+def _library_usage(value: Any) -> Dict[str, Any]:
+    """Set and convert limit latest versions property."""
+    if value is None:
+        return {}
 
-    DEFAULT_LIMIT = 1000
+    if not isinstance(value, dict):
+        raise ValueError(
+            f"Unknown type for library usage: {value!r} is of type {type(value)!r}, a dict expected"
+        )
+
+    return value
+
+
+@attr.s(slots=True)
+class Resolver:
+    """Resolver for resolving software stacks using pipeline configuration and a predictor."""
+
+    DEFAULT_LIMIT = 10000
     DEFAULT_COUNT = DEFAULT_LIMIT
     DEFAULT_BEAM_WIDTH = -1
     DEFAULT_LIMIT_LATEST_VERSIONS = -1
 
     pipeline = attr.ib(type=PipelineConfig, kw_only=True)
     project = attr.ib(type=Project, kw_only=True)
-    hill_climbing = attr.ib(type=bool, default=False, kw_only=True)
-    library_usage = attr.ib(
-        type=Optional[Dict[str, Any]], default=attr.Factory(dict), kw_only=True
-    )
+    library_usage = attr.ib(type=Dict[str, Any], kw_only=True, converter=_library_usage)
     graph = attr.ib(type=GraphDatabase, kw_only=True)
+    predictor = attr.ib(type=Predictor, kw_only=True)
+    recommendation_type = attr.ib(
+        type=Optional[RecommendationType], kw_only=True, default=None
+    )
+    decision_type = attr.ib(type=Optional[DecisionType], kw_only=True, default=None)
     limit = attr.ib(type=int, kw_only=True, default=DEFAULT_LIMIT)
     count = attr.ib(type=int, kw_only=True, default=DEFAULT_COUNT)
-    temperature_function = attr.ib(
-        type=Callable[[int, float, int, int], float],
-        kw_only=True,
-        default=ASATemperatureFunction.exp,
-    )
-    seed = attr.ib(type=Optional[int], default=None, kw_only=True)
     beam_width = attr.ib(
         type=Optional[int],
         kw_only=True,
         default=DEFAULT_BEAM_WIDTH,
         converter=_beam_width,  # type: ignore
-    )
-    keep_temperature_history = attr.ib(
-        type=bool, kw_only=True, default=None, converter=_keep_temperature_history
     )
     limit_latest_versions = attr.ib(
         type=Optional[int],
@@ -163,31 +148,19 @@ class AdaptiveSimulatedAnnealing:
         default=DEFAULT_LIMIT_LATEST_VERSIONS,
         converter=_limit_latest_versions,  # type: ignore
     )
+
     _solver = attr.ib(
         type=Optional[PythonPackageGraphSolver], kw_only=True, default=None
     )
     _context = attr.ib(type=Optional[Context], default=None, kw_only=True)
-    _fully_specified_runtime_environment = attr.ib(
-        type=Optional[bool], default=None, kw_only=True
-    )
-    _temperature_history = attr.ib(
-        type=List[Tuple[float, bool, float, int]],
-        default=attr.Factory(list),
-        kw_only=True,
-    )
-
-    @graph.default
-    def _graph_default(self) -> GraphDatabase:
-        """Get default graph instance if no explicitly provided."""
-        graph = GraphDatabase()
-        graph.connect()
-        return graph
 
     @property
     def context(self) -> Context:
-        """Return context bound to this annealing."""
-        if not self._context:
-            raise ValueError("Context is not bound to annealing (has annealing run?)")
+        """Retrieve context bound to the current resolver."""
+        if self._context is None:
+            raise ValueError(
+                "Context not assigned yes to the current resolver instance"
+            )
 
         return self._context
 
@@ -200,101 +173,6 @@ class AdaptiveSimulatedAnnealing:
             )
 
         return self._solver
-
-    def get_temperature_history(self) -> List[Tuple[float, bool, float, int]]:
-        """Retrieve temperature history from the last run."""
-        return self._temperature_history
-
-    @staticmethod
-    def _compute_acceptance_probability(
-        top_score: float, neighbour_score: float, temperature: float
-    ) -> float:
-        """Check the probability of acceptance the given solution to expansion."""
-        if neighbour_score > top_score:
-            return 1.0
-
-        acceptance_probability = exp((neighbour_score - top_score) / temperature)
-        _LOGGER.debug(
-            "Acceptance probability for (top_score=%g, neighbour_score=%g, temperature=%g) = %g",
-            top_score,
-            neighbour_score,
-            temperature,
-            acceptance_probability,
-        )
-        return acceptance_probability
-
-    def _is_fully_specified_runtime_environment(self) -> bool:
-        """Pre-cache check if the given runtime environment is fully specified."""
-        # TODO: move this to RuntimeEnvironment class
-        if self._fully_specified_runtime_environment is None:
-            runtime_environment = (
-                self.project.runtime_environment.operating_system.name,
-                self.project.runtime_environment.operating_system.version,
-                self.project.runtime_environment.python_version,
-            )
-            self._fully_specified_runtime_environment = all(
-                i is not None for i in runtime_environment
-            )
-
-            if not self._fully_specified_runtime_environment:
-                _LOGGER.warning(
-                    "Environment is not fully specified, pre-computed environment markers will not be "
-                    "taken into account"
-                )
-
-        return self._fully_specified_runtime_environment
-
-    def _resolve_direct_dependencies(
-        self, *, with_devel: bool
-    ) -> Dict[str, List[PackageVersion]]:
-        """Resolve all the direct dependencies based on the resolution and data available in the graph."""
-        # It's important that solver preserves order in which packages were inserted.
-        # This is also a requirement for running under Python3.6+!!!
-        _LOGGER.info("Resolving direct dependencies")
-        resolved_direct_dependencies: Dict[
-            str, List[PackageVersion]
-        ] = self.solver.solve(
-            list(self.project.iter_dependencies(with_devel=with_devel)), graceful=True
-        )
-
-        if not resolved_direct_dependencies:
-            raise CannotProduceStack("No direct dependencies were resolved")
-
-        unresolved = []
-        for package_name, package_versions in resolved_direct_dependencies.items():
-            if not package_versions:
-                # This means that there were found versions in the graph
-                # database but none was matching the given version range.
-                unresolved.append(package_name)
-
-                error_msg = (
-                    f"No versions were found for direct dependency {package_name!r}"
-                )
-                runtime_environment = self.project.runtime_environment
-                if runtime_environment.operating_system.name:
-                    error_msg += f"; operating system {runtime_environment.operating_system.name!r}"
-                    if runtime_environment.operating_system.version:
-                        error_msg += f" in OS version {runtime_environment.operating_system.version!r}"
-
-                if runtime_environment.python_version:
-                    error_msg += (
-                        f" for Python in version {runtime_environment.python_version!r}"
-                    )
-
-                _LOGGER.warning(error_msg)
-                continue
-
-        if unresolved:
-            raise UnresolvedDependencies(
-                "Unable to resolve all direct dependencies, no versions "
-                "were found for packages %s" % ", ".join(f"{i!r}" for i in unresolved),
-                unresolved=unresolved,
-            )
-
-        # Now we are free to de-instantiate solver.
-        del self._solver
-
-        return resolved_direct_dependencies
 
     def _run_boots(self) -> None:
         """Run all boots bound to the current annealing run context."""
@@ -409,6 +287,58 @@ class AdaptiveSimulatedAnnealing:
                     f"Failed to run wrap {wrap.__class__.__name__!r} on a final step: {str(exc)}"
                 ) from exc
 
+    def _resolve_direct_dependencies(
+        self, *, with_devel: bool
+    ) -> Dict[str, List[PackageVersion]]:
+        """Resolve all the direct dependencies based on the resolution and data available in the graph."""
+        # It's important that solver preserves order in which packages were inserted.
+        # This is also a requirement for running under Python3.6+!!!
+        _LOGGER.info("Resolving direct dependencies")
+        resolved_direct_dependencies: Dict[
+            str, List[PackageVersion]
+        ] = self.solver.solve(
+            list(self.project.iter_dependencies(with_devel=with_devel)), graceful=True
+        )
+
+        if not resolved_direct_dependencies:
+            raise CannotProduceStack("No direct dependencies were resolved")
+
+        unresolved = []
+        for package_name, package_versions in resolved_direct_dependencies.items():
+            if not package_versions:
+                # This means that there were found versions in the graph
+                # database but none was matching the given version range.
+                unresolved.append(package_name)
+
+                error_msg = (
+                    f"No versions were found for direct dependency {package_name!r}"
+                )
+                runtime_environment = self.project.runtime_environment
+                if runtime_environment.operating_system.name:
+                    error_msg += f"; operating system {runtime_environment.operating_system.name!r}"
+                    if runtime_environment.operating_system.version:
+                        error_msg += f" in OS version {runtime_environment.operating_system.version!r}"
+
+                if runtime_environment.python_version:
+                    error_msg += (
+                        f" for Python in version {runtime_environment.python_version!r}"
+                    )
+
+                _LOGGER.warning(error_msg)
+                continue
+
+        if unresolved:
+            raise UnresolvedDependencies(
+                "Unable to resolve all direct dependencies, no versions "
+                "were found for packages %s" % ", ".join(f"{i!r}" for i in unresolved),
+                unresolved=unresolved,
+            )
+
+        # Now we are free to de-instantiate solver.
+        del self._solver
+
+        return resolved_direct_dependencies
+
     def _semver_sort_and_limit_latest_versions(
         self, *package_versions: PackageVersion
     ) -> List[PackageVersion]:
@@ -504,7 +434,7 @@ class AdaptiveSimulatedAnnealing:
 
         all_dependencies: Dict[str, List[PackageVersion]] = {}
         for package_name, version in chain(*dependencies.values()):
-            if self._is_fully_specified_runtime_environment():
+            if self.project.runtime_environment.is_fully_specified():
                 marker_evaluation_result = self.graph.get_python_environment_marker_evaluation_result(
                     *package_tuple,
                     dependency_name=package_name,
@@ -592,19 +522,18 @@ class AdaptiveSimulatedAnnealing:
 
         return None
 
-    def _heat_and_cool(
+    def _do_resolve_states(
         self, *, with_devel: bool = True
     ) -> Generator[State, None, None]:
-        """Heat and cool the steel - perform the actual adaptive simulated annealing."""
+        """Actually perform adaptive simulated annealing."""
         self._run_boots()
         beam = self._prepare_initial_states(with_devel=with_devel)
 
-        iteration = 0
-        temperature = float(self.limit)
+        self.context.iteration = 0
         while True:
             if self.context.accepted_final_states_count >= self.limit:
                 _LOGGER.info(
-                    "Reached limit of stacks to be generated - %r (limit is %r), stopping annealing "
+                    "Reached limit of stacks to be generated - %r (limit is %r), stopping resolver "
                     "with the current beam size %d",
                     self.context.accepted_final_states_count,
                     self.limit,
@@ -616,103 +545,30 @@ class AdaptiveSimulatedAnnealing:
                 _LOGGER.info("The beam is empty")
                 break
 
-            temperature = self.temperature_function(
-                iteration,
-                temperature,
-                self.context.accepted_final_states_count,
-                self.limit,
-            )
-            if temperature <= 0.0:
-                _LOGGER.error(
-                    "Iteration %r with temperature %g (k=%d)",
-                    iteration,
-                    temperature,
-                    self.context.accepted_final_states_count,
-                )
-                return None
+            self.context.iteration += 1
 
-            # Expand highest promising by default if not acceptance probability.
-            to_expand_state = beam.top()
-
-            expanding_top = True
-            acceptance_probability = 1.0
-            if not self.hill_climbing and beam.size > 1:
-                # Pick a random state to be expanded if accepted.
-                probable_state_idx = random.randrange(1, beam.size)
-                probable_state = beam.get(probable_state_idx)
-                acceptance_probability = self._compute_acceptance_probability(
-                    to_expand_state.score, probable_state.score, temperature
-                )
-                if acceptance_probability >= random.uniform(0.0, 1.0):
-                    # Skip to probable state, do not use the top rated state.
-                    _LOGGER.debug(
-                        "Performing transition to neighbour state with score %g",
-                        probable_state.score,
-                    )
-                    to_expand_state = probable_state
-                    beam.pop(probable_state_idx)
-                    expanding_top = False
-                else:
-                    # Remove highest rated which is going to be expanded in this round.
-                    _LOGGER.debug(
-                        "Keeping TOP rated state with score %g", to_expand_state.score
-                    )
-                    beam.pop()
-            else:
-                # If we have latest recommendations, try to expand the most recent version, always.
-                _LOGGER.debug(
-                    "Expanding TOP rated state with score %g", to_expand_state.score
-                )
-                beam.pop()
-
-            iteration += 1
-            if self.keep_temperature_history:
-                self._temperature_history.append(
-                    (
-                        temperature,
-                        expanding_top,
-                        acceptance_probability,
-                        self.context.accepted_final_states_count,
-                    )
-                )
+            state_idx = self.predictor.run(self.context, beam)
+            to_expand_state = beam.pop(state_idx)
 
             _LOGGER.debug(
-                "Expanding state with score %g: %r",
+                "Expanding state with score %g at index %d: %r",
                 to_expand_state.score,
+                state_idx,
                 to_expand_state,
             )
             final_state = self._expand_state(beam, to_expand_state)
             if final_state:
                 if self._run_strides(final_state):
                     self._run_wraps(final_state)
-                    self.context.inc_accepted_final_states_count()
+                    self.context.accepted_final_states_count += 1
                     yield final_state
                 else:
-                    self.context.inc_discarded_final_states_count()
+                    self.context.discarded_final_states_count += 1
 
-    def _do_anneal_products(
-        self, *, with_devel: bool = True
-    ) -> Generator[State, None, None]:
-        """Actually perform adaptive simulated annealing."""
-        self._context = Context()
-        self._temperature_history = []
-
-        with Unit.assigned_context(self.context):
-            try:
-                yield from self._heat_and_cool(with_devel=with_devel)
-            except EagerStopPipeline as exc:
-                _LOGGER.info(f"Stopping pipeline eagerly as per request: %s", str(exc))
-
-        _LOGGER.info(
-            "Pipeline strides discarded %d and accepted %d final states in total",
-            self.context.discarded_final_states_count,
-            self.context.accepted_final_states_count,
-        )
-
-    def anneal_products(
+    def resolve_products(
         self, *, with_devel: bool = True
     ) -> Generator[Product, None, None]:
-        """Run simulated annealing, produce product."""
+        """Resolve raw products as produced by this resolver pipeline."""
         if self.count > self.limit:
             _LOGGER.warning(
                 "Count (%d) is higher than limit (%d), setting count to %d",
@@ -722,15 +578,18 @@ class AdaptiveSimulatedAnnealing:
             )
             self.count = self.limit
 
-        # Use current time to make sure we have possibly reproducible runs - the seed is reported.
-        seed = self.seed if self.seed is not None else int(time.time())
-        stored_random_state = random.getstate()
-        _LOGGER.info("Starting annealing with random seed set to %r", seed)
-        random.seed(seed)
+        if not self.project.runtime_environment.is_fully_specified():
+            _LOGGER.warning(
+                "Environment is not fully specified, pre-computed environment markers will not be "
+                "taken into account"
+            )
 
+        self.predictor.pre_run(self.context)
+        self.pipeline.call_pre_run()
+
+        start_time = time.monotonic()
         try:
-            start_time = time.monotonic()
-            for final_state in self._do_anneal_products(with_devel=with_devel):
+            for final_state in self._do_resolve_states(with_devel=with_devel):
                 product = Product.from_final_state(
                     graph=self.graph,
                     project=self.project,
@@ -738,41 +597,58 @@ class AdaptiveSimulatedAnnealing:
                     state=final_state,
                 )
                 yield product
-            _LOGGER.info(
-                "Annealing pipeline steps took %g seconds in total",
-                time.monotonic() - start_time,
-            )
-        finally:
-            # Restore random state to be nice to out users.
-            random.setstate(stored_random_state)
 
-    def anneal(self, *, with_devel: bool = True) -> Report:
-        """Perform adaptive simulated annealing and report back a report of run."""
+        except EagerStopPipeline as exc:
+            _LOGGER.info("Stopping pipeline eagerly as per request: %s", str(exc))
+
+        _LOGGER.info(
+            "Resolver took %g seconds in total (consumer time also included)",
+            time.monotonic() - start_time,
+        )
+
+        _LOGGER.info(
+            "Pipeline strides discarded %d and accepted %d final states in total",
+            self.context.discarded_final_states_count,
+            self.context.accepted_final_states_count,
+        )
+
+        self.predictor.post_run(self.context)
+        self.pipeline.call_post_run()
+
+    def resolve(self, *, with_devel: bool = True) -> Report:
+        """Resolve software stacks and return resolver report."""
         report = Report(count=self.count, pipeline=self.pipeline)
 
-        for product in self.anneal_products(with_devel=with_devel):
-            report.add_product(product)
+        self._context = Context(
+            project=self.project,
+            graph=self.graph,
+            library_usage=self.library_usage,
+            limit=self.limit,
+            count=self.count,
+            recommendation_type=self.recommendation_type,
+            decision_type=self.decision_type,
+        )
 
-        if report.product_count() == 0:
-            raise CannotProduceStack("No stack was produced")
+        with Unit.assigned_context(self.context):
+            for product in self.resolve_products(with_devel=with_devel):
+                report.add_product(product)
 
-        if self.keep_temperature_history:
-            report.set_temperature_history(self._temperature_history)
+            if report.product_count() == 0:
+                raise CannotProduceStack("No stack was produced")
 
-        if self.context.stack_info:
-            report.set_stack_info(self.context.stack_info)
+            if self.context.stack_info:
+                report.set_stack_info(self.context.stack_info)
 
-        if self.context.advised_runtime_environment:
-            report.set_advised_runtime_environment(
-                self.context.advised_runtime_environment
-            )
+            self.predictor.post_run_report(self.context, report)
+            self.pipeline.call_post_run_report(report)
 
         return report
 
     @classmethod
-    def compute_on_project(
+    def get_adviser_instance(
         cls,
         *,
+        predictor: Predictor,
         beam_width: Optional[int] = None,
         count: int = DEFAULT_COUNT,
         graph: Optional[GraphDatabase] = None,
@@ -781,12 +657,8 @@ class AdaptiveSimulatedAnnealing:
         limit_latest_versions: Optional[int] = DEFAULT_LIMIT_LATEST_VERSIONS,
         project: Project,
         recommendation_type: RecommendationType,
-        seed: Optional[int] = None,
-        temperature_function: Callable[
-            [int, float, int, int], float
-        ] = ASATemperatureFunction.exp,
-    ) -> Report:
-        """Compute recommendations on the given project."""
+    ) -> "Resolver":
+        """Get instance of resolver based on the project given to recommend software stacks."""
         graph = graph or GraphDatabase()
         if not graph.is_connected():
             graph.connect()
@@ -798,18 +670,57 @@ class AdaptiveSimulatedAnnealing:
             graph=graph,
         )
 
-        asa = cls(
+        resolver = cls(
             beam_width=beam_width,
             count=count,
             graph=graph,
-            hill_climbing=recommendation_type == RecommendationType.LATEST,
             library_usage=library_usage,
             limit_latest_versions=limit_latest_versions,
             limit=limit,
             pipeline=pipeline,
+            predictor=predictor,
             project=project,
-            seed=seed,
-            temperature_function=temperature_function,
+            recommendation_type=recommendation_type,
         )
 
-        return asa.anneal()
+        return resolver
+
+    @classmethod
+    def get_dependency_monkey_instance(
+        cls,
+        *,
+        predictor: Predictor,
+        beam_width: Optional[int] = None,
+        count: int = DEFAULT_COUNT,
+        graph: Optional[GraphDatabase] = None,
+        library_usage: Optional[Dict[str, Any]] = None,
+        limit_latest_versions: Optional[int] = DEFAULT_LIMIT_LATEST_VERSIONS,
+        project: Project,
+        decision_type: DecisionType,
+    ) -> "Resolver":
+        """Get instance of resolver based on the project given to run dependency monkey."""
+        graph = graph or GraphDatabase()
+        if not graph.is_connected():
+            graph.connect()
+
+        pipeline = PipelineBuilder.get_dependency_monkey_pipeline_config(
+            decision_type=decision_type,
+            graph=graph,
+            project=project,
+            library_usage=library_usage,
+        )
+
+        resolver = cls(
+            beam_width=beam_width,
+            count=count,
+            limit=count,  # always match as limit is always same as count for Dependency Monkey.
+            graph=graph,
+            library_usage=library_usage,
+            limit_latest_versions=limit_latest_versions,
+            pipeline=pipeline,
+            predictor=predictor,
+            project=project,
+            decision_type=decision_type,
+        )
+
+        return resolver

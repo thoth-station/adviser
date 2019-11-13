@@ -20,9 +20,11 @@
 from typing import Tuple
 from typing import Dict
 from typing import List
+from typing import Optional
 from collections import OrderedDict
 
 import attr
+from thoth.common import RuntimeEnvironment
 
 
 @attr.s(slots=True, eq=False, order=False)
@@ -37,7 +39,12 @@ class State:
     resolved_dependencies = attr.ib(
         type=Dict[str, Tuple[str, str, str]], default=attr.Factory(OrderedDict)
     )
-    _justification = attr.ib(type=List[Dict[str, str]], default=attr.Factory(list))
+    advised_runtime_environment = attr.ib(
+        type=Optional[RuntimeEnvironment], kw_only=True, default=None
+    )
+    _justification = attr.ib(
+        type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True
+    )
 
     @property
     def justification(self) -> List[Dict[str, str]]:
@@ -66,10 +73,17 @@ class State:
 
     def clone(self) -> "State":
         """Return a swallow copy of this state that can be used as a next state."""
+        cloned_advised_environment = None
+        if self.advised_runtime_environment:
+            cloned_advised_environment = RuntimeEnvironment.from_dict(
+                self.advised_runtime_environment.to_dict()
+            )
+
         new_state = self.__class__(
             score=self.score,
             unresolved_dependencies=OrderedDict(self.unresolved_dependencies),
             resolved_dependencies=OrderedDict(self.resolved_dependencies),
+            advised_runtime_environment=cloned_advised_environment,
         )
         new_state.add_justification(self.justification)
         return new_state

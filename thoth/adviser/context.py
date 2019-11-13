@@ -25,11 +25,14 @@ from typing import Tuple
 
 import attr
 
-from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
 from thoth.python import Source
+from thoth.python import Project
+from thoth.storages import GraphDatabase
 
 from .exceptions import NotFound
+from .enums import RecommendationType
+from .enums import DecisionType
 
 
 @attr.s(slots=True)
@@ -40,39 +43,39 @@ class Context:
     needed - for example for parsing version strings (this is lazily pre-cached in PackageVersion).
     """
 
+    project = attr.ib(type=Project, kw_only=True)
+    graph = attr.ib(type=GraphDatabase, kw_only=True)
+    library_usage = attr.ib(type=Optional[Dict[str, Any]], kw_only=True)
+    limit = attr.ib(type=int, kw_only=True)
+    count = attr.ib(type=int, kw_only=True)
+    recommendation_type = attr.ib(
+        type=Optional[RecommendationType], kw_only=True, default=None
+    )
+    decision_type = attr.ib(type=Optional[DecisionType], kw_only=True, default=None)
     package_versions = attr.ib(
         type=Dict[Tuple[str, str, str], PackageVersion],
         kw_only=True,
         default=attr.Factory(dict),
     )
     sources = attr.ib(type=Dict[str, Source], kw_only=True, default=attr.Factory(dict))
-    # TODO: move to state?
-    advised_runtime_environment = attr.ib(
-        type=RuntimeEnvironment, kw_only=True, default=None
-    )
+    iteration = attr.ib(type=int, default=0, kw_only=True)
     stack_info = attr.ib(
         type=Optional[List[Dict[str, Any]]], kw_only=True, default=attr.Factory(list)
     )
-    _accepted_final_states_count = attr.ib(type=int, kw_only=True, default=0)
-    _discarded_final_states_count = attr.ib(type=int, kw_only=True, default=0)
+    accepted_final_states_count = attr.ib(type=int, kw_only=True, default=0)
+    discarded_final_states_count = attr.ib(type=int, kw_only=True, default=0)
 
-    @property
-    def accepted_final_states_count(self) -> int:
-        """Return number of accepted final states as produced by the pipeline."""
-        return self._accepted_final_states_count
+    def __attrs_post_init__(self) -> None:
+        """Verify we have only adviser or dependency monkey specific context."""
+        if self.decision_type is not None and self.recommendation_type is not None:
+            raise ValueError(
+                "Cannot instantiate context for adviser and dependency monkey at the same time"
+            )
 
-    @property
-    def discarded_final_states_count(self) -> int:
-        """Return number of discarded final states (discarded by strides) during the pipeline run."""
-        return self._discarded_final_states_count
-
-    def inc_accepted_final_states_count(self) -> None:
-        """Increment counter of accepted final states count."""
-        self._accepted_final_states_count += 1
-
-    def inc_discarded_final_states_count(self) -> None:
-        """Increment counter of discarded final states count."""
-        self._discarded_final_states_count += 1
+        if self.decision_type is None and self.recommendation_type is None:
+            raise ValueError(
+                "Cannot instantiate context not specific to adviser nor dependency monkey"
+            )
 
     def get_package_version(
         self, package_tuple: Tuple[str, str, str]
@@ -130,3 +133,11 @@ class Context:
         )
         self.package_versions[package_tuple] = package_version
         return package_version
+
+    def is_dependency_monkey(self) -> bool:
+        """Check if the current context refers to a dependency monkey run."""
+        return self.recommendation_type is None
+
+    def is_adviser(self) -> bool:
+        """Check if the current context refers to a dependency monkey run."""
+        return self.decision_type is None

@@ -20,26 +20,25 @@
 import re
 import abc
 import logging
-from copy import copy
 from typing import Any
 from typing import Dict
-from typing import Optional
-from typing import Tuple
 from typing import Generator
+from typing import Optional
 from typing import TYPE_CHECKING
+from typing import Union
 from contextlib import contextmanager
 
 import attr
 from voluptuous import Schema
-
-from thoth.storages import GraphDatabase
-from thoth.python import Project
 from thoth.python import PackageVersion
 
 from .context import Context
+from .dm_report import DependencyMonkeyReport
 
 if TYPE_CHECKING:
     from .pipeline_builder import PipelineBuilderContext
+    from .report import Report
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,18 +47,13 @@ _LOGGER = logging.getLogger(__name__)
 class Unit(metaclass=abc.ABCMeta):
     """A base class for implementing pipeline units - strides and steps."""
 
-    graph = attr.ib(type=GraphDatabase, kw_only=True)
-    project = attr.ib(type=Project, kw_only=True)
-    library_usage = attr.ib(
-        type=Optional[Dict[str, Any]], default=attr.Factory(dict), kw_only=True
-    )
-    _parameters = attr.ib(type=Dict[str, Any], kw_only=True)
+    _configuration = attr.ib(type=Dict[str, Any], kw_only=True)
     _name = attr.ib(type=str, default=None, kw_only=True)
-    _context = attr.ib(type=Optional[Context], default=None, kw_only=True)
 
-    # Schema used to validate step parameters - None value does not validate parameters.
-    PARAMETERS_SCHEMA: Schema = None
-    PARAMETERS_DEFAULT: Dict[str, Any] = {}
+    _CONTEXT: Optional[Context] = None
+    # Schema used to validate unit configuration - None value does not validate configuration.
+    CONFIGURATION_SCHEMA: Schema = None
+    CONFIGURATION_DEFAULT: Dict[str, Any] = {}
 
     _RE_CAMEL2SNAKE = re.compile("(?!^)([A-Z]+)")
     _AICOE_PYTHON_PACKAGE_INDEX_URL = (
@@ -68,11 +62,11 @@ class Unit(metaclass=abc.ABCMeta):
 
     @classmethod
     def should_include(
-        cls, context: "PipelineBuilderContext"
+        cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         raise NotImplemented(
-            f"Please implement method to register pipeline unit {cls.__name__!r}to pipeline configuration"
+            f"Please implement method to register pipeline unit {cls.__name__!r} to pipeline configuration"
         )
 
     @classmethod
@@ -80,60 +74,56 @@ class Unit(metaclass=abc.ABCMeta):
     def assigned_context(cls, context: Context) -> Generator[None, None, None]:
         """Assign context to all units."""
         try:
-            cls._context = context
+            cls._CONTEXT = context
             yield
         finally:
-            cls._context = None
+            cls._CONTEXT = None
 
     @classmethod
-    def compute_expanded_parameters(
-        cls, parameters_dict: Optional[Dict[str, Any]]
+    def compute_expanded_configuration(
+        cls, configuration_dict: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """Compute parameters as they would be computed based on unit configuration."""
-        result = copy(cls.PARAMETERS_DEFAULT)
+        """Compute configuration as they would be computed based on unit configuration."""
+        result = dict(cls.CONFIGURATION_DEFAULT)
 
-        if parameters_dict:
-            result.update(parameters_dict)
+        if configuration_dict:
+            result.update(configuration_dict)
 
         return result
 
-    @_parameters.default
-    def _initialize_default_parameters(self) -> Dict[str, Any]:
-        """Initialize default parameters based on declared class' default parameters."""
-        return copy(self.PARAMETERS_DEFAULT)
+    @_configuration.default
+    def _initialize_default_configuration(self) -> Dict[str, Any]:
+        """Initialize default unit configuration based on declared class' default configuration."""
+        return dict(self.CONFIGURATION_DEFAULT)
 
     @property
     def context(self) -> Context:
         """Get context in which the unit runs in."""
-        if self._context is None:
+        if self._CONTEXT is None:
             raise ValueError("Requesting pipeline context outside of pipeline run")
-        return self._context
 
-    @property
-    def parameters(self) -> Dict[str, Any]:
-        """Get parameters of instantiated pipeline step."""
-        return self._parameters
+        return self._CONTEXT
 
     @property
     def name(self) -> str:
-        """Name of a stack pipeline."""
-        if not self._name:
-            self._name = self._RE_CAMEL2SNAKE.sub(
-                r"_\1", self.__class__.__name__
-            ).lower()
+        """Get name of this pipeline unit."""
+        return self.__class__.__name__
 
-        return self._name
+    @property
+    def configuration(self) -> Dict[str, Any]:
+        """Get configuration of instantiated pipeline unit."""
+        return self._configuration
 
-    def update_parameters(self, parameters_dict: Dict[str, Any]) -> None:
-        """Set parameters for a stack pipeline.
+    def update_configuration(self, configuration_dict: Dict[str, Any]) -> None:
+        """Set configuration for a pipeline unit.
 
-        If setting parameters fails due to schema checks, parameters are kept in an invalid state.
+        If setting configuration fails due to schema checks, configuration are kept in an invalid state.
         """
-        self.parameters.update(parameters_dict)
-        if self.PARAMETERS_SCHEMA:
-            _LOGGER.debug("Validating parameters for pipeline unit %r", self.name)
+        self.configuration.update(configuration_dict)
+        if self.CONFIGURATION_SCHEMA:
+            _LOGGER.debug("Validating configuration for pipeline unit %r", self.name)
             try:
-                self.PARAMETERS_SCHEMA(self.parameters)
+                self.CONFIGURATION_SCHEMA(self.configuration)
             except Exception as exc:
                 _LOGGER.exception(
                     "Failed to validate schema for pipeline unit %r: %s",
@@ -144,7 +134,7 @@ class Unit(metaclass=abc.ABCMeta):
 
     def to_dict(self) -> Dict[str, Any]:
         """Turn this pipeline step into its dictionary representation."""
-        return {"name": self.__class__.__name__, "parameters": self.parameters}
+        return {"name": self.__class__.__name__, "configuration": self.configuration}
 
     @classmethod
     def is_aicoe_release(cls, package_version: PackageVersion) -> bool:
@@ -198,3 +188,21 @@ class Unit(metaclass=abc.ABCMeta):
             package_version.index.url,
         )
         return None
+
+    def pre_run(self) -> None:
+        """Called before running any pipeline unit with context already assigned.
+
+        This method should not raise any exception.
+        """
+
+    def post_run(self) -> None:
+        """Called after the resolution is finished.
+
+        This method should not raise any exception.
+        """
+
+    def post_run_report(self, report: Union["Report", DependencyMonkeyReport]) -> None:
+        """Post-run method run after the resolving has finished - this method is called only if resolving with a report.
+
+        This method should not raise any exception.
+        """

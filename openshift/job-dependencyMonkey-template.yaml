@@ -57,7 +57,7 @@ parameters:
     # Keep seed constant across adviser runs so that two runs with same knowledge base report same results to user.
     # Not to answer with a different stack each time a request is made.
     value: "42"
-  - name: THOTH_ADVISER_PLOT_HISTORY
+  - name: THOTH_ADVISER_PLOT
     required: false
     description: A path to history file to store annealing progress history.
     displayName: History plot file
@@ -156,8 +156,8 @@ objects:
                   value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
                 - name: THOTH_ADVISER_SEED
                   value: "${THOTH_ADVISER_SEED}"
-                - name: THOTH_ADVISER_PLOT_HISTORY
-                  value: "${THOTH_ADVISER_PLOT_HISTORY}"
+                - name: THOTH_ADVISER_PLOT
+                  value: "${THOTH_ADVISER_PLOT}"
                 - name: THOTH_ADVISER_BEAM_WIDTH
                   value: "${THOTH_ADVISER_BEAM_WIDTH}"
                 - name: THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT

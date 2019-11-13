@@ -30,11 +30,6 @@ from typing import Set
 import attr
 from thoth.python import Project
 from thoth.storages import GraphDatabase
-import thoth.adviser.boots
-import thoth.adviser.sieves
-import thoth.adviser.steps
-import thoth.adviser.strides
-import thoth.adviser.wraps
 
 from .enums import DecisionType
 from .enums import RecommendationType
@@ -61,16 +56,54 @@ class PipelineBuilderContext:
     recommendation_type = attr.ib(
         type=Optional[RecommendationType], kw_only=True, default=None
     )
-    boots = attr.ib(type=List[Boot], default=attr.Factory(list), kw_only=True)
-    sieves = attr.ib(type=List[Sieve], default=attr.Factory(list), kw_only=True)
-    steps = attr.ib(type=List[Step], default=attr.Factory(list), kw_only=True)
-    strides = attr.ib(type=List[Stride], default=attr.Factory(list), kw_only=True)
-    wraps = attr.ib(type=List[Wrap], default=attr.Factory(list), kw_only=True)
+
+    _boots = attr.ib(type=List[Boot], default=attr.Factory(list), kw_only=True)
+    _sieves = attr.ib(type=List[Sieve], default=attr.Factory(list), kw_only=True)
+    _steps = attr.ib(type=List[Step], default=attr.Factory(list), kw_only=True)
+    _strides = attr.ib(type=List[Stride], default=attr.Factory(list), kw_only=True)
+    _wraps = attr.ib(type=List[Wrap], default=attr.Factory(list), kw_only=True)
     _boots_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
     _sieves_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
     _steps_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
     _strides_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
     _wraps_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
+
+    @property
+    def boots(self) -> List[Boot]:
+        """Get all boots registered to this pipeline builder context."""
+        return self._boots
+
+    @property
+    def sieves(self) -> List[Sieve]:
+        """Get all sieves registered to this pipeline builder context."""
+        return self._sieves
+
+    @property
+    def steps(self) -> List[Step]:
+        """Get all steps registered to this pipeline builder context."""
+        return self._steps
+
+    @property
+    def strides(self) -> List[Stride]:
+        """Get all strides registered to this pipeline builder context."""
+        return self._strides
+
+    @property
+    def wraps(self) -> List[Wrap]:
+        """Get all wraps registered to this pipeline builder context."""
+        return self._wraps
+
+    def __attrs_post_init__(self) -> None:
+        """Verify we have only adviser or dependency monkey specific builder."""
+        if self.decision_type is not None and self.recommendation_type is not None:
+            raise ValueError(
+                "Cannot instantiate builder for adviser and dependency monkey at the same time"
+            )
+
+        if self.decision_type is None and self.recommendation_type is None:
+            raise ValueError(
+                "Cannot instantiate builder context not specific to adviser nor dependency monkey"
+            )
 
     def is_included(self, unit_class: type) -> bool:
         """Check if the given pipeline unit is already included in the pipeline configuration."""
@@ -82,8 +115,10 @@ class PipelineBuilderContext:
             return unit_class in self._steps_included
         elif issubclass(unit_class, Stride):
             return unit_class in self._strides_included
+        elif issubclass(unit_class, Wrap):
+            return unit_class in self._wraps_included
 
-        raise InternalError(f"Unknown unit of type {unit_class.__name__!r}")
+        raise InternalError(f"Unknown unit {unit_class.__name__!r}")
 
     def is_adviser_pipeline(self) -> bool:
         """Check if the pipeline built is meant for adviser."""
@@ -97,23 +132,23 @@ class PipelineBuilderContext:
         """Add the given unit to pipeline configuration."""
         if isinstance(unit, Boot):
             self._boots_included.add(unit.__class__)
-            self.boots.append(unit)
+            self._boots.append(unit)
             return
         if isinstance(unit, Sieve):
             self._sieves_included.add(unit.__class__)
-            self.sieves.append(unit)
+            self._sieves.append(unit)
             return
         elif isinstance(unit, Step):
             self._steps_included.add(unit.__class__)
-            self.steps.append(unit)
+            self._steps.append(unit)
             return
         elif isinstance(unit, Stride):
             self._strides_included.add(unit.__class__)
-            self.strides.append(unit)
+            self._strides.append(unit)
             return
         elif isinstance(unit, Wrap):
             self._wraps_included.add(unit.__class__)
-            self.wraps.append(unit)
+            self._wraps.append(unit)
             return
 
         raise InternalError(
@@ -121,17 +156,25 @@ class PipelineBuilderContext:
         )
 
 
-@attr.s(slots=True)
 class PipelineBuilder:
     """Builder responsible for creating pipeline configuration from the project and its library usage."""
+
+    __slots__: List[str] = []
 
     def __init__(self) -> None:
         """Instantiation of the pipeline builder - do NOT instantiate this class."""
         raise NotImplemented("Cannot instantiate pipeline builder")
 
     @staticmethod
-    def _iter_units() -> Generator[Union[Sieve, Step, Stride], None, None]:
+    def _iter_units() -> Generator[Union[Boot, Sieve, Step, Stride, Wrap], None, None]:
         """Iterate over pipeline units available in this implementation."""
+        # Imports placed here to simplify tests.
+        import thoth.adviser.boots
+        import thoth.adviser.sieves
+        import thoth.adviser.steps
+        import thoth.adviser.strides
+        import thoth.adviser.wraps
+
         for boot_name in thoth.adviser.boots.__all__:
             yield getattr(thoth.adviser.boots, boot_name)
 
@@ -172,14 +215,10 @@ class PipelineBuilder:
                     unit_class.__name__,  # type: ignore
                     unit_configuration,
                 )
-                unit_instance = unit_class(  # type: ignore
-                    graph=ctx.graph,
-                    project=ctx.project,
-                    library_usage=ctx.library_usage,
-                )
+                unit_instance = unit_class()  # type: ignore
 
                 if unit_configuration:
-                    unit_instance.update_parameters(unit_configuration)
+                    unit_instance.update_configuration(unit_configuration)
 
                 ctx.add_unit(unit_instance)
 
@@ -216,7 +255,7 @@ class PipelineBuilder:
         )
 
     @classmethod
-    def get_dependency_monkey_config(
+    def get_dependency_monkey_pipeline_config(
         cls,
         *,
         decision_type: DecisionType,
