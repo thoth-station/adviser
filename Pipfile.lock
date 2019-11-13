@@ -42,9 +42,9 @@
         },
         "alembic": {
             "hashes": [
-                "sha256:e6c6a4243e89c8d3e2342a1562b2388f3b524c9cac2fccc4d2c461a1320cc1c1"
+                "sha256:49277bb7242192bbb9eac58fed4fe02ec6c3a2a4b4345d2171197459266482b2"
             ],
-            "version": "==1.3.0"
+            "version": "==1.3.1"
         },
         "amun": {
             "hashes": [
@@ -783,10 +783,9 @@
         },
         "thoth-common": {
             "hashes": [
-                "sha256:711c3d07c8c9bd8b46e3f4f4f1af2e17ee3122c53f79d9225bc7fa98c408f5b7",
-                "sha256:a868ae77905224380db994c2529817d9b0f496f5ab65c86daf2b3d1e93344350"
+                "sha256:278f23070ccf462407ed7c5b582431fe7a53c7c414fb4fd87fa851800f282404"
             ],
-            "version": "==0.9.14"
+            "version": "==0.9.15"
         },
         "thoth-python": {
             "hashes": [
