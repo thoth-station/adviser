@@ -62,9 +62,8 @@ class Product:
             if not package_version.hashes:
                 # We can re-use already existing package-version - in that case it already keeps hashes from
                 # a previous product instantiation.
-                package_version.hashes = graph.get_python_package_hashes_sha256(
-                    *package_tuple
-                )
+                hashes = graph.get_python_package_hashes_sha256(*package_tuple)
+                package_version.hashes = ["sha256:" + h for h in hashes]
 
                 if not package_version.hashes:
                     _LOGGER.warning("No hashes found for package %r", package_tuple)
