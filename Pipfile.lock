@@ -803,11 +803,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:a9e6155ce49a928d4a68c8037e8cf65087e4376615d4dcb60d6cbb1478e1db89",
-                "sha256:fc7190626916583603bd0ffb8cc0513351237eefdd29d29aaf9da335ab43c3f6"
+                "sha256:2a013d2052c5aa8cc78bdf19f92d2ee2288b90e3d3614f2ba18e242825ab3202",
+                "sha256:d0978791ba43f83c88b24f1fb007f4651b919479b22dbcde3b70750359412be0"
             ],
             "index": "pypi",
-            "version": "==0.19.21"
+            "version": "==0.19.22"
         },
         "timestamp": {
             "hashes": [
