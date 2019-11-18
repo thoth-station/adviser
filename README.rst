@@ -97,10 +97,9 @@ and using its command line interface:
 When thoth-adviser is scheduled in a deployment, it is actually executed as a
 CLI with arguments passed via environment variables.
 
-See `Dgraph <https://github.com/thoth-station/dgraph-thoth-config>`_
-repository on how to run a Dgraph instance locally and
-example `notebooks <https://github.com/thoth-station/notebooks>`_ which can feed
-your Dgraph instance for experiments.
+See `thoth-storages repository <https://github.com/thoth-station/storages>`_
+repository on how to run Thoth's knowledge graph locally and
+example `notebooks <https://github.com/thoth-station/notebooks>`_ for experiments.
 
 Running adviser locally
 =======================
