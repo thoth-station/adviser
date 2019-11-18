@@ -18,6 +18,5 @@
 """Implementation of strides used to filter out resolved stacks."""
 
 from .random_decision import RandomDecisionStride
-from .score_filter import ScoreFilteringStride
 
-__all__ = ["RandomDecisionStride", "ScoreFilteringStride"]
+__all__ = ["RandomDecisionStride"]
