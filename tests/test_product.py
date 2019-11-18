@@ -139,17 +139,17 @@ class TestProduct(AdviserTestCase):
                 "default": {
                     "daiquiri": {
                         "version": "==1.6.0",
-                        "hashes": ["000"],
+                        "hashes": ["sha256:000"],
                         "index": "pypi-org",
                     },
                     "numpy": {
                         "version": "==1.17.4",
-                        "hashes": ["111"],
+                        "hashes": ["sha256:111"],
                         "index": "pypi-org",
                     },
                     "tensorflow": {
                         "version": "==2.0.0",
-                        "hashes": ["222"],
+                        "hashes": ["sha256:222"],
                         "index": "pypi-org",
                     },
                 },
