@@ -18,7 +18,9 @@
 """Exception hierarchy used in the whole adviser implementation."""
 
 from typing import Any
+from typing import Dict
 from typing import List
+from typing import Optional
 
 
 class AdviserException(Exception):
@@ -51,10 +53,6 @@ class VersionIdentifierError(AdviserException):
 
 class UnableLock(AdviserException):
     """Raised if it is unable to lock dependencies given the set of constraints."""
-
-
-class CannotProduceStack(AdviserException):
-    """Raised if adviser or dependency monkey cannot produce stack."""
 
 
 class NoHistoryKept(AdviserException):
@@ -104,7 +102,15 @@ class PipelineConfigurationError(PipelineUnitError):
     """
 
 
-class UnresolvedDependencies(AdviserException):
+class AdviserRunException(AdviserException):
+    """A base class for implementing exceptions occurred during an andviser run."""
+
+    def to_dict(self) -> Optional[Dict[str, str]]:
+        """Convert adviser exception to a dict representation which is shown to the user."""
+        return None
+
+
+class UnresolvedDependencies(AdviserRunException):
     """An exception raised if dependencies were not resolved and cannot produce stack."""
 
     __slots__ = ["unresolved"]
@@ -113,3 +119,19 @@ class UnresolvedDependencies(AdviserException):
         """Capture unresolved dependencies in this exception."""
         super().__init__(*args)
         self.unresolved = unresolved
+
+    def to_dict(self) -> Optional[Dict[str, str]]:
+        """Convert unresolved dependencies exception to the user."""
+        return {
+            "ERROR": f"No dependencies found for {', '.join(f'{dep!r}' for dep in self.unresolved)}; "
+                     "cannot resolve all direct dependencies"
+        }
+
+
+class CannotProduceStack(AdviserRunException):
+    """Raised if there was not produced any result."""
+
+    def to_dict(self) -> Optional[Dict[str, str]]:
+        return {
+            "ERROR": "No results were resolved, see logs for more info"
+        }

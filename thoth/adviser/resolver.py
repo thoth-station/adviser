@@ -437,11 +437,7 @@ class Resolver:
                 continue
 
         if unresolved:
-            raise UnresolvedDependencies(
-                "Unable to resolve all direct dependencies, no versions "
-                "were found for packages %s" % ", ".join(f"{i!r}" for i in unresolved),
-                unresolved=unresolved,
-            )
+            raise UnresolvedDependencies("Unable to resolve all direct dependencies", unresolved=unresolved)
 
         # Now we are free to de-instantiate solver.
         del self._solver
