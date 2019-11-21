@@ -50,9 +50,7 @@ from thoth.adviser.exceptions import InternalError
 from thoth.adviser import Resolver
 from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser import __version__ as analyzer_version
-from thoth.adviser.pipeline_builder import PipelineBuilder
 from thoth.adviser.run import subprocess_run
-from thoth.storages import GraphDatabase
 import thoth.adviser.predictors as predictors
 
 init_logging()
