@@ -795,11 +795,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:85614749c95e6e84c81a9d6fda93dfd0a88db24c491a06b7aa969d6da25f7f29",
-                "sha256:e571dae252121eb73c9d28993d6fda96139db5e3478a04f5d108bcdcb9525853"
+                "sha256:1e6e847055d1d30b4625550a88cbf889d2636011f4350cc9b7a18976a692d324",
+                "sha256:baf985acb4739d0bc4b408acbad86ad0b11bfc5743aa6029a812d0768999a03a"
             ],
             "index": "pypi",
-            "version": "==0.19.23"
+            "version": "==0.19.24"
         },
         "timestamp": {
             "hashes": [
@@ -841,10 +841,10 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:11cb4608930d5fd3afb545ecf8db83fa50e1f96fc4fca80c94b07d2c83146589",
-                "sha256:d257bb3773e48cac60e475a19b608996c73f4d333b3ba2e4e57d5ac6134e0136"
+                "sha256:116655188441670978117d0ebb6451eb6a7526f9ae0796cc0dee6bd7356909b0",
+                "sha256:b57776b44f91511866594e477dd10e76a6eb44439cdd7f06dcd30ba4c5bd854f"
             ],
-            "version": "==16.7.7"
+            "version": "==16.7.8"
         },
         "voluptuous": {
             "hashes": [
