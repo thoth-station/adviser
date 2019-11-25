@@ -41,7 +41,7 @@ name = "pypi"
 [[source]]
 url = "https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple/"
 verify_ssl = true
-name = aicoe
+name = "aicoe"
 
 [packages]
 tensorflow = "*"
@@ -59,7 +59,7 @@ name = "pypi"
 [[source]]
 url = "https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple/"
 verify_ssl = true
-name = aicoe
+name = "aicoe"
 
 [packages]
 tensorflow = "*"

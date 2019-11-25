@@ -11,6 +11,7 @@ metadata:
     template.openshift.io/long-description: >
       This template defines resources needed to run recommendation logic of Thoth to OpenShift.
     template.openshift.io/provider-display-name: "Red Hat, Inc."
+    thoth-station.ninja/template-version: 0.4.2
   labels:
     app: thoth
     template: adviser
@@ -94,6 +95,8 @@ objects:
     kind: Job
     metadata:
       name: ${THOTH_ADVISER_JOB_ID}
+      annotations:
+        thoth-station.ninja/template-version: 0.4.2
       labels:
         app: thoth
         component: adviser
@@ -113,8 +116,7 @@ objects:
           automountServiceAccountToken: false
           containers:
             - name: adviser
-              # image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/adviser:${IMAGE_STREAM_TAG}"
-              image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/adviser-cached:${IMAGE_STREAM_TAG}"
+              image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/adviser:${IMAGE_STREAM_TAG}"
               livenessProbe:
                 # Give analyzer specified seconds to compute results, kill
                 # stack producer so the main process reports scored results.
