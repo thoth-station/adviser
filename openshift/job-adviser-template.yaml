@@ -37,6 +37,10 @@ parameters:
     required: true
     description: A unique dentifier of adviser job.
     displayName: Adviser id
+  - name: THOTH_DOCUMENT_ID
+    description: "A unique identifier of the resulting document in a Thoth deployment."
+    displayName: "Document identifier"
+    required: true
   - name: THOTH_ADVISER_OUTPUT
     required: false
     description: Remote where results should be send to
@@ -151,6 +155,8 @@ objects:
                     configMapKeyRef:
                       key: storage-bucket-name
                       name: thoth
+                - name: THOTH_DOCUMENT_ID
+                  value: "${THOTH_DOCUMENT_ID}"
                 - name: THOTH_LOG_ADVISER
                   value: "${THOTH_LOG_ADVISER}"
                 - name: THOTH_ADVISER_OUTPUT

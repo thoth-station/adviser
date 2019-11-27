@@ -40,6 +40,10 @@ parameters:
     required: true
     description: A unique identifier of provenance-checker job.
     displayName: Provenance checker id
+  - name: THOTH_DOCUMENT_ID
+    description: "A unique identifier of the resulting document in a Thoth deployment."
+    displayName: "Document identifier"
+    required: true
   - name: THOTH_WHITELISTED_SOURCES
     required: false
     description: A comma separated values of URLs to whitelisted sources.
@@ -100,6 +104,8 @@ objects:
                     configMapKeyRef:
                       key: storage-bucket-name
                       name: thoth
+                - name: THOTH_DOCUMENT_ID
+                  value: "${THOTH_DOCUMENT_ID}"
                 - name: THOTH_LOG_ADVISER
                   value: "${THOTH_LOG_ADVISER}"
                 - name: THOTH_ADVISER_OUTPUT
