@@ -20,8 +20,10 @@
 import time
 from typing import Generator
 from typing import Dict
+from typing import Tuple
 from typing import Any
 from typing import Optional
+from typing import Set
 from typing import List
 import logging
 from itertools import chain
@@ -225,10 +227,27 @@ class Resolver:
         self, beam: Beam, state: State, *package_versions: PackageVersion
     ) -> None:
         """Run steps to score next state or filter out invalid steps."""
-        # TODO: check if we have already dependency
-        new_state = state.clone()
+        # We clone new state once we are sure we create it. Meantime, keep track of changes but be lazy.
+        new_state_unresolved_dependencies = []
+        new_state_add_justification = []
+        new_state_score = state.score
+
         package_version_tuples = [pv.to_dict() for pv in package_versions]
         for package_version in package_versions:
+            package_version_tuple = package_version.to_tuple()
+
+            if package_version.name in state.unresolved_dependencies:
+                if state.unresolved_dependencies[package_version.name] != package_version_tuple:
+                    # TODO: create a test case for this
+                    # We already have the given dependency - there is a dependency clash (same name,
+                    # different version or index url). Such state is invalid.
+                    return None
+                else:
+                    # TODO: create a test case for this
+                    # We already have this dependency in stack, continue to the next one (two packages
+                    # depend on the same package and the resolution is valid - no clash).
+                    continue
+
             for step in self.pipeline.steps:
                 try:
                     step_result = step.run(state, package_version)
@@ -250,12 +269,19 @@ class Resolver:
                 if step_result:
                     score_addition, justification_addition = step_result
                     if score_addition is not None:
-                        new_state.score += score_addition
+                        new_state_score += score_addition
 
                     if justification_addition is not None:
-                        new_state.add_justification(justification_addition)
+                        new_state_add_justification.extend(justification_addition)
 
-            new_state.add_unresolved_dependency(package_version.to_tuple())
+            new_state_unresolved_dependencies.append(package_version.to_tuple())
+
+        # We accept a new score, perform actual clone now.
+        new_state = state.clone()
+        new_state.score = new_state_score
+        new_state.add_justification(new_state_add_justification)
+        for unresolved_dependency in new_state_unresolved_dependencies:
+            new_state.add_unresolved_dependency(unresolved_dependency)
 
         _LOGGER.debug(
             "Adding a new state with new entries %r: %r",
@@ -308,7 +334,10 @@ class Resolver:
         )
 
         if not resolved_direct_dependencies:
-            raise CannotProduceStack("No direct dependencies were resolved")
+            raise UnresolvedDependencies(
+                "No direct dependencies were resolved",
+                unresolved=[pv.name for pv in self.project.iter_dependencies(with_devel=True)],
+            )
 
         unresolved = []
         for package_name, package_versions in resolved_direct_dependencies.items():
@@ -412,13 +441,16 @@ class Resolver:
 
     def _expand_state(self, beam: Beam, state: State) -> Optional[State]:
         """Expand the given state, generate new states respecting the pipeline configuration."""
-        _, package_tuple = state.unresolved_dependencies.popitem()
+        _, package_tuple = state.unresolved_dependencies.popitem(last=False)
 
         # Obtain extras for the given package. Extras are non-empty only for direct dependencies. If indirect
         # dependencies use extras, they don't need to be explicitly stated as solvers mark "hard" dependency on
         # the given package.
         package_version = self.context.get_package_version(package_tuple)
-        extras = package_version.extras or [None]
+
+        extras = package_version.extras or []
+        # Add None which will return also dependencies not marked as extra (see get_depends_on semantics for more info).
+        extras.append(None)
 
         try:
             dependencies = self.graph.get_depends_on(
@@ -445,8 +477,24 @@ class Resolver:
             beam.add_state(state)
             return None
 
-        all_dependencies: Dict[str, List[PackageVersion]] = {}
-        for package_name, version in chain(*dependencies.values()):
+        self._expand_state_add_dependencies(
+            beam=beam,
+            state=state,
+            package_version=package_version,
+            dependencies=list(chain(*dependencies.values()))
+        )
+
+    def _expand_state_add_dependencies(
+        self,
+        beam: Beam,
+        state: State,
+        package_version: PackageVersion,
+        dependencies: List[Tuple[str, str]]
+    ) -> None:
+        """Create new states out of existing ones based on dependencies."""
+        package_tuple = package_version.to_tuple()
+        all_dependencies: Dict[str, Set[Tuple[str, str, str]]] = {}
+        for package_name, version in dependencies:
             if self.project.runtime_environment.is_fully_specified():
                 marker_evaluation_result = self.graph.get_python_environment_marker_evaluation_result(
                     *package_tuple,
@@ -474,6 +522,9 @@ class Resolver:
                 python_version=self.project.runtime_environment.python_version,
             )
 
+            if package_name not in all_dependencies:
+                all_dependencies[package_name] = set()
+
             for record in records:
                 dependency_tuple = (
                     record["package_name"],
@@ -488,19 +539,14 @@ class Resolver:
                     os_version=record["os_version"],
                     python_version=record["python_version"],
                 )
-                registered_package_version = self.context.register_package_tuple(
+                self.context.register_package_tuple(
                     dependency_tuple,
                     develop=package_version.develop,  # Propagate develop flag from parent.
                     markers=environment_marker,
-                    # A special value of `None' is used in the query to indicate the given direct
-                    # dependency has no extra (see `GraphDatabase.get_depends_on' query for more info).
-                    extras=[extra for extra in extras if extra is not None],
+                    extras=None,
                 )
 
-                if dependency_tuple[0] not in all_dependencies:
-                    all_dependencies[dependency_tuple[0]] = []
-
-                all_dependencies[dependency_tuple[0]].append(registered_package_version)
+                all_dependencies[dependency_tuple[0]].add(dependency_tuple)
 
         # Check unsolved before sorting to optimize a bit.
         unsolved = [
@@ -516,8 +562,8 @@ class Resolver:
             )
             return None
 
-        for dependency_name, package_versions in all_dependencies.items():
-            package_versions = self._run_sieves(*package_versions)
+        for dependency_name, dependency_tuples in all_dependencies.items():
+            package_versions = self._run_sieves(*(self.context.get_package_version(d) for d in dependency_tuples))
             all_dependencies[
                 dependency_name
             ] = self._semver_sort_and_limit_latest_versions(*package_versions)
@@ -546,7 +592,7 @@ class Resolver:
 
         self.context.iteration = 0
         while True:
-            if self.context.accepted_final_states_count >= self.limit:
+            if self.context.accepted_final_states_count + self.context.discarded_final_states_count >= self.limit:
                 _LOGGER.info(
                     "Reached limit of stacks to be generated - %r (limit is %r), stopping resolver "
                     "with the current beam size %d",

@@ -18,10 +18,6 @@
 """A base class for implementing steps."""
 
 import abc
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Tuple
 
 import attr
 from thoth.python import PackageVersion

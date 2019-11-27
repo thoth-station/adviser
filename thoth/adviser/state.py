@@ -76,10 +76,6 @@ class State:
 
     def add_unresolved_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
         """Add unresolved dependency into the beam."""
-        assert package_tuple[0] not in self.unresolved_dependencies, (
-            f"Package {package_tuple!r} cannot be added to unresolved dependencies, "
-            f"candidate {self.unresolved_dependencies[package_tuple[0]]!r} is already present"
-        )
         self.unresolved_dependencies[package_tuple[0]] = package_tuple
 
     def __lt__(self, other: "State") -> bool:

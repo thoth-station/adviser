@@ -48,13 +48,20 @@ class PredictorMock(Predictor):
 
     def run(self, context: Context, beam: Beam) -> int:
         """The main method used for predictor."""
-        return random.randint(0, beam.size)
+        return random.randint(0, beam.size - 1)
 
 
 @pytest.fixture
 def pipeline_config() -> PipelineConfig:
     """A fixture for a pipeline configuration with few representatives of each pipeline unit type."""
     flexmock(PipelineConfig)
+
+    flexmock(Boot1)
+    flexmock(Sieve1)
+    flexmock(Step1)
+    flexmock(Stride1)
+    flexmock(Wrap1)
+
     return PipelineConfig(
         boots=[Boot1()],
         sieves=[Sieve1()],
@@ -68,8 +75,11 @@ def pipeline_config() -> PipelineConfig:
 def project() -> Project:
     """A fixture for a project representation."""
     flexmock(Project)
+    flexmock(RuntimeEnvironment)
+
     pipfile_path = AdviserTestCase.data_dir / "projects" / "Pipfile"
     pipfile_lock_path = AdviserTestCase.data_dir / "projects" / "Pipfile.lock"
+
     return Project.from_files(
         pipfile_path=str(pipfile_path),
         pipfile_lock_path=str(pipfile_lock_path),
@@ -81,6 +91,7 @@ def project() -> Project:
 def graph() -> GraphDatabase:
     """A knowledge graph connector fixture."""
     flexmock(GraphDatabase)
+
     graph = GraphDatabase()
     graph.connect()
     return graph
@@ -90,6 +101,7 @@ def graph() -> GraphDatabase:
 def predictor_mock() -> Predictor:
     """Return a mock for predictor."""
     flexmock(PredictorMock)
+
     return PredictorMock()
 
 
