@@ -174,6 +174,18 @@ class Resolver:
 
         return self._solver
 
+    def _init_context(self) -> None:
+        """Initialize context instance."""
+        self._context = Context(
+            project=self.project,
+            graph=self.graph,
+            library_usage=self.library_usage,
+            limit=self.limit,
+            count=self.count,
+            recommendation_type=self.recommendation_type,
+            decision_type=self.decision_type,
+        )
+
     def _run_boots(self) -> None:
         """Run all boots bound to the current annealing run context."""
         for boot in self.pipeline.boots:
@@ -214,8 +226,6 @@ class Resolver:
     ) -> None:
         """Run steps to score next state or filter out invalid steps."""
         # TODO: check if we have already dependency
-        score = 0.0
-        justification = []
         new_state = state.clone()
         package_version_tuples = [pv.to_dict() for pv in package_versions]
         for package_version in package_versions:
@@ -240,15 +250,12 @@ class Resolver:
                 if step_result:
                     score_addition, justification_addition = step_result
                     if score_addition is not None:
-                        score += score_addition
+                        new_state.score += score_addition
 
                     if justification_addition is not None:
-                        justification.extend(justification_addition)
+                        new_state.add_justification(justification_addition)
 
             new_state.add_unresolved_dependency(package_version.to_tuple())
-
-            new_state.score += score
-            new_state.add_justification(justification)
 
         _LOGGER.debug(
             "Adding a new state with new entries %r: %r",
@@ -391,7 +398,13 @@ class Resolver:
             # to make sure we iterate over all possible combinations. The beam trims down low scoring states
             # as expected.
             # As we sort dependencies based on versions, we know we add latest first.
-            for state in list(beam.iter_states()) or [State()]:
+            if beam.size != 0:
+                states = beam.iter_states()
+                beam.wipe()
+            else:
+                states = [State()]
+
+            for state in states:
                 for package_version in package_versions:
                     self._run_steps(beam, state, package_version)
 
@@ -603,7 +616,6 @@ class Resolver:
                     state=final_state,
                 )
                 yield product
-
         except EagerStopPipeline as exc:
             _LOGGER.info("Stopping pipeline eagerly as per request: %s", str(exc))
 
@@ -625,16 +637,7 @@ class Resolver:
         """Resolve software stacks and return resolver report."""
         report = Report(count=self.count, pipeline=self.pipeline)
 
-        self._context = Context(
-            project=self.project,
-            graph=self.graph,
-            library_usage=self.library_usage,
-            limit=self.limit,
-            count=self.count,
-            recommendation_type=self.recommendation_type,
-            decision_type=self.decision_type,
-        )
-
+        self._init_context()
         with Unit.assigned_context(self.context):
             for product in self.resolve_products(with_devel=with_devel):
                 report.add_product(product)

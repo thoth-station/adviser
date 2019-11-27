@@ -69,6 +69,10 @@ class Beam:
         """Get the current size of beam."""
         return len(self._states)
 
+    def wipe(self) -> None:
+        """Remove all states from beam."""
+        self._states = []
+
     def iter_states(self) -> List[State]:
         """Iterate over states, do not respect their score in order of iteration."""
         return self._states

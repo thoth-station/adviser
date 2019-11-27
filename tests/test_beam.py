@@ -43,6 +43,28 @@ class TestBeam(AdviserTestCase):
         with pytest.raises(ValueError):
             Beam(width=width)
 
+    def test_wipe(self) -> None:
+        """Test wiping out beam states."""
+        beam = Beam()
+
+        state1 = State(score=1.0)
+        beam.add_state(state1)
+
+        state2 = State(score=0.0)
+        beam.add_state(state2)
+
+        assert beam.states == [state1, state2]
+        assert beam.iter_states() == [state2, state1]
+
+        assert beam.wipe() is None
+        assert beam.iter_states() == []
+        assert beam.states == []
+
+        beam.add_state(state1)
+        beam.add_state(state2)
+        assert beam.states == [state1, state2]
+        assert beam.iter_states() == [state2, state1]
+
     def test_add_state(self) -> None:
         """Test adding state to the beam - respect beam width."""
         beam = Beam(width=2)

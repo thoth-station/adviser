@@ -18,9 +18,10 @@
 """A base class for implementing adviser's test cases."""
 
 import os
+from pathlib import Path
 
 
 class AdviserTestCase:
     """A base class for implementing adviser's test cases."""
 
-    data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+    data_dir = Path(os.path.dirname(os.path.realpath(__file__))) / "data"

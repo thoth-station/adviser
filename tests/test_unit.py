@@ -65,7 +65,9 @@ class TestUnit(AdviserTestCase):
             ),
         ],
     )
-    def test_is_aicoe_release(self, package_version: PackageVersion, expected: bool) -> None:
+    def test_is_aicoe_release(
+        self, package_version: PackageVersion, expected: bool
+    ) -> None:
         """Test checking if the given package is an AICoE package."""
         assert Unit.is_aicoe_release(package_version) is expected
 

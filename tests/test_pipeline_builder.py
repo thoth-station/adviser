@@ -155,7 +155,11 @@ class TestPipelineBuilder(AdviserTestCase):
             ),
         ],
     )
-    def test_build_configuration(self, pipeline_config_method: str, kwargs: Dict[str, Union[RecommendationType, DecisionType]]) -> None:
+    def test_build_configuration(
+        self,
+        pipeline_config_method: str,
+        kwargs: Dict[str, Union[RecommendationType, DecisionType]],
+    ) -> None:
         """Test building configuration."""
         # All test units do not register themselves - let's cherry-pick ones that should be present.
         # There are done 3 iterations in total during pipeline configuration creation.

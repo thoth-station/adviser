@@ -17,6 +17,7 @@
 
 """A state of not fully resolved software stack in adviser's recommendations implementation."""
 
+from typing import Any
 from typing import Tuple
 from typing import Dict
 from typing import List
@@ -27,7 +28,7 @@ import attr
 from thoth.common import RuntimeEnvironment
 
 
-@attr.s(slots=True, eq=False, order=False)
+@attr.s(slots=True, order=False)
 class State:
     """Implementation of an adviser's state in state space."""
 
@@ -50,6 +51,20 @@ class State:
     def justification(self) -> List[Dict[str, str]]:
         """Get justification for the current state."""
         return self._justification
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert state to a dict representation."""
+        advised_runtime_environment = None
+        if self.advised_runtime_environment:
+            advised_runtime_environment = self.advised_runtime_environment.to_dict()
+
+        return {
+            "score": self.score,
+            "unresolved_dependencies": self.unresolved_dependencies,
+            "resolved_dependencies": self.resolved_dependencies,
+            "advised_runtime_environment": advised_runtime_environment,
+            "justification": self._justification,
+        }
 
     def is_final(self) -> bool:
         """Check if the given state is a final state."""

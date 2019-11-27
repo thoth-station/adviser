@@ -34,7 +34,5 @@ class Sieve(Unit):
     """Sieve base class implementation."""
 
     @abc.abstractmethod
-    def run(
-        self, package_version: PackageVersion
-    ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
+    def run(self, package_version: PackageVersion) -> None:
         """Main entry-point for sieves to filter and score packages."""
