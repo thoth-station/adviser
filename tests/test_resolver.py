@@ -874,7 +874,12 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
         ).and_return(tb_records).once()
 
-        for record in itertools.chain(tb_records, absl_py_records):
+        for record in itertools.chain(tb_records[:1], absl_py_records[:1]):
+            # It's expected to have just one of each record as the previous environment
+            # marker was already checked.
+            # XXX: what happens with "compound" environment markers?
+            #   A depends_on X ; python_version >= 3.5
+            #   B depends_on X ; python_version >= 3.6
             resolver.graph.should_receive("get_python_environment_marker").with_args(
                 *package_version.to_tuple(),
                 dependency_name=record["package_name"],

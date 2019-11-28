@@ -531,20 +531,21 @@ class Resolver:
                     record["package_version"],
                     record["index_url"],
                 )
-                environment_marker = self.graph.get_python_environment_marker(
-                    *package_tuple,
-                    dependency_name=dependency_tuple[0],
-                    dependency_version=dependency_tuple[1],
-                    os_name=record["os_name"],
-                    os_version=record["os_version"],
-                    python_version=record["python_version"],
-                )
-                self.context.register_package_tuple(
-                    dependency_tuple,
-                    develop=package_version.develop,  # Propagate develop flag from parent.
-                    markers=environment_marker,
-                    extras=None,
-                )
+                if not self.context.get_package_version(dependency_tuple, graceful=True):
+                    environment_marker = self.graph.get_python_environment_marker(
+                        *package_tuple,
+                        dependency_name=dependency_tuple[0],
+                        dependency_version=dependency_tuple[1],
+                        os_name=record["os_name"],
+                        os_version=record["os_version"],
+                        python_version=record["python_version"],
+                    )
+                    self.context.register_package_tuple(
+                        dependency_tuple,
+                        develop=package_version.develop,  # Propagate develop flag from parent.
+                        markers=environment_marker,
+                        extras=None,
+                    )
 
                 all_dependencies[dependency_tuple[0]].add(dependency_tuple)
 

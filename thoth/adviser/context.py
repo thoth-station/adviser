@@ -78,11 +78,11 @@ class Context:
             )
 
     def get_package_version(
-        self, package_tuple: Tuple[str, str, str]
-    ) -> PackageVersion:
+        self, package_tuple: Tuple[str, str, str], *, graceful: bool = False
+    ) -> Optional[PackageVersion]:
         """Get the given package version registered to the context."""
         package_version = self.package_versions.get(package_tuple)
-        if package_version is None:
+        if package_version is None and not graceful:
             raise NotFound(
                 f"Package {package_tuple!r} not found in the pipeline context"
             )
