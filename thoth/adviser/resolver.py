@@ -579,7 +579,6 @@ class Resolver:
             return None
 
         for dependency_name, dependency_tuples in all_dependencies.items():
-            print(dependency_tuples)
             package_versions = [self.context.get_package_version(d) for d in dependency_tuples]
             package_versions = self._semver_sort_and_limit_latest_versions(package_versions)
             package_versions = list(self._run_sieves(package_versions))
