@@ -123,7 +123,7 @@ class Resolver:
     """Resolver for resolving software stacks using pipeline configuration and a predictor."""
 
     DEFAULT_LIMIT = 10000
-    DEFAULT_COUNT = DEFAULT_LIMIT
+    DEFAULT_COUNT = 3
     DEFAULT_BEAM_WIDTH = -1
     DEFAULT_LIMIT_LATEST_VERSIONS = -1
 
