@@ -506,17 +506,12 @@ class Resolver:
 
         package_tuple = package_version.to_tuple()
         all_dependencies: Dict[str, List[Tuple[str, str, str]]] = {}
-        for package_name, version in dependencies:
-            # We could use a set here that would optimize a bit, but it will create randomness - it
-            # will not work well with preserving seed across resolver runs.
-            if package_name not in all_dependencies:
-                all_dependencies[package_name] = []
-
+        for dependency_name, dependency_version in dependencies:
             if self.project.runtime_environment.is_fully_specified():
                 marker_evaluation_result = self.graph.get_python_environment_marker_evaluation_result(
                     *package_tuple,
-                    dependency_name=package_name,
-                    dependency_version=version,
+                    dependency_name=dependency_name,
+                    dependency_version=dependency_version,
                     os_name=self.project.runtime_environment.operating_system.name,
                     os_version=self.project.runtime_environment.operating_system.version,
                     python_version=self.project.runtime_environment.python_version,
@@ -524,20 +519,25 @@ class Resolver:
 
                 if marker_evaluation_result is False:
                     _LOGGER.debug(
-                        "Removing package %r from dependency graph as it will not be installed into "
+                        "Removing package %r in version %r from dependency graph as it will not be installed into "
                         "the given runtime environment",
-                        package_tuple,
+                        dependency_name, dependency_version,
                     )
                     continue
 
             records = self.graph.get_python_package_version_records(
-                package_name=package_name,
-                package_version=version,
+                package_name=dependency_name,
+                package_version=dependency_version,
                 index_url=None,  # Do cross-index resolving.
                 os_name=self.project.runtime_environment.operating_system.name,
                 os_version=self.project.runtime_environment.operating_system.version,
                 python_version=self.project.runtime_environment.python_version,
             )
+
+            # We could use a set here that would optimize a bit, but it will create randomness - it
+            # will not work well with preserving seed across resolver runs.
+            if dependency_name not in all_dependencies:
+                all_dependencies[dependency_name] = []
 
             for record in records:
                 dependency_tuple = (
