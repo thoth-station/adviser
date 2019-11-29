@@ -29,6 +29,7 @@ import attr
 
 from .boot import Boot
 from .dm_report import DependencyMonkeyReport
+from .exceptions import PipelineUnitError
 from .sieve import Sieve
 from .step import Step
 from .stride import Stride
@@ -41,7 +42,7 @@ if TYPE_CHECKING:
 
 @attr.s(slots=True)
 class PipelineConfig:
-    """A configuration of a pipline for dependency-monkey and for adviser."""
+    """A configuration of a pipeline for dependency-monkey and for adviser."""
 
     boots = attr.ib(type=List[Boot], default=attr.Factory(list))
     sieves = attr.ib(type=List[Sieve], default=attr.Factory(list))
@@ -66,14 +67,37 @@ class PipelineConfig:
     def call_pre_run(self) -> None:
         """Call pre-run method on all units registered in this configuration."""
         for unit in self.iter_units():
-            unit.pre_run()
+            try:
+                unit.pre_run()
+            except Exception as exc:
+                raise PipelineUnitError(
+                    "Failed to run pre_run method on unit %r: %s",
+                    unit.__class__.__name__,
+                    str(exc),
+                ) from exc
 
     def call_post_run(self) -> None:
         """Call post-run method on all units registered in this configuration."""
         for unit in self.iter_units():
-            unit.post_run()
+            try:
+                unit.post_run()
+            except Exception as exc:
+                raise PipelineUnitError(
+                    "Failed to run post_run method on unit %r: %s",
+                    unit.__class__.__name__,
+                    str(exc),
+                ) from exc
 
-    def call_post_run_report(self, report: Union["Report", DependencyMonkeyReport]) -> None:
+    def call_post_run_report(
+        self, report: Union["Report", DependencyMonkeyReport]
+    ) -> None:
         """Call post-run method when report is generated."""
         for unit in self.iter_units():
-            unit.post_run_report(report)
+            try:
+                unit.post_run_report(report)
+            except Exception as exc:
+                raise PipelineUnitError(
+                    "Failed to run pre_run_report method on unit %r: %s",
+                    unit.__class__.__name__,
+                    str(exc),
+                ) from exc

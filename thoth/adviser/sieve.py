@@ -18,10 +18,6 @@
 """A base class for implementing steps."""
 
 import abc
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Tuple
 
 import attr
 from thoth.python import PackageVersion
@@ -34,7 +30,5 @@ class Sieve(Unit):
     """Sieve base class implementation."""
 
     @abc.abstractmethod
-    def run(
-        self, package_version: PackageVersion
-    ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
+    def run(self, package_version: PackageVersion) -> None:
         """Main entry-point for sieves to filter and score packages."""

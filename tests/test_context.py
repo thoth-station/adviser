@@ -77,6 +77,17 @@ class TestContext(AdviserTestCase):
             context.get_package_version(package_version.to_tuple()) is package_version
         )
 
+    def test_get_package_version_graceful(self, context: Context, package_version: PackageVersion) -> None:
+        """Test getting registered package version, gracefully."""
+        assert context.get_package_version(package_version.to_tuple(), graceful=True) is None
+        with pytest.raises(NotFound):
+            context.get_package_version(package_version.to_tuple(), graceful=False)
+
+        assert context.register_package_version(package_version) is False
+
+        assert context.get_package_version(package_version.to_tuple(), graceful=True) is package_version
+        assert context.get_package_version(package_version.to_tuple(), graceful=False) is package_version
+
     def test_register_package_version_existing(
         self, context: Context, package_version: PackageVersion
     ) -> None:
