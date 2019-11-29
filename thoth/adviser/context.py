@@ -22,6 +22,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
+import heapq
 
 import attr
 
@@ -33,6 +34,7 @@ from thoth.storages import GraphDatabase
 from .exceptions import NotFound
 from .enums import RecommendationType
 from .enums import DecisionType
+from .state import State
 
 
 @attr.s(slots=True)
@@ -65,6 +67,8 @@ class Context:
     accepted_final_states_count = attr.ib(type=int, kw_only=True, default=0)
     discarded_final_states_count = attr.ib(type=int, kw_only=True, default=0)
 
+    _accepted_states = attr.ib(type=List[State], kw_only=True, default=attr.Factory(list))
+
     def __attrs_post_init__(self) -> None:
         """Verify we have only adviser or dependency monkey specific context."""
         if self.decision_type is not None and self.recommendation_type is not None:
@@ -76,6 +80,11 @@ class Context:
             raise ValueError(
                 "Cannot instantiate context not specific to adviser nor dependency monkey"
             )
+
+    @property
+    def accepted_final_states(self) -> List[State]:
+        """Get accepted final states by resolution pipeline, states are not sorted."""
+        return self._accepted_states
 
     def get_package_version(
         self, package_tuple: Tuple[str, str, str], *, graceful: bool = False
@@ -100,6 +109,26 @@ class Context:
 
         self.package_versions[package_version.to_tuple()] = package_version
         return False
+
+    def register_accepted_final_state(self, state: State) -> None:
+        """Register an accepted state by the resolution pipeline"""
+        # We keep only `count' states as that was requested by pipeline caller.
+        if self.count is not None and len(self._accepted_states) >= self.count:
+            heapq.heappushpop(self._accepted_states, state)
+        else:
+            heapq.heappush(self._accepted_states, state)
+
+    def get_top_accepted_final_state(self) -> Optional[State]:
+        """Get the best accepted final state so far computed by the resolution pipeline."""
+        if not self._accepted_states:
+            return None
+
+        result = self._accepted_states[len(self._accepted_states) // 2]
+        for item in self._accepted_states[1 + len(self._accepted_states) // 2:]:
+            if result < item:
+                result = item
+
+        return result
 
     def register_package_tuple(
         self,

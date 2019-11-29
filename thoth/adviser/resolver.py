@@ -641,6 +641,7 @@ class Resolver:
                 if self._run_strides(final_state):
                     self._run_wraps(final_state)
                     self.context.accepted_final_states_count += 1
+                    self.context.register_accepted_final_state(final_state)
                     yield final_state
                 else:
                     self.context.discarded_final_states_count += 1
