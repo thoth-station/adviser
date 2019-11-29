@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 
 @attr.s(slots=True)
 class PipelineConfig:
-    """A configuration of a pipline for dependency-monkey and for adviser."""
+    """A configuration of a pipeline for dependency-monkey and for adviser."""
 
     boots = attr.ib(type=List[Boot], default=attr.Factory(list))
     sieves = attr.ib(type=List[Sieve], default=attr.Factory(list))
