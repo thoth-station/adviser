@@ -498,7 +498,7 @@ class TestResolver(AdviserTestCase):
         sorted_tf_package_versions = list(reversed(tf_package_versions))
         random.shuffle(tf_package_versions)
 
-        result = resolver._semver_sort_and_limit_latest_versions(*tf_package_versions)
+        result = resolver._semver_sort_and_limit_latest_versions(tf_package_versions)
         if limit is not None:
             assert len(result) == limit
             assert result == sorted_tf_package_versions[:limit]

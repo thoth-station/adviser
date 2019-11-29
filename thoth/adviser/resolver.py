@@ -378,7 +378,7 @@ class Resolver:
         return resolved_direct_dependencies
 
     def _semver_sort_and_limit_latest_versions(
-        self, *package_versions: PackageVersion
+        self, package_versions: List[PackageVersion]
     ) -> List[PackageVersion]:
         """Sort package tuples based on version and apply latest version limit if configured so.
 
@@ -393,9 +393,9 @@ class Resolver:
             _LOGGER.debug(
                 "Limiting latest versions of packages to %d", self.limit_latest_versions
             )
-            return list(sorted_package_versions)[: self.limit_latest_versions]
+            return sorted_package_versions[:self.limit_latest_versions]
 
-        return list(sorted_package_versions)
+        return sorted_package_versions
 
     def _prepare_initial_states(self, *, with_devel: bool) -> Beam:
         """Prepare initial states for simulated annealing.
@@ -409,7 +409,7 @@ class Resolver:
             for direct_dependency in package_versions:
                 self.context.register_package_version(direct_dependency)
 
-            package_versions = self._semver_sort_and_limit_latest_versions(*package_versions)
+            package_versions = self._semver_sort_and_limit_latest_versions(package_versions)
             package_versions = list(self._run_sieves(package_versions))
             if not package_versions:
                 raise CannotProduceStack(
@@ -571,7 +571,7 @@ class Resolver:
         all_dependencies_list: Dict[str, List[PackageVersion]] = {}
         for dependency_name, dependency_tuples in all_dependencies.items():
             package_versions = [self.context.get_package_version(d) for d in dependency_tuples]
-            package_versions = self._semver_sort_and_limit_latest_versions(*package_versions)
+            package_versions = self._semver_sort_and_limit_latest_versions(package_versions)
             package_versions = list(self._run_sieves(package_versions))
             if not package_versions:
                 _LOGGER.debug(
