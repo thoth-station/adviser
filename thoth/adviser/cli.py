@@ -391,7 +391,7 @@ def advise(
 
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
     seed = seed if seed is not None else int(time.time())
-    _LOGGER.info("Starting annealing with random seed set to %r", seed)
+    _LOGGER.info("Starting resolver using %r predictor with random seed set to %r", predictor, seed)
     random.seed(seed)
 
     resolver = Resolver.get_adviser_instance(
@@ -584,7 +584,7 @@ def dependency_monkey(
 
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
     seed = seed if seed is not None else int(time.time())
-    _LOGGER.info("Starting annealing with random seed set to %r", seed)
+    _LOGGER.info("Starting resolver using predictor %r with random seed set to %r", predictor, seed)
     random.seed(seed)
 
     resolver = Resolver.get_dependency_monkey_instance(
