@@ -473,6 +473,7 @@ def advise(
     "--seed",
     envvar="THOTH_DEPENDENCY_MONKEY_SEED",
     help="A seed to be used for generating software stack samples (defaults to time if omitted).",
+    type=int,
 )
 @click.option(
     "--count",
