@@ -43,7 +43,7 @@ class Report:
         type=Optional[List[Dict[str, Any]]], kw_only=True, default=None
     )
     _heapq = attr.ib(type=List[Product], default=attr.Factory(list), kw_only=True)
-    
+
     @property
     def stack_info(self) -> Optional[List[Dict[str, Any]]]:
         """Retrieve stack info of this report."""
