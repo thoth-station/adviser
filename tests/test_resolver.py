@@ -171,17 +171,14 @@ class TestResolver(AdviserTestCase):
         flexmock(sieves.Sieve1)
         flexmock(sieves.Sieve2)
 
-        for package_version in tf_package_versions:
-            sieves.Sieve1.should_receive("run").with_args(package_version).and_return(
-                None
-            ).ordered()
-            sieves.Sieve2.should_receive("run").with_args(package_version).and_return(
-                None
-            ).ordered()
+        # We use object here as flexmock has no direct support for generator args. Tests
+        # for generator args are done in sieve related testsuite.
+        sieves.Sieve1.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
+        sieves.Sieve2.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
 
         resolver.pipeline.sieves = [sieves.Sieve1(), sieves.Sieve2()]
 
-        resolver._run_sieves(*tf_package_versions)
+        assert list(resolver._run_sieves(tf_package_versions)) == tf_package_versions
 
     def test_run_sieves_error(
         self, resolver: Resolver, tf_package_versions: List[PackageVersion]
@@ -189,35 +186,27 @@ class TestResolver(AdviserTestCase):
         """Test raising sieve specific error by resolver if any error occurs."""
         flexmock(sieves.Sieve1)
 
-        sieves.Sieve1.should_receive("run").with_args(tf_package_versions[0]).and_raise(
+        sieves.Sieve1.should_receive("run").with_args(object).and_raise(
             ValueError
         ).once()
         resolver.pipeline.sieves = [sieves.Sieve1()]
 
         with pytest.raises(SieveError):
-            resolver._run_sieves(*tf_package_versions)
+            list(resolver._run_sieves(tf_package_versions))
 
     def test_run_sieves_not_acceptable(
         self, resolver: Resolver, tf_package_versions: List[PackageVersion]
     ) -> None:
         """Test raising not acceptable causes filtering of packages."""
         flexmock(sieves.Sieve1)
-        sieves.Sieve1.should_receive("run").with_args(
-            tf_package_versions[0]
-        ).and_return(None).ordered()
-        sieves.Sieve1.should_receive("run").with_args(tf_package_versions[1]).and_raise(
+
+        sieves.Sieve1.should_receive("run").with_args(object).and_raise(
             NotAcceptable
-        ).ordered()
-        sieves.Sieve1.should_receive("run").with_args(
-            tf_package_versions[2]
-        ).and_return(None).ordered()
+        ).once()
 
         resolver.pipeline.sieves = [sieves.Sieve1()]
 
-        assert resolver._run_sieves(*tf_package_versions[:3]) == [
-            tf_package_versions[0],
-            tf_package_versions[2],
-        ]
+        assert list(resolver._run_sieves(tf_package_versions)) == []
 
     def test_run_steps(
         self, resolver: Resolver, package_versions: List[PackageVersion]
@@ -530,12 +519,8 @@ class TestResolver(AdviserTestCase):
         ).once()
 
         # This is dependent on dict order, Python 3.6+ required.
-        resolver.should_receive("_run_sieves").with_args(
-            *numpy_package_versions
-        ).and_return(numpy_package_versions).ordered()
-        resolver.should_receive("_run_sieves").with_args(
-            *tf_package_versions
-        ).and_return([]).ordered()
+        resolver.should_receive("_run_sieves").with_args(object).and_yield(*numpy_package_versions).ordered()
+        resolver.should_receive("_run_sieves").with_args(object).and_yield(*[]).ordered()
 
         resolver._init_context()
         with pytest.raises(CannotProduceStack):
@@ -555,12 +540,8 @@ class TestResolver(AdviserTestCase):
         ).once()
 
         # This is dependent on dict order, Python 3.6+ required.
-        resolver.should_receive("_run_sieves").with_args(
-            *numpy_package_versions
-        ).and_return(numpy_package_versions).ordered()
-        resolver.should_receive("_run_sieves").with_args(
-            *tf_package_versions
-        ).and_return(tf_package_versions).ordered()
+        resolver.should_receive("_run_sieves").with_args(object).and_yield(*numpy_package_versions).ordered()
+        resolver.should_receive("_run_sieves").with_args(object).and_yield(*tf_package_versions).ordered()
 
         # Default steps do not filter out any state, let't produce them all in this case.
         resolver._init_context()

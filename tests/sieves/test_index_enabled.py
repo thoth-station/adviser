@@ -49,7 +49,7 @@ class TestPackageIndexSieve(AdviserTestCase):
         context = flexmock(graph=GraphDatabase())
         with PackageIndexSieve.assigned_context(context):
             sieve = PackageIndexSieve()
-            assert sieve.run(package_version) is None
+            assert list(sieve.run((p for p in [package_version]))) == [package_version]
 
     def test_sieve_index_disabled(self) -> None:
         """Test removals of Python package if Python package index used is disabled."""
@@ -67,8 +67,7 @@ class TestPackageIndexSieve(AdviserTestCase):
         context = flexmock(graph=GraphDatabase())
         with PackageIndexSieve.assigned_context(context):
             sieve = PackageIndexSieve()
-            with pytest.raises(NotAcceptable):
-                sieve.run(package_version)
+            assert list(sieve.run(p for p in [package_version])) == []
 
     def test_sieve_index_not_found(self) -> None:
         """Test removals of Python package if Python package index used is unknown."""
@@ -86,5 +85,4 @@ class TestPackageIndexSieve(AdviserTestCase):
         context = flexmock(graph=GraphDatabase())
         with PackageIndexSieve.assigned_context(context):
             sieve = PackageIndexSieve()
-            with pytest.raises(NotAcceptable):
-                sieve.run(package_version)
+            assert list(sieve.run((p for p in [package_version]))) == []

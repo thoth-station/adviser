@@ -21,7 +21,7 @@ import logging
 from typing import Any
 from typing import Optional
 from typing import Dict
-from typing import Tuple
+from typing import Generator
 from typing import TYPE_CHECKING
 
 import attr
@@ -29,7 +29,6 @@ from thoth.python import PackageVersion
 from thoth.storages.exceptions import NotFoundError
 
 from ..sieve import Sieve
-from ..exceptions import NotAcceptable
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
@@ -55,33 +54,31 @@ class PackageIndexSieve(Sieve):
 
         return None
 
-    @staticmethod
-    def _evaluate_is_enabled(
-        package_tuple: Tuple[str, str, str], is_enabled: Optional[bool]
-    ) -> None:
-        """Evaluate the enabled flag."""
-        if is_enabled is None:
-            raise NotAcceptable(
-                f"Removing Python package version {package_tuple!r} as used index is not registered"
-            )
-
-        if not is_enabled:
-            raise NotAcceptable(
-                f"Removing Python package version {package_tuple!r} as used index is not enabled"
-            )
-
-    def run(self, package_version: PackageVersion) -> None:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out package versions based on disabled Python package index."""
-        if package_version.index.url in self._cached_records:
-            is_enabled = self._cached_records[package_version.index.url]
-        else:
-            try:
-                is_enabled = self.context.graph.is_python_package_index_enabled(
-                    package_version.index.url
-                )
-            except NotFoundError:
-                # A special value of None marks non-existing index in thoth's knowledge base.
-                is_enabled = None
+        for package_version in package_versions:
+            if package_version.index.url in self._cached_records:
+                is_enabled = self._cached_records[package_version.index.url]
+            else:
+                try:
+                    is_enabled = self.context.graph.is_python_package_index_enabled(
+                        package_version.index.url
+                    )
+                except NotFoundError:
+                    # A special value of None marks non-existing index in thoth's knowledge base.
+                    is_enabled = None
 
-        self._cached_records[package_version.index.url] = is_enabled
-        self._evaluate_is_enabled(package_version.to_tuple(), is_enabled)
+            self._cached_records[package_version.index.url] = is_enabled
+            if is_enabled is None:
+                _LOGGER.debug(
+                    "Removing Python package version %r as used index is not registered", package_version.to_tuple()
+                )
+                continue
+
+            if not is_enabled:
+                _LOGGER.debug(
+                    "Removing Python package version %r as used index is not enabled", package_version.to_tuple()
+                )
+                continue
+
+            yield package_version

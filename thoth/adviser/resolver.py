@@ -191,6 +191,7 @@ class Resolver:
     def _run_boots(self) -> None:
         """Run all boots bound to the current annealing run context."""
         for boot in self.pipeline.boots:
+            _LOGGER.debug("Running boot %r", boot.__class__.__name__)
             try:
                 boot.run()
             except Exception as exc:
@@ -198,30 +199,28 @@ class Resolver:
                     f"Failed to run pipeline boot {boot.__class__.__name__!r}: {str(exc)}"
                 ) from exc
 
-    def _run_sieves(self, *package_versions: PackageVersion) -> List[PackageVersion]:
+    def _run_sieves(self, package_versions: List[PackageVersion]) -> Generator[PackageVersion, None, None]:
         """Run sieves on each package tuple."""
-        accepted = []
-        for package_version in package_versions:
-            for sieve in self.pipeline.sieves:
-                try:
-                    sieve.run(package_version)
-                except NotAcceptable as exc:
-                    _LOGGER.debug(
-                        "Sieve %r removed package %r: %s",
-                        sieve.__class__.__name__,
-                        package_version.to_tuple(),
-                        str(exc),
-                    )
-                    break
-                except Exception as exc:
-                    raise SieveError(
-                        f"Failed to run sieve {sieve.__class__.__name__!r} for "
-                        f"Python package {package_version.to_tuple()!r}: {str(exc)}"
-                    ) from exc
-            else:
-                accepted.append(package_version)
+        result = (pv for pv in package_versions)
+        for sieve in self.pipeline.sieves:
+            _LOGGER.debug("Running sieve %r", sieve.__class__.__name__)
+            try:
+                result = sieve.run(result)
+            except NotAcceptable as exc:
+                _LOGGER.debug(
+                    "Sieve %r removed packages %r: %s",
+                    sieve.__class__.__name__,
+                    str(exc),
+                )
+                result = []
+                break
+            except Exception as exc:
+                raise SieveError(
+                    f"Failed to run sieve {sieve.__class__.__name__!r} for "
+                    f"Python packages {[pv.to_tuple() for pv in package_versions]}: {str(exc)}"
+                ) from exc
 
-        return accepted
+        yield from result
 
     def _run_steps(
         self, beam: Beam, state: State, *package_versions: PackageVersion
@@ -249,6 +248,7 @@ class Resolver:
                     continue
 
             for step in self.pipeline.steps:
+                _LOGGER.debug("Running step %r", step.__class__.__name__)
                 try:
                     step_result = step.run(state, package_version)
                 except NotAcceptable as exc:
@@ -293,6 +293,7 @@ class Resolver:
     def _run_strides(self, state: State) -> bool:
         """Run strides and check if the given state should be accepted."""
         for stride in self.pipeline.strides:
+            _LOGGER.debug("Running stride %r", stride.__class__.__name__)
             try:
                 stride.run(state)
             except NotAcceptable as exc:
@@ -313,6 +314,7 @@ class Resolver:
     def _run_wraps(self, state: State) -> None:
         """Run all wraps bound to the current annealing run context."""
         for wrap in self.pipeline.wraps:
+            _LOGGER.debug("Running wrap %r", wrap.__class__.__name__)
             try:
                 wrap.run(state)
             except Exception as exc:
@@ -407,15 +409,15 @@ class Resolver:
             for direct_dependency in package_versions:
                 self.context.register_package_version(direct_dependency)
 
-            package_versions = self._run_sieves(*package_versions)
-            direct_dependencies[
-                direct_dependency_name
-            ] = self._semver_sort_and_limit_latest_versions(*package_versions)
-            if not direct_dependencies[direct_dependency_name]:
+            package_versions = self._semver_sort_and_limit_latest_versions(*package_versions)
+            package_versions = list(self._run_sieves(package_versions))
+            if not package_versions:
                 raise CannotProduceStack(
                     f"Cannot satisfy direct dependencies - direct dependencies "
                     f"of type {direct_dependency_name!r} were removed by pipeline sieves"
                 )
+
+            direct_dependencies[direct_dependency_name] = package_versions
 
         # Create an empty state which will be extended with packages based on step results. We know we have resolved
         # all the dependencies so start with beam which has just empty state and subsequently expand it based on
@@ -435,6 +437,7 @@ class Resolver:
 
             for state in states:
                 for package_version in package_versions:
+                    # TODO: use back tracking here
                     self._run_steps(beam, state, package_version)
 
         return beam
@@ -492,6 +495,8 @@ class Resolver:
         dependencies: List[Tuple[str, str]]
     ) -> None:
         """Create new states out of existing ones based on dependencies."""
+        _LOGGER.debug("Expanding state with dependencies based on packages solved in environments")
+
         package_tuple = package_version.to_tuple()
         all_dependencies: Dict[str, Set[Tuple[str, str, str]]] = {}
         for package_name, version in dependencies:
@@ -563,21 +568,24 @@ class Resolver:
             )
             return None
 
+        all_dependencies_list: Dict[str, List[PackageVersion]] = {}
         for dependency_name, dependency_tuples in all_dependencies.items():
-            package_versions = self._run_sieves(*(self.context.get_package_version(d) for d in dependency_tuples))
-            all_dependencies[
-                dependency_name
-            ] = self._semver_sort_and_limit_latest_versions(*package_versions)
-            if not all_dependencies[dependency_name]:
+            package_versions = [self.context.get_package_version(d) for d in dependency_tuples]
+            package_versions = self._semver_sort_and_limit_latest_versions(*package_versions)
+            package_versions = list(self._run_sieves(package_versions))
+            if not package_versions:
                 _LOGGER.debug(
                     "All dependencies of type %r were discarded by sieves, aborting creation of new states",
                     dependency_name,
                 )
                 return None
 
+            all_dependencies_list[dependency_name] = package_versions
+
         for combination_package_versions in itertools_product(
-            *all_dependencies.values()
+            *all_dependencies_list.values()
         ):
+            # TODO: use back tracking here
             self._run_steps(beam, state, *combination_package_versions)
 
         return None
