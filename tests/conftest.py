@@ -26,7 +26,6 @@ from thoth.adviser.context import Context
 from thoth.adviser.beam import Beam
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.pipeline_config import PipelineConfig
-from thoth.adviser.predictor import Predictor
 from thoth.adviser.resolver import Resolver
 from thoth.adviser.predictor import Predictor
 from thoth.common import RuntimeEnvironment
