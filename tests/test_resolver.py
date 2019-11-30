@@ -24,12 +24,12 @@ from collections import OrderedDict
 from copy import deepcopy
 import itertools
 from typing import List
+from typing import Tuple
 import random
 
 from thoth.adviser.context import Context
 from thoth.adviser.resolver import Resolver
 from thoth.adviser.state import State
-from thoth.adviser.beam import Beam
 from thoth.adviser.predictor import Predictor
 from thoth.adviser.product import Product
 from thoth.adviser.pipeline_config import PipelineConfig
@@ -173,8 +173,12 @@ class TestResolver(AdviserTestCase):
 
         # We use object here as flexmock has no direct support for generator args. Tests
         # for generator args are done in sieve related testsuite.
-        sieves.Sieve1.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
-        sieves.Sieve2.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
+        sieves.Sieve1.should_receive("run").with_args(object).and_yield(
+            *tf_package_versions
+        ).once()
+        sieves.Sieve2.should_receive("run").with_args(object).and_yield(
+            *tf_package_versions
+        ).once()
 
         resolver.pipeline.sieves = [sieves.Sieve1(), sieves.Sieve2()]
 
@@ -296,6 +300,74 @@ class TestResolver(AdviserTestCase):
         assert resolver._run_steps(state, *package_versions[:3]) is None
         assert resolver.beam.size == 0
         assert original_state == state, "State is not unoutched"
+
+    @pytest.mark.parametrize("package_tuple", [
+        # Any of version or index url is different.
+        ("tensorflow", "1.9.0", "https://pypi.org/simple"),
+        ("tensorflow", "2.0.0", "https://thoth-station.ninja"),
+        ("tensorflow", "1.9.0", "https://thoth-station.ninja"),
+    ])
+    def test_run_steps_package_clash(self, package_tuple: Tuple[str, str, str], resolver: Resolver) -> None:
+        """Test running steps with a dependency clash."""
+        pypi = Source("https://pypi.org/simple")
+
+        package_version1 = PackageVersion(
+            name="tensorflow", version="==2.0.0", index=pypi, develop=False
+        )
+        package_version2 = PackageVersion(
+            name="numpy", version="==1.1.1", index=pypi, develop=False
+        )
+
+        state = State(
+            score=1.0,
+            unresolved_dependencies=OrderedDict(
+                [("flask", ("flask", "1.12.0", "https://pypi.org/simple"))]
+            ),
+            resolved_dependencies=OrderedDict([(package_tuple[0], package_tuple)]),
+        )
+
+        assert resolver.beam.size == 0
+        assert resolver._run_steps(state, package_version1, package_version2) is None
+        assert resolver.beam.size == 0
+
+    def test_run_steps_no_package_clash(self, resolver: Resolver) -> None:
+        """Test running steps without any dependency clash."""
+        pypi = Source("https://pypi.org/simple")
+
+        package_version1 = PackageVersion(
+            name="tensorflow", version="==2.0.0", index=pypi, develop=False
+        )
+        package_version2 = PackageVersion(
+            name="numpy", version="==1.1.1", index=pypi, develop=False
+        )
+
+        state = State(
+            score=1.0,
+            unresolved_dependencies=OrderedDict(
+                [("flask", ("flask", "1.12.0", "https://pypi.org/simple"))]
+            ),
+            resolved_dependencies=OrderedDict(
+                [(package_version1.name, package_version1.to_tuple())]
+            ),
+        )
+
+        assert resolver.beam.size == 0
+        assert resolver._run_steps(state, package_version1, package_version2) is None
+        assert resolver.beam.size == 1
+        assert resolver.beam.top().to_dict() == {
+            "advised_runtime_environment": None,
+            "justification": [],
+            "resolved_dependencies": OrderedDict(
+                [("tensorflow", ("tensorflow", "2.0.0", "https://pypi.org/simple"))]
+            ),
+            "score": 1.0,
+            "unresolved_dependencies": OrderedDict(
+                [
+                    ("flask", ("flask", "1.12.0", "https://pypi.org/simple")),
+                    ("numpy", ("numpy", "1.1.1", "https://pypi.org/simple")),
+                ]
+            ),
+        }
 
     def test_run_steps_error(
         self, resolver: Resolver, package_versions: List[PackageVersion]
@@ -516,8 +588,12 @@ class TestResolver(AdviserTestCase):
         ).once()
 
         # This is dependent on dict order, Python 3.6+ required.
-        resolver.should_receive("_run_sieves").with_args(object).and_yield(*numpy_package_versions).ordered()
-        resolver.should_receive("_run_sieves").with_args(object).and_yield(*[]).ordered()
+        resolver.should_receive("_run_sieves").with_args(object).and_yield(
+            *numpy_package_versions
+        ).ordered()
+        resolver.should_receive("_run_sieves").with_args(object).and_yield(
+            *[]
+        ).ordered()
 
         resolver._init_context()
         with pytest.raises(CannotProduceStack):
@@ -537,8 +613,12 @@ class TestResolver(AdviserTestCase):
         ).once()
 
         # This is dependent on dict order, Python 3.6+ required.
-        resolver.should_receive("_run_sieves").with_args(object).and_yield(*numpy_package_versions).ordered()
-        resolver.should_receive("_run_sieves").with_args(object).and_yield(*tf_package_versions).ordered()
+        resolver.should_receive("_run_sieves").with_args(object).and_yield(
+            *numpy_package_versions
+        ).ordered()
+        resolver.should_receive("_run_sieves").with_args(object).and_yield(
+            *tf_package_versions
+        ).ordered()
 
         # Default steps do not filter out any state, let't produce them all in this case.
         resolver._init_context()
@@ -865,7 +945,7 @@ class TestResolver(AdviserTestCase):
         assert resolver.pipeline.sieves, "No sieves to run this test case with"
         for sieve in resolver.pipeline.sieves:
             # No sieve is called with the discarded package based on env marker.
-           sieve.should_call("run").twice()
+            sieve.should_call("run").twice()
 
         assert resolver.pipeline.steps, "No steps to run this test case with"
         for step in resolver.pipeline.steps:
@@ -1092,7 +1172,8 @@ class TestResolver(AdviserTestCase):
             )
 
         computed_combinations = [
-            set(state.unresolved_dependencies.values()) for state in resolver.beam.iter_states()
+            set(state.unresolved_dependencies.values())
+            for state in resolver.beam.iter_states()
         ]
         for combination in itertools.product(*record_group.values()):
             combination = set(combination)
@@ -1113,13 +1194,13 @@ class TestResolver(AdviserTestCase):
         with pytest.raises(BootError):
             resolver.resolve(with_devel=False)
 
-    @pytest.mark.parametrize("unit_type", ["boots", "sieves", "steps", "strides", "wraps"])
+    @pytest.mark.parametrize(
+        "unit_type", ["boots", "sieves", "steps", "strides", "wraps"]
+    )
     def test_resolve_pre_run_error(self, unit_type: str, resolver: Resolver):
         """Test raising an exception in pre-run phase causes halt of resolver."""
         units = getattr(resolver.pipeline, unit_type)
-        assert (
-            units,
-        ), "No unit in the pipeline configuration to run test with"
+        assert (units,), "No unit in the pipeline configuration to run test with"
 
         unit = units[0]
         unit.should_receive("pre_run").and_raise(ValueError).once()
@@ -1168,11 +1249,13 @@ class TestResolver(AdviserTestCase):
             resolver.context, resolver.beam
         ).and_return(1).and_return(0).twice()
 
-        resolver.should_receive("_expand_state").with_args(initial_state2).and_return(None).once()
+        resolver.should_receive("_expand_state").with_args(initial_state2).and_return(
+            None
+        ).once()
 
-        resolver.should_receive("_expand_state").with_args(
-            initial_state1
-        ).and_return(final_state).once()
+        resolver.should_receive("_expand_state").with_args(initial_state1).and_return(
+            final_state
+        ).once()
 
         states = list(resolver._do_resolve_states(with_devel=True))
         assert states == [final_state]
@@ -1214,17 +1297,17 @@ class TestResolver(AdviserTestCase):
             resolver.context, resolver.beam
         ).and_return(0).and_return(1).and_return(0).times(3)
 
-        resolver.should_receive("_expand_state").with_args(
-            initial_state3
-        ).and_return(final_state).once()
+        resolver.should_receive("_expand_state").with_args(initial_state3).and_return(
+            final_state
+        ).once()
 
-        resolver.should_receive("_expand_state").with_args(
-            initial_state1
-        ).and_return(final_state).once()
+        resolver.should_receive("_expand_state").with_args(initial_state1).and_return(
+            final_state
+        ).once()
 
-        resolver.should_receive("_expand_state").with_args(
-            initial_state2
-        ).and_return(final_state).once()
+        resolver.should_receive("_expand_state").with_args(initial_state2).and_return(
+            final_state
+        ).once()
 
         for boot in resolver.pipeline.boots:
             boot.should_receive("run").with_args().and_return(None).once()

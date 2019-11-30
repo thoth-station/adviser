@@ -23,7 +23,6 @@ from typing import Dict
 from typing import Tuple
 from typing import Any
 from typing import Optional
-from typing import Set
 from typing import List
 import logging
 from itertools import chain
@@ -246,14 +245,12 @@ class Resolver:
         for package_version in package_versions:
             package_version_tuple = package_version.to_tuple()
 
-            if package_version.name in state.unresolved_dependencies:
-                if state.unresolved_dependencies[package_version.name] != package_version_tuple:
-                    # TODO: create a test case for this
+            if package_version.name in state.resolved_dependencies:
+                if state.resolved_dependencies[package_version.name] != package_version_tuple:
                     # We already have the given dependency - there is a dependency clash (same name,
                     # different version or index url). Such state is invalid.
                     return None
                 else:
-                    # TODO: create a test case for this
                     # We already have this dependency in stack, continue to the next one (two packages
                     # depend on the same package and the resolution is valid - no clash).
                     continue
