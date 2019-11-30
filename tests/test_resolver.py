@@ -171,17 +171,14 @@ class TestResolver(AdviserTestCase):
         flexmock(sieves.Sieve1)
         flexmock(sieves.Sieve2)
 
-        for package_version in tf_package_versions:
-            sieves.Sieve1.should_receive("run").with_args(package_version).and_return(
-                None
-            ).ordered()
-            sieves.Sieve2.should_receive("run").with_args(package_version).and_return(
-                None
-            ).ordered()
+        # We use object here as flexmock has no direct support for generator args. Tests
+        # for generator args are done in sieve related testsuite.
+        sieves.Sieve1.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
+        sieves.Sieve2.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
 
         resolver.pipeline.sieves = [sieves.Sieve1(), sieves.Sieve2()]
 
-        resolver._run_sieves(*tf_package_versions)
+        assert list(resolver._run_sieves(tf_package_versions)) == tf_package_versions
 
     def test_run_sieves_error(
         self, resolver: Resolver, tf_package_versions: List[PackageVersion]
@@ -189,35 +186,27 @@ class TestResolver(AdviserTestCase):
         """Test raising sieve specific error by resolver if any error occurs."""
         flexmock(sieves.Sieve1)
 
-        sieves.Sieve1.should_receive("run").with_args(tf_package_versions[0]).and_raise(
+        sieves.Sieve1.should_receive("run").with_args(object).and_raise(
             ValueError
         ).once()
         resolver.pipeline.sieves = [sieves.Sieve1()]
 
         with pytest.raises(SieveError):
-            resolver._run_sieves(*tf_package_versions)
+            list(resolver._run_sieves(tf_package_versions))
 
     def test_run_sieves_not_acceptable(
         self, resolver: Resolver, tf_package_versions: List[PackageVersion]
     ) -> None:
         """Test raising not acceptable causes filtering of packages."""
         flexmock(sieves.Sieve1)
-        sieves.Sieve1.should_receive("run").with_args(
-            tf_package_versions[0]
-        ).and_return(None).ordered()
-        sieves.Sieve1.should_receive("run").with_args(tf_package_versions[1]).and_raise(
+
+        sieves.Sieve1.should_receive("run").with_args(object).and_raise(
             NotAcceptable
-        ).ordered()
-        sieves.Sieve1.should_receive("run").with_args(
-            tf_package_versions[2]
-        ).and_return(None).ordered()
+        ).once()
 
         resolver.pipeline.sieves = [sieves.Sieve1()]
 
-        assert resolver._run_sieves(*tf_package_versions[:3]) == [
-            tf_package_versions[0],
-            tf_package_versions[2],
-        ]
+        assert list(resolver._run_sieves(tf_package_versions)) == []
 
     def test_run_steps(
         self, resolver: Resolver, package_versions: List[PackageVersion]
@@ -258,11 +247,10 @@ class TestResolver(AdviserTestCase):
 
         resolver.pipeline.steps = [steps.Step1(), steps.Step2()]
 
-        beam = Beam()
-
-        assert resolver._run_steps(beam, state, *package_versions[:3]) is None
-        assert beam.size == 1
-        assert beam.top().to_dict() == {
+        assert resolver.beam.size == 0
+        assert resolver._run_steps(state, *package_versions[:3]) is None
+        assert resolver.beam.size == 1
+        assert resolver.beam.top().to_dict() == {
             "advised_runtime_environment": None,
             "justification": [{"hello": "thoth"}, {"foo": 1}, {"baz": "bar"}],
             "resolved_dependencies": state.resolved_dependencies,
@@ -304,10 +292,9 @@ class TestResolver(AdviserTestCase):
 
         resolver.pipeline.steps = [steps.Step1(), steps.Step2()]
 
-        beam = Beam()
-
-        assert resolver._run_steps(beam, state, *package_versions[:3]) is None
-        assert beam.size == 0
+        assert resolver.beam.size == 0
+        assert resolver._run_steps(state, *package_versions[:3]) is None
+        assert resolver.beam.size == 0
         assert original_state == state, "State is not unoutched"
 
     def test_run_steps_error(
@@ -332,9 +319,8 @@ class TestResolver(AdviserTestCase):
 
         resolver.pipeline.steps = [steps.Step1()]
 
-        # Beam set to None, it should not be used.
         with pytest.raises(StepError):
-            assert resolver._run_steps(None, state, *package_versions[:3])
+            assert resolver._run_steps(state, *package_versions[:3])
 
         assert original_state == state, "State is not untouched"
 
@@ -509,7 +495,7 @@ class TestResolver(AdviserTestCase):
         sorted_tf_package_versions = list(reversed(tf_package_versions))
         random.shuffle(tf_package_versions)
 
-        result = resolver._semver_sort_and_limit_latest_versions(*tf_package_versions)
+        result = resolver._semver_sort_and_limit_latest_versions(tf_package_versions)
         if limit is not None:
             assert len(result) == limit
             assert result == sorted_tf_package_versions[:limit]
@@ -530,12 +516,8 @@ class TestResolver(AdviserTestCase):
         ).once()
 
         # This is dependent on dict order, Python 3.6+ required.
-        resolver.should_receive("_run_sieves").with_args(
-            *numpy_package_versions
-        ).and_return(numpy_package_versions).ordered()
-        resolver.should_receive("_run_sieves").with_args(
-            *tf_package_versions
-        ).and_return([]).ordered()
+        resolver.should_receive("_run_sieves").with_args(object).and_yield(*numpy_package_versions).ordered()
+        resolver.should_receive("_run_sieves").with_args(object).and_yield(*[]).ordered()
 
         resolver._init_context()
         with pytest.raises(CannotProduceStack):
@@ -555,16 +537,12 @@ class TestResolver(AdviserTestCase):
         ).once()
 
         # This is dependent on dict order, Python 3.6+ required.
-        resolver.should_receive("_run_sieves").with_args(
-            *numpy_package_versions
-        ).and_return(numpy_package_versions).ordered()
-        resolver.should_receive("_run_sieves").with_args(
-            *tf_package_versions
-        ).and_return(tf_package_versions).ordered()
+        resolver.should_receive("_run_sieves").with_args(object).and_yield(*numpy_package_versions).ordered()
+        resolver.should_receive("_run_sieves").with_args(object).and_yield(*tf_package_versions).ordered()
 
         # Default steps do not filter out any state, let't produce them all in this case.
         resolver._init_context()
-        beam = resolver._prepare_initial_states(with_devel=True)
+        assert resolver._prepare_initial_states(with_devel=True) is None
 
         for package_version in itertools.chain(
             numpy_package_versions, tf_package_versions
@@ -581,11 +559,11 @@ class TestResolver(AdviserTestCase):
             )
         )
 
-        assert beam.size == len(tf_package_versions) * len(
+        assert resolver.beam.size == len(tf_package_versions) * len(
             numpy_package_versions
         ), "Incorrect number of initial states produced"
 
-        for state in beam.iter_states():
+        for state in resolver.beam.iter_states():
             assert state.score == 0.0
             assert state.justification == []
             assert "numpy" in state.unresolved_dependencies
@@ -616,7 +594,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.operating_system.version,
             extras=frozenset(["postgresql", None]),
         ).and_raise(NotFoundError).once()
-        assert resolver._expand_state(beam=None, state=state) is None
+        assert resolver._expand_state(state=state) is None
 
     def test_expand_state_no_dependencies_final(
         self, resolver: Resolver, state: State
@@ -644,9 +622,8 @@ class TestResolver(AdviserTestCase):
 
         original_resolved_count = len(state.resolved_dependencies)
 
-        beam = Beam()
         assert (
-            resolver._expand_state(beam, state) is state
+            resolver._expand_state(state) is state
         ), "State returned is not the one passed"
         assert (
             to_expand_package_name in state.resolved_dependencies
@@ -658,7 +635,7 @@ class TestResolver(AdviserTestCase):
         assert (
             len(state.resolved_dependencies) == original_resolved_count + 1
         ), "State returned has no adjusted resolved dependencies"
-        assert beam.size == 0, "Some adjustments to beam were made"
+        assert resolver.beam.size == 0, "Some adjustments to beam were made"
 
     def test_expand_state_no_dependencies_not_final(
         self, resolver: Resolver, state: State
@@ -692,8 +669,7 @@ class TestResolver(AdviserTestCase):
 
         original_resolved_count = len(state.resolved_dependencies)
 
-        beam = Beam()
-        returned_value = resolver._expand_state(beam, state)
+        returned_value = resolver._expand_state(state)
 
         assert returned_value is None, "No state should be returned"
         assert (
@@ -709,8 +685,8 @@ class TestResolver(AdviserTestCase):
         assert (
             "flask" in state.unresolved_dependencies
         ), "State returned has no adjusted resolved dependencies"
-        assert beam.size == 1, "State not present in beam"
-        assert beam.top() is state, "State in the beam is not the one passed"
+        assert resolver.beam.size == 1, "State not present in beam"
+        assert resolver.beam.top() is state, "State in the beam is not the one passed"
 
     def test_expand_state_add_dependencies_call(
         self, resolver: Resolver, state: State
@@ -759,15 +735,13 @@ class TestResolver(AdviserTestCase):
         ] = to_expand_package_tuple
         expected_state.unresolved_dependencies.pop(to_expand_package_name)
 
-        beam_mock = flexmock()
         resolver.should_receive("_expand_state_add_dependencies").with_args(
-            beam=beam_mock,
             state=expected_state,
             package_version=package_version,
             dependencies=[(pv.name, pv.locked_version) for pv in dep_package_versions],
         ).and_return(None).once()
 
-        assert resolver._expand_state(beam_mock, state) is None
+        assert resolver._expand_state(state) is None
 
     def test_expand_state_add_dependencies_marker_evaluation_result(
         self, resolver: Resolver
@@ -836,7 +810,6 @@ class TestResolver(AdviserTestCase):
             }
         ]
 
-        # Add few more records to test combination creation.
         absl_py_records = [
             {
                 "package_name": "absl-py",
@@ -898,13 +871,12 @@ class TestResolver(AdviserTestCase):
         for step in resolver.pipeline.steps:
             step.should_call("run").twice()
 
-        beam = Beam()
         state = State(score=0.0)
+        assert resolver.beam.size == 0
 
         resolver._init_context()
         resolver.context.register_package_version(package_version)
         resolver._expand_state_add_dependencies(
-            beam=beam,
             state=state,
             package_version=package_version,
             dependencies=[
@@ -915,8 +887,8 @@ class TestResolver(AdviserTestCase):
         )
 
         # We end up with one state as tensorboard's marker evaluation is False in tensorboard==2.0.0.
-        assert beam.size == 1
-        assert beam.top().to_dict() == {
+        assert resolver.beam.size == 1
+        assert resolver.beam.top().to_dict() == {
             "score": 0.0,
             "unresolved_dependencies": OrderedDict(
                 [
@@ -931,7 +903,7 @@ class TestResolver(AdviserTestCase):
             "advised_runtime_environment": None,
             "justification": [],
         }
-        assert beam.top() is not state, "State was not cloned"
+        assert resolver.beam.top() is not state, "State was not cloned"
 
         for record in itertools.chain(tb_records, absl_py_records):
             package_version = resolver.context.get_package_version(
@@ -998,13 +970,11 @@ class TestResolver(AdviserTestCase):
             python_version=absl_py_records[0]["python_version"],
         ).and_return("python_version >= 3.0").once()
 
-        beam = Beam()
         state = State(score=0.0)
 
         resolver._init_context()
         resolver.context.register_package_version(package_version)
         resolver._expand_state_add_dependencies(
-            beam=beam,
             state=state,
             package_version=package_version,
             dependencies=[("absl-py", "0.8.1"), ("tensorboard", "2.0.0")],
@@ -1012,7 +982,7 @@ class TestResolver(AdviserTestCase):
 
         # We end up with one state as tensorboard's marker evaluation is False in tensorboard==2.0.0.
         assert (
-            beam.size == 0
+            resolver.beam.size == 0
         ), "A new state was added even the dependency sub-graph is not resolved"
 
     def test_expand_state_add_dependencies_combinations(
@@ -1097,13 +1067,11 @@ class TestResolver(AdviserTestCase):
                 python_version=dependency_record["python_version"],
             ).and_return(None).once()
 
-        beam = Beam()
         state = State(score=0.0)
 
         resolver._init_context()
         resolver.context.register_package_version(package_version)
         resolver._expand_state_add_dependencies(
-            beam=beam,
             state=state,
             package_version=package_version,
             dependencies=[
@@ -1112,7 +1080,7 @@ class TestResolver(AdviserTestCase):
             ],
         )
 
-        assert beam.size == 3 * 2, "Wrong number of states computed"
+        assert resolver.beam.size == 3 * 2, "Wrong number of states computed"
 
         record_group = {}
         for record in dependency_records:
@@ -1124,7 +1092,7 @@ class TestResolver(AdviserTestCase):
             )
 
         computed_combinations = [
-            set(state.unresolved_dependencies.values()) for state in beam.iter_states()
+            set(state.unresolved_dependencies.values()) for state in resolver.beam.iter_states()
         ]
         for combination in itertools.product(*record_group.values()):
             combination = set(combination)
@@ -1175,10 +1143,10 @@ class TestResolver(AdviserTestCase):
         initial_state1 = State(score=0.0)
         initial_state2 = State(score=1.0)
         initial_state3 = State(score=2.0)
-        beam = Beam()
-        beam.add_state(initial_state1)
-        beam.add_state(initial_state2)
-        beam.add_state(initial_state3)
+
+        resolver.beam.add_state(initial_state1)
+        resolver.beam.add_state(initial_state2)
+        resolver.beam.add_state(initial_state3)
 
         resolver.limit = 1
         resolver._init_context()
@@ -1194,18 +1162,16 @@ class TestResolver(AdviserTestCase):
 
         resolver.should_receive("_prepare_initial_states").with_args(
             with_devel=True
-        ).and_return(beam).once()
+        ).and_return(resolver.beam).once()
 
         resolver.predictor.should_receive("run").with_args(
-            resolver.context, beam
+            resolver.context, resolver.beam
         ).and_return(1).and_return(0).twice()
 
-        resolver.should_receive("_expand_state").with_args(
-            beam, initial_state2
-        ).and_return(None).once()
+        resolver.should_receive("_expand_state").with_args(initial_state2).and_return(None).once()
 
         resolver.should_receive("_expand_state").with_args(
-            beam, initial_state1
+            initial_state1
         ).and_return(final_state).once()
 
         states = list(resolver._do_resolve_states(with_devel=True))
@@ -1213,8 +1179,8 @@ class TestResolver(AdviserTestCase):
         assert resolver.context.iteration == 2
         assert resolver.context.accepted_final_states_count == 1
         assert resolver.context.discarded_final_states_count == 0
-        assert beam.size == 1
-        assert beam.top() is initial_state3
+        assert resolver.beam.size == 1
+        assert resolver.beam.top() is initial_state3
 
     def test_do_resolve_states_beam_empty(
         self, resolver: Resolver, final_state: State
@@ -1233,31 +1199,31 @@ class TestResolver(AdviserTestCase):
         initial_state1 = State(score=0.0)
         initial_state2 = State(score=1.0)
         initial_state3 = State(score=2.0)
-        beam = Beam()
-        beam.add_state(initial_state1)
-        beam.add_state(initial_state2)
-        beam.add_state(initial_state3)
+
+        resolver.beam.add_state(initial_state1)
+        resolver.beam.add_state(initial_state2)
+        resolver.beam.add_state(initial_state3)
 
         resolver._init_context()
 
         resolver.should_receive("_prepare_initial_states").with_args(
             with_devel=True
-        ).and_return(beam).once()
+        ).and_return(None).once()
 
         resolver.predictor.should_receive("run").with_args(
-            resolver.context, beam
+            resolver.context, resolver.beam
         ).and_return(0).and_return(1).and_return(0).times(3)
 
         resolver.should_receive("_expand_state").with_args(
-            beam, initial_state3
+            initial_state3
         ).and_return(final_state).once()
 
         resolver.should_receive("_expand_state").with_args(
-            beam, initial_state1
+            initial_state1
         ).and_return(final_state).once()
 
         resolver.should_receive("_expand_state").with_args(
-            beam, initial_state2
+            initial_state2
         ).and_return(final_state).once()
 
         for boot in resolver.pipeline.boots:
@@ -1275,7 +1241,7 @@ class TestResolver(AdviserTestCase):
         assert resolver.context.iteration == 3
         assert resolver.context.accepted_final_states_count == 2
         assert resolver.context.discarded_final_states_count == 1
-        assert beam.size == 0
+        assert resolver.beam.size == 0
 
     def test_resolve_products(self, resolver: Resolver) -> None:
         """Test resolving products."""

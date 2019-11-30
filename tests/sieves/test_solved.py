@@ -81,8 +81,7 @@ tensorflow = "*"
         )
         with SolvedSieve.assigned_context(context):
             sieve = SolvedSieve()
-            with pytest.raises(NotAcceptable):
-                sieve.run(package_version)
+            assert list(sieve.run(p for p in [package_version])) == []
 
     def test_not_solved_without_error(self) -> None:
         """Test a not found package is not accepted by sieve."""
@@ -107,8 +106,7 @@ tensorflow = "*"
         )
         with SolvedSieve.assigned_context(context):
             sieve = SolvedSieve()
-            with pytest.raises(NotAcceptable):
-                sieve.run(package_version)
+            assert list(sieve.run(p for p in [package_version])) == []
 
     def test_acceptable_with_error(self) -> None:
         """Test accepted with an error."""
@@ -134,7 +132,7 @@ tensorflow = "*"
         with SolvedSieve.assigned_context(context):
             sieve = SolvedSieve()
             sieve.update_configuration({"without_error": False})
-            assert sieve.run(package_version) is None
+            assert list(sieve.run(p for p in [package_version])) == [package_version]
 
     def test_default_configuration(self) -> None:
         """Test default configuration for an instantiated sieve."""

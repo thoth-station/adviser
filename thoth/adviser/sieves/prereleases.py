@@ -21,12 +21,12 @@ import logging
 from typing import Optional
 from typing import Dict
 from typing import Any
+from typing import Generator
 from typing import TYPE_CHECKING
 
 import attr
 from thoth.python import PackageVersion
 
-from ..exceptions import NotAcceptable
 from ..sieve import Sieve
 
 if TYPE_CHECKING:
@@ -49,15 +49,19 @@ class CutPreReleasesSieve(Sieve):
 
         return None
 
-    def run(self, package_version: PackageVersion) -> None:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Cut-off pre-releases if project does not explicitly allows them."""
-        if self.context.project.prereleases_allowed:
-            _LOGGER.info(
-                "Project accepts pre-releases, skipping cutting pre-releases step"
-            )
-            return None
+        for package_version in package_versions:
+            if self.context.project.prereleases_allowed:
+                _LOGGER.info(
+                    "Project accepts pre-releases, skipping cutting pre-releases step"
+                )
+                yield package_version
 
-        if package_version.semantic_version.is_prerelease:
-            raise NotAcceptable(
-                f"Removing package {package_version.to_tuple()!r} - pre-releases are disabled"
-            )
+            if package_version.semantic_version.is_prerelease:
+                _LOGGER.debug(
+                    "Removing package %s - pre-releases are disabled", package_version.to_tuple()
+                )
+                continue
+
+            yield package_version

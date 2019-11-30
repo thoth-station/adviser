@@ -67,7 +67,14 @@ def subprocess_run(
                     resolver.predictor.plot(plot)
                 except Exception as exc:
                     _LOGGER.exception(
-                        "Failed to plot history to %r: %s", plot, str(exc)
+                        "Failed to plot predictor history to %r: %s", plot, str(exc)
+                    )
+
+                try:
+                    resolver.beam.plot(plot)
+                except Exception as exc:
+                    _LOGGER.exception(
+                        "Failed to plot beam history to %r: %s", plot, str(exc)
                     )
 
             result_dict.update(

@@ -17,14 +17,24 @@
 
 """Implementation of Beam for beam searching part of adviser."""
 
+import os
 import heapq
 from typing import Any
 from typing import List
+from typing import Tuple
 from typing import Optional
+import logging
+
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
 
 import attr
 
+from .exceptions import NoHistoryKept
 from .state import State
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
@@ -40,6 +50,11 @@ class Beam:
 
     width = attr.ib(default=None, type=Optional[int])
     _states = attr.ib(default=attr.Factory(list), type=List[State])
+    _beam_history = attr.ib(
+        type=List[Tuple[int, float]],
+        default=attr.Factory(list),
+        kw_only=True,
+    )
 
     _WIDTH_VALIDATOR_ERR_MSG = "Beam width has to be None or positive integer, got {!r}"
 
@@ -58,6 +73,88 @@ class Beam:
             return
 
         raise ValueError(self._WIDTH_VALIDATOR_ERR_MSG.format(value))
+
+    def new_iteration(self) -> None:
+        """Called once a new iteration is done in resolver.
+
+        Used to keep track of beam history.
+        """
+        if bool(int(os.getenv("THOTH_ADVISER_NO_HISTORY", 0))):
+            return
+
+        self._beam_history.append((self.size, self.top().score if self.size > 0 else None))
+
+    @staticmethod
+    def _make_patch_spines_invisible(ax: Any) -> None:
+        """Make spines invisible."""
+        ax.set_frame_on(True)
+        ax.patch.set_visible(False)
+        for sp in ax.spines.values():
+            sp.set_visible(False)
+
+    def plot(self, output_file: Optional[str] = None) -> matplotlib.figure.Figure:
+        """Plot temperature history of adaptive simulated annealing."""
+        if not self._beam_history:
+            raise NoHistoryKept("No history datapoints kept for beam")
+
+        x = [i for i in range(len(self._beam_history))]
+        # Beam size over time.
+        y1 = [i[0] for i in self._beam_history]
+        # Highest rated state history.
+        y2 = [i[1] for i in self._beam_history]
+
+        fig, host = plt.subplots()
+        fig.subplots_adjust(right=0.75)
+
+        par1 = host.twinx()
+
+        par1.spines["right"].set_position(("axes", 1.10))
+        self._make_patch_spines_invisible(par1)
+
+        par1.spines["right"].set_visible(True)
+        host.spines["right"].set_visible(False)
+        host.spines["top"].set_visible(False)
+
+        p1, = host.plot(x, y1, ",g", label="Beam size")
+        p2, = par1.plot(
+            x, y2, ",b", label="Top rated state score"
+        )
+
+        host.set_xlabel("iteration")
+        host.set_ylabel("beam size")
+        par1.set_ylabel("score")
+
+        host.yaxis.label.set_color(p1.get_color())
+        par1.yaxis.label.set_color(p2.get_color())
+
+        tkw = dict(size=4, width=1.5)
+        host.tick_params(axis="y", colors="black", **tkw)
+        host.tick_params(axis="x", **tkw)
+        par1.tick_params(axis="y", colors=p2.get_color(), **tkw)
+
+        font_prop = FontProperties()
+        font_prop.set_size("small")
+        fig.legend(
+            loc="upper center",
+            bbox_to_anchor=(0.50, 1.00),
+            ncol=2,
+            fancybox=True,
+            shadow=True,
+            prop=font_prop,
+        )
+        host.yaxis.label.set_color("black")
+
+        if output_file:
+            parts = output_file.rsplit(".", maxsplit=1)
+            if len(parts) != 2:
+                raise ValueError(
+                    f"Cannot determine plot format: no extension parsed from {output_file!r}"
+                )
+
+            _LOGGER.debug("Saving figure to %r (format: %r)", output_file, parts[-1])
+            fig.savefig(f"{parts[0]}_beam.{parts[1]}", format=parts[-1])
+
+        return fig
 
     @property
     def states(self) -> List[State]:

@@ -18,6 +18,7 @@
 """A base class for implementing steps."""
 
 import abc
+from typing import Generator
 
 import attr
 from thoth.python import PackageVersion
@@ -30,5 +31,5 @@ class Sieve(Unit):
     """Sieve base class implementation."""
 
     @abc.abstractmethod
-    def run(self, package_version: PackageVersion) -> None:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Main entry-point for sieves to filter and score packages."""

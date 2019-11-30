@@ -123,7 +123,7 @@ class Resolver:
     """Resolver for resolving software stacks using pipeline configuration and a predictor."""
 
     DEFAULT_LIMIT = 10000
-    DEFAULT_COUNT = DEFAULT_LIMIT
+    DEFAULT_COUNT = 3
     DEFAULT_BEAM_WIDTH = -1
     DEFAULT_LIMIT_LATEST_VERSIONS = -1
 
@@ -151,6 +151,9 @@ class Resolver:
         converter=_limit_latest_versions,  # type: ignore
     )
 
+    _beam = attr.ib(
+        type=Optional[Beam], kw_only=True, default=None
+    )
     _solver = attr.ib(
         type=Optional[PythonPackageGraphSolver], kw_only=True, default=None
     )
@@ -176,6 +179,14 @@ class Resolver:
 
         return self._solver
 
+    @property
+    def beam(self) -> Beam:
+        """Get beam for storing states."""
+        if not self._beam:
+            self._beam = Beam(self.beam_width)
+
+        return self._beam
+
     def _init_context(self) -> None:
         """Initialize context instance."""
         self._context = Context(
@@ -191,6 +202,7 @@ class Resolver:
     def _run_boots(self) -> None:
         """Run all boots bound to the current annealing run context."""
         for boot in self.pipeline.boots:
+            _LOGGER.debug("Running boot %r", boot.__class__.__name__)
             try:
                 boot.run()
             except Exception as exc:
@@ -198,33 +210,31 @@ class Resolver:
                     f"Failed to run pipeline boot {boot.__class__.__name__!r}: {str(exc)}"
                 ) from exc
 
-    def _run_sieves(self, *package_versions: PackageVersion) -> List[PackageVersion]:
+    def _run_sieves(self, package_versions: List[PackageVersion]) -> Generator[PackageVersion, None, None]:
         """Run sieves on each package tuple."""
-        accepted = []
-        for package_version in package_versions:
-            for sieve in self.pipeline.sieves:
-                try:
-                    sieve.run(package_version)
-                except NotAcceptable as exc:
-                    _LOGGER.debug(
-                        "Sieve %r removed package %r: %s",
-                        sieve.__class__.__name__,
-                        package_version.to_tuple(),
-                        str(exc),
-                    )
-                    break
-                except Exception as exc:
-                    raise SieveError(
-                        f"Failed to run sieve {sieve.__class__.__name__!r} for "
-                        f"Python package {package_version.to_tuple()!r}: {str(exc)}"
-                    ) from exc
-            else:
-                accepted.append(package_version)
+        result = (pv for pv in package_versions)
+        for sieve in self.pipeline.sieves:
+            _LOGGER.debug("Running sieve %r", sieve.__class__.__name__)
+            try:
+                result = sieve.run(result)
+            except NotAcceptable as exc:
+                _LOGGER.debug(
+                    "Sieve %r removed packages %r: %s",
+                    sieve.__class__.__name__,
+                    str(exc),
+                )
+                result = []
+                break
+            except Exception as exc:
+                raise SieveError(
+                    f"Failed to run sieve {sieve.__class__.__name__!r} for "
+                    f"Python packages {[pv.to_tuple() for pv in package_versions]}: {str(exc)}"
+                ) from exc
 
-        return accepted
+        yield from result
 
     def _run_steps(
-        self, beam: Beam, state: State, *package_versions: PackageVersion
+        self, state: State, *package_versions: PackageVersion
     ) -> None:
         """Run steps to score next state or filter out invalid steps."""
         # We clone new state once we are sure we create it. Meantime, keep track of changes but be lazy.
@@ -249,6 +259,7 @@ class Resolver:
                     continue
 
             for step in self.pipeline.steps:
+                _LOGGER.debug("Running step %r", step.__class__.__name__)
                 try:
                     step_result = step.run(state, package_version)
                 except NotAcceptable as exc:
@@ -288,11 +299,12 @@ class Resolver:
             package_version_tuples,
             new_state,
         )
-        beam.add_state(new_state)
+        self.beam.add_state(new_state)
 
     def _run_strides(self, state: State) -> bool:
         """Run strides and check if the given state should be accepted."""
         for stride in self.pipeline.strides:
+            _LOGGER.debug("Running stride %r", stride.__class__.__name__)
             try:
                 stride.run(state)
             except NotAcceptable as exc:
@@ -313,6 +325,7 @@ class Resolver:
     def _run_wraps(self, state: State) -> None:
         """Run all wraps bound to the current annealing run context."""
         for wrap in self.pipeline.wraps:
+            _LOGGER.debug("Running wrap %r", wrap.__class__.__name__)
             try:
                 wrap.run(state)
             except Exception as exc:
@@ -376,7 +389,7 @@ class Resolver:
         return resolved_direct_dependencies
 
     def _semver_sort_and_limit_latest_versions(
-        self, *package_versions: PackageVersion
+        self, package_versions: List[PackageVersion]
     ) -> List[PackageVersion]:
         """Sort package tuples based on version and apply latest version limit if configured so.
 
@@ -391,11 +404,11 @@ class Resolver:
             _LOGGER.debug(
                 "Limiting latest versions of packages to %d", self.limit_latest_versions
             )
-            return list(sorted_package_versions)[: self.limit_latest_versions]
+            return sorted_package_versions[:self.limit_latest_versions]
 
-        return list(sorted_package_versions)
+        return sorted_package_versions
 
-    def _prepare_initial_states(self, *, with_devel: bool) -> Beam:
+    def _prepare_initial_states(self, *, with_devel: bool) -> None:
         """Prepare initial states for simulated annealing.
 
         Initial states are all combinations of direct dependencies.
@@ -407,39 +420,38 @@ class Resolver:
             for direct_dependency in package_versions:
                 self.context.register_package_version(direct_dependency)
 
-            package_versions = self._run_sieves(*package_versions)
-            direct_dependencies[
-                direct_dependency_name
-            ] = self._semver_sort_and_limit_latest_versions(*package_versions)
-            if not direct_dependencies[direct_dependency_name]:
+            package_versions = self._semver_sort_and_limit_latest_versions(package_versions)
+            package_versions = list(self._run_sieves(package_versions))
+            if not package_versions:
                 raise CannotProduceStack(
                     f"Cannot satisfy direct dependencies - direct dependencies "
                     f"of type {direct_dependency_name!r} were removed by pipeline sieves"
                 )
 
+            direct_dependencies[direct_dependency_name] = package_versions
+
         # Create an empty state which will be extended with packages based on step results. We know we have resolved
         # all the dependencies so start with beam which has just empty state and subsequently expand it based on
         # resolved direct dependencies.
-        beam = Beam(width=self.beam_width)
+        self.beam.wipe()
         for package_versions in direct_dependencies.values():
             # If the beam is empty, create an initial state to be added to the beam if accepted by pipeline steps.
             # Even if number of initial states is more than beam.width, we create a list of current states explicitly
             # to make sure we iterate over all possible combinations. The beam trims down low scoring states
             # as expected.
             # As we sort dependencies based on versions, we know we add latest first.
-            if beam.size != 0:
-                states = beam.iter_states()
-                beam.wipe()
+            if self.beam.size != 0:
+                states = self.beam.iter_states()
+                self.beam.wipe()
             else:
                 states = [State()]
 
             for state in states:
                 for package_version in package_versions:
-                    self._run_steps(beam, state, package_version)
+                    # TODO: use back tracking here
+                    self._run_steps(state, package_version)
 
-        return beam
-
-    def _expand_state(self, beam: Beam, state: State) -> Optional[State]:
+    def _expand_state(self, state: State) -> Optional[State]:
         """Expand the given state, generate new states respecting the pipeline configuration."""
         _, package_tuple = state.unresolved_dependencies.popitem(last=False)
 
@@ -474,11 +486,10 @@ class Resolver:
                 return state
 
             # No dependency, add back to beam for resolving unresolved in next rounds.
-            beam.add_state(state)
+            self.beam.add_state(state)
             return None
 
         self._expand_state_add_dependencies(
-            beam=beam,
             state=state,
             package_version=package_version,
             dependencies=list(chain(*dependencies.values()))
@@ -486,15 +497,21 @@ class Resolver:
 
     def _expand_state_add_dependencies(
         self,
-        beam: Beam,
         state: State,
         package_version: PackageVersion,
         dependencies: List[Tuple[str, str]]
     ) -> None:
         """Create new states out of existing ones based on dependencies."""
+        _LOGGER.debug("Expanding state with dependencies based on packages solved in environments")
+
         package_tuple = package_version.to_tuple()
-        all_dependencies: Dict[str, Set[Tuple[str, str, str]]] = {}
+        all_dependencies: Dict[str, List[Tuple[str, str, str]]] = {}
         for package_name, version in dependencies:
+            # We could use a set here that would optimize a bit, but it will create randomness - it
+            # will not work well with preserving seed across resolver runs.
+            if package_name not in all_dependencies:
+                all_dependencies[package_name] = []
+
             if self.project.runtime_environment.is_fully_specified():
                 marker_evaluation_result = self.graph.get_python_environment_marker_evaluation_result(
                     *package_tuple,
@@ -522,9 +539,6 @@ class Resolver:
                 python_version=self.project.runtime_environment.python_version,
             )
 
-            if package_name not in all_dependencies:
-                all_dependencies[package_name] = set()
-
             for record in records:
                 dependency_tuple = (
                     record["package_name"],
@@ -547,7 +561,8 @@ class Resolver:
                         extras=None,
                     )
 
-                all_dependencies[dependency_tuple[0]].add(dependency_tuple)
+                if dependency_tuple not in all_dependencies[dependency_tuple[0]]:
+                    all_dependencies[dependency_tuple[0]].append(dependency_tuple)
 
         # Check unsolved before sorting to optimize a bit.
         unsolved = [
@@ -564,21 +579,24 @@ class Resolver:
             return None
 
         for dependency_name, dependency_tuples in all_dependencies.items():
-            package_versions = self._run_sieves(*(self.context.get_package_version(d) for d in dependency_tuples))
-            all_dependencies[
-                dependency_name
-            ] = self._semver_sort_and_limit_latest_versions(*package_versions)
-            if not all_dependencies[dependency_name]:
+            print(dependency_tuples)
+            package_versions = [self.context.get_package_version(d) for d in dependency_tuples]
+            package_versions = self._semver_sort_and_limit_latest_versions(package_versions)
+            package_versions = list(self._run_sieves(package_versions))
+            if not package_versions:
                 _LOGGER.debug(
                     "All dependencies of type %r were discarded by sieves, aborting creation of new states",
                     dependency_name,
                 )
                 return None
 
+            all_dependencies[dependency_name] = package_versions
+
         for combination_package_versions in itertools_product(
             *all_dependencies.values()
         ):
-            self._run_steps(beam, state, *combination_package_versions)
+            # TODO: use back tracking here
+            self._run_steps(state, *combination_package_versions)
 
         return None
 
@@ -587,7 +605,7 @@ class Resolver:
     ) -> Generator[State, None, None]:
         """Actually perform adaptive simulated annealing."""
         self._run_boots()
-        beam = self._prepare_initial_states(with_devel=with_devel)
+        self._prepare_initial_states(with_devel=with_devel)
 
         _LOGGER.info("Hold tight, Thoth is computing recommendations for your application...")
 
@@ -599,18 +617,19 @@ class Resolver:
                     "with the current beam size %d",
                     self.context.accepted_final_states_count,
                     self.limit,
-                    beam.size,
+                    self.beam.size,
                 )
                 break
 
-            if beam.size == 0:
+            if self.beam.size == 0:
                 _LOGGER.info("The beam is empty")
                 break
 
+            self.beam.new_iteration()
             self.context.iteration += 1
 
-            state_idx = self.predictor.run(self.context, beam)
-            to_expand_state = beam.pop(state_idx)
+            state_idx = self.predictor.run(self.context, self.beam)
+            to_expand_state = self.beam.pop(state_idx)
 
             _LOGGER.debug(
                 "Expanding state with score %g at index %d: %r",
@@ -618,7 +637,7 @@ class Resolver:
                 state_idx,
                 to_expand_state,
             )
-            final_state = self._expand_state(beam, to_expand_state)
+            final_state = self._expand_state(to_expand_state)
             if final_state:
                 if self._run_strides(final_state):
                     self._run_wraps(final_state)

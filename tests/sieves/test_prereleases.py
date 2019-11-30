@@ -80,7 +80,7 @@ allow_prereleases = true
         context = flexmock(project=Project.from_strings(self._CASE_ALLOWED_PIPFILE))
         with CutPreReleasesSieve.assigned_context(context):
             sieve = CutPreReleasesSieve()
-            assert sieve.run(tf_2_0_0rc) is None
+            assert list(sieve.run(p for p in [tf_2_0_0rc])) == [tf_2_0_0rc]
 
     def test_pre_releases_disallowed_noop(self) -> None:
         """Test no removals if pre-releases are allowed."""
@@ -96,7 +96,7 @@ allow_prereleases = true
         context = flexmock(project=Project.from_strings(self._CASE_DISALLOWED_PIPFILE))
         with CutPreReleasesSieve.assigned_context(context):
             sieve = CutPreReleasesSieve()
-            assert sieve.run(tf_2_0_0) is None
+            assert list(sieve.run(p for p in [tf_2_0_0])) == [tf_2_0_0]
 
     def test_pre_releases_disallowed_removal(self) -> None:
         """Test no removals if pre-releases are allowed."""
@@ -112,5 +112,4 @@ allow_prereleases = true
         context = flexmock(project=Project.from_strings(self._CASE_DISALLOWED_PIPFILE))
         with CutPreReleasesSieve.assigned_context(context):
             sieve = CutPreReleasesSieve()
-            with pytest.raises(NotAcceptable):
-                sieve.run(tf_2_0_0rc0)
+            assert list(sieve.run(p for p in [tf_2_0_0rc0])) == []

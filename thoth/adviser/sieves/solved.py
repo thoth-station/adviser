@@ -21,13 +21,13 @@ import logging
 from typing import Any
 from typing import Dict
 from typing import Optional
+from typing import Generator
 from typing import TYPE_CHECKING
 
 import attr
 from thoth.python import PackageVersion
 from thoth.storages.exceptions import NotFoundError
 
-from ..exceptions import NotAcceptable
 from ..sieve import Sieve
 
 if TYPE_CHECKING:
@@ -52,26 +52,30 @@ class SolvedSieve(Sieve):
 
         return None
 
-    def run(self, package_version: PackageVersion) -> None:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages based on build time/installation issues.."""
-        try:
-            has_error = self.context.graph.has_python_solver_error(
-                package_version.name,
-                package_version.locked_version,
-                package_version.index.url,
-                os_name=self.context.project.runtime_environment.operating_system.name,
-                os_version=self.context.project.runtime_environment.operating_system.version,
-                python_version=self.context.project.runtime_environment.python_version,
-            )
-        except NotFoundError as exc:
-            raise NotAcceptable(
-                f"Removing package {package_version.to_tuple()!r} as it was not solved: {str(exc)!r}"
-            )
+        for package_version in package_versions:
+            try:
+                has_error = self.context.graph.has_python_solver_error(
+                    package_version.name,
+                    package_version.locked_version,
+                    package_version.index.url,
+                    os_name=self.context.project.runtime_environment.operating_system.name,
+                    os_version=self.context.project.runtime_environment.operating_system.version,
+                    python_version=self.context.project.runtime_environment.python_version,
+                )
+            except NotFoundError as exc:
+                _LOGGER.debug(
+                    "Removing package %r as it was not solved: %s", package_version.to_tuple(), str(exc)
+                )
+                continue
 
-        if has_error and self.configuration["without_error"]:
-            raise NotAcceptable(
-                f"Removing package {package_version.to_tuple()!r} due to build "
-                f"time error on {self.context.project.runtime_environment.to_dict()!r}"
-            )
+            if has_error and self.configuration["without_error"]:
+                _LOGGER.debug(
+                    "Removing package %r due to build time error on %r",
+                    package_version.to_tuple(),
+                    self.context.project.runtime_environment.to_dict()
+                )
+                continue
 
-        return None
+            yield package_version
