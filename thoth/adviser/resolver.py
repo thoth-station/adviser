@@ -233,69 +233,6 @@ class Resolver:
 
         yield from result
 
-    def _do_run_steps(
-        self, state: State, *package_versions: PackageVersion
-    ) -> Optional[Tuple[List[Tuple[str, str, str]], float, List[Dict[str, Any]]]]:
-        """Run steps to score next state or filter out invalid steps."""
-        new_state_unresolved_dependencies = []
-        new_state_add_justification = []
-        new_state_score = state.score
-
-        package_version_tuples = [pv.to_dict() for pv in package_versions]
-        for package_version in package_versions:
-            package_version_tuple = package_version.to_tuple()
-
-            if package_version.name in state.resolved_dependencies:
-                if (
-                    state.resolved_dependencies[package_version.name]
-                    != package_version_tuple
-                ):
-                    # We already have the given dependency - there is a dependency clash (same name,
-                    # different version or index url). Such state is invalid.
-                    return None
-                else:
-                    # We already have this dependency in stack, continue to the next one (two packages
-                    # depend on the same package and the resolution is valid - no clash).
-                    continue
-
-            for step in self.pipeline.steps:
-                _LOGGER.debug("Running step %r", step.__class__.__name__)
-                try:
-                    step_result = step.run(state, package_version)
-                except NotAcceptable as exc:
-                    _LOGGER.debug(
-                        "Step %r discarded addition of package %r: %s",
-                        step.__class__.__name__,
-                        package_version.to_tuple(),
-                        package_version_tuples,
-                        str(exc),
-                    )
-                    return None
-                except Exception as exc:
-                    raise StepError(
-                        f"Failed to run step {step.__class__.__name__!r} for Python package "
-                        f"{package_version.to_tuple()!r}: {str(exc)}"
-                    ) from exc
-
-                if step_result:
-                    score_addition, justification_addition = step_result
-                    if score_addition is not None:
-                        new_state_score += score_addition
-
-                    if justification_addition is not None:
-                        new_state_add_justification.extend(justification_addition)
-
-            new_state_unresolved_dependencies.append(package_version.to_tuple())
-
-        _LOGGER.debug(
-            "Steps accepted a new state with new entries %r", package_version_tuples
-        )
-        return (
-            new_state_unresolved_dependencies,
-            new_state_score,
-            new_state_add_justification,
-        )
-
     def _run_steps(
         self, state: State, package_versions_dict: Dict[str, List[PackageVersion]]
     ) -> None:
