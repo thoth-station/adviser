@@ -18,6 +18,7 @@
 """The main resolving algorithm working on top of states."""
 
 import time
+import math
 from typing import Generator
 from typing import Dict
 from typing import Tuple
@@ -358,6 +359,18 @@ class Resolver:
                     step_score_addition, step_justification_addition = step_result
 
                     if step_score_addition is not None:
+                        if math.isnan(step_score_addition):
+                            raise StepError(
+                                "Step %r returned score which is not na number",
+                                step.__class__.__name__,
+                            )
+
+                        if math.isinf(step_score_addition):
+                            raise StepError(
+                                "Step %r returned score that is infinite",
+                                step.__class__.__name__,
+                            )
+
                         score_addition += step_score_addition
 
                     if step_justification_addition is not None:
