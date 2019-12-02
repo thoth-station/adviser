@@ -216,10 +216,10 @@ class TestResolver(AdviserTestCase):
         self, resolver: Resolver, package_versions: List[PackageVersion]
     ) -> None:
         """Test running pipeline steps."""
-        state = State()
-        state.score = 0.1
-        state.add_justification([{"hello": "thoth"}])
-        state.resolved_dependencies["hexsticker"] = (
+        state1 = State()
+        state1.score = 0.1
+        state1.add_justification([{"hello": "thoth"}])
+        state1.resolved_dependencies["hexsticker"] = (
             "hexsticker",
             "1.2.0",
             "https://pypi.org/simple",
@@ -229,85 +229,95 @@ class TestResolver(AdviserTestCase):
         flexmock(steps.Step2)
 
         steps.Step1.should_receive("run").with_args(
-            state, package_versions[0]
+            state1, package_versions[0]
         ).and_return((1.0, None)).ordered()
+
         steps.Step2.should_receive("run").with_args(
-            state, package_versions[0]
+            state1, package_versions[0]
         ).and_return((0.5, [{"foo": 1}])).ordered()
 
-        steps.Step1.should_receive("run").with_args(
-            state, package_versions[1]
-        ).and_return(None).ordered()
-        steps.Step2.should_receive("run").with_args(
-            state, package_versions[1]
-        ).and_return((None, None)).ordered()
+        state2 = state1.clone()
+        state2.score += 1.0 + 0.5
+        state2.add_unresolved_dependency(package_versions[0].to_tuple())
+        state2.add_justification([{"foo": 1}])
 
         steps.Step1.should_receive("run").with_args(
-            state, package_versions[2]
+            state2, package_versions[1]
+        ).and_return((None, None)).ordered()
+
+        steps.Step2.should_receive("run").with_args(
+            state2, package_versions[1]
+        ).and_return(None).ordered()
+
+        state3 = state2.clone()
+        state3.add_unresolved_dependency(package_versions[1].to_tuple())
+
+        steps.Step1.should_receive("run").with_args(
+            state3, package_versions[2]
         ).and_return((None, [{"baz": "bar"}])).ordered()
         steps.Step2.should_receive("run").with_args(
-            state, package_versions[2]
+            state3, package_versions[2]
         ).and_return(None).ordered()
+
+        beam_state = state3.clone()
+        beam_state.add_unresolved_dependency(package_versions[2].to_tuple())
+        beam_state.add_justification([{"baz": "bar"}])
 
         resolver.pipeline.steps = [steps.Step1(), steps.Step2()]
 
         assert resolver.beam.size == 0
-        assert resolver._run_steps(state, *package_versions[:3]) is None
+        assert (
+            resolver._run_steps(state1, {pv.name: [pv] for pv in package_versions})
+            is None
+        )
         assert resolver.beam.size == 1
-        assert resolver.beam.top().to_dict() == {
-            "advised_runtime_environment": None,
-            "justification": [{"hello": "thoth"}, {"foo": 1}, {"baz": "bar"}],
-            "resolved_dependencies": state.resolved_dependencies,
-            "score": 1.6,
-            "unresolved_dependencies": OrderedDict(
-                ((p.name, p.to_tuple()) for p in package_versions)
-            ),
-        }
-
-        assert state.score == 0.1, "Score of the original state is not untouched"
-        assert state.justification == [
-            {"hello": "thoth"}
-        ], "Justification of the original score is not untouched"
+        assert resolver.beam.top() == beam_state
 
     def test_run_steps_not_acceptable(
         self, resolver: Resolver, package_versions: List[PackageVersion]
     ) -> None:
         """Test running steps when not acceptable is raised."""
-        state = State()
-        state.score = 0.1
-        state.add_justification([{"hello": "thoth"}])
-        state.resolved_dependencies["hexsticker"] = (
+        state1 = State()
+        state1.score = 0.1
+        state1.add_justification([{"hello": "thoth"}])
+        state1.resolved_dependencies["hexsticker"] = (
             "hexsticker",
             "1.2.0",
             "https://pypi.org/simple",
         )
 
-        original_state = deepcopy(state)
-
         flexmock(steps.Step1)
         flexmock(steps.Step2)
 
         steps.Step1.should_receive("run").with_args(
-            state, package_versions[0]
-        ).and_return((1.0, {"baz": "bar"})).ordered()
+            state1, package_versions[0]
+        ).and_return((1.0, [{"baz": "bar"}])).ordered()
+
         steps.Step2.should_receive("run").with_args(
-            state, package_versions[0]
+            state1, package_versions[0]
         ).and_raise(NotAcceptable).ordered()
 
         resolver.pipeline.steps = [steps.Step1(), steps.Step2()]
 
         assert resolver.beam.size == 0
-        assert resolver._run_steps(state, *package_versions[:3]) is None
+        assert (
+            resolver._run_steps(state1, {pv.name: [pv] for pv in package_versions[:3]})
+            is None
+        )
         assert resolver.beam.size == 0
-        assert original_state == state, "State is not unoutched"
 
-    @pytest.mark.parametrize("package_tuple", [
-        # Any of version or index url is different.
-        ("tensorflow", "1.9.0", "https://pypi.org/simple"),
-        ("tensorflow", "2.0.0", "https://thoth-station.ninja"),
-        ("tensorflow", "1.9.0", "https://thoth-station.ninja"),
-    ])
-    def test_run_steps_package_clash(self, package_tuple: Tuple[str, str, str], resolver: Resolver) -> None:
+    @pytest.mark.parametrize(
+        "package_tuple",
+        [
+            # Any of version or index url is different.
+            ("tensorflow", "1.9.0", "https://pypi.org/simple"),
+            ("tensorflow", "2.0.0", "https://thoth-station.ninja"),
+            ("tensorflow", "1.9.0", "https://thoth-station.ninja"),
+        ],
+    )
+    def test_run_steps_package_clash(
+        self, package_tuple: Tuple[str, str, str], resolver: Resolver
+    ) -> None:
         """Test running steps with a dependency clash."""
         pypi = Source("https://pypi.org/simple")
 
@@ -327,7 +337,16 @@ class TestResolver(AdviserTestCase):
         )
 
         assert resolver.beam.size == 0
-        assert resolver._run_steps(state, package_version1, package_version2) is None
+        assert (
+            resolver._run_steps(
+                state,
+                {
+                    package_version1.name: [package_version1],
+                    package_version2.name: [package_version2],
+                },
+            )
+            is None
+        )
         assert resolver.beam.size == 0
 
     def test_run_steps_no_package_clash(self, resolver: Resolver) -> None:
@@ -351,8 +370,30 @@ class TestResolver(AdviserTestCase):
             ),
         )
 
+        assert (
+            len(resolver.pipeline.steps) == 1
+        ), "A pre-requisite for this test case is to have exactly one step in the pipeline configuration"
+        assert (
+            resolver.pipeline.steps[0].MULTI_PACKAGE_RESOLUTIONS is False
+        ), "This test expect multi package resolution in pipeline step turned off"
+
+        # Should be called only once with package_version2, no package_version1 call as
+        # MULTI_PACKAGE_RESOLUTIONS is off.
+        resolver.pipeline.steps[0].should_receive("run").with_args(
+            state, package_version2
+        ).and_return(None).once()
+
         assert resolver.beam.size == 0
-        assert resolver._run_steps(state, package_version1, package_version2) is None
+        assert (
+            resolver._run_steps(
+                state,
+                {
+                    package_version1.name: [package_version1],
+                    package_version2.name: [package_version2],
+                },
+            )
+            is None
+        )
         assert resolver.beam.size == 1
         assert resolver.beam.top().to_dict() == {
             "advised_runtime_environment": None,
@@ -366,6 +407,54 @@ class TestResolver(AdviserTestCase):
                     ("flask", ("flask", "1.12.0", "https://pypi.org/simple")),
                     ("numpy", ("numpy", "1.1.1", "https://pypi.org/simple")),
                 ]
+            ),
+        }
+
+    def test_multi_package_resolutions(self, resolver: Resolver) -> None:
+        """Test resolutions of a same package and call of run method."""
+        pypi = Source("https://pypi.org/simple")
+
+        package_version1 = PackageVersion(
+            name="tensorflow", version="==2.0.0", index=pypi, develop=False
+        )
+
+        state = State(
+            score=1.0,
+            unresolved_dependencies=OrderedDict(
+                [("flask", ("flask", "1.12.0", "https://pypi.org/simple"))]
+            ),
+            resolved_dependencies=OrderedDict(
+                [(package_version1.name, package_version1.to_tuple())]
+            ),
+        )
+
+        assert (
+            len(resolver.pipeline.steps) == 1
+        ), "A pre-requisite for this test case is to have exactly one step in the pipeline configuration"
+
+        resolver.pipeline.steps[0].MULTI_PACKAGE_RESOLUTIONS = True
+
+        # Should be called only once with package_version2, no package_version1 call as
+        # MULTI_PACKAGE_RESOLUTIONS is off.
+        resolver.pipeline.steps[0].should_receive("run").with_args(
+            state, package_version1
+        ).and_return(None).once()
+
+        assert resolver.beam.size == 0
+        assert (
+            resolver._run_steps(state, {package_version1.name: [package_version1]})
+            is None
+        )
+        assert resolver.beam.size == 1
+        assert resolver.beam.top().to_dict() == {
+            "advised_runtime_environment": None,
+            "justification": [],
+            "resolved_dependencies": OrderedDict(
+                [("tensorflow", ("tensorflow", "2.0.0", "https://pypi.org/simple"))]
+            ),
+            "score": 1.0,
+            "unresolved_dependencies": OrderedDict(
+                [("flask", ("flask", "1.12.0", "https://pypi.org/simple"))]
             ),
         }
 
@@ -392,9 +481,46 @@ class TestResolver(AdviserTestCase):
         resolver.pipeline.steps = [steps.Step1()]
 
         with pytest.raises(StepError):
-            assert resolver._run_steps(state, *package_versions[:3])
+            assert resolver._run_steps(
+                state, {pv.name: [pv] for pv in package_versions[:3]}
+            )
 
         assert original_state == state, "State is not untouched"
+
+    def test_run_steps_combinations(
+        self,
+        resolver: Resolver,
+        tf_package_versions: List[PackageVersion],
+        numpy_package_versions: List[PackageVersion]
+    ) -> None:
+        """Test running steps on all the combinations computed during backtracking runs."""
+        state = State()
+
+        # Lists are stored from oldest to newest, reverse order.
+        tf_package_versions.reverse()
+        numpy_package_versions.reverse()
+
+        assert resolver._run_steps(
+            state, {
+                tf_package_versions[0].name: tf_package_versions,
+                numpy_package_versions[0].name: numpy_package_versions,
+            }
+        ) is None
+        assert resolver.beam.size == len(tf_package_versions) * len(numpy_package_versions)
+
+        # The run_steps algorithm is in fact an optimized drop-in replacement for itertools.product with
+        # backtracking baked in. As we accept all combinations, let's verify combinations generated are
+        # sames as in case of itertools.product.
+
+        itertools_products = []
+        for combination in itertools.product(tf_package_versions, numpy_package_versions):
+            itertools_products.append([item.to_tuple() for item in combination])
+
+        run_steps_products = []
+        for state in resolver.beam.iter_states():
+            run_steps_products.append([item for item in state.unresolved_dependencies.values()])
+
+        assert itertools_products == run_steps_products
 
     def test_run_strides(self, resolver: Resolver) -> None:
         """Test running pipeline strides."""

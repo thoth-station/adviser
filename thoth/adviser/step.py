@@ -33,7 +33,13 @@ from .unit import Unit
 
 @attr.s(slots=True)
 class Step(Unit):
-    """Step base class implementation."""
+    """Step base class implementation.
+
+    Configuration option MUTLI_PACKAGE_RESOLUTION states whether this state should be run if package
+    is resolved multiple times.
+    """
+
+    MULTI_PACKAGE_RESOLUTIONS = False
 
     @abc.abstractmethod
     def run(
