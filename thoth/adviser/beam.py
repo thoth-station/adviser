@@ -176,7 +176,15 @@ class Beam:
 
     def top(self) -> State:
         """Return the highest rated state as kept in the beam."""
-        return self._states[-1]
+        if len(self._states) == 0:
+            raise IndexError("Heap is empty")
+
+        result = self._states[len(self._states) // 2]
+        for item in self._states[1 + len(self._states) // 2:]:
+            if result < item:
+                result = item
+
+        return result
 
     def add_state(self, state: State) -> None:
         """Add candidate to the internal candidates listing."""

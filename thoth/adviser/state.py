@@ -43,14 +43,9 @@ class State:
     advised_runtime_environment = attr.ib(
         type=Optional[RuntimeEnvironment], kw_only=True, default=None
     )
-    _justification = attr.ib(
+    justification = attr.ib(
         type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True
     )
-
-    @property
-    def justification(self) -> List[Dict[str, str]]:
-        """Get justification for the current state."""
-        return self._justification
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert state to a dict representation."""
@@ -63,7 +58,7 @@ class State:
             "unresolved_dependencies": self.unresolved_dependencies,
             "resolved_dependencies": self.resolved_dependencies,
             "advised_runtime_environment": advised_runtime_environment,
-            "justification": self._justification,
+            "justification": self.justification,
         }
 
     def is_final(self) -> bool:
@@ -72,7 +67,7 @@ class State:
 
     def add_justification(self, justification: List[Dict[str, str]]) -> None:
         """Add new entries to the justification field."""
-        self._justification.extend(justification)
+        self.justification.extend(justification)
 
     def add_unresolved_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
         """Add unresolved dependency into the beam."""
@@ -90,11 +85,10 @@ class State:
                 self.advised_runtime_environment.to_dict()
             )
 
-        new_state = self.__class__(
+        return self.__class__(
             score=self.score,
             unresolved_dependencies=OrderedDict(self.unresolved_dependencies),
             resolved_dependencies=OrderedDict(self.resolved_dependencies),
             advised_runtime_environment=cloned_advised_environment,
+            justification=list(self.justification),
         )
-        new_state.add_justification(self.justification)
-        return new_state

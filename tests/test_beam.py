@@ -115,6 +115,23 @@ class TestBeam(AdviserTestCase):
 
         assert beam.states == [state3, state2, state1, state0]
 
+    def test_top(self) -> None:
+        """Test top element in beam."""
+        beam = Beam(width=2)
+        assert beam.width == 2
+
+        state1 = State(score=1.0)
+        beam.add_state(state1)
+        assert beam.top() is state1
+
+        state2 = State(score=2.0)
+        beam.add_state(state2)
+        assert beam.top() is state2
+
+        state3 = State(score=0.5)
+        beam.add_state(state3)
+        assert beam.top() is state2
+
     def test_add_state_order_multi(self) -> None:
         """Test adding states to beam and order during addition when score is same."""
         beam = Beam(width=2)

@@ -23,11 +23,10 @@ from typing import Dict
 from typing import Tuple
 from typing import Any
 from typing import Optional
-from typing import Set
 from typing import List
 import logging
 from itertools import chain
-from itertools import product as itertools_product
+from collections import deque
 
 from thoth.python import PackageVersion
 from thoth.python import Project
@@ -151,9 +150,7 @@ class Resolver:
         converter=_limit_latest_versions,  # type: ignore
     )
 
-    _beam = attr.ib(
-        type=Optional[Beam], kw_only=True, default=None
-    )
+    _beam = attr.ib(type=Optional[Beam], kw_only=True, default=None)
     _solver = attr.ib(
         type=Optional[PythonPackageGraphSolver], kw_only=True, default=None
     )
@@ -210,7 +207,9 @@ class Resolver:
                     f"Failed to run pipeline boot {boot.__class__.__name__!r}: {str(exc)}"
                 ) from exc
 
-    def _run_sieves(self, package_versions: List[PackageVersion]) -> Generator[PackageVersion, None, None]:
+    def _run_sieves(
+        self, package_versions: List[PackageVersion]
+    ) -> Generator[PackageVersion, None, None]:
         """Run sieves on each package tuple."""
         result = (pv for pv in package_versions)
         for sieve in self.pipeline.sieves:
@@ -233,11 +232,10 @@ class Resolver:
 
         yield from result
 
-    def _run_steps(
+    def _do_run_steps(
         self, state: State, *package_versions: PackageVersion
-    ) -> None:
+    ) -> Optional[Tuple[List[Tuple[str, str, str]], float, List[Dict[str, Any]]]]:
         """Run steps to score next state or filter out invalid steps."""
-        # We clone new state once we are sure we create it. Meantime, keep track of changes but be lazy.
         new_state_unresolved_dependencies = []
         new_state_add_justification = []
         new_state_score = state.score
@@ -246,14 +244,15 @@ class Resolver:
         for package_version in package_versions:
             package_version_tuple = package_version.to_tuple()
 
-            if package_version.name in state.unresolved_dependencies:
-                if state.unresolved_dependencies[package_version.name] != package_version_tuple:
-                    # TODO: create a test case for this
+            if package_version.name in state.resolved_dependencies:
+                if (
+                    state.resolved_dependencies[package_version.name]
+                    != package_version_tuple
+                ):
                     # We already have the given dependency - there is a dependency clash (same name,
                     # different version or index url). Such state is invalid.
                     return None
                 else:
-                    # TODO: create a test case for this
                     # We already have this dependency in stack, continue to the next one (two packages
                     # depend on the same package and the resolution is valid - no clash).
                     continue
@@ -264,7 +263,7 @@ class Resolver:
                     step_result = step.run(state, package_version)
                 except NotAcceptable as exc:
                     _LOGGER.debug(
-                        "Step %r discarded addition of package %r in combination %r: %s",
+                        "Step %r discarded addition of package %r: %s",
                         step.__class__.__name__,
                         package_version.to_tuple(),
                         package_version_tuples,
@@ -287,19 +286,101 @@ class Resolver:
 
             new_state_unresolved_dependencies.append(package_version.to_tuple())
 
-        # We accept a new score, perform actual clone now.
-        new_state = state.clone()
-        new_state.score = new_state_score
-        new_state.add_justification(new_state_add_justification)
-        for unresolved_dependency in new_state_unresolved_dependencies:
-            new_state.add_unresolved_dependency(unresolved_dependency)
-
         _LOGGER.debug(
-            "Adding a new state with new entries %r: %r",
-            package_version_tuples,
-            new_state,
+            "Steps accepted a new state with new entries %r", package_version_tuples
         )
-        self.beam.add_state(new_state)
+        return (
+            new_state_unresolved_dependencies,
+            new_state_score,
+            new_state_add_justification,
+        )
+
+    def _run_steps(
+        self, state: State, package_versions_dict: Dict[str, List[PackageVersion]]
+    ) -> None:
+        """Run steps and generate a new state.
+
+        The algorithm under the hood performs backtracking to make sure each step is run once on
+        the given state. This guarantees less calls to steps making the pipeline more efficient.
+        """
+        configuration_table = tuple(package_versions_dict.values())
+        configuration_queue = deque([((0, 0), state)])
+
+        while configuration_queue:
+            idx, state = configuration_queue.popleft()
+            package_version = configuration_table[idx[0]][idx[1]]
+            package_version_tuple = package_version.to_tuple()
+
+            multi_package_resolution = False
+            if package_version.name in state.resolved_dependencies:
+                if (
+                    state.resolved_dependencies[package_version.name]
+                    != package_version_tuple
+                ):
+                    # We already have the given dependency - there is a dependency clash (same name,
+                    # different version or index url). Such state is invalid, drop it.
+                    continue
+                else:
+                    # We already have this dependency in stack, run steps that are required to be run in such cases.
+                    multi_package_resolution = True
+
+            score_addition = 0.0
+            justification_addition = []
+            for step in self.pipeline.steps:
+                _LOGGER.debug("Running step %r", step.__class__.__name__)
+
+                if multi_package_resolution and not step.MULTI_PACKAGE_RESOLUTIONS:
+                    _LOGGER.debug(
+                        "Skipping running step %r - this step was already run for package %r "
+                        "and step has no MULTI_PACKAGE_RESOLUTIONS flag set",
+                        step.__class__.__name__,
+                        package_version_tuple,
+                    )
+                    continue
+
+                try:
+                    step_result = step.run(state, package_version)
+                except NotAcceptable as exc:
+                    _LOGGER.debug(
+                        "Step %r discarded addition of package %r in combination %r: %s",
+                        step.__class__.__name__,
+                        package_version_tuple,
+                        str(exc),
+                    )
+                    break
+                except Exception as exc:
+                    raise StepError(
+                        f"Failed to run step {step.__class__.__name__!r} for Python package "
+                        f"{package_version_tuple!r}: {str(exc)}"
+                    ) from exc
+
+                if step_result:
+                    step_score_addition, step_justification_addition = step_result
+
+                    if step_score_addition is not None:
+                        score_addition += step_score_addition
+
+                    if step_justification_addition is not None:
+                        justification_addition.extend(step_justification_addition)
+            else:
+                if idx[1] + 1 < len(configuration_table[idx[0]]):
+                    configuration_queue.append(((idx[0], idx[1] + 1), state.clone()))
+
+                if not multi_package_resolution:
+                    # Do NOT re-add package if it was already resolved.
+                    state.add_unresolved_dependency(package_version_tuple)
+
+                state.add_justification(justification_addition)
+                state.score += score_addition
+
+                if len(configuration_table) == idx[0] + 1:
+                    # No more to run - we passed all package_version of a type.
+                    self.beam.add_state(state.clone())
+                    if configuration_queue:
+                        # Pop last item from the queue to act like in case of back tracking.
+                        configuration_queue.appendleft(configuration_queue.pop())
+                else:
+                    configuration_queue.appendleft(((idx[0] + 1, 0), state))
 
     def _run_strides(self, state: State) -> bool:
         """Run strides and check if the given state should be accepted."""
@@ -349,7 +430,9 @@ class Resolver:
         if not resolved_direct_dependencies:
             raise UnresolvedDependencies(
                 "No direct dependencies were resolved",
-                unresolved=[pv.name for pv in self.project.iter_dependencies(with_devel=True)],
+                unresolved=[
+                    pv.name for pv in self.project.iter_dependencies(with_devel=True)
+                ],
             )
 
         unresolved = []
@@ -404,7 +487,7 @@ class Resolver:
             _LOGGER.debug(
                 "Limiting latest versions of packages to %d", self.limit_latest_versions
             )
-            return sorted_package_versions[:self.limit_latest_versions]
+            return sorted_package_versions[: self.limit_latest_versions]
 
         return sorted_package_versions
 
@@ -420,7 +503,9 @@ class Resolver:
             for direct_dependency in package_versions:
                 self.context.register_package_version(direct_dependency)
 
-            package_versions = self._semver_sort_and_limit_latest_versions(package_versions)
+            package_versions = self._semver_sort_and_limit_latest_versions(
+                package_versions
+            )
             package_versions = list(self._run_sieves(package_versions))
             if not package_versions:
                 raise CannotProduceStack(
@@ -448,8 +533,11 @@ class Resolver:
 
             for state in states:
                 for package_version in package_versions:
-                    # TODO: use back tracking here
-                    self._run_steps(state, package_version)
+                    # Perform clone as run_steps can modify state which would be propagated to all subsequent
+                    # run_steps calls.
+                    self._run_steps(
+                        state.clone(), {package_version.name: [package_version]}
+                    )
 
     def _expand_state(self, state: State) -> Optional[State]:
         """Expand the given state, generate new states respecting the pipeline configuration."""
@@ -492,31 +580,28 @@ class Resolver:
         self._expand_state_add_dependencies(
             state=state,
             package_version=package_version,
-            dependencies=list(chain(*dependencies.values()))
+            dependencies=list(chain(*dependencies.values())),
         )
 
     def _expand_state_add_dependencies(
         self,
         state: State,
         package_version: PackageVersion,
-        dependencies: List[Tuple[str, str]]
+        dependencies: List[Tuple[str, str]],
     ) -> None:
         """Create new states out of existing ones based on dependencies."""
-        _LOGGER.debug("Expanding state with dependencies based on packages solved in environments")
+        _LOGGER.debug(
+            "Expanding state with dependencies based on packages solved in environments"
+        )
 
         package_tuple = package_version.to_tuple()
         all_dependencies: Dict[str, List[Tuple[str, str, str]]] = {}
-        for package_name, version in dependencies:
-            # We could use a set here that would optimize a bit, but it will create randomness - it
-            # will not work well with preserving seed across resolver runs.
-            if package_name not in all_dependencies:
-                all_dependencies[package_name] = []
-
+        for dependency_name, dependency_version in dependencies:
             if self.project.runtime_environment.is_fully_specified():
                 marker_evaluation_result = self.graph.get_python_environment_marker_evaluation_result(
                     *package_tuple,
-                    dependency_name=package_name,
-                    dependency_version=version,
+                    dependency_name=dependency_name,
+                    dependency_version=dependency_version,
                     os_name=self.project.runtime_environment.operating_system.name,
                     os_version=self.project.runtime_environment.operating_system.version,
                     python_version=self.project.runtime_environment.python_version,
@@ -524,20 +609,26 @@ class Resolver:
 
                 if marker_evaluation_result is False:
                     _LOGGER.debug(
-                        "Removing package %r from dependency graph as it will not be installed into "
+                        "Removing package %r in version %r from dependency graph as it will not be installed into "
                         "the given runtime environment",
-                        package_tuple,
+                        dependency_name,
+                        dependency_version,
                     )
                     continue
 
             records = self.graph.get_python_package_version_records(
-                package_name=package_name,
-                package_version=version,
+                package_name=dependency_name,
+                package_version=dependency_version,
                 index_url=None,  # Do cross-index resolving.
                 os_name=self.project.runtime_environment.operating_system.name,
                 os_version=self.project.runtime_environment.operating_system.version,
                 python_version=self.project.runtime_environment.python_version,
             )
+
+            # We could use a set here that would optimize a bit, but it will create randomness - it
+            # will not work well with preserving seed across resolver runs.
+            if dependency_name not in all_dependencies:
+                all_dependencies[dependency_name] = []
 
             for record in records:
                 dependency_tuple = (
@@ -545,7 +636,9 @@ class Resolver:
                     record["package_version"],
                     record["index_url"],
                 )
-                if not self.context.get_package_version(dependency_tuple, graceful=True):
+                if not self.context.get_package_version(
+                    dependency_tuple, graceful=True
+                ):
                     environment_marker = self.graph.get_python_environment_marker(
                         *package_tuple,
                         dependency_name=dependency_tuple[0],
@@ -579,9 +672,12 @@ class Resolver:
             return None
 
         for dependency_name, dependency_tuples in all_dependencies.items():
-            print(dependency_tuples)
-            package_versions = [self.context.get_package_version(d) for d in dependency_tuples]
-            package_versions = self._semver_sort_and_limit_latest_versions(package_versions)
+            package_versions = [
+                self.context.get_package_version(d) for d in dependency_tuples
+            ]
+            package_versions = self._semver_sort_and_limit_latest_versions(
+                package_versions
+            )
             package_versions = list(self._run_sieves(package_versions))
             if not package_versions:
                 _LOGGER.debug(
@@ -592,13 +688,7 @@ class Resolver:
 
             all_dependencies[dependency_name] = package_versions
 
-        for combination_package_versions in itertools_product(
-            *all_dependencies.values()
-        ):
-            # TODO: use back tracking here
-            self._run_steps(state, *combination_package_versions)
-
-        return None
+        self._run_steps(state, all_dependencies)
 
     def _do_resolve_states(
         self, *, with_devel: bool = True
@@ -607,11 +697,17 @@ class Resolver:
         self._run_boots()
         self._prepare_initial_states(with_devel=with_devel)
 
-        _LOGGER.info("Hold tight, Thoth is computing recommendations for your application...")
+        _LOGGER.info(
+            "Hold tight, Thoth is computing recommendations for your application..."
+        )
 
         self.context.iteration = 0
         while True:
-            if self.context.accepted_final_states_count + self.context.discarded_final_states_count >= self.limit:
+            if (
+                self.context.accepted_final_states_count
+                + self.context.discarded_final_states_count
+                >= self.limit
+            ):
                 _LOGGER.info(
                     "Reached limit of stacks to be generated - %r (limit is %r), stopping resolver "
                     "with the current beam size %d",
@@ -642,6 +738,7 @@ class Resolver:
                 if self._run_strides(final_state):
                     self._run_wraps(final_state)
                     self.context.accepted_final_states_count += 1
+                    self.context.register_accepted_final_state(final_state)
                     yield final_state
                 else:
                     self.context.discarded_final_states_count += 1
@@ -673,7 +770,7 @@ class Resolver:
             for final_state in self._do_resolve_states(with_devel=with_devel):
                 _LOGGER.info(
                     "Pipeline reached a new final state, yielding pipeline product with a score of %g",
-                    final_state.score
+                    final_state.score,
                 )
                 product = Product.from_final_state(
                     graph=self.graph,
