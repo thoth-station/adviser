@@ -111,7 +111,7 @@ class Context:
         return False
 
     def register_accepted_final_state(self, state: State) -> None:
-        """Register an accepted state by the resolution pipeline"""
+        """Register an accepted state by the resolution pipeline."""
         # We keep only `count' states as that was requested by pipeline caller.
         if self.count is not None and len(self._accepted_states) >= self.count:
             heapq.heappushpop(self._accepted_states, state)
