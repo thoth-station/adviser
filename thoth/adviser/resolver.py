@@ -265,7 +265,7 @@ class Resolver:
             score_addition = 0.0
             justification_addition = []
             for step in self.pipeline.steps:
-                _LOGGER.debug("Running step %r", step.__class__.__name__)
+                _LOGGER.debug("Running step %r for %r", step.__class__.__name__, package_version_tuple)
 
                 if multi_package_resolution and not step.MULTI_PACKAGE_RESOLUTIONS:
                     _LOGGER.debug(
