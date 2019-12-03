@@ -99,6 +99,11 @@ class AdaptiveSimulatedAnnealing(Predictor):
         if neighbour_score > top_score:
             return 1.0
 
+        # This should never occur based on resolver logic, but just to be sure...
+        if temperature <= 0.0:
+            _LOGGER.error("Temperature dropped to %g: temperature should be a positive number")
+            return 0.0
+
         acceptance_probability = exp((neighbour_score - top_score) / temperature)
         _LOGGER.debug(
             "Acceptance probability for (top_score=%g, neighbour_score=%g, temperature=%g) = %g",
@@ -111,6 +116,11 @@ class AdaptiveSimulatedAnnealing(Predictor):
 
     def run(self, context: Context, beam: Beam) -> int:
         """Run adaptive simulated annealing on top of beam."""
+        if context.recommendation_type == RecommendationType.LATEST:
+            # If we have latest recommendations, try to expand the most recent version, always.
+            _LOGGER.debug("Expanding TOP rated state (hill climbing)")
+            return 0
+
         self._temperature = self._exp(
             context.iteration,
             self._temperature,
@@ -121,49 +131,39 @@ class AdaptiveSimulatedAnnealing(Predictor):
         # Expand highest promising by default.
         to_expand_state = beam.top()
 
-        # If we are recommending latest software stack, always perform hill climbing by
-        # default - expanding the highest rated stack.
-        if context.recommendation_type != RecommendationType.LATEST:
-            # Pick a random state to be expanded if accepted.
-            probable_state_idx = random.randrange(1, beam.size) if beam.size > 1 else 0
-            probable_state = beam.get(probable_state_idx)
-            acceptance_probability = self._compute_acceptance_probability(
-                to_expand_state.score, probable_state.score, self._temperature
+        # Pick a random state to be expanded if accepted.
+        probable_state_idx = random.randrange(1, beam.size) if beam.size > 1 else 0
+        probable_state = beam.get(probable_state_idx)
+        acceptance_probability = self._compute_acceptance_probability(
+            to_expand_state.score, probable_state.score, self._temperature
+        )
+
+        if probable_state_idx != 0 and acceptance_probability >= random.uniform(
+            0.0, 1.0
+        ):
+            # Skip to probable state, do not use the top rated state.
+            _LOGGER.debug(
+                "Performing transition to neighbour state with score %g",
+                probable_state.score,
+            )
+            state_expansion_idx = probable_state_idx
+        else:
+            _LOGGER.debug(
+                "Expanding TOP rated state with score %g", to_expand_state.score
+            )
+            state_expansion_idx = 0
+
+        if self.keep_temperature_history:
+            self._temperature_history.append(
+                (
+                    self._temperature,
+                    state_expansion_idx == 0,
+                    acceptance_probability,
+                    context.accepted_final_states_count,
+                )
             )
 
-            if probable_state_idx != 0 and acceptance_probability >= random.uniform(
-                0.0, 1.0
-            ):
-                # Skip to probable state, do not use the top rated state.
-                _LOGGER.debug(
-                    "Performing transition to neighbour state with score %g",
-                    probable_state.score,
-                )
-                state_expansion_idx = probable_state_idx
-            else:
-                _LOGGER.debug(
-                    "Expanding TOP rated state with score %g", to_expand_state.score
-                )
-                state_expansion_idx = 0
-
-            if self.keep_temperature_history:
-                self._temperature_history.append(
-                    (
-                        self._temperature,
-                        state_expansion_idx == 0,
-                        acceptance_probability,
-                        context.accepted_final_states_count,
-                    )
-                )
-
-            return state_expansion_idx
-
-        # If we have latest recommendations, try to expand the most recent version, always.
-        _LOGGER.debug(
-            "Expanding TOP rated state with score %g (hill climbing)",
-            to_expand_state.score,
-        )
-        return 0
+        return state_expansion_idx
 
     def pre_run(self, context: Context) -> None:
         """Initialization before the actual annealing run."""
