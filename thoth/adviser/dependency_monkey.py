@@ -30,6 +30,7 @@ import attr
 import amun
 from thoth.python import Project
 
+from .beam import Beam
 from .dm_report import DependencyMonkeyReport
 from .predictor import Predictor
 from .resolver import Resolver
@@ -55,6 +56,11 @@ class DependencyMonkey:
     def predictor(self) -> Predictor:
         """Get predictor for the current dependency monkey configuration."""
         return self.resolver.predictor
+
+    @property
+    def beam(self) -> Beam:
+        """Get beam instance used in the resolver."""
+        return self.resolver.beam
 
     def resolve(self, *, with_devel: bool = True) -> DependencyMonkeyReport:
         """Perform simulated annealing and run dependency monkey on products."""

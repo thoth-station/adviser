@@ -78,16 +78,27 @@ class TestContext(AdviserTestCase):
             context.get_package_version(package_version.to_tuple()) is package_version
         )
 
-    def test_get_package_version_graceful(self, context: Context, package_version: PackageVersion) -> None:
+    def test_get_package_version_graceful(
+        self, context: Context, package_version: PackageVersion
+    ) -> None:
         """Test getting registered package version, gracefully."""
-        assert context.get_package_version(package_version.to_tuple(), graceful=True) is None
+        assert (
+            context.get_package_version(package_version.to_tuple(), graceful=True)
+            is None
+        )
         with pytest.raises(NotFound):
             context.get_package_version(package_version.to_tuple(), graceful=False)
 
         assert context.register_package_version(package_version) is False
 
-        assert context.get_package_version(package_version.to_tuple(), graceful=True) is package_version
-        assert context.get_package_version(package_version.to_tuple(), graceful=False) is package_version
+        assert (
+            context.get_package_version(package_version.to_tuple(), graceful=True)
+            is package_version
+        )
+        assert (
+            context.get_package_version(package_version.to_tuple(), graceful=False)
+            is package_version
+        )
 
     def test_get_top_accepted_final_state(self, context: Context) -> None:
         """Test retrieval of top accepted final state."""
@@ -117,23 +128,40 @@ class TestContext(AdviserTestCase):
 
         state1 = State(score=0.0)
         assert context.register_accepted_final_state(state1) is None
-        assert context.accepted_final_states == [state1]
+        assert state1 in context.iter_accepted_final_states()
+        assert list(context.iter_accepted_final_states()) == [state1]
 
         state2 = State(score=1.0)
         assert context.register_accepted_final_state(state2) is None
-        assert sorted(context.accepted_final_states) == sorted((state1, state2))
+        assert state1 in context.iter_accepted_final_states()
+        assert state2 in context.iter_accepted_final_states()
+        assert list(context.iter_accepted_final_states_sorted()) == [state2, state1]
+        assert list(context.iter_accepted_final_states_sorted(reverse=True)) == [state2, state1]
+        assert list(context.iter_accepted_final_states_sorted(reverse=False)) == [state1, state2]
 
         state3 = State(score=3.0)
         assert context.register_accepted_final_state(state3) is None
-        assert sorted(context.accepted_final_states) == sorted((state2, state3))
+        assert state3 in context.iter_accepted_final_states_sorted()
+        assert state2 in context.iter_accepted_final_states_sorted()
+        assert list(context.iter_accepted_final_states_sorted()) == [state3, state2]
+        assert list(context.iter_accepted_final_states_sorted(reverse=True)) == [state3, state2]
+        assert list(context.iter_accepted_final_states_sorted(reverse=False)) == [state2, state3]
 
         state4 = State(score=2.0)
         assert context.register_accepted_final_state(state4) is None
-        assert sorted(context.accepted_final_states) == sorted((state4, state3))
+        assert state3 in context.iter_accepted_final_states()
+        assert state4 in context.iter_accepted_final_states()
+        assert list(context.iter_accepted_final_states_sorted()) == [state3, state4]
+        assert list(context.iter_accepted_final_states_sorted(reverse=True)) == [state3, state4]
+        assert list(context.iter_accepted_final_states_sorted(reverse=False)) == [state4, state3]
 
         state5 = State(score=0.1)
         assert context.register_accepted_final_state(state5) is None
-        assert sorted(context.accepted_final_states) == sorted((state3, state4))
+        assert state3 in context.iter_accepted_final_states()
+        assert state4 in context.iter_accepted_final_states()
+        assert list(context.iter_accepted_final_states_sorted()) == [state3, state4]
+        assert list(context.iter_accepted_final_states_sorted(reverse=True)) == [state3, state4]
+        assert list(context.iter_accepted_final_states_sorted(reverse=False)) == [state4, state3]
 
     def test_register_package_version_existing(
         self, context: Context, package_version: PackageVersion

@@ -93,6 +93,17 @@ class WrapError(PipelineUnitError):
     """An exception raised when pipeline stride unit fails unexpectedly."""
 
 
+class UnknownPipelineUnitError(PipelineUnitError):
+    """An exception raised when an unknown pipeline unit is requested."""
+
+
+class PipelineConfigurationError(PipelineUnitError):
+    """An exception raised when a wrong pipeline unit configuration supplied.
+
+    Or any error during configuration initialization.
+    """
+
+
 class UnresolvedDependencies(AdviserException):
     """An exception raised if dependencies were not resolved and cannot produce stack."""
 

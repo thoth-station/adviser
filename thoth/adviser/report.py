@@ -19,10 +19,13 @@
 
 import heapq
 import logging
+import operator
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import List
 from typing import Optional
+from typing import Tuple
 
 import attr
 
@@ -42,7 +45,12 @@ class Report:
     _stack_info = attr.ib(
         type=Optional[List[Dict[str, Any]]], kw_only=True, default=None
     )
-    _heapq = attr.ib(type=List[Product], default=attr.Factory(list), kw_only=True)
+    _heapq = attr.ib(
+        type=List[Tuple[Tuple[float, int], Product]],
+        default=attr.Factory(list),
+        kw_only=True,
+    )
+    _heapq_counter = attr.ib(type=int, default=0, kw_only=True)
 
     @property
     def stack_info(self) -> Optional[List[Dict[str, Any]]]:
@@ -55,10 +63,13 @@ class Report:
 
     def add_product(self, product: Product) -> None:
         """Add adviser pipeline product to report."""
+        item = ((product.score, self._heapq_counter), product)
+        self._heapq_counter -= 1
+
         if len(self._heapq) >= self.count:
-            heapq.heappushpop(self._heapq, product)
+            heapq.heappushpop(self._heapq, item)
         else:
-            heapq.heappush(self._heapq, product)
+            heapq.heappush(self._heapq, item)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert pipeline report to a dict representation."""
@@ -72,6 +83,15 @@ class Report:
         """Get number of products stored in the report."""
         return len(self._heapq)
 
-    def iter_products(self) -> List[Product]:
+    def iter_products(self) -> Generator[Product, None, None]:
         """Iterate over products stored in this report, respect their scores."""
-        return sorted(self._heapq, key=lambda product: product.score, reverse=True)
+        return (item[1] for item in self._heapq)
+
+    def iter_products_sorted(
+        self, reverse: bool = True
+    ) -> Generator[Product, None, None]:
+        """Iterate over products stored in this report, respect their scores."""
+        return (
+            item[1]
+            for item in sorted(self._heapq, key=operator.itemgetter(0), reverse=reverse)
+        )

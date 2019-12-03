@@ -25,6 +25,7 @@ from typing import Tuple
 from typing import Any
 from typing import Optional
 from typing import List
+from typing import Union
 import logging
 from itertools import chain
 from collections import deque
@@ -47,6 +48,7 @@ from .exceptions import StepError
 from .exceptions import StrideError
 from .exceptions import UnresolvedDependencies
 from .exceptions import WrapError
+from .exceptions import PipelineConfigurationError
 from .pipeline_builder import PipelineBuilder
 from .pipeline_config import PipelineConfig
 from .predictor import Predictor
@@ -59,6 +61,10 @@ from .unit import Unit
 import attr
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class _NoStateAdd(Exception):
+    """An exception used internally to signalize no state addition."""
 
 
 def _beam_width(value: Any) -> Optional[int]:
@@ -223,7 +229,7 @@ class Resolver:
                     sieve.__class__.__name__,
                     str(exc),
                 )
-                result = []
+                result = []  # type: ignore
                 break
             except Exception as exc:
                 raise SieveError(
@@ -248,89 +254,110 @@ class Resolver:
             idx, state = configuration_queue.popleft()
             package_version = configuration_table[idx[0]][idx[1]]
             package_version_tuple = package_version.to_tuple()
-
             multi_package_resolution = False
-            if package_version.name in state.resolved_dependencies:
-                if (
-                    state.resolved_dependencies[package_version.name]
-                    != package_version_tuple
-                ):
-                    # We already have the given dependency - there is a dependency clash (same name,
-                    # different version or index url). Such state is invalid, drop it.
-                    continue
-                else:
-                    # We already have this dependency in stack, run steps that are required to be run in such cases.
-                    multi_package_resolution = True
 
-            score_addition = 0.0
-            justification_addition = []
-            for step in self.pipeline.steps:
-                _LOGGER.debug("Running step %r for %r", step.__class__.__name__, package_version_tuple)
+            try:
+                if package_version.name in state.resolved_dependencies:
+                    if (
+                        state.resolved_dependencies[package_version.name]
+                        != package_version_tuple
+                    ):
+                        # We already have the given dependency - there is a dependency clash (same name,
+                        # different version or index url). Such state is invalid, drop it.
+                        _LOGGER.debug(
+                            "Discarding run of pipeline steps for %r: package %r was already "
+                            "found in different version %r",
+                            package_version_tuple,
+                            package_version.name,
+                            state.resolved_dependencies[package_version.name],
+                        )
+                        raise _NoStateAdd
+                    else:
+                        # We already have this dependency in stack, run steps that are
+                        # required to be run in such cases.
+                        multi_package_resolution = True
 
-                if multi_package_resolution and not step.MULTI_PACKAGE_RESOLUTIONS:
+                score_addition = 0.0
+                justification_addition = []
+                for step in self.pipeline.steps:
                     _LOGGER.debug(
-                        "Skipping running step %r - this step was already run for package %r "
-                        "and step has no MULTI_PACKAGE_RESOLUTIONS flag set",
+                        "Running step %r for %r",
                         step.__class__.__name__,
                         package_version_tuple,
                     )
-                    continue
 
-                try:
-                    step_result = step.run(state, package_version)
-                except NotAcceptable as exc:
-                    _LOGGER.debug(
-                        "Step %r discarded addition of package %r in combination %r: %s",
-                        step.__class__.__name__,
-                        package_version_tuple,
-                        str(exc),
-                    )
-                    break
-                except Exception as exc:
-                    raise StepError(
-                        f"Failed to run step {step.__class__.__name__!r} for Python package "
-                        f"{package_version_tuple!r}: {str(exc)}"
-                    ) from exc
+                    if multi_package_resolution and not step.MULTI_PACKAGE_RESOLUTIONS:
+                        _LOGGER.debug(
+                            "Skipping running step %r - this step was already run for package %r "
+                            "and step has no MULTI_PACKAGE_RESOLUTIONS flag set",
+                            step.__class__.__name__,
+                            package_version_tuple,
+                        )
+                        continue
 
-                if step_result:
-                    step_score_addition, step_justification_addition = step_result
+                    try:
+                        step_result = step.run(state, package_version)
+                    except NotAcceptable as exc:
+                        _LOGGER.debug(
+                            "Step %r discarded addition of package %r in combination %r: %s",
+                            step.__class__.__name__,
+                            package_version_tuple,
+                            str(exc),
+                        )
+                        raise _NoStateAdd
+                    except Exception as exc:
+                        raise StepError(
+                            f"Failed to run step {step.__class__.__name__!r} for Python package "
+                            f"{package_version_tuple!r}: {str(exc)}"
+                        ) from exc
 
-                    if step_score_addition is not None:
-                        if math.isnan(step_score_addition):
-                            raise StepError(
-                                "Step %r returned score which is not na number",
-                                step.__class__.__name__,
-                            )
+                    if step_result:
+                        step_score_addition, step_justification_addition = step_result
 
-                        if math.isinf(step_score_addition):
-                            raise StepError(
-                                "Step %r returned score that is infinite",
-                                step.__class__.__name__,
-                            )
+                        if step_score_addition is not None:
+                            if math.isnan(step_score_addition):
+                                raise StepError(
+                                    "Step %r returned score which is not a number",
+                                    step.__class__.__name__,
+                                )
 
-                        score_addition += step_score_addition
+                            if math.isinf(step_score_addition):
+                                raise StepError(
+                                    "Step %r returned score that is infinite",
+                                    step.__class__.__name__,
+                                )
 
-                    if step_justification_addition is not None:
-                        justification_addition.extend(step_justification_addition)
+                            score_addition += step_score_addition
+
+                        if step_justification_addition is not None:
+                            justification_addition.extend(step_justification_addition)
+            except _NoStateAdd:
+                pass
             else:
-                if idx[1] + 1 < len(configuration_table[idx[0]]):
-                    configuration_queue.append(((idx[0], idx[1] + 1), state.clone()))
+                cloned_state = state.clone()
 
                 if not multi_package_resolution:
                     # Do NOT re-add package if it was already resolved.
-                    state.add_unresolved_dependency(package_version_tuple)
+                    _LOGGER.debug(
+                        "Adding new unresolved dependency %r", package_version_tuple
+                    )
+                    cloned_state.add_unresolved_dependency(package_version_tuple)
 
-                state.add_justification(justification_addition)
-                state.score += score_addition
+                cloned_state.add_justification(justification_addition)
+                cloned_state.score += score_addition
 
                 if len(configuration_table) == idx[0] + 1:
                     # No more to run - we passed all package_version of a type.
-                    self.beam.add_state(state.clone())
-                    if configuration_queue:
-                        # Pop last item from the queue to act like in case of back tracking.
-                        configuration_queue.appendleft(configuration_queue.pop())
+                    self.beam.add_state(cloned_state)
                 else:
-                    configuration_queue.appendleft(((idx[0] + 1, 0), state))
+                    configuration_queue.appendleft(((idx[0] + 1, 0), cloned_state))
+
+            if idx[1] + 1 < len(configuration_table[idx[0]]):
+                configuration_queue.append(((idx[0], idx[1] + 1), state))
+
+            if len(configuration_table) == idx[0] + 1 and configuration_queue:
+                # Pop last item from the queue to act like in case of back tracking.
+                configuration_queue.appendleft(configuration_queue.pop())
 
     def _run_strides(self, state: State) -> bool:
         """Run strides and check if the given state should be accepted."""
@@ -479,7 +506,7 @@ class Resolver:
                 states = self.beam.iter_states()
                 self.beam.wipe()
             else:
-                states = [State()]
+                states = (s for s in [State()])
 
             for state in states:
                 for package_version in package_versions:
@@ -496,7 +523,9 @@ class Resolver:
         # Obtain extras for the given package. Extras are non-empty only for direct dependencies. If indirect
         # dependencies use extras, they don't need to be explicitly stated as solvers mark "hard" dependency on
         # the given package.
-        package_version = self.context.get_package_version(package_tuple)
+        package_version: PackageVersion = self.context.get_package_version(
+            package_tuple, graceful=False
+        )
 
         extras = package_version.extras or []
         # Add None which will return also dependencies not marked as extra (see get_depends_on semantics for more info).
@@ -532,6 +561,7 @@ class Resolver:
             package_version=package_version,
             dependencies=list(chain(*dependencies.values())),
         )
+        return None
 
     def _expand_state_add_dependencies(
         self,
@@ -636,7 +666,7 @@ class Resolver:
                 )
                 return None
 
-            all_dependencies[dependency_name] = package_versions
+            all_dependencies[dependency_name] = package_versions  # type: ignore
 
         self._run_steps(state, all_dependencies)
 
@@ -779,18 +809,29 @@ class Resolver:
         limit_latest_versions: Optional[int] = DEFAULT_LIMIT_LATEST_VERSIONS,
         project: Project,
         recommendation_type: RecommendationType,
+        pipeline_config: Optional[Union[PipelineConfig, Dict[str, Any]]] = None,
     ) -> "Resolver":
         """Get instance of resolver based on the project given to recommend software stacks."""
         graph = graph or GraphDatabase()
         if not graph.is_connected():
             graph.connect()
 
-        pipeline = PipelineBuilder.get_adviser_pipeline_config(
-            recommendation_type=recommendation_type,
-            project=project,
-            library_usage=library_usage,
-            graph=graph,
-        )
+        if pipeline_config is None:
+            pipeline = PipelineBuilder.get_adviser_pipeline_config(
+                recommendation_type=recommendation_type,
+                project=project,
+                library_usage=library_usage,
+                graph=graph,
+            )
+        else:
+            if isinstance(pipeline_config, PipelineConfig):
+                pipeline = pipeline_config
+            elif isinstance(pipeline_config, dict):
+                pipeline = PipelineBuilder.from_dict(pipeline_config)
+            else:
+                raise PipelineConfigurationError(
+                    f"Unknown pipeline configuration type: {type(pipeline_config)!r}"
+                )
 
         resolver = cls(
             beam_width=beam_width,
@@ -819,18 +860,29 @@ class Resolver:
         limit_latest_versions: Optional[int] = DEFAULT_LIMIT_LATEST_VERSIONS,
         project: Project,
         decision_type: DecisionType,
+        pipeline_config: Optional[Union[PipelineConfig, Dict[str, Any]]] = None,
     ) -> "Resolver":
         """Get instance of resolver based on the project given to run dependency monkey."""
         graph = graph or GraphDatabase()
         if not graph.is_connected():
             graph.connect()
 
-        pipeline = PipelineBuilder.get_dependency_monkey_pipeline_config(
-            decision_type=decision_type,
-            graph=graph,
-            project=project,
-            library_usage=library_usage,
-        )
+        if pipeline_config is None:
+            pipeline = PipelineBuilder.get_dependency_monkey_pipeline_config(
+                decision_type=decision_type,
+                graph=graph,
+                project=project,
+                library_usage=library_usage,
+            )
+        else:
+            if isinstance(pipeline_config, PipelineConfig):
+                pipeline = pipeline_config
+            elif isinstance(pipeline_config, dict):
+                pipeline = PipelineBuilder.from_dict(pipeline_config)
+            else:
+                raise PipelineConfigurationError(
+                    f"Unknown pipeline configuration type: {type(pipeline_config)!r}"
+                )
 
         resolver = cls(
             beam_width=beam_width,

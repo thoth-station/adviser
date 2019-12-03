@@ -17,6 +17,7 @@
 
 """Implementation of pipeline builder - create pipeline configuration based on the project and its library usage."""
 
+import os
 import logging
 import json
 from typing import Any
@@ -30,10 +31,13 @@ from typing import Set
 import attr
 from thoth.python import Project
 from thoth.storages import GraphDatabase
+import yaml
 
 from .enums import DecisionType
 from .enums import RecommendationType
 from .exceptions import InternalError
+from .exceptions import UnknownPipelineUnitError
+from .exceptions import PipelineConfigurationError
 from .pipeline_config import PipelineConfig
 from .boot import Boot
 from .sieve import Sieve
@@ -166,7 +170,7 @@ class PipelineBuilder:
         raise NotImplemented("Cannot instantiate pipeline builder")
 
     @staticmethod
-    def _iter_units() -> Generator[Union[Boot, Sieve, Step, Stride, Wrap], None, None]:
+    def _iter_units() -> Generator[type, None, None]:
         """Iterate over pipeline units available in this implementation."""
         # Imports placed here to simplify tests.
         import thoth.adviser.boots
@@ -200,11 +204,11 @@ class PipelineBuilder:
         while change:
             change = False
             for unit_class in cls._iter_units():
-                unit_configuration = unit_class.should_include(ctx)
+                unit_configuration = unit_class.should_include(ctx)  # type: ignore
                 if unit_configuration is None:
                     _LOGGER.debug(
                         "Pipeline unit %r will not be included in the pipeline configuration in this round",
-                        unit_class.__name__,  # type: ignore
+                        unit_class.__name__,
                     )
                     continue
 
@@ -212,13 +216,19 @@ class PipelineBuilder:
 
                 _LOGGER.debug(
                     "Including pipeline unit %r in pipeline configuration with unit configuration %r",
-                    unit_class.__name__,  # type: ignore
+                    unit_class.__name__,
                     unit_configuration,
                 )
-                unit_instance = unit_class()  # type: ignore
+                unit_instance = unit_class()
 
                 if unit_configuration:
-                    unit_instance.update_configuration(unit_configuration)
+                    try:
+                        unit_instance.update_configuration(unit_configuration)
+                    except Exception as exc:
+                        raise PipelineConfigurationError(
+                            f"Filed to initialize pipeline unit configuration for {unit_class.__name__!r} "
+                            f"with configuration {unit_configuration!r}: {str(exc)}"
+                        ) from exc
 
                 ctx.add_unit(unit_instance)
 
@@ -234,6 +244,96 @@ class PipelineBuilder:
             json.dumps(pipeline.to_dict(), indent=2),
         )
         return pipeline
+
+    @staticmethod
+    def _do_instantiate_from_dict(
+        module: object, configuration_entry: Dict[str, Any]
+    ) -> Unit:
+        """Instantiate a pipeline unit from a dict representation."""
+        if "name" not in configuration_entry:
+            raise ValueError(
+                f"No pipeline unit name provided in the configuration entry: {configuration_entry!r}"
+            )
+
+        try:
+            unit_class = getattr(module, configuration_entry["name"])
+        except AttributeError as exc:
+            raise UnknownPipelineUnitError(
+                f"Cannot import unit {configuration_entry['name']}: %s", str(exc)
+            ) from exc
+
+        unit: Unit = unit_class()
+
+        if configuration_entry.get("configuration"):
+            try:
+                unit.update_configuration(configuration_entry["configuration"])
+            except Exception as exc:
+                raise PipelineConfigurationError(
+                    f"Filed to initialize pipeline unit configuration for {unit_class.__name__!r} "
+                    f"with configuration {configuration_entry['configuration']!r}: {str(exc)}"
+                ) from exc
+
+        return unit
+
+    @classmethod
+    def from_dict(cls, dict_: Dict[str, Any]) -> "PipelineConfig":
+        """Instantiate pipeline configuration based on dictionary supplied."""
+        # Imports placed here to simplify tests.
+        import thoth.adviser.boots
+        import thoth.adviser.sieves
+        import thoth.adviser.steps
+        import thoth.adviser.strides
+        import thoth.adviser.wraps
+
+        boots = []
+        for boot_entry in dict_.pop("boots", []):
+            boots.append(cls._do_instantiate_from_dict(thoth.adviser.boots, boot_entry))
+
+        sieves = []
+        for sieve_entry in dict_.pop("sieves", []):
+            sieves.append(
+                cls._do_instantiate_from_dict(thoth.adviser.sieves, sieve_entry)
+            )
+
+        steps = []
+        for step_entry in dict_.pop("steps", []):
+            steps.append(cls._do_instantiate_from_dict(thoth.adviser.steps, step_entry))
+
+        strides = []
+        for stride_entry in dict_.pop("strides", []):
+            strides.append(
+                cls._do_instantiate_from_dict(thoth.adviser.strides, stride_entry)
+            )
+
+        wraps = []
+        for wrap_entry in dict_.pop("wraps", []):
+            wraps.append(cls._do_instantiate_from_dict(thoth.adviser.wraps, wrap_entry))
+
+        if dict_:
+            _LOGGER.warning("Unknown entry in pipeline configuration: %r", dict_)
+
+        pipeline = PipelineConfig(
+            boots=boots,  # type: ignore
+            sieves=sieves,  # type: ignore
+            steps=steps,  # type: ignore
+            strides=strides,  # type: ignore
+            wraps=wraps,  # type: ignore
+        )
+        _LOGGER.debug(
+            "Pipeline configuration creation ended, configuration:\n%s",
+            json.dumps(pipeline.to_dict(), indent=2),
+        )
+        return pipeline
+
+    @classmethod
+    def load(cls, config: str) -> "PipelineConfig":
+        """Load pipeline configuration from a file or a string."""
+        if os.path.isfile(config):
+            _LOGGER.debug("Loading pipeline configuration from file %r", config)
+            with open(config, "r") as config_file:
+                config = config_file.read()
+
+        return cls.from_dict(yaml.safe_load(config))
 
     @classmethod
     def get_adviser_pipeline_config(

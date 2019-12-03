@@ -54,7 +54,9 @@ class PackageIndexSieve(Sieve):
 
         return None
 
-    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
+    def run(
+        self, package_versions: Generator[PackageVersion, None, None]
+    ) -> Generator[PackageVersion, None, None]:
         """Filter out package versions based on disabled Python package index."""
         for package_version in package_versions:
             if package_version.index.url in self._cached_records:
@@ -71,13 +73,15 @@ class PackageIndexSieve(Sieve):
             self._cached_records[package_version.index.url] = is_enabled
             if is_enabled is None:
                 _LOGGER.debug(
-                    "Removing Python package version %r as used index is not registered", package_version.to_tuple()
+                    "Removing Python package version %r as used index is not registered",
+                    package_version.to_tuple(),
                 )
                 continue
 
             if not is_enabled:
                 _LOGGER.debug(
-                    "Removing Python package version %r as used index is not enabled", package_version.to_tuple()
+                    "Removing Python package version %r as used index is not enabled",
+                    package_version.to_tuple(),
                 )
                 continue
 

@@ -35,7 +35,7 @@ class TestBeam(AdviserTestCase):
         """Test initialization of beam."""
         beam = Beam(width=width)
         assert beam.width == width
-        assert beam.states == []
+        assert list(beam.iter_states()) == []
 
     @given(integers(max_value=0))
     def test_initialization_not_positive_error(self, width: int) -> None:
@@ -53,17 +53,17 @@ class TestBeam(AdviserTestCase):
         state2 = State(score=0.0)
         beam.add_state(state2)
 
-        assert beam.states == [state1, state2]
-        assert beam.iter_states() == [state2, state1]
+        assert list(beam.iter_states_sorted()) == [state1, state2]
+        assert list(beam.iter_states()) == [state2, state1]
 
         assert beam.wipe() is None
-        assert beam.iter_states() == []
-        assert beam.states == []
+        assert list(beam.iter_states_sorted()) == []
+        assert list(beam.iter_states()) == []
 
         beam.add_state(state1)
         beam.add_state(state2)
-        assert beam.states == [state1, state2]
-        assert beam.iter_states() == [state2, state1]
+        assert list(beam.iter_states_sorted()) == [state1, state2]
+        assert list(beam.iter_states()) == [state2, state1]
 
     def test_add_state(self) -> None:
         """Test adding state to the beam - respect beam width."""
@@ -73,33 +73,33 @@ class TestBeam(AdviserTestCase):
         state1 = State(score=1.0)
         beam.add_state(state1)
         assert beam.width == 2
-        assert len(beam.states) == 1
-        assert state1 in beam.states
+        assert len(list(beam.iter_states())) == 1
+        assert state1 in list(beam.iter_states())
 
         state2 = State(score=2.0)
         beam.add_state(state2)
         assert beam.width == 2
-        assert len(beam.states) == 2
-        assert state2 in beam.states
+        assert len(list(beam.iter_states())) == 2
+        assert state2 in list(beam.iter_states())
 
         state3 = State(score=3.0)
         beam.add_state(state3)
         assert beam.width == 2
-        assert len(beam.states) == 2
-        assert state3 in beam.states
-        assert state2 in beam.states
-        assert state1 not in beam.states
+        assert len(list(beam.iter_states())) == 2
+        assert state3 in list(beam.iter_states())
+        assert state2 in list(beam.iter_states())
+        assert state1 not in list(beam.iter_states())
 
         state0 = State(score=0.0)
         beam.add_state(state0)
         assert beam.width == 2
-        assert len(beam.states) == 2
-        assert state3 in beam.states
-        assert state2 in beam.states
-        assert state1 not in beam.states
-        assert state0 not in beam.states
+        assert len(list(beam.iter_states())) == 2
+        assert state3 in list(beam.iter_states())
+        assert state2 in list(beam.iter_states())
+        assert state1 not in list(beam.iter_states())
+        assert state0 not in list(beam.iter_states())
 
-    def test_states(self) -> None:
+    def test_iter_states_sorted(self) -> None:
         """Test asking for states returns a sorted list of states."""
         beam = Beam(width=4)
         assert beam.width == 4
@@ -113,7 +113,7 @@ class TestBeam(AdviserTestCase):
         state2 = State(score=2.0)
         beam.add_state(state2)
 
-        assert beam.states == [state3, state2, state1, state0]
+        assert list(beam.iter_states_sorted()) == [state3, state2, state1, state0]
 
     def test_top(self) -> None:
         """Test top element in beam."""
@@ -152,7 +152,9 @@ class TestBeam(AdviserTestCase):
         state04.add_justification([{"state": "04"}])
         beam.add_state(state04)
 
-        assert beam.states == [state01, state02]
+        assert list(beam.iter_states_sorted()) == [state01, state02]
+        assert list(beam.iter_states_sorted(reverse=True)) == [state01, state02]
+        assert list(beam.iter_states_sorted(reverse=False)) == [state02, state01]
 
     def test_add_state_order_single(self) -> None:
         """Test adding states to beam and order during addition when score is same."""
@@ -166,4 +168,6 @@ class TestBeam(AdviserTestCase):
         state02.add_justification([{"state": "02"}])
         beam.add_state(state02)
 
-        assert beam.states == [state01]
+        assert list(beam.iter_states()) == [state01]
+        assert list(beam.iter_states_sorted(reverse=True)) == [state01]
+        assert list(beam.iter_states_sorted(reverse=False)) == [state01]

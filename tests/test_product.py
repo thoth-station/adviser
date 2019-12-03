@@ -67,21 +67,21 @@ class TestProduct(AdviserTestCase):
         graph = flexmock()
 
         context.should_receive("get_package_version").with_args(
-            ("daiquiri", "1.6.0", "https://pypi.org/simple")
+            ("daiquiri", "1.6.0", "https://pypi.org/simple"), graceful=False
         ).and_return(pv_daiquiri_locked).ordered()
         graph.should_receive("get_python_package_hashes_sha256").with_args(
             "daiquiri", "1.6.0", "https://pypi.org/simple"
         ).and_return(["000"]).ordered()
 
         context.should_receive("get_package_version").with_args(
-            ("numpy", "1.17.4", "https://pypi.org/simple")
+            ("numpy", "1.17.4", "https://pypi.org/simple"), graceful=False
         ).and_return(pv_numpy_locked).ordered()
         graph.should_receive("get_python_package_hashes_sha256").with_args(
             "numpy", "1.17.4", "https://pypi.org/simple"
         ).and_return(["111"]).ordered()
 
         context.should_receive("get_package_version").with_args(
-            ("tensorflow", "2.0.0", "https://pypi.org/simple")
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"), graceful=False
         ).and_return(pv_tensorflow_locked).ordered()
         graph.should_receive("get_python_package_hashes_sha256").with_args(
             "tensorflow", "2.0.0", "https://pypi.org/simple"

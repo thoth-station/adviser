@@ -22,7 +22,9 @@ import heapq
 from typing import Any
 from typing import List
 from typing import Tuple
+from typing import Generator
 from typing import Optional
+import operator
 import logging
 
 import matplotlib
@@ -49,11 +51,13 @@ class Beam:
     """
 
     width = attr.ib(default=None, type=Optional[int])
-    _states = attr.ib(default=attr.Factory(list), type=List[State])
+    _states = attr.ib(
+        default=attr.Factory(list), type=List[Tuple[Tuple[float, int], State]]
+    )
+    _counter = attr.ib(default=0, type=int)
+    _top_idx = attr.ib(default=None, type=Optional[int])
     _beam_history = attr.ib(
-        type=List[Tuple[int, float]],
-        default=attr.Factory(list),
-        kw_only=True,
+        type=List[Tuple[int, Optional[float]]], default=attr.Factory(list), kw_only=True
     )
 
     _WIDTH_VALIDATOR_ERR_MSG = "Beam width has to be None or positive integer, got {!r}"
@@ -82,7 +86,9 @@ class Beam:
         if bool(int(os.getenv("THOTH_ADVISER_NO_HISTORY", 0))):
             return
 
-        self._beam_history.append((self.size, self.top().score if self.size > 0 else None))
+        self._beam_history.append(
+            (self.size, self.top().score if self.size > 0 else None)
+        )
 
     @staticmethod
     def _make_patch_spines_invisible(ax: Any) -> None:
@@ -116,9 +122,7 @@ class Beam:
         host.spines["top"].set_visible(False)
 
         p1, = host.plot(x, y1, ",g", label="Beam size")
-        p2, = par1.plot(
-            x, y2, ",b", label="Top rated state score"
-        )
+        p2, = par1.plot(x, y2, ",b", label="Top rated state score")
 
         host.set_xlabel("iteration")
         host.set_ylabel("beam size")
@@ -157,11 +161,6 @@ class Beam:
         return fig
 
     @property
-    def states(self) -> List[State]:
-        """Return a list of candidates stored in the beam."""
-        return sorted(self._states, reverse=True)
-
-    @property
     def size(self) -> int:
         """Get the current size of beam."""
         return len(self._states)
@@ -170,43 +169,74 @@ class Beam:
         """Remove all states from beam."""
         self._states = []
 
-    def iter_states(self) -> List[State]:
+    def iter_states(self) -> Generator[State, None, None]:
         """Iterate over states, do not respect their score in order of iteration."""
-        return self._states
+        return (item[1] for item in self._states)
+
+    def iter_states_sorted(self, reverse: bool = True) -> Generator[State, None, None]:
+        """Iterate over sorted states."""
+        return (
+            item[1]
+            for item in sorted(
+                self._states, key=operator.itemgetter(0), reverse=reverse
+            )
+        )
 
     def top(self) -> State:
-        """Return the highest rated state as kept in the beam."""
+        """Return the highest rated state as kept in the beam.
+
+        This operation is done in O(N) if top is not pre-cached, O(1) otherwise.
+        """
         if len(self._states) == 0:
-            raise IndexError("Heap is empty")
+            raise IndexError("Beam is empty")
 
-        result = self._states[len(self._states) // 2]
-        for item in self._states[1 + len(self._states) // 2:]:
-            if result < item:
-                result = item
+        idx = self.get_top_idx()
+        return self._states[idx][1]
 
-        return result
+    def get_top_idx(self) -> int:
+        """Get index of the highest rated state kept in the beam.
+
+        This operation is done in O(N) time if top is not pre-cached, O(1) otherwise.
+        """
+        if self.size == 0:
+            raise KeyError("Beam is empty")
+
+        if self._top_idx is None:
+            self._top_idx = len(self._states) // 2
+            for idx, _ in enumerate(self._states[self._top_idx + 1:]):
+                if self._states[self._top_idx][0] < self._states[idx][0]:
+                    self._top_idx = idx
+
+        return self._top_idx
 
     def add_state(self, state: State) -> None:
-        """Add candidate to the internal candidates listing."""
+        """Add state to the internal state listing (do it in O(log(N)) time."""
+        item = ((state.score, self._counter), state)
+
         if self.width is not None and len(self._states) >= self.width:
-            heapq.heappushpop(self._states, state)
+            heapq.heappushpop(self._states, item)
         else:
-            heapq.heappush(self._states, state)
+            heapq.heappush(self._states, item)
+
+        self._top_idx = None
+        self._counter -= 1
 
     def get(self, idx: int) -> State:
-        """Get i-th element from the beam, keep it in the beam."""
-        return self._states[idx]
+        """Get i-th element from the beam (constant time), keep it in the beam."""
+        return self._states[idx][1]
 
     def pop(self, idx: Optional[int] = None) -> State:
         """Pop i-th element from the beam and remove it from the beam (this is actually toppop).
 
-        If index is not provided, pop largest element kept in the beam.
+        If index is not provided, pop one of the largest elements kept in the beam.
+
+        If top_state is pre-cached, this operation is done in O(log(N)), O(N) otherwise.
         """
+        if idx is None:
+            idx = self.get_top_idx()
+
         # Do this operation in O(logN) on top of the internal heap queue:
         #   https://stackoverflow.com/questions/10162679/python-delete-element-from-heap
-        if idx is None:
-            idx = len(self._states) - 1
-
         to_return = self._states[idx]
         self._states[idx] = self._states[-1]
         self._states.pop()
@@ -214,4 +244,5 @@ class Beam:
             heapq._siftup(self._states, idx)  # type: ignore
             heapq._siftdown(self._states, 0, idx)  # type: ignore
 
-        return to_return
+        self._top_idx = None
+        return to_return[1]

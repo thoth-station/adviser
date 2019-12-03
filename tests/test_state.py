@@ -87,35 +87,6 @@ class TestState(AdviserTestCase):
         final_state.unresolved_dependencies.pop("selinon")
         assert final_state.is_final()
 
-    def test_comparision(self) -> None:
-        """Test comparision of states."""
-        assert State(score=1.0) < State(score=2.0)
-
-        # Comparision is purely based on score, other attributes have no effect.
-        state1 = State(
-            score=0.5,
-            resolved_dependencies=OrderedDict(
-                {"daiquiri": ("daiquiri", "1.6.0", "https://pypi.org/simple")}
-            ),
-            unresolved_dependencies=OrderedDict(),
-            advised_runtime_environment=None,
-        )
-
-        state2 = State(
-            score=0.1,
-            resolved_dependencies=OrderedDict(
-                {"tensorflow": ("tensorflow", "2.0.0", "https://pypi.org/simple")}
-            ),
-            unresolved_dependencies=OrderedDict(
-                {"pytest": ("pytest", "5.2.2", "https://pypi.org/simple")}
-            ),
-            advised_runtime_environment=RuntimeEnvironment.from_dict(
-                {"python_version": "3.6"}
-            ),
-        )
-
-        assert state2 < state1
-
     def test_clone(self, state: State) -> None:
         """Test cloning of states and their memory footprints."""
         cloned_state = state.clone()

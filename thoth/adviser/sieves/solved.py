@@ -52,7 +52,9 @@ class SolvedSieve(Sieve):
 
         return None
 
-    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
+    def run(
+        self, package_versions: Generator[PackageVersion, None, None]
+    ) -> Generator[PackageVersion, None, None]:
         """Filter out packages based on build time/installation issues.."""
         for package_version in package_versions:
             try:
@@ -66,7 +68,9 @@ class SolvedSieve(Sieve):
                 )
             except NotFoundError as exc:
                 _LOGGER.debug(
-                    "Removing package %r as it was not solved: %s", package_version.to_tuple(), str(exc)
+                    "Removing package %r as it was not solved: %s",
+                    package_version.to_tuple(),
+                    str(exc),
                 )
                 continue
 
@@ -74,7 +78,7 @@ class SolvedSieve(Sieve):
                 _LOGGER.debug(
                     "Removing package %r due to build time error on %r",
                     package_version.to_tuple(),
-                    self.context.project.runtime_environment.to_dict()
+                    self.context.project.runtime_environment.to_dict(),
                 )
                 continue
 

@@ -21,7 +21,9 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Generator
 from typing import Tuple
+import operator
 import heapq
 
 import attr
@@ -67,7 +69,12 @@ class Context:
     accepted_final_states_count = attr.ib(type=int, kw_only=True, default=0)
     discarded_final_states_count = attr.ib(type=int, kw_only=True, default=0)
 
-    _accepted_states = attr.ib(type=List[State], kw_only=True, default=attr.Factory(list))
+    _accepted_states = attr.ib(
+        type=List[Tuple[Tuple[float, int], State]],
+        kw_only=True,
+        default=attr.Factory(list),
+    )
+    _accepted_states_counter = attr.ib(type=int, kw_only=True, default=0)
 
     def __attrs_post_init__(self) -> None:
         """Verify we have only adviser or dependency monkey specific context."""
@@ -81,10 +88,20 @@ class Context:
                 "Cannot instantiate context not specific to adviser nor dependency monkey"
             )
 
-    @property
-    def accepted_final_states(self) -> List[State]:
+    def iter_accepted_final_states(self) -> Generator[State, None, None]:
         """Get accepted final states by resolution pipeline, states are not sorted."""
-        return self._accepted_states
+        return (item[1] for item in self._accepted_states)
+
+    def iter_accepted_final_states_sorted(
+        self, reverse: bool = True
+    ) -> Generator[State, None, None]:
+        """Get accepted final states by resolution pipeline sorted by score and their precedence."""
+        return (
+            item[1]
+            for item in sorted(
+                self._accepted_states, key=operator.itemgetter(0), reverse=reverse
+            )
+        )
 
     def get_package_version(
         self, package_tuple: Tuple[str, str, str], *, graceful: bool = False
@@ -113,10 +130,13 @@ class Context:
     def register_accepted_final_state(self, state: State) -> None:
         """Register an accepted state by the resolution pipeline."""
         # We keep only `count' states as that was requested by pipeline caller.
+        item = ((state.score, self._accepted_states_counter), state)
+        self._accepted_states_counter -= 1
+
         if self.count is not None and len(self._accepted_states) >= self.count:
-            heapq.heappushpop(self._accepted_states, state)
+            heapq.heappushpop(self._accepted_states, item)
         else:
-            heapq.heappush(self._accepted_states, state)
+            heapq.heappush(self._accepted_states, item)
 
     def get_top_accepted_final_state(self) -> Optional[State]:
         """Get the best accepted final state so far computed by the resolution pipeline."""
@@ -125,10 +145,10 @@ class Context:
 
         result = self._accepted_states[len(self._accepted_states) // 2]
         for item in self._accepted_states[1 + len(self._accepted_states) // 2:]:
-            if result < item:
+            if result[0] < item[0]:
                 result = item
 
-        return result
+        return result[1]
 
     def register_package_tuple(
         self,

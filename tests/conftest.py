@@ -106,9 +106,7 @@ def predictor_mock() -> Predictor:
 
 @pytest.fixture
 def resolver(
-    pipeline_config: PipelineConfig,
-    project: Project,
-    predictor_mock: Predictor,
+    pipeline_config: PipelineConfig, project: Project, predictor_mock: Predictor
 ) -> Resolver:
     """Create a resolver instance for tests."""
     flexmock(Resolver)
