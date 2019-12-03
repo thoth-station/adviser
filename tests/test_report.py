@@ -64,21 +64,28 @@ class TestReport(AdviserTestCase):
         )
         report.add_product(product1)
         assert report.product_count() == 1
-        assert report.iter_products() == [product1]
+        assert list(report.iter_products()) == [product1]
+        assert list(report.iter_products_sorted()) == [product1]
 
         product2 = Product(
             project=None, score=0.0, justification=[], advised_runtime_environment=None
         )
         report.add_product(product2)
         assert report.product_count() == 2
-        assert report.iter_products() == [product1, product2]
+        assert set(report.iter_products()) == {product1, product2}
+        assert list(report.iter_products_sorted()) == [product1, product2]
+        assert list(report.iter_products_sorted(reverse=True)) == [product1, product2]
+        assert list(report.iter_products_sorted(reverse=False)) == [product2, product1]
 
         product3 = Product(
             project=None, score=0.98, justification=[], advised_runtime_environment=None
         )
         report.add_product(product3)
         assert report.product_count() == 2
-        assert report.iter_products() == [product3, product1]
+        assert set(report.iter_products()) == {product3, product1}
+        assert list(report.iter_products_sorted()) == [product3, product1]
+        assert list(report.iter_products_sorted(reverse=True)) == [product3, product1]
+        assert list(report.iter_products_sorted(reverse=False)) == [product1, product3]
 
         product4 = Product(
             project=None,
@@ -88,7 +95,10 @@ class TestReport(AdviserTestCase):
         )
         report.add_product(product4)
         assert report.product_count() == 2
-        assert report.iter_products() == [product3, product4]
+        assert set(report.iter_products()) == {product3, product4}
+        assert list(report.iter_products_sorted()) == [product3, product4]
+        assert list(report.iter_products_sorted(reverse=True)) == [product3, product4]
+        assert list(report.iter_products_sorted(reverse=False)) == [product4, product3]
 
     def test_to_dict(self, pipeline_config: PipelineConfig) -> None:
         """Test conversion to a dict."""
@@ -111,7 +121,7 @@ class TestReport(AdviserTestCase):
         report.add_product(product)
 
         assert report.product_count() == 1
-        assert report.iter_products() == [product]
+        assert list(report.iter_products()) == [product]
         assert report.to_dict() == {
             "pipeline": pipeline_config.to_dict(),
             "products": [product.to_dict()],

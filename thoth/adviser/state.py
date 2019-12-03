@@ -35,11 +35,11 @@ class State:
     score = attr.ib(type=float, default=0.0)
     # Python3.6 fails on OrderedDict subscription, use Dict instead.
     unresolved_dependencies = attr.ib(
-        type=Dict[str, Tuple[str, str, str]], default=attr.Factory(OrderedDict)
-    )
+        default=attr.Factory(OrderedDict)
+    )  # type: OrderedDict[str, Tuple[str, str, str]]
     resolved_dependencies = attr.ib(
-        type=Dict[str, Tuple[str, str, str]], default=attr.Factory(OrderedDict)
-    )
+        default=attr.Factory(OrderedDict)
+    )  # type: OrderedDict[str, Tuple[str, str, str]]
     advised_runtime_environment = attr.ib(
         type=Optional[RuntimeEnvironment], kw_only=True, default=None
     )
@@ -72,10 +72,6 @@ class State:
     def add_unresolved_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
         """Add unresolved dependency into the beam."""
         self.unresolved_dependencies[package_tuple[0]] = package_tuple
-
-    def __lt__(self, other: "State") -> bool:
-        """Override operator to control insertions into beam based on the score."""
-        return self.score < other.score
 
     def clone(self) -> "State":
         """Return a swallow copy of this state that can be used as a next state."""

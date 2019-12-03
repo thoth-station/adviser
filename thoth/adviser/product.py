@@ -27,6 +27,7 @@ import attr
 
 from thoth.common import RuntimeEnvironment
 from thoth.python import Project
+from thoth.python import PackageVersion
 from thoth.storages import GraphDatabase
 
 from .context import Context
@@ -56,7 +57,9 @@ class Product:
 
         package_versions_locked = []
         for package_tuple in state.resolved_dependencies.values():
-            package_version = context.get_package_version(package_tuple)
+            package_version: PackageVersion = context.get_package_version(
+                package_tuple, graceful=False
+            )
 
             # Fill package hashes before instantiating the final product.
             if not package_version.hashes:
@@ -81,10 +84,6 @@ class Product:
             justification=state.justification,
             advised_runtime_environment=state.advised_runtime_environment,
         )
-
-    def __lt__(self, other: "Product") -> bool:
-        """Compare two products based on the score."""
-        return self.score < other.score
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert this instance into a dictionary."""

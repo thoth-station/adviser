@@ -50,7 +50,9 @@ class CvePenalizationStep(Step):
         cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
         """Remove CVEs only for advised stacks."""
-        if builder_context.is_adviser_pipeline() and not builder_context.is_included(cls):
+        if builder_context.is_adviser_pipeline() and not builder_context.is_included(
+            cls
+        ):
             return {}
 
         return None

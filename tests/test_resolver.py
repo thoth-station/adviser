@@ -108,7 +108,7 @@ def package_versions() -> List[PackageVersion]:
     ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def state() -> State:
     """Get a sample of a state - the state is not final and not initial."""
     return State(
@@ -488,7 +488,9 @@ class TestResolver(AdviserTestCase):
         assert original_state == state, "State is not untouched"
 
     @pytest.mark.parametrize("score", [float("inf"), float("nan")])
-    def test_run_steps_inf_nan(self, score: float, resolver: Resolver, package_versions: List[PackageVersion]):
+    def test_run_steps_inf_nan(
+        self, score: float, resolver: Resolver, package_versions: List[PackageVersion]
+    ):
         state = State()
         state.score = 0.1
         state.add_justification([{"hello": "thoth"}])
@@ -518,7 +520,7 @@ class TestResolver(AdviserTestCase):
         self,
         resolver: Resolver,
         tf_package_versions: List[PackageVersion],
-        numpy_package_versions: List[PackageVersion]
+        numpy_package_versions: List[PackageVersion],
     ) -> None:
         """Test running steps on all the combinations computed during backtracking runs."""
         state = State()
@@ -527,25 +529,35 @@ class TestResolver(AdviserTestCase):
         tf_package_versions.reverse()
         numpy_package_versions.reverse()
 
-        assert resolver._run_steps(
-            state, {
-                tf_package_versions[0].name: tf_package_versions,
-                numpy_package_versions[0].name: numpy_package_versions,
-            }
-        ) is None
-        assert resolver.beam.size == len(tf_package_versions) * len(numpy_package_versions)
+        assert (
+            resolver._run_steps(
+                state,
+                {
+                    tf_package_versions[0].name: tf_package_versions,
+                    numpy_package_versions[0].name: numpy_package_versions,
+                },
+            )
+            is None
+        )
+        assert resolver.beam.size == len(tf_package_versions) * len(
+            numpy_package_versions
+        )
 
         # The run_steps algorithm is in fact an optimized drop-in replacement for itertools.product with
         # backtracking baked in. As we accept all combinations, let's verify combinations generated are
         # sames as in case of itertools.product.
 
         itertools_products = []
-        for combination in itertools.product(tf_package_versions, numpy_package_versions):
+        for combination in itertools.product(
+            tf_package_versions, numpy_package_versions
+        ):
             itertools_products.append([item.to_tuple() for item in combination])
 
         run_steps_products = []
-        for state in resolver.beam.iter_states():
-            run_steps_products.append([item for item in state.unresolved_dependencies.values()])
+        for state in resolver.beam.iter_states_sorted():
+            run_steps_products.append(
+                [item for item in state.unresolved_dependencies.values()]
+            )
 
         assert itertools_products == run_steps_products
 
@@ -1353,7 +1365,7 @@ class TestResolver(AdviserTestCase):
     def test_resolve_pre_run_error(self, unit_type: str, resolver: Resolver):
         """Test raising an exception in pre-run phase causes halt of resolver."""
         units = getattr(resolver.pipeline, unit_type)
-        assert (units,), "No unit in the pipeline configuration to run test with"
+        assert units, "No unit in the pipeline configuration to run test with"
 
         unit = units[0]
         unit.should_receive("pre_run").and_raise(ValueError).once()
@@ -1595,7 +1607,7 @@ class TestResolver(AdviserTestCase):
 
         assert resolver.context is not None, "Context is not bound to resolver"
         assert report.product_count() == 1
-        assert report.iter_products() == [product]
+        assert list(report.iter_products()) == [product]
         assert report.stack_info is stack_info
 
     def test_get_adviser_instance(self, predictor_mock: Predictor) -> None:
