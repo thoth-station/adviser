@@ -203,7 +203,7 @@ class Beam:
 
         if self._top_idx is None:
             self._top_idx = len(self._states) // 2
-            for idx, _ in enumerate(self._states[self._top_idx + 1 :]):
+            for idx, _ in enumerate(self._states[self._top_idx + 1:]):
                 if self._states[self._top_idx][0] < self._states[idx][0]:
                     self._top_idx = idx
 

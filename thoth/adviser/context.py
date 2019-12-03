@@ -144,7 +144,7 @@ class Context:
             return None
 
         result = self._accepted_states[len(self._accepted_states) // 2]
-        for item in self._accepted_states[1 + len(self._accepted_states) // 2 :]:
+        for item in self._accepted_states[1 + len(self._accepted_states) // 2:]:
             if result[0] < item[0]:
                 result = item
 
