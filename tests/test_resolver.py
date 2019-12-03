@@ -487,6 +487,33 @@ class TestResolver(AdviserTestCase):
 
         assert original_state == state, "State is not untouched"
 
+    @pytest.mark.parametrize("score", [float("inf"), float("nan")])
+    def test_run_steps_inf_nan(self, score: float, resolver: Resolver, package_versions: List[PackageVersion]):
+        state = State()
+        state.score = 0.1
+        state.add_justification([{"hello": "thoth"}])
+        state.resolved_dependencies["hexsticker"] = (
+            "hexsticker",
+            "1.2.0",
+            "https://pypi.org/simple",
+        )
+
+        original_state = deepcopy(state)
+
+        flexmock(steps.Step1)
+        steps.Step1.should_receive("run").with_args(
+            state, package_versions[0]
+        ).and_return((score, [{"foo": "bar"}])).once()
+
+        resolver.pipeline.steps = [steps.Step1()]
+
+        with pytest.raises(StepError):
+            assert resolver._run_steps(
+                state, {pv.name: [pv] for pv in package_versions[:3]}
+            )
+
+        assert original_state == state, "State is not untouched"
+
     def test_run_steps_combinations(
         self,
         resolver: Resolver,
