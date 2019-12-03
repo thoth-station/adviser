@@ -22,12 +22,22 @@ from typing import Dict
 
 import flexmock
 import pytest
+from pathlib import Path
+import json
+import yaml
 
+from thoth.adviser.boot import Boot
+from thoth.adviser.enums import DecisionType
+from thoth.adviser.enums import RecommendationType
 from thoth.adviser.pipeline_builder import PipelineBuilder
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
+from thoth.adviser.sieve import Sieve
+from thoth.adviser.step import Step
+from thoth.adviser.stride import Stride
 from thoth.adviser.unit import Unit
-from thoth.adviser.enums import RecommendationType
-from thoth.adviser.enums import DecisionType
+from thoth.adviser.wrap import Wrap
+from thoth.adviser.exceptions import PipelineConfigurationError
+from thoth.adviser.exceptions import UnknownPipelineUnitError
 
 import tests.units as units
 
@@ -202,3 +212,104 @@ class TestPipelineBuilder(AdviserTestCase):
             ],
             "wraps": [{"name": "Wrap2", "configuration": {}}],
         }
+
+    @use_test_units
+    def test_from_dict(self) -> None:
+        """Test instantiation of a pipeline from a dictionary."""
+        dict_ = {
+            "boots": [{"name": "Boot1", "configuration": {"some_parameter": 1.0}}],
+            "sieves": [
+                {
+                    "name": "Sieve2",
+                    "configuration": {"date": "2015-09-15", "foo": "bar"},
+                }
+            ],
+            "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
+            "strides": [
+                {"name": "Stride2", "configuration": {"foo": None}},
+                {"name": "Stride1", "configuration": {"linus": "torvalds"}},
+            ],
+            "wraps": [{"name": "Wrap2", "configuration": {}}],
+        }
+
+        pipeline = PipelineBuilder.from_dict(dict(dict_))
+        assert pipeline.to_dict() == dict_
+        assert isinstance(pipeline.boots[0], Boot)
+        assert isinstance(pipeline.sieves[0], Sieve)
+        assert isinstance(pipeline.steps[0], Step)
+        assert isinstance(pipeline.strides[0], Stride)
+        assert isinstance(pipeline.strides[1], Stride)
+        assert isinstance(pipeline.wraps[0], Wrap)
+
+    @use_test_units
+    def test_load(self, tmp_path: Path) -> None:
+        """Test instantiation of a pipeline from a dictionary."""
+        expected_dict_ = {
+            "boots": [{"name": "Boot1", "configuration": {"some_parameter": -0.2}}],
+            "sieves": [],
+            "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
+            "strides": [{"name": "Stride2", "configuration": {"foo": None}}],
+            "wraps": [],
+        }
+
+        dict_ = {
+            "boots": [{"name": "Boot1"}],
+            "sieves": [],
+            "steps": [{"name": "Step1"}],
+            "strides": [{"name": "Stride2"}],
+            "wraps": [],
+        }
+
+        yaml_path = tmp_path / "config.yaml"
+        with open(yaml_path, "w") as f:
+            yaml.safe_dump(dict_, f)
+
+        pipeline = PipelineBuilder.load(yaml_path)
+
+        assert isinstance(pipeline.boots[0], Boot)
+        assert not pipeline.sieves
+        assert isinstance(pipeline.steps[0], Step)
+        assert isinstance(pipeline.strides[0], Stride)
+        assert not pipeline.wraps
+        assert pipeline.to_dict() == expected_dict_
+
+        json_path = tmp_path / "config.json"
+        with open(json_path, "w") as f:
+            json.dump(dict_, f)
+
+        pipeline = PipelineBuilder.load(json_path)
+        assert isinstance(pipeline.boots[0], Boot)
+        assert not pipeline.sieves
+        assert isinstance(pipeline.steps[0], Step)
+        assert isinstance(pipeline.strides[0], Stride)
+        assert not pipeline.wraps
+        assert pipeline.to_dict() == expected_dict_
+
+    @use_test_units
+    def test_from_dict_unit_configuration_error(self) -> None:
+        """Test instantiation of a pipeline unit in case configuration errors.."""
+        dict_ = {
+            "boots": [{
+                "name": "Boot1",
+                "configuration": {"foo": "bar"}
+            }],
+        }
+
+        flexmock(units.boots.Boot1)
+        units.boots.Boot1.should_receive("update_configuration").with_args({"foo": "bar"}).and_raise(ValueError)
+
+        with pytest.raises(PipelineConfigurationError):
+            PipelineBuilder.from_dict(dict_)
+
+    @use_test_units
+    def test_from_dict_unit_not_exist_error(self) -> None:
+        """Test instantiation of a pipeline from a dictionary in case of missing unit."""
+        dict_ = {
+            "sieves": [{
+                "name": "SieveThatDoesNotExist",
+                "configuration": {"foo": "bar"}
+            }],
+        }
+
+        with pytest.raises(UnknownPipelineUnitError):
+            PipelineBuilder.from_dict(dict_)

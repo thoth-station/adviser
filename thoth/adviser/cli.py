@@ -42,6 +42,7 @@ from thoth.python import Project
 
 from thoth.adviser.dependency_monkey import DependencyMonkey
 from thoth.adviser.digests_fetcher import GraphDigestsFetcher
+from thoth.adviser.pipeline_builder import PipelineBuilder
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import PythonRecommendationOutput
 from thoth.adviser.enums import RecommendationType
@@ -347,6 +348,14 @@ def provenance(
     type=click.Choice(predictors.__all__),
     help="Predictor to be used with the resolver.",
 )
+@click.option(
+    "--pipeline",
+    envvar="THOTH_ADVISER_PIPELINE",
+    default=None,
+    type=str,
+    metavar="PIPELINE",
+    help="Pipeline configuration supplied in a form of JSON/YAML or a path to a file.",
+)
 def advise(
     click_ctx: click.Context,
     *,
@@ -365,6 +374,7 @@ def advise(
     requirements_locked: Optional[str] = None,
     runtime_environment: Optional[str] = None,
     seed: Optional[int] = None,
+    pipeline: Optional[str] = None,
 ):
     """Advise package and package versions in the given stack or on solely package only."""
     parameters = locals()
@@ -386,12 +396,19 @@ def advise(
     project = _instantiate_project(
         requirements, requirements_locked, runtime_environment
     )
+    pipeline_config = None if pipeline is None else PipelineBuilder.load(pipeline)
 
     parameters["project"] = project.to_dict()
+    if pipeline_config is not None:
+        parameters["pipeline"] = pipeline_config.to_dict()
 
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
     seed = seed if seed is not None else int(time.time())
-    _LOGGER.info("Starting resolver using %r predictor with random seed set to %r", predictor, seed)
+    _LOGGER.info(
+        "Starting resolver using %r predictor with random seed set to %r",
+        predictor,
+        seed,
+    )
     random.seed(seed)
 
     resolver = Resolver.get_adviser_instance(
@@ -403,6 +420,7 @@ def advise(
         count=count,
         beam_width=beam_width,
         limit_latest_versions=limit_latest_versions,
+        pipeline_config=pipeline_config,
     )
 
     print_func = _PrintFunc(
@@ -541,6 +559,14 @@ def advise(
     type=click.Choice(predictors.__all__),
     help="Predictor to be used with the resolver.",
 )
+@click.option(
+    "--pipeline",
+    envvar="THOTH_ADVISER_PIPELINE",
+    default=None,
+    type=str,
+    metavar="PIPELINE",
+    help="Pipeline configuration supplied in a form of JSON/YAML or a path to a file.",
+)
 def dependency_monkey(
     click_ctx: click.Context,
     *,
@@ -560,6 +586,7 @@ def dependency_monkey(
     plot: Optional[str] = None,
     runtime_environment: str = None,
     seed: Optional[int] = None,
+    pipeline: Optional[str] = None,
 ):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
     parameters = locals()
@@ -580,12 +607,19 @@ def dependency_monkey(
     project = _instantiate_project(
         requirements, runtime_environment=runtime_environment
     )
+    pipeline_config = None if pipeline is None else PipelineBuilder.load(pipeline)
 
     parameters["project"] = project.to_dict()
+    if pipeline_config is not None:
+        parameters["pipeline"] = pipeline_config.to_dict()
 
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
     seed = seed if seed is not None else int(time.time())
-    _LOGGER.info("Starting resolver using predictor %r with random seed set to %r", predictor, seed)
+    _LOGGER.info(
+        "Starting resolver using predictor %r with random seed set to %r",
+        predictor,
+        seed,
+    )
     random.seed(seed)
 
     resolver = Resolver.get_dependency_monkey_instance(
@@ -596,6 +630,7 @@ def dependency_monkey(
         beam_width=beam_width,
         limit_latest_versions=limit_latest_versions,
         decision_type=decision_type,
+        pipeline_config=pipeline_config,
     )
 
     dependency_monkey_runner = DependencyMonkey(
