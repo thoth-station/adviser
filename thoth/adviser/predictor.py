@@ -27,6 +27,7 @@ import matplotlib.figure
 from .beam import Beam
 from .context import Context
 from .report import Report
+from .state import State
 
 
 @attr.s(slots=True)
@@ -41,10 +42,10 @@ class Predictor:
         """
 
     @abc.abstractmethod
-    def run(self, context: Context, beam: Beam) -> int:
+    def run(self, context: Context, beam: Beam) -> State:
         """The main method used to run the predictor.
 
-        The method accepts a beam of states and returns index of the state which should be used for next expansion.
+        The method accepts a beam of states and returns the state which should be used for next expansion.
         The beam has to be kept untouched.
         """
         raise NotImplementedError

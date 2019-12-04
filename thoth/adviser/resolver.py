@@ -704,16 +704,15 @@ class Resolver:
             self.beam.new_iteration()
             self.context.iteration += 1
 
-            state_idx = self.predictor.run(self.context, self.beam)
-            to_expand_state = self.beam.pop(state_idx)
+            state = self.predictor.run(self.context, self.beam)
+            self.beam.remove(state)
 
             _LOGGER.debug(
-                "Expanding state with score %g at index %d: %r",
-                to_expand_state.score,
-                state_idx,
-                to_expand_state,
+                "Expanding state with score %g: %r",
+                state.score,
+                state,
             )
-            final_state = self._expand_state(to_expand_state)
+            final_state = self._expand_state(state)
             if final_state:
                 if self._run_strides(final_state):
                     self._run_wraps(final_state)
