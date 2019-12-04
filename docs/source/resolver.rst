@@ -1,39 +1,69 @@
 .. _resolver:
 
-Thoth's offline resolver
-------------------------
+Thoth's resolver
+----------------
 
 As Python is a dynamic programming language, the actual resolution of Python
-software stacks might take a time (you've probably `encountered this already
+software stacks might take some time (you've probably `encountered this already
 <https://github.com/pypa/pipenv/issues/2873>`_). One of the reasons behind it
 is the fact that all packages need to be downloaded and installed to verify
 version range satisfaction during the installation. This is also one of the
-reasons Thoth builds its knowledge base - Thoth pre-computes dependencies
-in the Python ecosystem so that resolving can be done offline without
-interacting with outside world.
+reasons Thoth builds its knowledge base - Thoth pre-computes dependencies in
+the Python ecosystem so that resolving can be done offline without interacting
+with outside world.
 
+Thoth's resolver performs steps to resolve final states out of initial states
+by running pipeline :ref:`sieves <sieves>` and :ref:`steps <steps>`.
+Internally, there are computed all the combinations that can occur and there
+are produced new states that are added to a pool of states, called beam.
+Resolver tightly cooperates with :ref:`predictor <predictor>` that guides
+resolver to resolve desired software stacks.
 
-A note to Thoth's Python resolver
-=================================
+:ref:`Resolver respects Python ecosystem <compatibility>` and resolution done
+by pip or Pipenv, but in a more clever way compatibility to also include
+observations about Python packages from Thoth's knowledge base. Instead of
+implementing `3SAT
+<https://en.wikipedia.org/wiki/Boolean_satisfiability_problem>`_ the resolver
+operates directly on dependency graphs that are lazily expanded by expanding
+not-yet resolved dependencies in resolver states.
 
-Thoth stores pre-computed dependency graph in its knowledge base. Besides
-the graph structure kept, it also evaluates
-`environment markers <https://www.python.org/dev/peps/pep-0496/>`_ in the
-solver runs (hence solvers are based on software environments which are used
-from configuration entries and can be recommended as well)
+Dependencies of not-yet resolved packages (unresolved dependencies) are
+resolved based on pre-computed dependency information stored in the Thoth's
+knowledge base. This information is aggregated by Thoth's `solvers
+<https://github.com/thoth-station/solver>`_ that are run for different software
+environments. An example can be a solver for Fedora:31 running Python3.7 or
+UBI:8 running Python3.6. These software environments can be then used as base
+software environments for running Python applications (container images, also
+suitable as base for OpenShift's s2i build process - see `s2i base images
+provided by Thoth <https://github.com/thoth-station/s2i-thoth>`_ that are
+analyzed by Thoth itself and Thoth has information to drive recommendations for
+these container images used in an s2i build).
 
-Software stacks returned by Thoth are fully compliant with Python's packaging
-resolution algorithm as done by pip or Pipenv except for environment markers.
-If software environment in which the application runs is fully specified, Thoth
-can use pre-computed results of environment markers and the recommended
-software stack does not include sub-graphs which would normally be reported by
-pip/Pipenv when done a generic resolution (e.g. `enum34
-<https://pypi.org/project/enum34/>`_ is often included with environment marker
-``python_version<"3.4"``. If Thoth is resolving software stacks for Python 3.6,
-it already knows enum34 will not be installed so any of its dependencies, if
-any, will not be installed as well). This helps to narrow down to software that
-is really used in the deployed environment.
+The resolver has two main purposes:
 
-Environment markers applied on direct dependencies are not evaluated during
-resolution.
+* resolve software stacks for Dependency Monkey runs and verify generated software stacks on `Amun <https://github.com/thoth-station/amun-api>`_
+* resolve software stacks for recommendations
 
+To instantiate a resolver, one can use two main functions:
+
+* ``Resolver.get_adviser_instance`` - a resolver that produces software stacks for recommendations
+* ``Resolver.get_dependency_monkey_instance`` - a resolver that produces software stacks for :ref:`Dependency Monkey <dependency_monkey>`
+
+To resolve raw pipeline products, one can use ``Resolver.resolve_products``
+method that yields raw products during pipeline run. Another method,
+``Resolver.resolve`` creates a complete report of an adviser run together with
+some additional pipeline run information. See :ref:`pipeline section for code
+examples <pipeline>`.
+
+.. note::
+
+  Pipeline unit methods ``post_run_report`` and predictor's ``post_run_report``
+  are called only when ``Resolver.resolve`` method is used to resolve software
+  stacks.
+
+Resolver instance transparently runs :ref:`stack resolution pipeline
+<pipeline>` to produce scored software stacks.
+
+During the whole run, resolver keeps context that is updated during runs and is
+accessible in pipeline units as well as passed to :ref:`predictor's run method
+<predictor>` to guide resolver in next states to be resolve.

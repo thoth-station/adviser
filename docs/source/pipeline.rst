@@ -4,88 +4,174 @@ State expansion pipeline
 ------------------------
 
 In this section, one can find the developer's introduction to state expansion
-pipeline used in Thoth's adviser that expands states to produce pipeline products.
+pipeline used in Thoth's adviser that expands states to produce pipeline
+products.
 
 The pipeline is used to prepare, generate, filter and score partially or fully
 resolved software stacks, abstracted into a :class:`State
-<thoth.adviser.state.State>`.  The pipeline is run within :ref:`adaptive
-simulated annealing <anneal>` which encapsulates results (final states) of the
-pipeline runs into a higher abstraction called :class:`Product
-<thoth.adviser.product.Product>` which can subsequently become part of a
-:class:`Report <thoth.adviser.report.Report>` (see methods
-:func:`AdaptiveSimulatedAnnealing.anneal
-<thoth.adviser.anneal.AdaptiveSimulatedAnnealing.anneal>` and
-:func:`AdaptiveSimulatedAnnealing.anneal_products
-<thoth.adviser.anneal.AdaptiveSimulatedAnnealing.anneal_products>` for more
-info).
+<thoth.adviser.state.State>`.  The pipeline is run within :ref:`resolver
+<resolver>` and can be triggered by two main methods:
 
-The input to the pipeline is Thoth's `Project` abstraction carrying information
-about direct dependencies of an application together with optional additional
-vector stating software environment, hardware available and also an optional
-result of a static source code analysis on user's application for targeting
-application specific recommendations (API used from libraries).
+* :func:`Resolver.resolve_products <thoth.adviser.resolver.Resolver.resolve_products>`
+* :func:`Resolver.resolve <thoth.adviser.resolver.Resolver.resolve>`
 
-The pipeline is dynamically created based on the incoming vector to the state
-generation pipeline, which makes Thoth's adviser a reconfigurable resolver
-suitable to resolve optimized software stacks for a specific use.
+The first one is a lower level API for obtaining pipeline products that are
+yielded during resolution. The latter one reports back a pipeline run
+:class:`Report <thoth.adviser.report.Report>` (and uses the first one under the
+hood to obtain products). Note the latter one waits for the whole pipeline to
+finish, whereas the first one yields products during run.
 
-The pipeline consists of the following types of units:
+An example of a resolver run that runs the pipeline under the hood for
+computing recommendations:
 
-* :class:`Boot <thoth.adviser.boot.Boot>`
+.. code-block:: python
 
-* :class:`Sieve <thoth.adviser.sieve.Sieve>`
+  from pathlib import Path
 
-* :class:`Step <thoth.adviser.step.Step>`
+  from thoth.common import RuntimeEnvironment
+  from thoth.adviser import Resolver
+  from thoth.adviser.enums import RecommendationType
+  from thoth.adviser.predictors import AdaptiveSimulatedAnnealing
+  from thoth.python import Project
 
-* :class:`Stride <thoth.adviser.stride.Stride>`
+  runtime_environment = RuntimeEnvironment()
+  runtime_environment.operating_system.name = "fedora"
+  runtime_environment.operating_system.name = "31"
+  runtime_environment.python_version = "3.7"
+  runtime_environment.cuda_version = "9.0"
+  runtime_environment.hardware.cpu_model = 142
 
-* :class:`Wrap <thoth.adviser.wrap.Wrap>`
+  project = Project.from_files(
+      pipfile_path="./Pipfile",
+      runtime_environment=runtime_environment
+  )
 
-A foreword for units
-====================
+  resolver = Resolver.get_adviser_instance(
+      beam_width=4,
+      count=3,
+      library_usage=None,
+      limit=10000,
+      limit_latest_versions=5,
+      predictor=AdaptiveSimulatedAnnealing(),
+      project=project,
+      recommendation_type=RecommendationType.LATEST,
+  )
 
-All units are derived from :class:`Unit <thoth.adviser.unit.Unit>` that
-provides a common base for implemented units of any type. This way, each and
-every unit can benefit from the shared functionality. The base class also
-provides access to the input pipeline vectors and other properties:
+  report = resolver.resolve(with_devel=True)
+  print(report.to_dict())
 
-* `project` property can be used to access project information for which the
-  pipeline is producing software stacks, information about **direct
-  dependencies**, configured **Python package indexes** (see `Pipfile`
-  abstraction)
 
-* the `Project` abstraction (as can be found in Thoth's `thoth-python` library)
-  also provides information about **software environment** (operating system
-  name and version, Python interpreter version used and additional information
-  such as IPython information when resolving software stacks for Jupyter
-  Notebooks)
+As you can see above, the resolver has quite a few arguments to be passed:
 
-* **hardware information** is also part of the `Project` abstraction and lets
-  users of Thoth provide information about hardware used (e.g. GPU card type)
-  eigher manually or by using automatic hardware discovery in the Thamos client
-  tool when submitting requests to Thoth's backend
+* ``beam_width`` - limitation for state space that should be taken into account during a resolver run (see beam section bellow for more info)
+* ``count`` - number of software stacks reported back by the resolver
+* ``library_usage`` - static source code analysis as done by `Thoth's Invectio <https://github.com/thoth-station/invectio>`_ - this library usage states libraries and symbols used from these libraries that can help with application specific recommendations (e.g. recommending different versions of TensorFlow for applications using convolutional layers)
+* ``limit`` - number of software stacks (final states) scored in total - resolver is stopped once this limit is reached or there are no more states in the beam to be resolved
+* ``limit_latest_versions`` - limit number of latest versions for all the packages in the dependency graph considered during resolution to reduce state space considered
+* ``predictor`` - an implementation of :class:`Predictor <thoth.adviser.predictor.Predictor>` to be used together with resolver to resolve software stacks
+* ``project`` - instance of ``Project`` available in ``thoth-python`` library that provides direct dependencies and information about runtime environment used to run and build the application
+* ``recommendation_type`` - type of targeted recommendations - see :class:`RecommendationType <thoth.adviser.enums.RecommendationType>`
 
-* `library_usage` property carries information about **API calls to libraries**,
-  that maps names of libraries to symbols used from user's application (this
-  is in fact output of Thoth's static analysis done on the source code - see
-  `Invectio <https://github.com/thoth-station/invectio/>`_) - this way Thoth
-  can build adviser's pipeline configuration that is optimized for example for
-  a convolutional neural network if there are detect calls to CNN API calls of
-  used libraries
+A similar method, :func:`Resolver.get_dependency_monkey_instance
+<thoth.adviser.resolver.Resolver.get_dependency_monkey_instance>` obtains
+resolver for a :ref:`Dependency Monkey run <dependency_monkey>`. When creating
+a Dependency Monkey resolver, resolver asks for :class:`DecisionType
+<thoth.adviser.enums.DecisionType>` instead of :class:`RecommendationType
+<thoth.adviser.enums.RecommendationType>`.
 
-* an instantiated adapter to Thoth's knowledge graph that aggregates
-  information about software packages, software run and build environments as
-  well as information about hardware that can be used during pipeline units run
+As you can see, there is no pipeline configuration passed to the resolver
+instance. In such cases, resolver iterates over shipped pipeline units
+available and tries to create a pipeline configuration that is suitable for the
+given set of parameters - see :func:`Unit.should_include
+<thoth.adviser.unit.Unit.should_include>` method and :ref:`unit documentation
+<unit>` on information how to let pipeline units be included in a certain
+resolver run. In other words, the pipeline configuration is dynamically
+created based on resolver's input parameters and hyperparameters.
+
+If you would like to provide your own pipeline configuration, you can do so by
+explicitly passing ``pipeline_config`` argument which states a dictionary
+representation of a pipeline configuration or directly instance of
+:class:`PipelineConfig <thoth.adviser.pipeline_config.PipelineConfig>` with all
+the pipeline units instantiated and configured.
+
+Pipeline and resolver execution
+===============================
+
+Before any resolution, resolver calls :func:`Unit.pre_run
+<thoth.adviser.unit.Unit.pre_run>` method that can be used in any pipeline unit
+implementation to signalize a new resolution. It's a good practice to set any
+initialization here as pipeline units are instantiated once per resolver. If
+there are run multiple resolutions for the same resolver instance, the pipeline
+unit instances will be shared.
+
+All pipeline units are grouped based on their type in the
+:class:`PipelineConfig <thoth.adviser.pipeline_config.PipelineConfig>` and
+resolver runs respect they relative ordering when pipeline units are executed.
+
+The very first pipeline units triggered are pipeline units of type :class:`Boot
+<thoth.adviser.boot.Boot>`. They are triggered prior to any resolution done -
+see :ref:`boot unit documentation for more info <boots>`.
+
+Once all :class:`Boot <thoth.adviser.boot.Boot>` units are successfully
+executed, resolver resolves all the direct dependencies (that are sorted and
+filtered out based on ``limit_latest_versions`` configuration option) of the
+application and executes pipeline units of type :class:`Sieve
+<thoth.adviser.sieve.Sieve>` to filter out packages that should not be
+considered during resolver run. See :ref:`sieve pipeline unit documentation for
+more information <sieves>`.
+
+Once sieves filter out packages in unwanted versions, resolver creates initial
+states that are formed out of all the combinations of packages in different
+versions that can occur in a software stack. As packages in different versions
+are sorted based on their version string semantics, the very first combination
+has always the latest versions of all the packages (this fact is used for
+example in hill climbing in the :ref:`adaptive simulated annealing approach
+<annealing>`).  For each newly created initial state, there are run
+:ref:`pipeline steps <steps>` that decide whether inclusion of a package
+version is valid to a state - this is done for each and every package-version
+combination.
+
+If a state is accepted, it is added to the resolver beam as a state to be
+considered during resolver run, respecting beam width parameter.
+
+The resolver than picks a state  stored in the beam based on
+:ref:`predictor's decision <predictor>` and resolves not yet resolved
+dependencies in the state. The resolution of a dependency makes a dependency
+resolved and all its dependencies, if any, unresolved. Resolver, again,
+runs all the sieves on newly introduced dependencies into the state and
+pipeline steps to verify and score the given resolver step.
+
+A state is considered as a final if there are no more unresolved dependencies.
+Such state is then passed to all :ref:`pipeline strides <strides>` that decide
+whether the final state should become a pipeline product or not. Once it is
+accepted all pipeline units of type :ref:`wrap <wraps>` are called to wrap up
+resolution of the state. After all, state is converted into a pipeline product
+and yielded, possibly becoming part of a pipeline report, if requested so.
+
+Context and Beam
+================
+
+There are three main abstractions that are fundamental when creating any
+pipeline unit or predictor for Thoth's adviser:
+
+* :class:`Context <thoth.adviser.context.Context>` - context carried during the whole resolver run; states all the necessary information for pipeline units and for predictor
+* :class:`PipelineBuilderContext <thoth.adviser.pipeline_builder.PipelineBuilderContext>` - context used during pipeline creation by :class:`PipelineBuilder <thoth.adviser.pipeline_builder.PipelineBuilder>` if pipeline configuration was not explicitly provided - see :ref:`unit section for more information <unit>`
+* :class:`Beam <thoth.adviser.beam.Beam>` - simply, `beam <https://en.wikipedia.org/wiki/Beam_search>`_, a pool of states kept
+
+Beam is an abstract data type maintained by resolver that keeps track of pool
+of states that are about to be (possibly) resolved. This pool can have
+restricted size which limits number of states kept in memory and limits number
+of states considered during resolution.
 
 Pipeline configuration creation
 ===============================
 
-Each pipeline unit provides a class method called `should_include` which is executed
-on the :class:`pipeline configuration creation
-<thoth.adviser.pipeline_config.PipelineConfig>` (that states a list of sieves,
-steps and strides to be included in the pipeline). The class method returns a
+Each pipeline unit provides a class method called `should_include` which is
+executed on the :class:`pipeline configuration creation
+<thoth.adviser.pipeline_config.PipelineConfig>` (that states a list of boots, sieves,
+steps, strides and wraps to be included in the pipeline). The class method returns a
 dictionary stating unit configuration if the given unit should be used (an
-empty dictionary if no configuration changes to unit parameters are done), a
+empty dictionary if no configuration changes to the default unit configuration are done), a
 special value of `None` indicates the given pipeline unit should not be added
 to the pipeline configuration.
 
@@ -98,8 +184,8 @@ just programatically states when the given pipeline unit should be included in
 the pipeline configuration (stating dependencies on other pipeline units or
 conditionally add pipeline unit under specific circumferences). An example can
 be a pipeline unit which includes scoring based on performance indicators done
-on `conv2d <https://www.tensorflow.org/api_docs/python/tf/nn/conv2d>`_ used in a
-TensorFlow application:
+on `conv2d <https://www.tensorflow.org/api_docs/python/tf/nn/conv2d>`_ used in
+a TensorFlow application:
 
 .. code-block:: python
 
@@ -126,249 +212,46 @@ TensorFlow application:
     # ... snip
 
 
-On a pipeline run, there are first executed all sieves on all the resolved
-packages which are considered to become a part of states, then all steps to
-produce a final state and lastly all strides on a final state. Each unit type
-respects relative ordering - the very first sieve added is run first, then a
-second one and so on respecting the relative order of sieves in the pipeline
-configuration (the order in which they were registered). The same logic applies
-to steps and strides.
+Each unit type respects relative ordering and units are groupped based on their
+type - for example the very first sieve added is run first, then a second one
+and so on respecting the relative order of sieves in the pipeline configuration
+(the order in which they were included). This logic applies to all pipeline
+unit types - :ref:`boots <boots>`, :ref:`sieves <sieves>`, :ref:`steps
+<steps>`, :ref:`strides <strides>` and :ref:`wraps <wraps>`.
 
 See implementation of :class:`PipelineBuilderContext
 <thoth.adviser.pipeline_builder.PipelineBuilderContext>` for more info on
 provided methods that can be used during pipeline configuration creation.
 
-Note the annealing algorithm with pipeline steps is shared for computing
+Note the resolution algorithm with pipeline units is shared for computing
 advises and for Dependency Monkey to test and evaluate characteristics of
 software stacks. You can use methods provided by :class:`PipelineBuilderContext
 <thoth.adviser.pipeline_builder.PipelineBuilderContext>` to check if the
 pipeline configuration is created for computing advises or whether the created
 pipeline configuration is used in Dependency Monkey runs.
 
-
-Boot
-====
-
-A very first pipeline unit is called "boot" as it boots up the whole pipeline.
-It's run prior to any resolution right after the simulated annealing is started.
-A boot unit can be used to check parameters to the pipeline from semantics point
-of view.
-
-.. note::
-
-  When to use a boot unit?
-
-  If you want to inspect supplied project to the pipeline or used runtime
-  environment. The boot part can for example block runtime environments which are
-  too old or are known to have serious issues (e.g. blocking OpenShift s2i
-  builds cluster wide by Thoth administrator).
-
-
-Note any exception raised in a boot unit is causing a stop in the whole
-stack recommendation request.
-
-Sieve
-=====
-
-The second pipeline unit called "`sieve
-<https://en.wikipedia.org/wiki/Sieve>`_" is used to filter out packages which
-should not occur in a software stack at all. An example use case can be
-filtering packages which have installation issues in the given software
-environment so there is no reason to produce software stacks with these
-packages in recommendations.
-
-An example implementation of a sieve implementation can be to use Thoth's
-knowledge graph to filter out packages which are not installable into the
-software environment (e.g. installation of legacy Python2 packages when
-Python3+ is used as described above):
-
-.. literalinclude:: ../../thoth/adviser/sieves/solved.py
-   :language: python
-   :lines: 18-
-
-Another example of a sieve can be filtering packages that are pre-releases, but
-pre-releases were disabled in *Pipenv* file:
-
-.. literalinclude:: ../../thoth/adviser/sieves/prereleases.py
-   :language: python
-   :lines: 18-
-
-The parameter `package_version` is of type `PackageVersion` which is an
-abstraction on top of a Python's package in a version (stating all its
-properties, see library `thoth-python` for more info). Note artifact hashes are
-retrieved lazily once a final state is produced (hance the
-`PackageVersion.hashes` property will in most cases be an empty array unless
-the given package was already produced in one of the pipeline's final states).
-
-.. note::
-
-  When to use a sieve?
-
-  If you want to evaluate addition of a single package without considering the current state in the resolution.
-
-Step
-====
-
-The main purpose of a unit of type :class:`Step <thoth.adviser.step.Step>` is
-to decide whether a creation of a new state out of an already existing one is
-acceptable and what would be the score adjustment if the given step is
-performed together with a justification reported to a user. A new state is
-created out of an existing one by resolving direct dependencies of a not yet
-resolved dependency in the dependency graph. Hence, the new state inherits all
-the properties of the parent state and pipeline steps decide what is the impact
-of adding new packages to the (expanded) parent state.
-
-Note by resolving a dependency in a parent state, we possibly get multiple
-states based on combinations of package types in different versions in which
-dependencies may occur.
-
-In other words, a step is performed to create new states closer to final states
-out of an already found non-final state in the discrete state space of all
-the possible states (final and non-final ones).
-
-An implementation of a step accepts
-
-.. note::
-
-  When to use a step?
-
-  If you want to evaluate acceptance of a package into a state and its impact.
-
-  An example can be:
-
-  * blocking two or more packages to be present in a state due to API incompatibilities spotted on runtime (Python is a dynamic programming language)
-
-  * blocking a package from being present in resolved software stacks due to a native dependecy which is not present in the runtime environment 
-
-  * penalize stacks with packages because of security vulnerabilities found in packages forming the stack
-
-  * prioritize packages in resolved software stacks because of good performance observations in software and hardware environment used
-
-  * etc.
-
-You can find an example of a step implementation performing penalization if a
-security vulnerability is found bellow:
-
-.. literalinclude:: ../../thoth/adviser/steps/cve.py
-   :language: python
-   :lines: 18-
-
-
-Stride
-======
-
-Units of type stride are the last pipeline units executed on final states which
-keep fully resolved Python software stacks considering the given software
-environment and hardware information as provided to the pipeline.
-
-.. note::
-
-  When to use a stride?
-
-  If you want to evaluate acceptance of a final state that will become pipeline product.
-
-An example of a stride implementation can be a random decision stride which is
-used in Dependency Monkey to sample state space of possible software stacks to
-gather observations for adviser when recommending software stacks:
-
-.. literalinclude:: ../../thoth/adviser/strides/random_decision.py
-   :language: python
-   :lines: 18-
-
-
-Wrap
-====
-
-Last but not least pipeline unit is called "wrap" as it wraps up the whole work done
-on a state. It's called each time a final step is produced and accepted by all the
-strides. Note any operations on the :class:`thoth.adviser.state.State` are still
-valid as this pipeline unit is called before creation of a pipeline product (if requested so).
-
-.. note::
-
-  When to use a wrap unit?
-
-  Each time you would like to do an operation on a fully resolved and accepted Python software stack
-  on the given environment. This can be also an external event - like signalizing progress
-  to an external service.
-
-
-Afterword for pipeline units
-============================
-
-All the sieves, steps and strides *should not* raise any exception - raising an
-exception other than :class:`thoth.adviser.exceptions.NotAcceptable`
-and :class:`thoth.adviser.exceptions.EagerStopPipeline` (used to terminate annealing
-prematurely) causes undefined behaviour (mostly crashes on the annealing part).
-
-Pipeline units of type boot and wrap *should not* raise any exception except
-for :class:`thoth.adviser.exceptions.EagerStopPipeline` for premature end of annealing
-in a nice, way.
-
-All pipeline units should be atomic pieces and `they should do one thing
-and do it well <https://en.wikipedia.org/wiki/Unix_philosophy>`_. They were
-designed to be small pieces forming complex resolution system.
-
-
 Static source code analysis - library usage
 ===========================================
 
-A user can use static source code analysis on the client side when asking for
-advises. In that case, sources are scanned for library imports and calls
-(`Invectio <https://github.com/thoth-station/invectio>`_ is used). The gathered
-library usage captures libraries and what symbols are used from these libraries
-in sources. This information can be subsequently used in recommendations (in
-the state generation pipeline) to target recommendations specific to user's
+:ref:`Integrations with Thoth <integration>` (such as `Thamos
+<https://github.com/thoth-station/thamos>`_) can use static source code analysis
+on the client side when asking for advises. In that case, sources are scanned
+for library imports and library symbols usage (`Invectio
+<https://github.com/thoth-station/invectio>`_ is used).  The gathered library
+usage captures libraries and what symbols are used from these libraries in
+sources. This information can be subsequently used in recommendations (in the
+state generation pipeline) to target recommendations specific to user's
 application.
 
-
-Recommendation type
-###################
-
-To target user specific requirements for the recommended application stack,
-there were introduced three types of recommendations:
-
-* **LATEST**
-* **TESTING**
-* **STABLE**
-
-**Latest** recommendations recommend the most latest versions of libraries.
-This functionality somehow mimics raw pip or Pipenv but recommended latest
-versions are already analyzed by Thoth and respect package source index
-configuration the user used (annealing will become `hill climbing
-<https://en.wikipedia.org/wiki/Hill_climbing>`_).
-
-**Stable** recommendations target the most suited software stacks which, based
-on Thoth's gathered observations, are considered as stable - always running in
-the given runtime environment.
-
-**Testing** recommendation types recommend software for which there are no
-negative observations but they might not behave stable in all cases.
-
-
-Software environment
-####################
-
-Software environment is yet another vector coming to the recommendation engine.
-It states additional software present in the environment, such as operating
-system, Python interpreter version or IPython information in case of Jupyter
-Notebooks.
-
-Software environment can be automatically detected by `Thamos
-<https://github.com/thoth-station/thamos>`_ - a user can use Thoth to get
-recommendations for the same application when running in different software
-(and also hardware) environments (for example different setup for a cluster and
-a local desktop run).
-
-Software environment used to run an application together with hardware
-environment form "*runtime environment*".
-
-
-Hardware environment
-####################
+A note to hardware environment
+==============================
 
 Hardware environment is stating what hardware is present to run the given
 application. `Thamos <https://github.com/thoth-station/thamos>`_ is capable to
 perform hardware discovery as well (besides software environment discovery). An
-example of hardware environment configuration can be GPU or CPU type.
+example of hardware environment configuration can be GPU or CPU type. Any
+request done to Thoth backend automatically carries the hardware information
+that is detected if :ref:`Thoth's official integration tools were used
+<integration>`.
+
 

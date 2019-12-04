@@ -120,7 +120,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
         if context.recommendation_type == RecommendationType.LATEST:
             # If we have latest recommendations, try to expand the most recent version, always.
             _LOGGER.debug("Expanding the first state (hill climbing)")
-            return next(beam.iter_states())
+            return beam.get(0)
 
         self._temperature = self._exp(
             context.iteration,

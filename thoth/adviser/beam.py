@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of Beam for beam searching part of adviser."""
+"""Implementation of Beam for beam searching part of adviser.
+"""
 
 import os
 from collections import OrderedDict
@@ -44,9 +45,7 @@ _LOGGER = logging.getLogger(__name__)
 class Beam:
     """Beam implementation.
 
-    The implementation of beam respecting beam width:
-
-      https://en.wikipedia.org/wiki/Beam_search
+    The implementation of beam respecting beam width: https://en.wikipedia.org/wiki/Beam_search
 
     Beam is internally implemented on top of a min-heap queue to optimize inserts and respect
     beam width in O(log(N)).
@@ -60,7 +59,7 @@ class Beam:
     for removal of states.
 
     As the first scenario is seen in a real-world deployment, the beam uses min-heapq to keep
-    addition to the beam with `beam_width' checks in O(log(N)) and removals of the states in
+    addition to the beam with beam_width checks in O(log(N)) and removals of the states in
     O(log(N)). To satisfy removals in O(log(N)), the beam maintains a dictionary mapping a state
     to its index in the beam.
     """
@@ -164,7 +163,7 @@ class Beam:
         par1.tick_params(axis="y", colors=p2.get_color(), **tkw)
 
         font_prop = FontProperties()
-        font_prop.set_size("small")
+        font_prop.set_size("medium")
         fig.legend(
             loc="upper center",
             bbox_to_anchor=(0.50, 1.00),

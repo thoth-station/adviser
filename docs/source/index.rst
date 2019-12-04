@@ -1,18 +1,69 @@
-.. include:: ../../README.rst
+Welcome to Thoth's adviser documentation
+----------------------------------------
 
-Information about implementation
-================================
+Thoth's adviser is a recommendation engine for Python applications.
+
+This documentation corresponds to a component called "adviser". Sources can be
+found on `GitHub <https://github.com/thoth-station/adviser>`_.
+
+See `thoth-station <https://thoth-station.ninja>`_ website and `Thoth-Station
+organization on GitHub <https://github.com/thoth-station>`_.
+
+User sections
+=============
 
 .. toctree::
    :maxdepth: 1
 
-   anneal
-   dependency_monkey
+   introduction
    integration
-   performance
+   compatibility
+
+
+Resolver and stack resolution pipeline
+======================================
+
+.. toctree::
+   :maxdepth: 1
+
    pipeline
-   provenance_checks
    resolver
+   predictor
+
+
+Pipeline units
+==============
+
+.. toctree::
+   :maxdepth: 1
+
+   unit
+   boots
+   sieves
+   steps
+   strides
+   wraps
+
+
+Predictors
+==========
+
+.. toctree::
+   :maxdepth: 1
+
+   annealing
+
+
+Other functionality provided by thoth-adviser implementation
+============================================================
+
+.. toctree::
+   :maxdepth: 1
+
+   dependency_monkey
+   provenance_checks
+   performance
+
 
 Crossroad
 =========
