@@ -105,11 +105,11 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
 
     def test_run_latest(self) -> None:
         """Test running simulated annealing for latest recommendation (hill climbing)."""
-        flexmock(AdaptiveSimulatedAnnealing)
-        predictor = AdaptiveSimulatedAnnealing()
-        flexmock(Beam)
         state = State(score=1.0)
-        Beam.should_receive("top").and_return(state).once()
+
+        beam = Beam()
+        beam.add_state(state)
+
         context = flexmock(recommendation_type=RecommendationType.LATEST)
 
-        assert predictor.run(context, Beam()) is state
+        assert AdaptiveSimulatedAnnealing().run(context, beam) is state
