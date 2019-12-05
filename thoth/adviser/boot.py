@@ -30,4 +30,4 @@ class Boot(Unit):
 
     @abc.abstractmethod
     def run(self) -> None:
-        """Main entry-point for boot units to filter and score packages."""
+        """Main entry-point for boot units."""

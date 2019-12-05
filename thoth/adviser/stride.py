@@ -20,10 +20,6 @@
 import abc
 
 import attr
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Tuple
 
 from .state import State
 from .unit import Unit
@@ -34,5 +30,5 @@ class Stride(Unit):
     """Stride base class implementation."""
 
     @abc.abstractmethod
-    def run(self, state: State) -> Optional[Tuple[float, List[Dict[str, str]]]]:
+    def run(self, state: State) -> None:
         """Main entry-point for strides."""
