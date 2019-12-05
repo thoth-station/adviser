@@ -672,10 +672,10 @@
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:a7c2c8d3f53b6b57454830cd6a4b73d272f1ba91952f59e6545b3cf885f3c22f",
-                "sha256:bfc486af718c268cf49ff43d6334ed4db7333ace420240b630acdd8f8a3a8f60"
+                "sha256:05285942901d38c7ce2498aba50d8e87b361fc603281a5902dda98f3f8c5e145",
+                "sha256:c6b919623e488134a728f16326c6f0bcdab7e3f59e7f4c472a90eea4d6d8fe82"
             ],
-            "version": "==0.13.4"
+            "version": "==0.13.5"
         },
         "six": {
             "hashes": [
@@ -704,10 +704,10 @@
         },
         "thoth-analyzer": {
             "hashes": [
-                "sha256:125a089478059976a20eede8164510ad9a613f52ee4f7bff6883dce096c75bea",
-                "sha256:97d06b802ea7f1b3d4f906fdb870c9bfa5613c519032228d60f05fd504fffd25"
+                "sha256:18be2c475b77abda9e3d96fd5bc0bd7a51c1de30922b6bf43bdaa2e9b528c368",
+                "sha256:af82c5cdc2527cf1aeafcd85cf34a16c542a379c49f3d346a48537122b9136f0"
             ],
-            "version": "==0.1.5"
+            "version": "==0.1.6"
         },
         "thoth-common": {
             "hashes": [
@@ -725,10 +725,11 @@
         },
         "thoth-solver": {
             "hashes": [
-                "sha256:29af3f286dedb4f77ca476d6ed89e8bb1de2989195bc16d372320a248a2d7780"
+                "sha256:5ad829e6ec489ae1fc0caa4a031d7c2e130b3f0cfddd62aeda8a5042311f71b6",
+                "sha256:7a3012078e0ff855336bc0869cd699edaf0f6855bfd5de49da736c42f683a6c8"
             ],
             "index": "pypi",
-            "version": "==1.4.0"
+            "version": "==1.4.1"
         },
         "thoth-storages": {
             "hashes": [
