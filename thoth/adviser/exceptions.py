@@ -123,8 +123,13 @@ class UnresolvedDependencies(AdviserRunException):
     def to_dict(self) -> Optional[Dict[str, str]]:
         """Convert unresolved dependencies exception to the user."""
         return {
-            "ERROR": f"No dependencies found for {', '.join(f'{dep!r}' for dep in self.unresolved)}; "
-                     "cannot resolve all direct dependencies"
+            "ERROR": "No dependencies found for "
+                     f"{', '.join(f'{dep!r}' for dep in self.unresolved)}  - these "
+                     "dependencies were not yet solved in Thoth"
+                     "cannot resolve all direct dependencies",
+            "ERROR_DETAILS": {
+                "unresolved": self.unresolved,
+            }
         }
 
 
@@ -132,6 +137,4 @@ class CannotProduceStack(AdviserRunException):
     """Raised if there was not produced any result."""
 
     def to_dict(self) -> Optional[Dict[str, str]]:
-        return {
-            "ERROR": "No results were resolved, see logs for more info"
-        }
+        return {"ERROR": "No results were resolved, see logs for more info"}
