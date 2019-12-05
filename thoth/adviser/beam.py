@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of Beam for beam searching part of adviser.
-"""
+"""Implementation of Beam for beam searching part of adviser."""
 
 import os
 from collections import OrderedDict
