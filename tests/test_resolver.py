@@ -28,6 +28,7 @@ from typing import Tuple
 import random
 
 from thoth.adviser.context import Context
+from thoth.adviser.beam import Beam
 from thoth.adviser.resolver import Resolver
 from thoth.adviser.state import State
 from thoth.adviser.predictor import Predictor
@@ -1390,6 +1391,8 @@ class TestResolver(AdviserTestCase):
         initial_state2 = State(score=1.0)
         initial_state3 = State(score=2.0)
 
+        flexmock(Beam)
+        resolver.beam.should_receive("new_iteration").and_return(None).twice()
         resolver.beam.add_state(initial_state1)
         resolver.beam.add_state(initial_state2)
         resolver.beam.add_state(initial_state3)
@@ -1412,7 +1415,7 @@ class TestResolver(AdviserTestCase):
 
         resolver.predictor.should_receive("run").with_args(
             resolver.context, resolver.beam
-        ).and_return(1).and_return(0).twice()
+        ).and_return(initial_state2).and_return(initial_state1).twice()
 
         resolver.should_receive("_expand_state").with_args(initial_state2).and_return(
             None
@@ -1459,8 +1462,8 @@ class TestResolver(AdviserTestCase):
         ).and_return(None).once()
 
         resolver.predictor.should_receive("run").with_args(
-            resolver.context, resolver.beam
-        ).and_return(0).and_return(1).and_return(0).times(3)
+            object, object
+        ).and_return(initial_state1).and_return(initial_state2).and_return(initial_state3).times(3)
 
         resolver.should_receive("_expand_state").with_args(initial_state3).and_return(
             final_state

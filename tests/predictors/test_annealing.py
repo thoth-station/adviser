@@ -24,8 +24,10 @@ from hypothesis import given
 from hypothesis.strategies import integers
 from hypothesis.strategies import floats
 
-from thoth.adviser.predictors import AdaptiveSimulatedAnnealing
+from thoth.adviser.beam import Beam
 from thoth.adviser.enums import RecommendationType
+from thoth.adviser.predictors import AdaptiveSimulatedAnnealing
+from thoth.adviser.state import State
 
 from ..base import AdviserTestCase
 
@@ -103,9 +105,11 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
 
     def test_run_latest(self) -> None:
         """Test running simulated annealing for latest recommendation (hill climbing)."""
-        flexmock(AdaptiveSimulatedAnnealing)
-        predictor = AdaptiveSimulatedAnnealing()
+        state = State(score=1.0)
+
+        beam = Beam()
+        beam.add_state(state)
+
         context = flexmock(recommendation_type=RecommendationType.LATEST)
 
-        # Only recommendation type is accessed.
-        assert predictor.run(context, None) == 0
+        assert AdaptiveSimulatedAnnealing().run(context, beam) is state

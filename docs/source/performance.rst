@@ -11,9 +11,9 @@ Writing a performance script
 ============================
 
 Performance related characteristics are automatically gathered on Thoth's
-execution part - `Amun <https://github.com/thoth-station/amun-api>`_ which can
+execution part - `Amun <https://github.com/thoth-station/amun-api>`__ which can
 be triggered directly or using :ref:`dependency_monkey`. Amun accepts
-`specification` which is turned into a build and subsequent job which verifies
+``specification`` which is turned into a build and subsequent job which verifies
 the given software stack in the given runtime environment as described in the
 specification.
 
@@ -61,7 +61,7 @@ Example:
  }
 
 Once you have created a performance script, add it to `performance
-<https://github.com/thoth-station/performance>`_ repo and open a pull request.
+<https://github.com/thoth-station/performance>`__ repo and open a pull request.
 Wait for a review by one of the code owners. Meanwhile, you can create a pull
 request which creates related graph database model to have performance related
 information available in Thoth's knowledge base - see section bellow.
@@ -120,9 +120,9 @@ Registering and running performance indicator in a deployment
 
 After your performance indicator pull requests have been merged (in
 `thoth-station/storages <https://github.com/thoth-station/storages>`_ repo and
-`thoth-station/performance <https://github.com/thoth-station/performance>`_
+`thoth-station/performance <https://github.com/thoth-station/performance>`__
 repo), one of the Thoth's maintainers have to issue a new release of
-`thoth-storages <https://pypi.org/project/thoth-storages/>`_ library which
+`thoth-storages <https://pypi.org/project/thoth-storages/>`__ library which
 carries the newly created model for your performance indicator. This release is
 triggered by opening an issue on the repository by one of the Thoth's
 maintainers. The release is performed automatically and all the components
@@ -140,7 +140,7 @@ is updated, the performance indicator is registered to Thoth and is ready to be
 executed.
 
 You can use :ref:`dependency_monkey` or directly `Amun
-<https://github.com/thoth-station/amun>`_ service to trigger the desired
+<https://github.com/thoth-station/amun-api>`__ service to trigger the desired
 performance indicator.
 
 Summary

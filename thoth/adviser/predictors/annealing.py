@@ -36,6 +36,7 @@ from ..context import Context
 from ..enums import RecommendationType
 from ..exceptions import NoHistoryKept
 from ..predictor import Predictor
+from ..state import State
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -114,12 +115,12 @@ class AdaptiveSimulatedAnnealing(Predictor):
         )
         return acceptance_probability
 
-    def run(self, context: Context, beam: Beam) -> int:
+    def run(self, context: Context, beam: Beam) -> State:
         """Run adaptive simulated annealing on top of beam."""
         if context.recommendation_type == RecommendationType.LATEST:
             # If we have latest recommendations, try to expand the most recent version, always.
-            _LOGGER.debug("Expanding TOP rated state (hill climbing)")
-            return 0
+            _LOGGER.debug("Expanding the first state (hill climbing)")
+            return beam.get(0)
 
         self._temperature = self._exp(
             context.iteration,
@@ -146,24 +147,24 @@ class AdaptiveSimulatedAnnealing(Predictor):
                 "Performing transition to neighbour state with score %g",
                 probable_state.score,
             )
-            state_expansion_idx = probable_state_idx
+            # state_expansion_idx = probable_state_idx
+            to_expand_state = probable_state
         else:
             _LOGGER.debug(
                 "Expanding TOP rated state with score %g", to_expand_state.score
             )
-            state_expansion_idx = 0
 
         if self.keep_temperature_history:
             self._temperature_history.append(
                 (
                     self._temperature,
-                    state_expansion_idx == 0,
+                    to_expand_state is beam.top(),
                     acceptance_probability,
                     context.accepted_final_states_count,
                 )
             )
 
-        return state_expansion_idx
+        return to_expand_state
 
     def pre_run(self, context: Context) -> None:
         """Initialization before the actual annealing run."""

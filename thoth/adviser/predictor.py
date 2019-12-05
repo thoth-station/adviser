@@ -18,6 +18,7 @@
 """A base class for implementing predictor."""
 
 import abc
+import logging
 
 import attr
 from typing import Optional
@@ -27,6 +28,9 @@ import matplotlib.figure
 from .beam import Beam
 from .context import Context
 from .report import Report
+from .state import State
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
@@ -41,10 +45,10 @@ class Predictor:
         """
 
     @abc.abstractmethod
-    def run(self, context: Context, beam: Beam) -> int:
+    def run(self, context: Context, beam: Beam) -> State:
         """The main method used to run the predictor.
 
-        The method accepts a beam of states and returns index of the state which should be used for next expansion.
+        The method accepts a beam of states and returns the state which should be used for next expansion.
         The beam has to be kept untouched.
         """
         raise NotImplementedError
@@ -68,6 +72,7 @@ class Predictor:
 
         If output file is provided, the figure will be saved into the given file.
         """
-        raise NotImplementedError(
-            f"Cannot plot predictors history: plotting not implemented for predictor {self.__class__.__name__!r}"
+        _LOGGER.error(
+            "Cannot plot predictor history as plotting is not implemented for predictor %r, error is not fatal",
+            self.__class__.__name__
         )
