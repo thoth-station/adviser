@@ -512,7 +512,7 @@ class Resolver:
                     # Perform clone as run_steps can modify state which would be propagated to all subsequent
                     # run_steps calls.
                     self._run_steps(
-                        state.clone(), {package_version.name: [package_version]}
+                        state, {package_version.name: [package_version]}
                     )
 
     def _expand_state(self, state: State) -> Optional[State]:
