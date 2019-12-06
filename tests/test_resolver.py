@@ -40,6 +40,7 @@ from thoth.adviser.enums import DecisionType
 from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
 from thoth.python import Source
+from thoth.python import Project
 from thoth.storages import GraphDatabase
 from thoth.storages.exceptions import NotFoundError
 
@@ -1461,9 +1462,9 @@ class TestResolver(AdviserTestCase):
             with_devel=True
         ).and_return(None).once()
 
-        resolver.predictor.should_receive("run").with_args(
-            object, object
-        ).and_return(initial_state1).and_return(initial_state2).and_return(initial_state3).times(3)
+        resolver.predictor.should_receive("run").with_args(object, object).and_return(
+            initial_state1
+        ).and_return(initial_state2).and_return(initial_state3).times(3)
 
         resolver.should_receive("_expand_state").with_args(initial_state3).and_return(
             final_state
@@ -1699,3 +1700,30 @@ class TestResolver(AdviserTestCase):
         assert resolver.count == kwargs["count"]
         assert resolver.beam_width == kwargs["beam_width"]
         assert resolver.limit_latest_versions == kwargs["limit_latest_versions"]
+
+    @pytest.mark.parametrize(
+        "limit,count", [(-1, 10), (10, -1), (-1, -1), (0, 10), (10, 0), (0, 0)]
+    )
+    def test_positive_int_validator(
+        self,
+        pipeline_config: PipelineConfig,
+        project: Project,
+        predictor_mock: Predictor,
+        limit: int,
+        count: int,
+    ) -> Resolver:
+        """Check parameter validation for attributes that should be positive int."""
+
+        with pytest.raises(ValueError):
+            return Resolver(
+                pipeline=pipeline_config,
+                project=project,
+                library_usage={},
+                graph=GraphDatabase(),
+                predictor=predictor_mock,
+                recommendation_type=RecommendationType.LATEST,
+                limit=limit,
+                count=count,
+                beam_width=Resolver.DEFAULT_BEAM_WIDTH,
+                limit_latest_versions=Resolver.DEFAULT_LIMIT_LATEST_VERSIONS,
+            )
