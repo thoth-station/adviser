@@ -94,7 +94,7 @@ def subprocess_run(
 
         # Always submit results, even on error.
         print_func(time.monotonic() - start_time, result_dict)
-        sys.exit(int(result_dict["error"]))
+        os._exit(int(result_dict["error"]))
     else:  # Parent waits for its child to terminate.
         _LOGGER.debug("Waiting for child process %r", pid)
         _, exit_code = os.waitpid(pid, 0)
@@ -107,7 +107,7 @@ def subprocess_run(
             elif os.path.isfile(_LIVENESS_PROBE_KILL_FILE):
                 err_msg = "Adviser was killed as allocated CPU time was exceeded"
             else:
-                err_msg = "Unknown error during computing advises"
+                err_msg = "Resolution was terminated based on errors encountered; see logs for more info"
 
             _LOGGER.error(err_msg)
             result_dict.update(dict(error=True, error_msg=err_msg, report=None))
