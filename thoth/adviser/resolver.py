@@ -163,6 +163,16 @@ class Resolver:
     )
     _context = attr.ib(type=Optional[Context], default=None, kw_only=True)
 
+    @limit.validator
+    @count.validator
+    def _positive_int_validator(self, attribute: str, value: int) -> None:
+        """Validate the given attribute - the given attribute should have a value of a positive integer."""
+        if not isinstance(value, int):
+            raise ValueError(f"Attribute {attribute!r} should be of type int, got {type(value)!r} instead")
+
+        if value <= 0:
+            raise ValueError(f"Value for attribute {attribute!r} should be a positive integer, got {value} instead")
+
     @property
     def context(self) -> Context:
         """Retrieve context bound to the current resolver."""
