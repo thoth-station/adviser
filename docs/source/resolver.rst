@@ -41,25 +41,37 @@ these container images used in an s2i build).
 
 The resolver has two main purposes:
 
-* resolve software stacks for Dependency Monkey runs and verify generated software stacks on `Amun <https://github.com/thoth-station/amun-api>`_
+* resolve software stacks for Dependency Monkey runs and verify generated
+  software stacks on `Amun <https://github.com/thoth-station/amun-api>`_
+
 * resolve software stacks for recommendations
 
 To instantiate a resolver, one can use two main functions:
 
-* ``Resolver.get_adviser_instance`` - a resolver that produces software stacks for recommendations
-* ``Resolver.get_dependency_monkey_instance`` - a resolver that produces software stacks for :ref:`Dependency Monkey <dependency_monkey>`
+* :func:`Resolver.get_adviser_instance
+  <thoth.adviser.resolver.Resolver.get_adviser_instance>` - a resolver that
+  produces software stacks for recommendations
 
-To resolve raw pipeline products, one can use ``Resolver.resolve_products``
-method that yields raw products during pipeline run. Another method,
-``Resolver.resolve`` creates a complete report of an adviser run together with
-some additional pipeline run information. See :ref:`pipeline section for code
-examples <pipeline>`.
+* :func:`Resolver.get_dependency_monkey_instance
+  <thoth.adviser.resolver.Resolver.get_dependency_monkey_instance>` - a
+  resolver that produces software stacks for :ref:`Dependency Monkey
+  <dependency_monkey>`
+
+To resolve raw pipeline products, one can use :func:`Resolver.resolve_products
+<thoth.adviser.resolver.Resolver.resolve_products>` method that yields raw
+products during pipeline run. Another method, :func:`Resolver.resolve
+<thoth.adviser.resolver.Resolver.resolve>` creates a complete report of an
+adviser run together with some additional pipeline run information. See
+:ref:`pipeline section for code examples <pipeline>`.
 
 .. note::
 
-  Pipeline unit methods ``post_run_report`` and predictor's ``post_run_report``
-  are called only when ``Resolver.resolve`` method is used to resolve software
-  stacks.
+  Pipeline unit methods :func:`Unit.post_run_report
+  <thoth.adviser.unit.Unit.post_run_report>` and predictor's
+  :func:`Predictor.post_run_report
+  <thoth.adviser.predictor.Predictor.post_run_report>` are called only when
+  :func:`Resolver.resolve <thoth.adviser.resolver.Resolver.resolve>` method is
+  used to resolve software stacks.
 
 Resolver instance transparently runs :ref:`stack resolution pipeline
 <pipeline>` to produce scored software stacks.
