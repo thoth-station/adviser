@@ -87,9 +87,9 @@ Additional pipeline unit methods
 All pipeline unit types can implement the following methods that are triggered
 in the described events:
 
-* :func:`Unit.post_run <thoth.adviser.unit.Unit.post_run>` - called before running any pipeline unit with context already assigned
+* :func:`Unit.pre_run <thoth.adviser.unit.Unit.pre_run>` - called before running any pipeline unit with context already assigned
 * :func:`Unit.post_run <thoth.adviser.unit.Unit.post_run>` - called after the resolution is finished
-* :func:`Unit.post_run <thoth.adviser.unit.Unit.post_run>` - post-run method run after the resolving has finished - this method is called only if resolving with a report
+* :func:`Unit.post_run_report <thoth.adviser.unit.Unit.post_run_report>` - post-run method run after the resolving has finished - this method is called only if resolving with a report
 
 Afterword for pipeline units
 ============================
