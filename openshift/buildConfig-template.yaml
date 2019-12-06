@@ -93,7 +93,7 @@ objects:
             - name: "THAMOS_DEBUG"
               value: "1"
             - name: "THAMOS_CONFIG_TEMPLATE"
-              value: ".thothTemplate.yaml"
+              value: ".thoth.yaml"
             - name: "THAMOS_CONFIG_EXPAND_ENV"
               value: "1"
       triggers:

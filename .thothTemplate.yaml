@@ -5,10 +5,11 @@ requirements_format: pipenv
 runtime_environments:
   - name: '{os_name}:{os_version}'
     operating_system:
-      name: 'ubi'
-      version: '8'
+      name: '{os_name}'
+      version: '{os_version}'
     hardware:
       cpu_family: {cpu_family}
       cpu_model: {cpu_model}
     python_version: '{python_version}'
-    recommendation_type: STABLE
+    recommendation_type: latest
+    limit_latest_versions: 5
