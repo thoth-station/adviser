@@ -3,9 +3,9 @@ tls_verify: false
 requirements_format: pipenv
 
 runtime_environments:
-  - name: 'ubi:8'
+  - name: 'rhel:8'
     operating_system:
-      name: ubi
+      name: rhel
       version: "8.0"
     python_version: "3.6"
     recommendation_type: latest
