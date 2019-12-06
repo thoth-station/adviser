@@ -1,7 +1,7 @@
 Thoth Adviser
 -------------
 
-A recommendation engine for project `Thoth <https://github.com/thoth-station/>`_.
+A recommendation engine and software stack generation for project `Thoth <https://github.com/thoth-station/>`_.
 
 There are the following main goals of thoth-adviser (as of now):
 
