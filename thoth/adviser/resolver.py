@@ -509,8 +509,6 @@ class Resolver:
 
             for state in states:
                 for package_version in package_versions:
-                    # Perform clone as run_steps can modify state which would be propagated to all subsequent
-                    # run_steps calls.
                     self._run_steps(
                         state, {package_version.name: [package_version]}
                     )
