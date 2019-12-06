@@ -192,10 +192,10 @@
         },
         "google-auth": {
             "hashes": [
-                "sha256:84105be98837fb8436e9d0bcb7a279fd85fa1d97bb35a077e70ba2fb95bcc983",
-                "sha256:baf1b3f8b29a5f96f66753ad848473699322b63f4d68964e510554b12d002443"
+                "sha256:55999a44129bcdf23a9db0b9b2f6a21f7d91d84cb50623a94090029afa7fe923",
+                "sha256:624db00f5cb1c938ea3c4a8aee94b43e69f1a9deadd734ed7d27d00bf3c68ae4"
             ],
-            "version": "==1.7.1"
+            "version": "==1.7.2"
         },
         "idna": {
             "hashes": [
@@ -896,11 +896,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:3870b151a25a36d94d1c9174404b506b1165e507904ec8a9ec049cca51329008",
-                "sha256:693fe3f72a4bbb67529c1873c1350c3eb0c028c323611dce9e7f3c341ddafbb1"
+                "sha256:53c86227a22c10fe4baef04ce6f39602c035f29da49e1ec6c55981d48af8d5e8",
+                "sha256:803fb96d99b4d9dc697aa3d9a7222ae5a31571700a87b74f8db9eabb1d181ed4"
             ],
             "index": "pypi",
-            "version": "==4.50.7"
+            "version": "==4.50.8"
         },
         "hypothesis-auto": {
             "hashes": [
