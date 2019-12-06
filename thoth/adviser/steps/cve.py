@@ -75,6 +75,11 @@ class CvePenalizationStep(Step):
                 "Found a CVEs for %r: %r", package_version.to_tuple(), cve_records
             )
             penalization = len(cve_records) * self.configuration["cve_penalization"]
+
+            # Note down package causing this CVE.
+            for record in cve_records:
+                record["package_name"] = package_version.name
+
             return penalization, cve_records
 
         return None
