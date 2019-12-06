@@ -414,23 +414,16 @@ class Resolver:
             list(self.project.iter_dependencies(with_devel=with_devel)), graceful=True
         )
 
-        if not resolved_direct_dependencies:
-            raise UnresolvedDependencies(
-                "No direct dependencies were resolved",
-                unresolved=[
-                    pv.name for pv in self.project.iter_dependencies(with_devel=True)
-                ],
-            )
-
         unresolved = []
-        for package_name, package_versions in resolved_direct_dependencies.items():
+        for package_version in self.project.iter_dependencies(with_devel=with_devel):
+            package_versions = resolved_direct_dependencies.get(package_version.name)
             if not package_versions:
                 # This means that there were found versions in the graph
                 # database but none was matching the given version range.
-                unresolved.append(package_name)
+                unresolved.append(package_version.name)
 
                 error_msg = (
-                    f"No versions were found for direct dependency {package_name!r}"
+                    f"No versions were found for direct dependency {package_version.name!r}"
                 )
                 runtime_environment = self.project.runtime_environment
                 if runtime_environment.operating_system.name:

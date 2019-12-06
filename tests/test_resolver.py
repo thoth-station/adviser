@@ -666,11 +666,11 @@ class TestResolver(AdviserTestCase):
         solver_mock = flexmock()
         solver_mock.should_receive("solve").with_args(
             list(resolver.project.iter_dependencies(with_devel=True)), graceful=True
-        ).and_return([]).once()
+        ).and_return({}).once()
 
         resolver._solver = solver_mock
         with pytest.raises(
-            UnresolvedDependencies, match="No direct dependencies were resolved"
+            UnresolvedDependencies, match="Unable to resolve all direct dependencies"
         ) as exc:
             resolver._resolve_direct_dependencies(with_devel=True)
 
@@ -686,7 +686,7 @@ class TestResolver(AdviserTestCase):
         solver_mock = flexmock()
         solver_mock.should_receive("solve").with_args(
             list(resolver.project.iter_dependencies(with_devel=True)), graceful=True
-        ).and_return({"tensorflow": tf_package_versions, "numpy": []}).once()
+        ).and_return({"tensorflow": tf_package_versions, "flask": []}).once()
 
         resolver._solver = solver_mock
         with pytest.raises(
@@ -694,7 +694,7 @@ class TestResolver(AdviserTestCase):
         ) as exc:
             resolver._resolve_direct_dependencies(with_devel=True)
 
-        assert exc.value.unresolved == ["numpy"]
+        assert exc.value.unresolved == ["flask"]
 
     def test_resolve_direct_dependencies(
         self, resolver: Resolver, tf_package_versions: List[PackageVersion]
@@ -702,7 +702,7 @@ class TestResolver(AdviserTestCase):
         """Test resolving multiple direct dependencies."""
         resolved = {
             "tensorflow": tf_package_versions,
-            "numpy": [
+            "flask": [
                 PackageVersion(
                     name="numpy",
                     version="==1.1.1",
