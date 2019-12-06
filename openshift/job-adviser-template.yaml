@@ -159,6 +159,8 @@ objects:
                   value: "${THOTH_DOCUMENT_ID}"
                 - name: THOTH_LOG_ADVISER
                   value: "${THOTH_LOG_ADVISER}"
+                - name: THOTH_ADJUST_LOGGING
+                  value: "alembic.runtime.migration:WARNING"
                 - name: THOTH_ADVISER_OUTPUT
                   value: "${THOTH_ADVISER_OUTPUT}"
                 - name: THOTH_ADVISER_COUNT
