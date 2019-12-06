@@ -10,7 +10,7 @@ should not occur in the resulting stack. It's called on each and every package
 that is resolved based on direct or transitive dependencies of the application
 stack supplied.
 
-The pipeline unit of type :class:`sieve <thoth.adviser.sieve.Sieve>`accepts a
+The pipeline unit of type :class:`sieve <thoth.adviser.sieve.Sieve>` accepts a
 generator of resolved package-versions (see ``PackageVersion`` abstraction in
 ``thoth-python`` library) and decides which of these package versions can be
 included in the resulting stack. The generator of package-versions supplied is
