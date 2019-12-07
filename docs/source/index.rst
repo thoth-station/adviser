@@ -18,6 +18,7 @@ User sections
    introduction
    integration
    compatibility
+   developers_guide
 
 
 Resolver and stack resolution pipeline
