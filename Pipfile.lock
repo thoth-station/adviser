@@ -692,9 +692,9 @@
         },
         "sqlalchemy-utils": {
             "hashes": [
-                "sha256:01f0f0ebed696386bc7bf9231cd6894087baba374dd60f40eb1b07512d6b1a5e"
+                "sha256:db030c8f00526bfb7a9c659bfaf75deaa7b0002e89e3f84784e24e09a43473f2"
             ],
-            "version": "==0.35.0"
+            "version": "==0.36.0"
         },
         "strict-rfc3339": {
             "hashes": [
@@ -704,10 +704,10 @@
         },
         "thoth-analyzer": {
             "hashes": [
-                "sha256:18be2c475b77abda9e3d96fd5bc0bd7a51c1de30922b6bf43bdaa2e9b528c368",
-                "sha256:af82c5cdc2527cf1aeafcd85cf34a16c542a379c49f3d346a48537122b9136f0"
+                "sha256:22968662fb0fa6748a0b9069c0e491eadbd3d13c664fcf7998ca016f64fdac45",
+                "sha256:3701bcab8f00b495b47bf2951680101a283a86cd54adecd1d4abfecd3355e1cd"
             ],
-            "version": "==0.1.6"
+            "version": "==0.1.7"
         },
         "thoth-common": {
             "hashes": [
@@ -896,11 +896,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:590fc4926e2f4b57efe33cbab4dec70a3745396d26543aaaaee1e5d0399bfe51",
-                "sha256:ec0d04c4de8e3ec2a35bec0ee5275669464b11f130182156e515554e818ba33c"
+                "sha256:0bc62c8e5e7f04b799aa8924dfd8e92314ce84f6e91ce65be1f27e281904911c",
+                "sha256:e96f718c9d4a5c1ad6d5ef16a04abcd2b17eec30b58e027350e934448349ab2a"
             ],
             "index": "pypi",
-            "version": "==4.51.0"
+            "version": "==4.51.1"
         },
         "hypothesis-auto": {
             "hashes": [
