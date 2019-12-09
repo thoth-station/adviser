@@ -36,7 +36,8 @@ Command Line Interface - Thamos CLI
 ===================================
 
 The easiest way how to get recommendations from Thoth service is to install
-`Thamos <http://github.com/thoth-station/thamos>`_ (Thoth's CLI and library):
+`Thamos <https://thoth-station.ninja/docs/developers/thamos>`_ (Thoth's CLI and
+library):
 
 .. code-block:: console
 
@@ -70,8 +71,8 @@ dependencies using:
 
   pipenv install --deploy --dev
 
-Please follow instructions present in the `Thamos repository for more info
-<http://github.com/thoth-station/thamos>`_.
+Please follow `Thamos documentation for more info
+<https://thoth-station.ninja/docs/developers/thamos>`_.
 
 OpenShift Python s2i build process
 ==================================

@@ -1,3 +1,5 @@
+.. _architecture:
+
 Thoth's architecture
 --------------------
 
@@ -190,13 +192,14 @@ running in this namespace:
 Thamos
 ######
 
-`Thamos <https://github.com/thoth-station/thamos>`_ is a CLI tool created for
-end-users of Thoth. Thamos offers a simple command line interface to consume
-Thoth's advises (recommendations) and Thoth's provenance checks both done
-against data stored in the knowledge graph. The tool packs in an automatically
-generated Python client library from User API OpenAPI specification The library
-can be used to integrate with Thoth. See `Thamos repository for documentation
-and an example usage <https://github.com/thoth-station/thamos>`_.
+`Thamos <https://thoth-station.ninja/docs/developers/thamos>`_ is a CLI tool
+created for end-users of Thoth. Thamos offers a simple command line interface
+to consume Thoth's advises (recommendations) and Thoth's provenance checks both
+done against data stored in the knowledge graph. The tool packs in an
+automatically generated Python client library from User API OpenAPI
+specification The library can be used to integrate with Thoth. See `Thamos
+repository for documentation and an example usage
+<https://thoth-station.ninja/docs/developers/thamos>`_.
 
 Kebechet
 ########
