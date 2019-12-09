@@ -210,6 +210,17 @@ repositories on hosted on GitHub or GitLab and it opens pull requests or issues
 automatically for users. See :ref:`integration documentation for more
 info <integration>`.
 
+Build Watcher
+#############
+
+This component was designed to automatically watch for cluster events - wait
+for OpenShift builds to finish and submit the resulting container image
+produced to Thoth for analysis. As the container image registry is usually
+cluster internal, without any route exposed to the world, build-watcher can
+also cooperate with external registries. Documentation can be found in `the
+README file in the GitHub project
+<https://github.com/thoth-station/build-watcher>`_.
+
 Grafana dashboards
 ##################
 
