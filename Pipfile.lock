@@ -540,6 +540,7 @@
         },
         "pyelftools": {
             "hashes": [
+                "sha256:86ac6cee19f6c945e8dedf78c6ee74f1112bd14da5a658d8c9d4103aed5756a2",
                 "sha256:cc0ea0de82b240a73ef4056fce44acbb4727dca7d66759371aff2bad457ed711"
             ],
             "version": "==0.26"
@@ -896,11 +897,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:0bc62c8e5e7f04b799aa8924dfd8e92314ce84f6e91ce65be1f27e281904911c",
-                "sha256:e96f718c9d4a5c1ad6d5ef16a04abcd2b17eec30b58e027350e934448349ab2a"
+                "sha256:1cff1c83f43643e4f701ee6f2bed921f0658c1bb1ac18b0637463f15bc2e6758",
+                "sha256:54b0c7efb13b78385c81563768702097e225e2ba560e85493a1ba2bde00763a9"
             ],
             "index": "pypi",
-            "version": "==4.51.1"
+            "version": "==4.52.0"
         },
         "hypothesis-auto": {
             "hashes": [
