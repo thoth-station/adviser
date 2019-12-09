@@ -69,6 +69,7 @@ Other functionality provided by thoth-adviser implementation
 Crossroad
 =========
 
+* `Documentation for thamos <../thamos>`_
 * `Documentation for thoth-analyzer <../analyzer>`_
 * `Documentation for thoth-common <../common>`_
 * `Documentation for thoth-lab <../lab>`_
