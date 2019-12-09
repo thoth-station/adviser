@@ -9,8 +9,8 @@ found on `GitHub <https://github.com/thoth-station/adviser>`_.
 See `thoth-station <https://thoth-station.ninja>`_ website and `Thoth-Station
 organization on GitHub <https://github.com/thoth-station>`_.
 
-User sections
-=============
+Introductory sections
+=====================
 
 .. toctree::
    :maxdepth: 1
@@ -18,6 +18,7 @@ User sections
    introduction
    integration
    compatibility
+   architecture
 
 
 Resolver and stack resolution pipeline
@@ -68,6 +69,7 @@ Other functionality provided by thoth-adviser implementation
 Crossroad
 =========
 
+* `Documentation for thamos <../thamos>`_
 * `Documentation for thoth-analyzer <../analyzer>`_
 * `Documentation for thoth-common <../common>`_
 * `Documentation for thoth-lab <../lab>`_

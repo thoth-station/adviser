@@ -11,6 +11,13 @@ the resolver's state - if there are no more packages to add, a so called final
 state then represents a fully pinned down software stack (as can be seen in
 ``Pipfile.lock``).
 
+.. warning::
+
+  The logic behind resolver manipulates with states. Step pipeline unit
+  implementation **must NOT** adjust state attributes. Adjusting beam is also
+  not allowed. If a step implementation adjusts state or beam, the behaviour is
+  undefined.
+
 The pipeline step is triggered after :ref:`boot <boots>` and :ref:`sieve
 <sieves>` pipeline unit types and is used to score and decide whether the given
 package can be added the the resolver's internal state. In contrast to sieves,
