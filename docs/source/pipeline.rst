@@ -160,8 +160,42 @@ pipeline unit or predictor for Thoth's adviser:
 
 Beam is an abstract data type maintained by resolver that keeps track of pool
 of states that are about to be (possibly) resolved. This pool can have
-restricted size which limits number of states kept in memory and limits number
+restricted width which limits number of states kept in memory and limits number
 of states considered during resolution.
+
+It's possible to request a history plot for beam size and the highest rated
+stack score for introspection purposes using the ``--plot`` option or by
+calling :func:`Beam.plot <thoth.adviser.beam.Beam.plot>`. The figure below
+shows beam history during resolution of 1000 TensorFlow software stacks by
+sampling the state space using :ref:`adaptive simulated annealing <annealing>`.
+CVE penalization was the only :ref:`pipeline step <steps>` used during
+resolution, resolver did approximately 2500 resolution rounds to score 1000
+software stacks (``limit`` parameter to adviser). It took approx. one and half
+minute to produce these 1000 stacks on a local machine, considering just 5 most
+recent libraries in a stack formed out of ``tensorflow`` and ``flask``
+packages.
+
+
+.. image:: _static/beam_history_plot.png
+   :target: _static/beam_history_plot.png
+   :alt: Plotted history of beam size during TensorFlow stacks resolution.
+
+
+As can be seen, the beam limited number of states taken into consideration
+until approx. 1800th round. After this round, the temperature in the
+:ref:`adaptive simulated annealing <annealing>` started to drop so resolver
+ended up expanding just the top rated state based on :ref:`adaptive simulated
+annealing <annealing>` predictor output (so stack resolution pipeline started
+to produce more products - resolved software stacks - and reduced production
+of non-final states).
+
+.. note::
+
+  It's good to find the right balance for the beam width. A beam that is too
+  small restricts the state space too much which can cause that no software
+  stack is resolved. Too big beam can lead to a very large state space to be
+  explored and consumption of too much CPU time (and actual time) to produce
+  software stacks.
 
 Pipeline configuration creation
 ===============================
