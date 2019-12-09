@@ -7,6 +7,10 @@ In the upcoming sections, you can find information on how to write performance
 indicators, how to incorporate them into Thoth and how to inject them into
 Thoth's recommendation pipeline.
 
+You can also dive into an article published on this topic: `Microbenchmarks for
+AI applications using Red Hat OpenShift on PSI in project Thoth
+<https://developers.redhat.com/blog/2019/10/28/microbenchmarks-for-ai-applications-using-red-hat-openshift-on-psi-in-project-thoth/>`_.
+
 Writing a performance script
 ============================
 

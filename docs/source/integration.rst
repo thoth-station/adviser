@@ -10,7 +10,7 @@ recommendations, there are multiple ways on how to integrate:
 * Kebechet (GitHub application)
 * Jupyter Notebooks
 * OpenShift s2i build process
-* Thamos library (not supported yet as API might change)
+* Thamos library (not fully supported yet as API might change)
 
 
 Pre-requirements for your project
@@ -36,7 +36,8 @@ Command Line Interface - Thamos CLI
 ===================================
 
 The easiest way how to get recommendations from Thoth service is to install
-`Thamos <http://github.com/thoth-station/thamos>`_ (Thoth's CLI and library):
+`Thamos <https://thoth-station.ninja/docs/developers/thamos>`_ (Thoth's CLI and
+library):
 
 .. code-block:: console
 
@@ -63,26 +64,62 @@ optionally ``Pipfile.lock`` are present in the root directory of your project:
   Pipfile.lock
   ..
 
-Kebechet - GitHub application
-=============================
+Once Thoth responds back with recommendations, you can install your
+dependencies using:
 
-TODO: write a summary
+.. code-block:: console
+
+  pipenv install --deploy --dev
+
+Please follow `Thamos documentation for more info
+<https://thoth-station.ninja/docs/developers/thamos>`_.
 
 OpenShift Python s2i build process
 ==================================
 
 Thoth can be used in `OpenShift's s2i process
 <https://docs.openshift.com/container-platform/3.11/using_images/s2i_images/python.html>`_
-where it can produce recommendations targetting your specific hardware
+where it can produce recommendations targeting your specific hardware
 configuration you use to run your application inside the cluster (e.g. specific
 GPU available in the cluster).
 
 You can find a list of base images which you can use with Thoth in `s2i-thoth
 repository <https://github.com/thoth-station/s2i-thoth>`_ with detailed
-instructions on how to use Thoth in the OpenShift's s2i process.
+instructions on how to use Thoth in the OpenShift's s2i process. The container
+images are hosted at `quay.io/organization/thoth-station
+<https://quay.io/organization/thoth-station>`_.
+
+Thoth's s2i container images can be configured using environment variables
+supplied to the build config:
+
+* ``THOTH_ADVISE`` - always use the recommended stack by Thoth (even if
+  ``Pipfile.lock`` is present in the repo)
+
+* ``THOTH_ASSEMBLE_DEBUG`` - run s2i's assemble script in verbose mode
+
+* ``THOTH_DRY_RUN`` - submit stack to Thoth's recommendation engine but do not
+  use the recommended ``Pipfile.lock`` file, use the ``Pipfile.lock`` file
+  present in the repo instead
+
+* ``THOTH_FROM_MASTER`` - Use Thamos from git instead of a PyPI release - handy
+  if the released Thamos has a bug which was fixed in the master branch
+
+* ``THOTH_HOST`` - Thoth's host to reach out to for recommendations (defaults
+  to prod deployment at khemenu.thoth-station.ninja)
+
+* ``THOTH_ERROR_FALLBACK`` - fallback to the ``Pipfile.lock`` present in the
+  repository if the submitted Thoth analysis fails
+
+See also configuration options for Thoth's client present in `Thamos
+documentation <https://thoth-station.ninja/docs/developers/thamos/>`_.
 
 An example of such application can be found on `GitHub  - s2i TensorFlow
 example <https://github.com/thoth-station/s2i-example-tensorflow>`_.
+
+Kebechet - GitHub application
+=============================
+
+TODO: write a summary
 
 Jupyter Notebooks
 =================

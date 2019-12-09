@@ -234,9 +234,9 @@ Static source code analysis - library usage
 ===========================================
 
 :ref:`Integrations with Thoth <integration>` (such as `Thamos
-<https://github.com/thoth-station/thamos>`_) can use static source code analysis
-on the client side when asking for advises. In that case, sources are scanned
-for library imports and library symbols usage (`Invectio
+<https://thoth-station.ninja/docs/developers/thamos>`_) can use static source
+code analysis on the client side when asking for advises. In that case, sources
+are scanned for library imports and library symbols usage (`Invectio
 <https://github.com/thoth-station/invectio>`_ is used).  The gathered library
 usage captures libraries and what symbols are used from these libraries in
 sources. This information can be subsequently used in recommendations (in the
@@ -247,11 +247,11 @@ A note to hardware environment
 ==============================
 
 Hardware environment is stating what hardware is present to run the given
-application. `Thamos <https://github.com/thoth-station/thamos>`_ is capable to
-perform hardware discovery as well (besides software environment discovery). An
-example of hardware environment configuration can be GPU or CPU type. Any
-request done to Thoth backend automatically carries the hardware information
-that is detected if :ref:`Thoth's official integration tools were used
-<integration>`.
+application. `Thamos <https://thoth-station.ninja/docs/developers/thamos>`_ is
+capable to perform hardware discovery as well (besides software environment
+discovery). An example of hardware environment configuration can be GPU or CPU
+type. Any request done to Thoth backend automatically carries the hardware
+information that is detected if :ref:`Thoth's official integration tools were
+used <integration>`.
 
 
