@@ -306,5 +306,5 @@ Main requirements for a proper cluster deployment:
   possibly untrusted software coming from the Internet (PyPI packages)
 
 Follow `documentation and Ansible playbooks in thoth-ops repository
-<https://github.com/thoth-station/thoth-ops>`_ for more info.
-
+<https://github.com/thoth-station/thoth-ops>`_ for more info as well as the `core
+repository <https://github.com/thoth-station/core>`_.
