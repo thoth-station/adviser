@@ -10,7 +10,7 @@ recommendations, there are multiple ways on how to integrate:
 * Kebechet (GitHub application)
 * Jupyter Notebooks
 * OpenShift s2i build process
-* Thamos library (not supported yet as API might change)
+* Thamos library (not fully supported yet as API might change)
 
 
 Pre-requirements for your project
@@ -63,17 +63,22 @@ optionally ``Pipfile.lock`` are present in the root directory of your project:
   Pipfile.lock
   ..
 
-Kebechet - GitHub application
-=============================
+Once Thoth responds back with recommendations, you can install your
+dependencies using:
 
-TODO: write a summary
+.. code-block:: console
+
+  pipenv install --deploy --dev
+
+Please follow instructions present in the `Thamos repository for more info
+<http://github.com/thoth-station/thamos>`_.
 
 OpenShift Python s2i build process
 ==================================
 
 Thoth can be used in `OpenShift's s2i process
 <https://docs.openshift.com/container-platform/3.11/using_images/s2i_images/python.html>`_
-where it can produce recommendations targetting your specific hardware
+where it can produce recommendations targeting your specific hardware
 configuration you use to run your application inside the cluster (e.g. specific
 GPU available in the cluster).
 
@@ -83,6 +88,11 @@ instructions on how to use Thoth in the OpenShift's s2i process.
 
 An example of such application can be found on `GitHub  - s2i TensorFlow
 example <https://github.com/thoth-station/s2i-example-tensorflow>`_.
+
+Kebechet - GitHub application
+=============================
+
+TODO: write a summary
 
 Jupyter Notebooks
 =================
