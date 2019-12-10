@@ -180,8 +180,9 @@ class Beam:
                     f"Cannot determine plot format: no extension parsed from {output_file!r}"
                 )
 
+            output_file = f"{parts[0]}_beam.{parts[1]}"
             _LOGGER.debug("Saving figure to %r (format: %r)", output_file, parts[-1])
-            fig.savefig(f"{parts[0]}_beam.{parts[1]}", format=parts[-1])
+            fig.savefig(output_file, format=parts[-1])
 
         return fig
 
