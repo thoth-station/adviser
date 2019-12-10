@@ -246,7 +246,7 @@ a TensorFlow application:
     # ... snip
 
 
-Each unit type respects relative ordering and units are groupped based on their
+Each unit type respects relative ordering and units are grouped based on their
 type - for example the very first sieve added is run first, then a second one
 and so on respecting the relative order of sieves in the pipeline configuration
 (the order in which they were included). This logic applies to all pipeline
@@ -263,6 +263,62 @@ software stacks. You can use methods provided by :class:`PipelineBuilderContext
 <thoth.adviser.pipeline_builder.PipelineBuilderContext>` to check if the
 pipeline configuration is created for computing advises or whether the created
 pipeline configuration is used in Dependency Monkey runs.
+
+Instrumentation of resolver's pipeline units
+============================================
+
+Besides letting pipeline units to autonomously register into the pipeline
+configuration, the pipeline configuration can be supplied also explicitly. This
+is useful for instrumenting resolver during :ref:`Dependency Monkey
+<dependency_monkey>` runs. In that case, the :func:`Unit.should_include
+<thoth.adviser.unit.Unit.should_include>` method is never called and the
+configuration of the pipeline is explicitly encoded in a JSON format:
+
+
+.. code-block:: json
+
+  {
+    "pipeline": {
+      "boots": [],
+      "sieves": [
+        {
+          "configuration": {},
+          "name": "CutPreReleasesSieve"
+        },
+        {
+          "configuration": {},
+          "name": "PackageIndexSieve"
+        },
+        {
+          "configuration": {
+            "without_error": true
+          },
+          "name": "SolvedSieve"
+        }
+      ],
+      "steps": [
+        {
+          "configuration": {
+            "cve_penalization": -0.2
+          },
+          "name": "CvePenalizationStep"
+        }
+      ],
+      "strides": [],
+      "wraps": []
+    }
+  }
+
+Each unit is referenced by its class name and is included from the
+thoth-adviser's implementation (modules :py:mod:`thoth.adviser.boots`,
+:py:mod:`thoth.adviser.sieves`, :py:mod:`thoth.adviser.steps`,
+:py:mod:`thoth.adviser.strides` and :py:mod:`thoth.adviser.wraps`). The
+configuration is used to adjust unit's configuration - see :ref:`unit
+documentation section for more info <unit>`.
+
+This configuration can be supplied to adviser as well as to Dependency Monkey
+via CLI or in the resolver constructor when resolver is created
+programmatically.
 
 Static source code analysis - library usage
 ===========================================
