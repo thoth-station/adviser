@@ -515,6 +515,10 @@ class Resolver:
 
     def _expand_state(self, state: State) -> Optional[State]:
         """Expand the given state, generate new states respecting the pipeline configuration."""
+        if not state.unresolved_dependencies:
+            # No unresolved dependencies, return the state -- its final.
+            return state
+
         _, package_tuple = state.unresolved_dependencies.popitem(last=False)
 
         # Obtain extras for the given package. Extras are non-empty only for direct dependencies. If indirect
