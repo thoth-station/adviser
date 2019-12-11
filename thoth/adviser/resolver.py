@@ -130,7 +130,6 @@ def _library_usage(value: Any) -> Dict[str, Any]:
 def _sigint_handler(resolver: "Resolver") -> None:
     """Register signal handler for resolver handling."""
     def handler(sig_num: int, _) -> None:
-        print("handler called...")
         resolver.stop_resolving = True
 
     old_handler = signal.getsignal(signal.SIGINT)
