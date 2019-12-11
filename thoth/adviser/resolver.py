@@ -29,6 +29,8 @@ from typing import Union
 import logging
 from itertools import chain
 from collections import deque
+import contextlib
+import signal
 
 from thoth.python import PackageVersion
 from thoth.python import Project
@@ -124,6 +126,19 @@ def _library_usage(value: Any) -> Dict[str, Any]:
     return value
 
 
+@contextlib.contextmanager
+def _sigint_handler(resolver: "Resolver") -> None:
+    """Register signal handler for resolver handling."""
+    def handler(sig_num: int, _) -> None:
+        print("handler called...")
+        resolver.stop_resolving = True
+
+    old_handler = signal.getsignal(signal.SIGINT)
+    signal.signal(signal.SIGINT, handler)
+    yield
+    signal.signal(signal.SIGINT, old_handler)
+
+
 @attr.s(slots=True)
 class Resolver:
     """Resolver for resolving software stacks using pipeline configuration and a predictor."""
@@ -156,6 +171,7 @@ class Resolver:
         default=DEFAULT_LIMIT_LATEST_VERSIONS,
         converter=_limit_latest_versions,  # type: ignore
     )
+    stop_resolving = attr.ib(type=bool, default=False)
 
     _beam = attr.ib(type=Optional[Beam], kw_only=True, default=None)
     _solver = attr.ib(
@@ -683,45 +699,50 @@ class Resolver:
         )
 
         self.context.iteration = 0
-        while True:
-            if (
-                self.context.accepted_final_states_count
-                + self.context.discarded_final_states_count
-                >= self.limit
-            ):
-                _LOGGER.info(
-                    "Reached limit of stacks to be generated - %r (limit is %r), stopping resolver "
-                    "with the current beam size %d",
-                    self.context.accepted_final_states_count,
-                    self.limit,
-                    self.beam.size,
+        self.stop_resolving = False
+        with _sigint_handler(self):
+            while not self.stop_resolving:
+                if (
+                    self.context.accepted_final_states_count
+                    + self.context.discarded_final_states_count
+                    >= self.limit
+                ):
+                    _LOGGER.info(
+                        "Reached limit of stacks to be generated - %r (limit is %r), stopping resolver "
+                        "with the current beam size %d",
+                        self.context.accepted_final_states_count,
+                        self.limit,
+                        self.beam.size,
+                    )
+                    break
+
+                if self.beam.size == 0:
+                    _LOGGER.info("The beam is empty")
+                    break
+
+                self.beam.new_iteration()
+                self.context.iteration += 1
+
+                state = self.predictor.run(self.context, self.beam)
+                self.beam.remove(state)
+
+                _LOGGER.debug(
+                    "Expanding state with score %g: %r",
+                    state.score,
+                    state,
                 )
-                break
+                final_state = self._expand_state(state)
+                if final_state:
+                    if self._run_strides(final_state):
+                        self._run_wraps(final_state)
+                        self.context.accepted_final_states_count += 1
+                        self.context.register_accepted_final_state(final_state)
+                        yield final_state
+                    else:
+                        self.context.discarded_final_states_count += 1
 
-            if self.beam.size == 0:
-                _LOGGER.info("The beam is empty")
-                break
-
-            self.beam.new_iteration()
-            self.context.iteration += 1
-
-            state = self.predictor.run(self.context, self.beam)
-            self.beam.remove(state)
-
-            _LOGGER.debug(
-                "Expanding state with score %g: %r",
-                state.score,
-                state,
-            )
-            final_state = self._expand_state(state)
-            if final_state:
-                if self._run_strides(final_state):
-                    self._run_wraps(final_state)
-                    self.context.accepted_final_states_count += 1
-                    self.context.register_accepted_final_state(final_state)
-                    yield final_state
-                else:
-                    self.context.discarded_final_states_count += 1
+        if self.stop_resolving:
+            _LOGGER.warning("Resolving stopped based on SIGINT")
 
     def resolve_products(
         self, *, with_devel: bool = True
