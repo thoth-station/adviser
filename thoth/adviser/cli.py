@@ -411,7 +411,7 @@ def advise(
     random.seed(seed)
 
     resolver = Resolver.get_adviser_instance(
-        predictor=getattr(predictors, predictor)(),
+        predictor=getattr(predictors, predictor)(keep_history=plot is not None),
         project=project,
         library_usage=library_usage,
         recommendation_type=recommendation_type,
@@ -622,7 +622,7 @@ def dependency_monkey(
     random.seed(seed)
 
     resolver = Resolver.get_dependency_monkey_instance(
-        predictor=getattr(predictors, predictor)(),
+        predictor=getattr(predictors, predictor)(keep_history=plot is not None),
         project=project,
         library_usage=library_usage,
         count=count,
