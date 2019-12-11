@@ -15,20 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A sieve for filtering out disabled Python package indexes."""
+"""A step to filter out packages that are pinned to a specific version."""
 
 import logging
-from typing import Any
 from typing import Optional
 from typing import Dict
+from typing import Any
 from typing import Generator
 from typing import TYPE_CHECKING
 
 import attr
 from thoth.python import PackageVersion
-from thoth.storages.exceptions import NotFoundError
 
 from ..sieve import Sieve
+from ..exceptions import NotAcceptable
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
@@ -37,18 +37,19 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class PackageIndexSieve(Sieve):
-    """Filter out disabled Python package indexes."""
+class CutLockedSieve(Sieve):
+    """Cut-off packages that are locked to a specific version.
 
-    _cached_records: Dict[str, Optional[bool]] = attr.ib(
-        default=attr.Factory(dict), kw_only=True
-    )
+    If a project pins down a package to a specific release, respect that. Otherwise
+    resolver does not need to find any resolved stack, especially considering only
+    N latest versions and the pinned version is >=N+1 version.
+    """
 
     @classmethod
     def should_include(
         cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
-        """Remove indexes which are not enabled in pipeline configuration."""
+        """Include cut-locked pipeline sieve for adviser or Dependency Monkey, always."""
         if not builder_context.is_included(cls):
             return {}
 
@@ -57,30 +58,28 @@ class PackageIndexSieve(Sieve):
     def run(
         self, package_versions: Generator[PackageVersion, None, None]
     ) -> Generator[PackageVersion, None, None]:
-        """Filter out package versions based on disabled Python package index."""
+        """Cut-off locked versions to a specific version."""
+        packages = self.context.project.pipfile.packages.packages
+        dev_packages = self.context.project.pipfile.dev_packages.packages
+
         for package_version in package_versions:
-            if package_version.index.url in self._cached_records:
-                is_enabled = self._cached_records[package_version.index.url]
-            else:
-                try:
-                    is_enabled = self.context.graph.is_python_package_index_enabled(
-                        package_version.index.url
-                    )
-                except NotFoundError:
-                    # A special value of None marks non-existing index in thoth's knowledge base.
-                    is_enabled = None
+            direct_package = packages.get(package_version.name)
+            direct_dev_package = dev_packages.get(package_version.name)
 
-            self._cached_records[package_version.index.url] = is_enabled
-            if is_enabled is None:
-                _LOGGER.debug(
-                    "Removing Python package version %r as used index is not registered",
-                    package_version.to_tuple(),
-                )
-                continue
+            if direct_package is None and direct_dev_package is None:
+                yield package_version
 
-            if not is_enabled:
+            if (
+                direct_package
+                and direct_package.is_locked()
+                and direct_package.locked_version != package_version.locked_version
+            ) or (
+                direct_dev_package
+                and direct_dev_package.is_locked()
+                and direct_dev_package.locked_version != package_version.locked_version
+            ):
                 _LOGGER.debug(
-                    "Removing Python package version %r as used index is not enabled",
+                    "Removing package %s - it does not correspond to package version locked by direct dependencies",
                     package_version.to_tuple(),
                 )
                 continue

@@ -18,8 +18,14 @@
 """Implementation of sieves used in adviser pipeline."""
 
 from .index_enabled import PackageIndexSieve
+from .locked import CutLockedSieve
 from .prereleases import CutPreReleasesSieve
 from .solved import SolvedSieve
 
 
-__all__ = ["CutPreReleasesSieve", "PackageIndexSieve", "SolvedSieve"]
+__all__ = [
+    "CutLockedSieve",
+    "CutPreReleasesSieve",
+    "PackageIndexSieve",
+    "SolvedSieve",
+]

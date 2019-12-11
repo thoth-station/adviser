@@ -17,7 +17,6 @@
 
 """Implementation of Adaptive Simulated Annealing (ASA) used to resolve software stacks."""
 
-import os
 from typing import Any
 from typing import Tuple
 from typing import List
@@ -42,29 +41,10 @@ from ..state import State
 _LOGGER = logging.getLogger(__name__)
 
 
-def _keep_temperature_history(value: Any) -> bool:
-    """Check if the history should be kept.
-
-    If not set explicitly during invocation, check environment variable to turn of history tracking.
-    """
-    if value is None:
-        return not bool(int(os.getenv("THOTH_ADVISER_NO_HISTORY", 0)))
-
-    if isinstance(value, bool):
-        return value
-
-    raise ValueError(
-        f"Unknown keep temperature history value: {value!r} if of type {type(value)!r}"
-    )
-
-
 @attr.s(slots=True)
 class AdaptiveSimulatedAnnealing(Predictor):
     """Implementation of adaptive simulated annealing looking for stacks based on the scoring function."""
 
-    keep_temperature_history = attr.ib(
-        type=bool, kw_only=True, default=None, converter=_keep_temperature_history
-    )
     _temperature_history = attr.ib(
         type=List[Tuple[float, bool, float, int]],
         default=attr.Factory(list),
@@ -234,7 +214,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
         par1.set_ylabel("acceptance probability")
         par2.set_ylabel("product count")
 
-        host.yaxis.label.set_color(p1.get_color())
+        host.yaxis.label.set_color("black")
         par1.yaxis.label.set_color(p3.get_color())
         par2.yaxis.label.set_color(p4.get_color())
 
@@ -254,16 +234,5 @@ class AdaptiveSimulatedAnnealing(Predictor):
             shadow=True,
             prop=font_prop,
         )
-        host.yaxis.label.set_color("black")
-
-        if output_file:
-            parts = output_file.rsplit(".", maxsplit=1)
-            if len(parts) != 2:
-                raise ValueError(
-                    f"Cannot determine plot format: no extension parsed from {output_file!r}"
-                )
-
-            _LOGGER.debug("Saving figure to %r (format: %r)", output_file, parts[-1])
-            fig.savefig(output_file, format=parts[-1])
-
+        self.plot_write_fig(fig, output_file)
         return fig

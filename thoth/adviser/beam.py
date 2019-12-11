@@ -157,7 +157,7 @@ class Beam:
         par1.yaxis.label.set_color(p2.get_color())
 
         tkw = dict(size=4, width=1.5)
-        host.tick_params(axis="y", colors="black", **tkw)
+        host.tick_params(axis="y", colors=p1.get_color(), **tkw)
         host.tick_params(axis="x", **tkw)
         par1.tick_params(axis="y", colors=p2.get_color(), **tkw)
 
@@ -171,7 +171,6 @@ class Beam:
             shadow=True,
             prop=font_prop,
         )
-        host.yaxis.label.set_color("black")
 
         if output_file:
             parts = output_file.rsplit(".", maxsplit=1)

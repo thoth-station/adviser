@@ -53,6 +53,8 @@ Predictors
 .. toctree::
    :maxdepth: 1
 
+   sampling
+   hill_climbing
    annealing
 
 

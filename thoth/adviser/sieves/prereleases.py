@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A step to filter out pre-releases in direct dependencies."""
+"""A sieve to filter out pre-releases in direct dependencies."""
 
 import logging
 from typing import Optional

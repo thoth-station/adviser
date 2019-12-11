@@ -19,9 +19,11 @@
 
 import abc
 import logging
+import os
 
 import attr
 from typing import Optional
+from typing import Any
 
 import matplotlib.figure
 
@@ -33,9 +35,29 @@ from .state import State
 _LOGGER = logging.getLogger(__name__)
 
 
+def _keep_temperature_history(value: Any) -> bool:
+    """Check if the history should be kept.
+
+    If not set explicitly during invocation, check environment variable to turn of history tracking.
+    """
+    if value is None:
+        return not bool(int(os.getenv("THOTH_ADVISER_NO_HISTORY", 0)))
+
+    if isinstance(value, bool):
+        return value
+
+    raise ValueError(
+        f"Unknown keep temperature history value: {value!r} if of type {type(value)!r}"
+    )
+
+
 @attr.s(slots=True)
 class Predictor:
     """A base class for implementing a predictor for resolver."""
+
+    keep_temperature_history = attr.ib(
+        type=bool, kw_only=True, default=None, converter=_keep_temperature_history
+    )
 
     def pre_run(self, context: Context) -> None:
         """Pre-initialize the predictor.
@@ -76,3 +98,25 @@ class Predictor:
             "Cannot plot predictor history as plotting is not implemented for predictor %r, error is not fatal",
             self.__class__.__name__
         )
+
+    @staticmethod
+    def plot_write_fig(fig: matplotlib.figure.Figure, output_file: str) -> None:
+        """Write the given figure to a file, determine file type format by extension."""
+        if output_file:
+            parts = output_file.rsplit(".", maxsplit=1)
+            if len(parts) != 2:
+                raise ValueError(
+                    f"Cannot determine plot format: no extension parsed from {output_file!r}"
+                )
+
+            _LOGGER.debug("Saving figure to %r (format: %r)", output_file, parts[-1])
+            fig.savefig(output_file, format=parts[-1])
+
+    @staticmethod
+    def _make_patch_spines_invisible(ax: Any) -> None:
+        """Make spines invisible."""
+        ax.set_frame_on(True)
+        ax.patch.set_visible(False)
+        for sp in ax.spines.values():
+            sp.set_visible(False)
+
