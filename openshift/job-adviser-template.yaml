@@ -167,8 +167,6 @@ objects:
                   value: "${THOTH_ADVISER_COUNT}"
                 - name: THOTH_ADVISER_LIMIT
                   value: "${THOTH_ADVISER_LIMIT}"
-                - name: THOTH_ADVISER_BEAM_WIDTH
-                  value: "1000"
                 - name: THOTH_ADVISER_REQUIREMENTS
                   value: "${THOTH_ADVISER_REQUIREMENTS}"
                 - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
