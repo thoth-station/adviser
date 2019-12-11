@@ -47,7 +47,7 @@ def main() -> int:
             continue
 
         print("Killing process with PID %d" % pid)
-        os.kill(pid, signal.SIGTERM)
+        os.kill(pid, signal.SIGINT)
         Path(_LIVENESS_PROBE_KILL_FILE).touch()
 
     # Let liveness probe always fail with timeout.
