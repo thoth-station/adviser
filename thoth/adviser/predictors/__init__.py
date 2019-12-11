@@ -18,6 +18,12 @@
 """Implementation of predictors used with resolver.."""
 
 from .annealing import AdaptiveSimulatedAnnealing
+from .hill_climbing import HillClimbing
+from .sampling import Sampling
 
 
-__all__ = ["AdaptiveSimulatedAnnealing"]
+__all__ = [
+    "AdaptiveSimulatedAnnealing",
+    "HillClimbing",
+    "Sampling",
+]

@@ -14,8 +14,9 @@ circa 2.5k queries to the database just for dependency graph retrieval) and
 <https://stackoverflow.blog/2017/09/06/incredible-growth-python//>`_ this
 solution would also not be scalable.
 
-The new implementation uses a stochastic approach based on Adaptive simulated
-annealing (see `Wikipedia for a brief info
+The new implementation uses a stochastic approach based on :class:`Adaptive
+simulated annealing <thoth.adviser.predictors.AdaptiveSimulatedAnnealing>` (see
+`Wikipedia for a brief info
 <https://en.wikipedia.org/wiki/Adaptive_simulated_annealing>`_ and also
 `simulated annealing <https://en.wikipedia.org/wiki/Simulated_annealing>`_).
 Software stacks are lazily expanded from initial states. The initial states are

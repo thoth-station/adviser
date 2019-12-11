@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A step for filtering out disabled Python package indexes."""
+"""A sieve for filtering out disabled Python package indexes."""
 
 import logging
 from typing import Any
