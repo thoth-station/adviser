@@ -1367,3 +1367,50 @@
 * Fix naming typo
 * Initial template for implementation
 * Initial project import
+
+## Release 0.7.1 (2019-12-11T08:34:22)
+* Tests for hill climbing and sampling, minor refactoring
+* Add locked sieve
+* Beam width is stated two times
+* Document OpenShift s2i build integration
+* Fix issue when there are no unresolved dependencies left in the state
+* Document beam width and how to plot it
+* Document build-watcher
+* Log correct file location for beam history plots
+* :pushpin: Automatic update of dependency hypothesis from 4.53.0 to 4.53.1
+* Document build-watcher
+* :pushpin: Automatic update of dependency hypothesis from 4.52.0 to 4.53.0
+* :pushpin: Automatic update of dependency hypothesis from 4.51.1 to 4.52.0
+* :pushpin: Automatic update of dependency hypothesis from 4.51.0 to 4.51.1
+* Add a link to Thamos documentation
+* Point to Thamos documentation instead of GitHub repo
+* Add a link to performance article published
+* Add architecture diagram
+* State also core repository
+* docs: Architecture overview section
+* :pushpin: Automatic update of dependency hypothesis from 4.50.8 to 4.51.0
+* Remove graph cache bits no longer used
+* Document pipeline configuration instrumentation
+* Point documentation to other libraries
+* Add developer's guide to documentation
+* Use RHEL instead of UBI
+* Update Thoth configuration file and Thoth's s2i configuration
+* Remove old comment
+* Add note to step docs - no adjustment in step or beam
+* No need to clone a state before running steps
+* Do not show not relevant logs to users
+* Point to source code documentation for described methods
+* Fix exit code propagation of the forked child
+* Add validation of count and limit resolver attributes
+* Produce more descriptive message if any of direct dependencies was not resolved
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.26 to 0.19.27
+* Adjust parameters for adviser and dependency-monkey
+* Propagate information about package that has CVE to justification in CVE step
+* :pushpin: Automatic update of dependency hypothesis from 4.50.7 to 4.50.8
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.25 to 0.19.26
+* :pushpin: Automatic update of dependency thoth-solver from 1.4.0 to 1.4.1
+* Add Google Analytics
+* Fix reference to sieve in docs
+* Fix references to the source code
+* Graph cache is not used anymore
+* Fix coala complains
