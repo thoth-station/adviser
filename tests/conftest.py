@@ -105,6 +105,14 @@ def predictor_mock() -> Predictor:
 
 
 @pytest.fixture
+def predictor_mock_class() -> type:
+    """Return a predictor mock class."""
+    flexmock(PredictorMock)
+
+    return PredictorMock
+
+
+@pytest.fixture
 def resolver(
     pipeline_config: PipelineConfig, project: Project, predictor_mock: Predictor
 ) -> Resolver:

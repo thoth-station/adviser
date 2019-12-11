@@ -43,25 +43,25 @@ _LOGGER = logging.getLogger(__name__)
 class HillClimbing(Predictor):
     """Implementation of hill climbing in the state space."""
 
-    _temperature_history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
+    _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
 
     def run(self, context: Context, beam: Beam) -> State:
         """Get top state from the beam for the next resolution round."""
         state = beam.top()
 
-        if self.keep_temperature_history:
-            self._temperature_history.append((state.score, context.accepted_final_states_count))
+        if self.keep_history:
+            self._history.append((state.score, context.accepted_final_states_count))
 
         return state
 
     def plot(self, output_file: Optional[str] = None) -> matplotlib.figure.Figure:
         """Plot score of the highest rated stack during hill climbing."""
-        if self._temperature_history is None:
+        if not self._history:
             raise NoHistoryKept("No history datapoints kept")
 
-        x = [i for i in range(len(self._temperature_history))]
-        y1 = [i[0] for i in self._temperature_history]
-        y2 = [i[1] for i in self._temperature_history]
+        x = [i for i in range(len(self._history))]
+        y1 = [i[0] for i in self._history]
+        y2 = [i[1] for i in self._history]
 
         fig, host = plt.subplots()
         fig.subplots_adjust(right=0.75)
