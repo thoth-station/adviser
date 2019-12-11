@@ -18,6 +18,7 @@ Introductory sections
    introduction
    integration
    compatibility
+   developers_guide
    architecture
 
 

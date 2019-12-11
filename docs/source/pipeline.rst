@@ -160,8 +160,42 @@ pipeline unit or predictor for Thoth's adviser:
 
 Beam is an abstract data type maintained by resolver that keeps track of pool
 of states that are about to be (possibly) resolved. This pool can have
-restricted size which limits number of states kept in memory and limits number
+restricted width which limits number of states kept in memory and limits number
 of states considered during resolution.
+
+It's possible to request a history plot for beam size and the highest rated
+stack score for introspection purposes using the ``--plot`` option or by
+calling :func:`Beam.plot <thoth.adviser.beam.Beam.plot>`. The figure below
+shows beam history during resolution of 1000 TensorFlow software stacks by
+sampling the state space using :ref:`adaptive simulated annealing <annealing>`.
+CVE penalization was the only :ref:`pipeline step <steps>` used during
+resolution, resolver did approximately 2500 resolution rounds to score 1000
+software stacks (``limit`` parameter to adviser). It took approx. one and half
+minute to produce these 1000 stacks on a local machine, considering just 5 most
+recent libraries in a stack formed out of ``tensorflow`` and ``flask``
+packages.
+
+
+.. image:: _static/beam_history_plot.png
+   :target: _static/beam_history_plot.png
+   :alt: Plotted history of beam size during TensorFlow stacks resolution.
+
+
+As can be seen, the beam limited number of states taken into consideration
+until approx. 1800th round. After this round, the temperature in the
+:ref:`adaptive simulated annealing <annealing>` started to drop so resolver
+ended up expanding just the top rated state based on :ref:`adaptive simulated
+annealing <annealing>` predictor output (so stack resolution pipeline started
+to produce more products - resolved software stacks - and reduced production
+of non-final states).
+
+.. note::
+
+  It's good to find the right balance for the beam width. A beam that is too
+  small restricts the state space too much which can cause that no software
+  stack is resolved. Too big beam can lead to a very large state space to be
+  explored and consumption of too much CPU time (and actual time) to produce
+  software stacks.
 
 Pipeline configuration creation
 ===============================
@@ -212,7 +246,7 @@ a TensorFlow application:
     # ... snip
 
 
-Each unit type respects relative ordering and units are groupped based on their
+Each unit type respects relative ordering and units are grouped based on their
 type - for example the very first sieve added is run first, then a second one
 and so on respecting the relative order of sieves in the pipeline configuration
 (the order in which they were included). This logic applies to all pipeline
@@ -229,6 +263,62 @@ software stacks. You can use methods provided by :class:`PipelineBuilderContext
 <thoth.adviser.pipeline_builder.PipelineBuilderContext>` to check if the
 pipeline configuration is created for computing advises or whether the created
 pipeline configuration is used in Dependency Monkey runs.
+
+Instrumentation of resolver's pipeline units
+============================================
+
+Besides letting pipeline units to autonomously register into the pipeline
+configuration, the pipeline configuration can be supplied also explicitly. This
+is useful for instrumenting resolver during :ref:`Dependency Monkey
+<dependency_monkey>` runs. In that case, the :func:`Unit.should_include
+<thoth.adviser.unit.Unit.should_include>` method is never called and the
+configuration of the pipeline is explicitly encoded in a JSON format:
+
+
+.. code-block:: json
+
+  {
+    "pipeline": {
+      "boots": [],
+      "sieves": [
+        {
+          "configuration": {},
+          "name": "CutPreReleasesSieve"
+        },
+        {
+          "configuration": {},
+          "name": "PackageIndexSieve"
+        },
+        {
+          "configuration": {
+            "without_error": true
+          },
+          "name": "SolvedSieve"
+        }
+      ],
+      "steps": [
+        {
+          "configuration": {
+            "cve_penalization": -0.2
+          },
+          "name": "CvePenalizationStep"
+        }
+      ],
+      "strides": [],
+      "wraps": []
+    }
+  }
+
+Each unit is referenced by its class name and is included from the
+thoth-adviser's implementation (modules :py:mod:`thoth.adviser.boots`,
+:py:mod:`thoth.adviser.sieves`, :py:mod:`thoth.adviser.steps`,
+:py:mod:`thoth.adviser.strides` and :py:mod:`thoth.adviser.wraps`). The
+configuration is used to adjust unit's configuration - see :ref:`unit
+documentation section for more info <unit>`.
+
+This configuration can be supplied to adviser as well as to Dependency Monkey
+via CLI or in the resolver constructor when resolver is created
+programmatically.
 
 Static source code analysis - library usage
 ===========================================
