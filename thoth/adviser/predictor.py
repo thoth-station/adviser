@@ -35,8 +35,8 @@ from .state import State
 _LOGGER = logging.getLogger(__name__)
 
 
-def _keep_temperature_history(value: Any) -> bool:
-    """Check if the history should be kept.
+def _keep_history(value: Any) -> bool:
+    """Check if the predictor history should be kept.
 
     If not set explicitly during invocation, check environment variable to turn of history tracking.
     """
@@ -55,8 +55,8 @@ def _keep_temperature_history(value: Any) -> bool:
 class Predictor:
     """A base class for implementing a predictor for resolver."""
 
-    keep_temperature_history = attr.ib(
-        type=bool, kw_only=True, default=None, converter=_keep_temperature_history
+    keep_history = attr.ib(
+        type=bool, kw_only=True, default=None, converter=_keep_history
     )
 
     def pre_run(self, context: Context) -> None:

@@ -134,7 +134,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
                 "Expanding TOP rated state with score %g", to_expand_state.score
             )
 
-        if self.keep_temperature_history:
+        if self.keep_history:
             self._temperature_history.append(
                 (
                     self._temperature,

@@ -68,25 +68,6 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
             0.0 <= acceptance_probability <= 1.0
         ), "Acceptance probability not within 0 and 1"
 
-    def test_keep_temperature_history_init(self) -> None:
-        """Test initialization of temperature history."""
-        assert "THOTH_ADVISER_NO_HISTORY" not in os.environ
-        predictor = AdaptiveSimulatedAnnealing()
-        assert (
-            predictor.keep_temperature_history is True
-        ), "Temperature history not kept by default"
-
-        flexmock(os)
-        os.should_receive("getenv").with_args("THOTH_ADVISER_NO_HISTORY", 0).and_return(
-            "0"
-        ).and_return("1").twice()
-
-        predictor = AdaptiveSimulatedAnnealing()
-        assert predictor.keep_temperature_history is True
-
-        predictor = AdaptiveSimulatedAnnealing()
-        assert predictor.keep_temperature_history is False
-
     def test_pre_run(self) -> None:
         """Test pre-run initialization."""
         context = flexmock(limit=100)
