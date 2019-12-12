@@ -719,27 +719,17 @@ class TestResolver(AdviserTestCase):
         resolver._solver = solver_mock
         assert resolver._resolve_direct_dependencies(with_devel=True) == resolved
 
-    @pytest.mark.parametrize("limit", [2, 1, None])
-    def test_semver_sort_and_limit_latest_versions(
-        self, limit, resolver: Resolver, tf_package_versions: List[PackageVersion]
+    def test_semver_sort(
+        self, resolver: Resolver, tf_package_versions: List[PackageVersion]
     ) -> None:
         """Test no limit on latest versions in when sorting based on semver."""
-        assert (
-            len(tf_package_versions) > 2
-        ), "Not enough package versions to perform test case"
+        # TODO: implement
 
-        resolver.limit_latest_versions = limit
-
-        # reversed from oldest to latest by default.
-        sorted_tf_package_versions = list(reversed(tf_package_versions))
-        random.shuffle(tf_package_versions)
-
-        result = resolver._semver_sort_and_limit_latest_versions(tf_package_versions)
-        if limit is not None:
-            assert len(result) == limit
-            assert result == sorted_tf_package_versions[:limit]
-        else:
-            assert result == sorted_tf_package_versions
+    def test_limit_latest_versions(
+        self, resolver: Resolver, tf_package_versions: List[PackageVersion]
+    ) -> None:
+        """Test limiting number of latest versions considered."""
+        # TODO: implement
 
     def test_prepare_initial_state_cannot_produce_stack(
         self,
