@@ -54,7 +54,7 @@ class HillClimbing(Predictor):
 
         return state
 
-    def plot(self, output_file: Optional[str] = None) -> matplotlib.figure.Figure:
+    def plot(self) -> matplotlib.figure.Figure:
         """Plot score of the highest rated stack during hill climbing."""
         if not self._history:
             raise NoHistoryKept("No history datapoints kept")
@@ -100,5 +100,4 @@ class HillClimbing(Predictor):
             shadow=True,
             prop=font_prop,
         )
-        self.plot_write_fig(fig, output_file)
         return fig

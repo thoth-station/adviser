@@ -42,7 +42,7 @@ Compatibility with pip/Pipenv resolver
 ======================================
 
 As Thoth is also considering used software environment, it can take into
-account `environment markers <https://www.python.org/dev/peps/pep-0496/>`. For
+account `environment markers <https://www.python.org/dev/peps/pep-0496/>`_. For
 example, dependencies that are installed conditionally based on environment
 markers can be removed from software stack - Thoth's lockfile consists of
 packages that are **really** needed to run your application, given version
@@ -121,3 +121,45 @@ An example of a ``Pipfile`` that configures two Python package indexes - `PyPI
 
   [pipenv]
   allow_prereleases = true
+
+
+A note on shared dependencies in a dependency graph
+===================================================
+
+The state space, as described in section :ref:`introduction`, is a discrete
+state space (of final states) of all the possible combinations of packages
+forming the software stack. A surface created by interpolating the scoring
+function of the state space for different versions of packages ``simplelib`` and
+``anotherlib`` is shown bellow (assuming only packages ``simplelib`` and
+``anotherlib`` can form the resulting software stack).
+
+.. image:: _static/state_space_interpolated.png
+   :target: _static/state_space_interpolated.png
+   :align: center
+   :alt: Interpolated discrete values of scoring function in the state space
+         forming a surface.
+
+Note however that not all combinations of packages are valid, meaning the
+scoring function is not defined for all the possible combinations. Let's
+suppose we have packages `TensorFlow <https://pypi.org/project/tensorflow/>`_
+and `TensorBoard <https://pypi.org/project/tensorboard/>`_ in our stack. Let's
+suppose we consider only a single version of each package for simplicity -
+``tensorflow==2.0.0`` and ``tensorboard==2.1.0``. Let's both of these versions
+depend on a package `wheel <https://pypi.org/project/wheel>`_ as shown on the
+figure bellow:
+
+.. image:: _static/shared_dependencies.png
+   :target: _static/shared_dependencies.png
+   :align: center
+   :alt: An example of shared dependencies.
+
+To satisfy version range specification, the only valid resolution leads to
+``wheel==0.33.1`` (not considering pre, post releases or release candidates).
+Note that the implementation does not necessarily need to include such version
+(or versions), especially considering ``limit_latest_versions``, state space
+sampling and state space restrictions in beam. In such cases, it is recommended
+to pin down versions of such packages (as ``wheel`` in the example) explicitly
+as a hint to resolver. Otherwise resolution might fail. See logs of an adviser
+run to spot such cases.
+
+This limitation will be addressed in next releases.

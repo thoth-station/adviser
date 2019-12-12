@@ -89,28 +89,12 @@ class Predictor:
         method should not raise any exception.
         """
 
-    def plot(self, output_file: Optional[str] = None) -> matplotlib.figure.Figure:
-        """Plot information about predictor.
-
-        If output file is provided, the figure will be saved into the given file.
-        """
+    def plot(self) -> matplotlib.figure.Figure:
+        """Plot information about predictor."""
         _LOGGER.error(
             "Cannot plot predictor history as plotting is not implemented for predictor %r, error is not fatal",
             self.__class__.__name__
         )
-
-    @staticmethod
-    def plot_write_fig(fig: matplotlib.figure.Figure, output_file: str) -> None:
-        """Write the given figure to a file, determine file type format by extension."""
-        if output_file:
-            parts = output_file.rsplit(".", maxsplit=1)
-            if len(parts) != 2:
-                raise ValueError(
-                    f"Cannot determine plot format: no extension parsed from {output_file!r}"
-                )
-
-            _LOGGER.debug("Saving figure to %r (format: %r)", output_file, parts[-1])
-            fig.savefig(output_file, format=parts[-1])
 
     @staticmethod
     def _make_patch_spines_invisible(ax: Any) -> None:
