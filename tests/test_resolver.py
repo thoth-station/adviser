@@ -1676,7 +1676,7 @@ class TestResolver(AdviserTestCase):
         with pytest.raises(ValueError):
             assert resolver.context, "Context is already bound to resolver"
 
-        resolver.should_receive("resolve_products").with_args(
+        resolver.should_receive("_do_resolve_products").with_args(
             with_devel=False
         ).and_return([]).once()
 
@@ -1686,7 +1686,7 @@ class TestResolver(AdviserTestCase):
     def test_resolve(self, resolver: Resolver) -> None:
         """Test report creation during resolution."""
         product = flexmock(score=1.0)
-        resolver.should_receive("resolve_products").with_args(
+        resolver.should_receive("_do_resolve_products").with_args(
             with_devel=True
         ).and_return([product]).once()
         resolver.pipeline.should_receive("call_post_run_report").once()
