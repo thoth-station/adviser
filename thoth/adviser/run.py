@@ -64,19 +64,37 @@ def subprocess_run(
         try:
             report: Union[DependencyMonkeyReport, Report] = resolver.resolve(with_devel=True)
             if plot:
+                parts = plot.rsplit(".", maxsplit=1)
+                file_name = parts[0]
+                extension = parts[1] if len(parts) == 2 else "png"
+
+                predictor_history_file = f"{file_name}_{resolver.predictor.__class__.__name__}.{extension}"
+                beam_history_file = f"{file_name}_{resolver.beam.__class__.__name__}.{extension}"
                 try:
-                    resolver.predictor.plot(plot)
+                    figure = resolver.predictor.plot()
+                    figure.savefig(
+                        predictor_history_file,
+                        format=extension
+                    )
                 except Exception as exc:
                     _LOGGER.exception(
                         "Failed to plot predictor history to %r: %s", plot, str(exc)
                     )
+                else:
+                    _LOGGER.info("Predictor history saved to %r", predictor_history_file)
 
                 try:
-                    resolver.beam.plot(plot)
+                    figure = resolver.beam.plot()
+                    figure.savefig(
+                        beam_history_file,
+                        format=extension
+                    )
                 except Exception as exc:
                     _LOGGER.exception(
                         "Failed to plot beam history to %r: %s", plot, str(exc)
                     )
+                else:
+                    _LOGGER.info("Beam history saved to %r", beam_history_file)
 
             result_dict.update(
                 dict(error=False, error_msg=None, report=report.to_dict())
