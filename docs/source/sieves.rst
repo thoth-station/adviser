@@ -17,7 +17,11 @@ included in the resulting stack. The generator of package-versions supplied is
 sorted based on `Python's version specification
 <https://www.python.org/dev/peps/pep-0440/>`_ starting from the latest release
 down to the oldest one (respecting version string, not release date). The list
-can be shrinked based on ``limit_latest_versions``, if supplied to the adviser.
+will be shrinked based on ``limit_latest_versions`` (if supplied to the
+adviser) after pipeline sieve runs - this option reduces the state space
+considered. If sieves accept more package versions than
+``limit_latest_versions`` package versions they will be reduced to
+``limit_latest_versions`` size.
 
 It's guaranteed that the list will contain package-versions in a specific
 (locked) version with information about the Python package index from where the
