@@ -95,6 +95,17 @@ def numpy_package_versions() -> List[PackageVersion]:
 
 
 @pytest.fixture
+def flask_package_versions() -> List[PackageVersion]:
+    """Return a list of package versions - numpy samples."""
+    pypi = Source("https://pypi.org/simple")
+    return [
+        PackageVersion(name="flask", version="==1.1.1", index=pypi, develop=False),
+        PackageVersion(name="flask", version="==1.1.0", index=pypi, develop=False),
+        PackageVersion(name="flask", version="==1.0.0", index=pypi, develop=False),
+    ]
+
+
+@pytest.fixture
 def package_versions() -> List[PackageVersion]:
     """Return a list of package versions - TensorFlow samples."""
     pypi = Source("https://pypi.org/simple")
@@ -719,27 +730,107 @@ class TestResolver(AdviserTestCase):
         resolver._solver = solver_mock
         assert resolver._resolve_direct_dependencies(with_devel=True) == resolved
 
-    @pytest.mark.parametrize("limit", [2, 1, None])
-    def test_semver_sort_and_limit_latest_versions(
-        self, limit, resolver: Resolver, tf_package_versions: List[PackageVersion]
+    def test_semver_sort_prepare_initial_states(
+        self,
+        resolver: Resolver,
+        tf_package_versions: List[PackageVersion],
+        flask_package_versions: List[PackageVersion],
     ) -> None:
         """Test no limit on latest versions in when sorting based on semver."""
+        resolver.limit_latest_versions = None
+        resolver.pipeline.boots = []
+        resolver.pipeline.sieves = []
+        resolver.pipeline.steps = []
+        resolver.pipeline.strides = []
+        resolver.pipeline.wraps = []
+
+        tf_package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
+        flask_package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
+
+        tf_package_versions_shuffled = list(tf_package_versions)
+        random.shuffle(tf_package_versions_shuffled)
+        flask_package_versions_shuffled = list(flask_package_versions)
+        random.shuffle(flask_package_versions_shuffled)
+
+        resolver.should_receive("_resolve_direct_dependencies").with_args(
+            with_devel=False
+        ).and_return(
+            {
+                "tensorflow": tf_package_versions_shuffled,
+                "flask": flask_package_versions_shuffled,
+            }
+        ).once()
+
+        resolver.should_receive("_run_sieves").with_args(
+            tf_package_versions
+        ).and_return(tf_package_versions).ordered()
+
+        resolver.should_receive("_run_sieves").with_args(
+            flask_package_versions
+        ).and_return(flask_package_versions).ordered()
+
+        resolver._init_context()
+        resolver._prepare_initial_states(with_devel=False)
+        assert resolver.beam.size == len(tf_package_versions) * len(
+            flask_package_versions
+        )
+
+    def test_limit_latest_versions(
+        self,
+        resolver: Resolver,
+        tf_package_versions: List[PackageVersion],
+        flask_package_versions: List[PackageVersion],
+    ) -> None:
+        """Test limiting number of latest versions considered."""
+        resolver.limit_latest_versions = 2
+        resolver.pipeline.boots = []
+        resolver.pipeline.sieves = []
+        resolver.pipeline.steps = []
+        resolver.pipeline.strides = []
+        resolver.pipeline.wraps = []
+
+        tf_package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
+        flask_package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
+
+        tf_package_versions_shuffled = list(tf_package_versions)
+        random.shuffle(tf_package_versions_shuffled)
+        flask_package_versions_shuffled = list(flask_package_versions)
+        random.shuffle(flask_package_versions_shuffled)
+
+        resolver.should_receive("_resolve_direct_dependencies").with_args(
+            with_devel=False
+        ).and_return(
+            {
+                "tensorflow": tf_package_versions_shuffled,
+                "flask": flask_package_versions_shuffled,
+            }
+        ).once()
+
+        resolver.should_receive("_run_sieves").with_args(
+            tf_package_versions
+        ).and_return(tf_package_versions).ordered()
+
+        resolver.should_receive("_run_sieves").with_args(
+            flask_package_versions
+        ).and_return(flask_package_versions).ordered()
+
+        resolver._init_context()
+        resolver._prepare_initial_states(with_devel=False)
         assert (
-            len(tf_package_versions) > 2
-        ), "Not enough package versions to perform test case"
+            resolver.beam.size == 2 * 2
+        ), "List of packages was not reduced based on limit latest version configuration"
 
-        resolver.limit_latest_versions = limit
+        for state in resolver.beam.iter_states():
+            assert "flask" in state.unresolved_dependencies
+            assert "tensorflow" in state.unresolved_dependencies
 
-        # reversed from oldest to latest by default.
-        sorted_tf_package_versions = list(reversed(tf_package_versions))
-        random.shuffle(tf_package_versions)
+            assert state.unresolved_dependencies["tensorflow"][1] in [
+                p.locked_version for p in tf_package_versions[:2]
+            ], "Not two latest TensorFlow packages picked"
 
-        result = resolver._semver_sort_and_limit_latest_versions(tf_package_versions)
-        if limit is not None:
-            assert len(result) == limit
-            assert result == sorted_tf_package_versions[:limit]
-        else:
-            assert result == sorted_tf_package_versions
+            assert state.unresolved_dependencies["flask"][1] in [
+                p.locked_version for p in flask_package_versions[:2]
+            ], "Not two latest Flask packages picked"
 
     def test_prepare_initial_state_cannot_produce_stack(
         self,

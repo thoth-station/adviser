@@ -462,26 +462,6 @@ class Resolver:
 
         return resolved_direct_dependencies
 
-    def _semver_sort_and_limit_latest_versions(
-        self, package_versions: List[PackageVersion]
-    ) -> List[PackageVersion]:
-        """Sort package tuples based on version and apply latest version limit if configured so.
-
-        Each package tuple has to be registered to the ASA context. Ordering is from the most recent version down to
-        older versions.
-        """
-        sorted_package_versions = sorted(
-            package_versions, key=lambda pv: pv.semantic_version, reverse=True
-        )
-
-        if self.limit_latest_versions is not None:
-            _LOGGER.debug(
-                "Limiting latest versions of packages to %d", self.limit_latest_versions
-            )
-            return sorted_package_versions[: self.limit_latest_versions]
-
-        return sorted_package_versions
-
     def _prepare_initial_states(self, *, with_devel: bool) -> None:
         """Prepare initial states for simulated annealing.
 
@@ -494,9 +474,7 @@ class Resolver:
             for direct_dependency in package_versions:
                 self.context.register_package_version(direct_dependency)
 
-            package_versions = self._semver_sort_and_limit_latest_versions(
-                package_versions
-            )
+            package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
             package_versions = list(self._run_sieves(package_versions))
             if not package_versions:
                 raise CannotProduceStack(
@@ -504,7 +482,10 @@ class Resolver:
                     f"of type {direct_dependency_name!r} were removed by pipeline sieves"
                 )
 
-            direct_dependencies[direct_dependency_name] = package_versions
+            if self.limit_latest_versions:
+                direct_dependencies[direct_dependency_name] = package_versions[:self.limit_latest_versions]
+            else:
+                direct_dependencies[direct_dependency_name] = package_versions
 
         # Create an empty state which will be extended with packages based on step results. We know we have resolved
         # all the dependencies so start with beam which has just empty state and subsequently expand it based on
@@ -671,9 +652,7 @@ class Resolver:
             package_versions = [
                 self.context.get_package_version(d) for d in dependency_tuples
             ]
-            package_versions = self._semver_sort_and_limit_latest_versions(
-                package_versions
-            )
+            package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
             package_versions = list(self._run_sieves(package_versions))
             if not package_versions:
                 _LOGGER.debug(
@@ -682,7 +661,10 @@ class Resolver:
                 )
                 return None
 
-            all_dependencies[dependency_name] = package_versions  # type: ignore
+            if self.limit_latest_versions:
+                all_dependencies[dependency_name] = package_versions[:self.limit_latest_versions]
+            else:
+                all_dependencies[dependency_name] = package_versions
 
         self._run_steps(state, all_dependencies)
 
