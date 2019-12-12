@@ -725,7 +725,7 @@ class Resolver:
         if self.stop_resolving:
             _LOGGER.warning("Resolving stopped based on SIGINT")
 
-    def resolve_products(
+    def _do_resolve_products(
         self, *, with_devel: bool = True
     ) -> Generator[Product, None, None]:
         """Resolve raw products as produced by this resolver pipeline."""
@@ -778,13 +778,21 @@ class Resolver:
         self.predictor.post_run(self.context)
         self.pipeline.call_post_run()
 
+    def resolve_products(
+            self, *, with_devel: bool = True
+    ) -> Generator[Product, None, None]:
+        """Resolve raw products as produced by this resolver pipeline."""
+        self._init_context()
+        with Unit.assigned_context(self.context):
+            return self._do_resolve_products(with_devel=with_devel)
+
     def resolve(self, *, with_devel: bool = True) -> Report:
         """Resolve software stacks and return resolver report."""
         report = Report(count=self.count, pipeline=self.pipeline)
 
         self._init_context()
         with Unit.assigned_context(self.context):
-            for product in self.resolve_products(with_devel=with_devel):
+            for product in self._do_resolve_products(with_devel=with_devel):
                 report.add_product(product)
 
             if report.product_count() == 0:
