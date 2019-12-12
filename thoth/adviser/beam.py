@@ -123,7 +123,7 @@ class Beam:
         for sp in ax.spines.values():
             sp.set_visible(False)
 
-    def plot(self, output_file: Optional[str] = None) -> matplotlib.figure.Figure:
+    def plot(self) -> matplotlib.figure.Figure:
         """Plot temperature history of adaptive simulated annealing."""
         if not self._beam_history:
             raise NoHistoryKept("No history datapoints kept for beam")
@@ -171,18 +171,6 @@ class Beam:
             shadow=True,
             prop=font_prop,
         )
-
-        if output_file:
-            parts = output_file.rsplit(".", maxsplit=1)
-            if len(parts) != 2:
-                raise ValueError(
-                    f"Cannot determine plot format: no extension parsed from {output_file!r}"
-                )
-
-            output_file = f"{parts[0]}_beam.{parts[1]}"
-            _LOGGER.debug("Saving figure to %r (format: %r)", output_file, parts[-1])
-            fig.savefig(output_file, format=parts[-1])
-
         return fig
 
     @property

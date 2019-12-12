@@ -159,7 +159,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
         for sp in ax.spines.values():
             sp.set_visible(False)
 
-    def plot(self, output_file: Optional[str] = None) -> matplotlib.figure.Figure:
+    def plot(self) -> matplotlib.figure.Figure:
         """Plot temperature history of adaptive simulated annealing."""
         # Code adjusted based on:
         #    https://matplotlib.org/3.1.1/gallery/ticks_and_spines/multiple_yaxis_with_spines.html
@@ -234,5 +234,4 @@ class AdaptiveSimulatedAnnealing(Predictor):
             shadow=True,
             prop=font_prop,
         )
-        self.plot_write_fig(fig, output_file)
         return fig
