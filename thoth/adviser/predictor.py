@@ -103,4 +103,3 @@ class Predictor:
         ax.patch.set_visible(False)
         for sp in ax.spines.values():
             sp.set_visible(False)
-
