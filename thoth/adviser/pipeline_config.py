@@ -101,3 +101,11 @@ class PipelineConfig:
                     unit.__class__.__name__,
                     str(exc),
                 ) from exc
+
+    def call_new_iteration(self) -> None:
+        """Notify sieves and steps about new resolver round."""
+        for sieve in self.sieves:
+            sieve.new_iteration()
+
+        for step in self.steps:
+            step.new_iteration()
