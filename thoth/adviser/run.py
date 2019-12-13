@@ -31,7 +31,6 @@ from typing import Union
 from typing import Optional
 import logging
 import os
-import sys
 import time
 
 from thoth.common import init_logging
@@ -45,6 +44,7 @@ from .resolver import Resolver
 _LOGGER = logging.getLogger(__name__)
 # This file is created by OpenShift's liveness probe on timeout.
 _LIVENESS_PROBE_KILL_FILE = "/tmp/thoth_adviser_cpu_timeout"
+_FORK = bool(int(os.getenv("THOTH_ADVISER_FORK", 0)))
 
 
 def subprocess_run(
@@ -55,9 +55,12 @@ def subprocess_run(
 ) -> int:
     """Run the given function (partial annealing method) in a subprocess and output the produced report."""
     start_time = time.monotonic()
-    pid = os.fork()
 
-    if pid == 0:  # Child.
+    pid = 0
+    if _FORK:
+        pid = os.fork()
+
+    if pid == 0:  # Child or no-fork mode.
         # We need to re-init logging for the sub-process.
         init_logging()
         _LOGGER.debug("Created a child process to compute report")
@@ -112,7 +115,11 @@ def subprocess_run(
 
         # Always submit results, even on error.
         print_func(time.monotonic() - start_time, result_dict)
-        os._exit(int(result_dict["error"]))
+
+        if _FORK:
+            os._exit(int(result_dict["error"]))
+
+        return int(result_dict["error"])
     else:  # Parent waits for its child to terminate.
         _LOGGER.debug("Waiting for child process %r", pid)
         _, exit_code = os.waitpid(pid, 0)

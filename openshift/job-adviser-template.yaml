@@ -5,13 +5,13 @@ metadata:
   annotations:
     description: "Thoth: Adviser"
     openshift.io/display-name: "Thoth: Adviser"
-    version: 0.4.2
+    version: 0.4.3
     tags: thoth,ai-stacks,adviser
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
       This template defines resources needed to run recommendation logic of Thoth to OpenShift.
     template.openshift.io/provider-display-name: "Red Hat, Inc."
-    thoth-station.ninja/template-version: 0.4.2
+    thoth-station.ninja/template-version: 0.4.3
   labels:
     app: thoth
     template: adviser
@@ -117,7 +117,7 @@ objects:
     metadata:
       name: ${THOTH_ADVISER_JOB_ID}
       annotations:
-        thoth-station.ninja/template-version: 0.4.2
+        thoth-station.ninja/template-version: 0.4.3
       labels:
         app: thoth
         component: adviser
@@ -157,6 +157,8 @@ objects:
                       name: thoth
                 - name: THOTH_DOCUMENT_ID
                   value: "${THOTH_DOCUMENT_ID}"
+                - name: THOTH_ADVISER_FORK
+                  value: "1"
                 - name: THOTH_LOG_ADVISER
                   value: "${THOTH_LOG_ADVISER}"
                 - name: THOTH_ADJUST_LOGGING

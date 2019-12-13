@@ -5,13 +5,13 @@ metadata:
   annotations:
     description: "Thoth: Dependency Monkey"
     openshift.io/display-name: "Thoth: Dependency Monkey"
-    version: 0.4.2
+    version: 0.4.3
     tags: thoth,ai-stacks,dependency-monkey
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
       This template defines resources needed to run recommendation logic of Thoth to OpenShift.
     template.openshift.io/provider-display-name: Red Hat, Inc.
-    thoth-station.ninja/template-version: 0.4.2
+    thoth-station.ninja/template-version: 0.4.3
   labels:
     app: thoth
     template: dependency-monkey
@@ -116,7 +116,7 @@ objects:
     metadata:
       name: ${THOTH_DEPENDENCY_MONKEY_JOB_ID}
       annotations:
-        thoth-station.ninja/template-version: 0.4.2
+        thoth-station.ninja/template-version: 0.4.3
       labels:
         app: thoth
         component: dependency-monkey
@@ -152,6 +152,8 @@ objects:
                       name: thoth
                 - name: THOTH_DOCUMENT_ID
                   value: "${THOTH_DOCUMENT_ID}"
+                - name: THOTH_ADVISER_FORK
+                  value: "1"
                 - name: THOTH_LOG_ADVISER
                   value: "${THOTH_LOG_ADVISER}"
                 - name: THOTH_ADVISER_REQUIREMENTS
