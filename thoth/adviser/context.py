@@ -33,6 +33,7 @@ from thoth.python import Source
 from thoth.python import Project
 from thoth.storages import GraphDatabase
 
+from .beam import Beam
 from .exceptions import NotFound
 from .enums import RecommendationType
 from .enums import DecisionType
@@ -52,6 +53,7 @@ class Context:
     library_usage = attr.ib(type=Optional[Dict[str, Any]], kw_only=True)
     limit = attr.ib(type=int, kw_only=True)
     count = attr.ib(type=int, kw_only=True)
+    beam = attr.ib(type=Beam, kw_only=True)
     recommendation_type = attr.ib(
         type=Optional[RecommendationType], kw_only=True, default=None
     )
