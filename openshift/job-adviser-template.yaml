@@ -157,6 +157,8 @@ objects:
                       name: thoth
                 - name: THOTH_DOCUMENT_ID
                   value: "${THOTH_DOCUMENT_ID}"
+                - name: THOTH_ADVISER_FORK
+                  value: "1"
                 - name: THOTH_LOG_ADVISER
                   value: "${THOTH_LOG_ADVISER}"
                 - name: THOTH_ADJUST_LOGGING
