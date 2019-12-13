@@ -137,7 +137,7 @@ sources first in the ``../python`` directory, this makes the following code:
 
 to first check sources present in ``../python`` and run code from there
 (instead of running the installed ``thoth-python`` package from `PyPI
-<https://pypi.org/>`_ inside virtual environment).
+<https://pypi.org/>`__ inside virtual environment).
 
 If you would like to run multiple libraries this way, you need to delimit them
 using a colon:
@@ -215,7 +215,7 @@ variable which distinguishes different deployments.
   $ export THOTH_DEPLOYMENT_NAME=thoth-test-core
 
 To browse data stored on Ceph, you can use ``awscli`` utility from `PyPI
-<https://pypi.org/project/awscli/>`_ that provides ``aws`` command (use ``aws
+<https://pypi.org/project/awscli/>`__ that provides ``aws`` command (use ``aws
 s3`` as Ceph exposes S3 compatible API).
 
 To run applications against Thoth's knowledge graph database, see

@@ -21,6 +21,8 @@ import flexmock
 
 from thoth.adviser.pipeline_config import PipelineConfig
 from thoth.adviser.report import Report
+from thoth.adviser.sieve import Sieve
+from thoth.adviser.step import Step
 
 from .base import AdviserTestCase
 
@@ -95,3 +97,17 @@ class TestPipelineConfig(AdviserTestCase):
             ).and_return(None).once()
 
         pipeline_config.call_post_run_report(report)
+
+    def test_call_new_iteration(self, pipeline_config: PipelineConfig) -> None:
+        """Test calling new iteration method called on a new resolver round."""
+        assert len(pipeline_config.boots) > 0
+        assert len(pipeline_config.sieves) > 0
+        assert len(pipeline_config.steps) > 0
+        assert len(pipeline_config.strides) > 0
+        assert len(pipeline_config.wraps) > 0
+
+        for unit in pipeline_config.iter_units():
+            if isinstance(unit, (Sieve, Step)):
+                unit.should_receive("new_iteration").with_args().and_return(None).once()
+
+        pipeline_config.call_new_iteration()
