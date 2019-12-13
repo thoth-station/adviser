@@ -18,6 +18,10 @@
 """Implementation of steps used during simulated annealing."""
 
 from .cve import CvePenalizationStep
+from .dropout import DropoutStep
 
 
-__all__ = ["CvePenalizationStep"]
+__all__ = [
+    "CvePenalizationStep",
+    "DropoutStep",
+]
