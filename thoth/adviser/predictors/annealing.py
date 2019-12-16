@@ -68,11 +68,12 @@ class AdaptiveSimulatedAnnealing(Predictor):
         ) / (context.limit << 1)
         temperature = t0 * (0.95 ** k)
         _LOGGER.debug(
-            "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, k=%f) = %g",
+            "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, beam size= %d, k=%f) = %g",
             context.iteration,
             t0,
             context.accepted_final_states_count,
-            context.count,
+            context.limit,
+            context.beam.size,
             k,
             temperature,
         )
@@ -123,7 +124,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
         ):
             # Skip to probable state, do not use the top rated state.
             _LOGGER.debug(
-                "Performing transition to neighbour state with score %g",
+                "Performing transition to a neighbour state with score %g",
                 probable_state.score,
             )
             # state_expansion_idx = probable_state_idx
