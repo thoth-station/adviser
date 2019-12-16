@@ -69,9 +69,7 @@ class Beam:
     )
     # Mapping id(state) -> index in the heap to guarantee O(1) state index lookup and
     # subsequent O(log(N)) state removal from the beam.
-    _states_idx = attr.ib(
-        default=attr.Factory(dict), type=Dict[int, int]
-    )
+    _states_idx = attr.ib(default=attr.Factory(dict), type=Dict[int, int])
     # Use ordered dict to preserve order of inserted states not to introduce
     # randomness (that would be introduced using a set) across multiple runs.
     _last_added = attr.ib(
@@ -237,7 +235,9 @@ class Beam:
 
         return self._top_idx
 
-    def _heappushpop(self, item: Tuple[Tuple[float, int, int, int], State]) -> Tuple[Tuple[float, int, int, int], State]:
+    def _heappushpop(
+        self, item: Tuple[Tuple[float, int, int, int], State]
+    ) -> Tuple[Tuple[float, int, int, int], State]:
         """Fast version of a heappush followed by a heappop."""
         if self._states and self._states[0] < item:
             item, self._states[0] = self._states[0], item
@@ -263,7 +263,10 @@ class Beam:
         while childpos < endpos:
             # Set childpos to index of smaller child.
             rightpos = childpos + 1
-            if rightpos < endpos and not self._states[childpos] < self._states[rightpos]:
+            if (
+                rightpos < endpos
+                and not self._states[childpos] < self._states[rightpos]
+            ):
                 childpos = rightpos
             # Move the smaller child up.
             self._states[pos] = self._states[childpos]
@@ -294,14 +297,24 @@ class Beam:
         self._states[pos] = newitem
         self._states_idx[id(self._states[pos][1])] = pos
 
-    def add_state(self, state: State, iteration: int, iteration_states_added: int) -> None:
+    def add_state(
+        self, state: State, iteration: int, iteration_states_added: int
+    ) -> None:
         """Add state to the internal state listing (do it in O(log(N)) time."""
         # Multi-key ordering to guarantee comparision between states (based on sort):
         #  * highest state first
         #  * state with the most recent versions of libraries (latest version offset)
         #  * iterations done by resolver to populate the most recent resolutions first
         #  * relative ordering of states created within a single iteration round - iteration states added
-        item = ((state.score, -state.latest_version_offset, iteration, -iteration_states_added), state)
+        item = (
+            (
+                state.score,
+                -state.latest_version_offset,
+                iteration,
+                -iteration_states_added,
+            ),
+            state,
+        )
 
         if self.width is not None and len(self._states) >= self.width:
             popped = self._heappushpop(item)
