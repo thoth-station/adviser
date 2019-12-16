@@ -23,6 +23,7 @@ import flexmock
 
 from thoth.adviser.product import Product
 from thoth.adviser.state import State
+from thoth.adviser.context import Context
 from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
 from thoth.python import Source
@@ -33,7 +34,7 @@ from .base import AdviserTestCase
 class TestProduct(AdviserTestCase):
     """Test manipulation with product."""
 
-    def test_from_final_state(self) -> None:
+    def test_from_final_state(self, context: Context) -> None:
         """Test instantiating product from a final state."""
         state = State(
             score=0.5,
@@ -63,27 +64,24 @@ class TestProduct(AdviserTestCase):
             name="tensorflow", version="==2.0.0", index=pypi, develop=False
         )
 
-        context = flexmock()
-        graph = flexmock()
-
         context.should_receive("get_package_version").with_args(
             ("daiquiri", "1.6.0", "https://pypi.org/simple"), graceful=False
         ).and_return(pv_daiquiri_locked).ordered()
-        graph.should_receive("get_python_package_hashes_sha256").with_args(
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(
             "daiquiri", "1.6.0", "https://pypi.org/simple"
         ).and_return(["000"]).ordered()
 
         context.should_receive("get_package_version").with_args(
             ("numpy", "1.17.4", "https://pypi.org/simple"), graceful=False
         ).and_return(pv_numpy_locked).ordered()
-        graph.should_receive("get_python_package_hashes_sha256").with_args(
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(
             "numpy", "1.17.4", "https://pypi.org/simple"
         ).and_return(["111"]).ordered()
 
         context.should_receive("get_package_version").with_args(
             ("tensorflow", "2.0.0", "https://pypi.org/simple"), graceful=False
         ).and_return(pv_tensorflow_locked).ordered()
-        graph.should_receive("get_python_package_hashes_sha256").with_args(
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(
             "tensorflow", "2.0.0", "https://pypi.org/simple"
         ).and_return(["222"]).ordered()
 
@@ -99,9 +97,44 @@ class TestProduct(AdviserTestCase):
             with_devel=True
         ).and_return([pv_daiquiri, pv_tensorflow]).once()
 
-        product = Product.from_final_state(
-            state=state, graph=graph, project=project, context=context
-        )
+        context.project = project
+        context.dependencies = {
+            "daiquiri": {
+                ("daiquiri", "1.6.0", "https://pypi.org/simple"): set(),
+            },
+            "numpy": {
+                ("numpy", "1.17.4", "https://pypi.org/simple"): set()
+            },
+            "tensorflow": {
+                ("tensorflow", "2.0.0", "https://pypi.org/simple"): {
+                    ("numpy", "1.17.4", "https://pypi.org/simple")
+                }
+            },
+        }
+        context.dependents = {
+            "daiquiri": {
+                ("daiquiri", "1.6.0", "https://pypi.org/simple"): set(),
+            },
+            "numpy": {
+                ("numpy", "1.17.4", "https://pypi.org/simple"): {
+                    (("tensorflow", "2.0.0", "https://pypi.org/simple"), "fedora", "31", "3.7")
+                }
+            },
+            "tensorflow": {
+                ("tensorflow", "2.0.0", "https://pypi.org/simple"): set()
+            },
+        }
+        context.graph.should_receive("get_python_environment_marker").with_args(
+            "tensorflow",
+            "2.0.0",
+            "https://pypi.org/simple",
+            dependency_name="numpy",
+            dependency_version="1.17.4",
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7",
+        ).and_return("python_version >= '3.7'").once()
+        product = Product.from_final_state(state=state, context=context)
 
         assert product.score == state.score
         assert product.justification == state.justification
@@ -146,6 +179,7 @@ class TestProduct(AdviserTestCase):
                         "version": "==1.17.4",
                         "hashes": ["sha256:111"],
                         "index": "pypi-org",
+                        "markers": "python_version >= '3.7'",
                     },
                     "tensorflow": {
                         "version": "==2.0.0",

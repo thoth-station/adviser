@@ -922,7 +922,12 @@ class TestResolver(AdviserTestCase):
 
         resolver._init_context()
         resolver.context.register_package_tuple(
-            to_expand_package_tuple, develop=False, markers=None, extras=["postgresql"]
+            to_expand_package_tuple,
+            develop=False,
+            extras=["postgresql"],
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7",
         )
 
         resolver.graph.should_receive("get_depends_on").with_args(
@@ -943,7 +948,12 @@ class TestResolver(AdviserTestCase):
 
         resolver._init_context()
         resolver.context.register_package_tuple(
-            to_expand_package_tuple, develop=False, markers=None, extras=None
+            to_expand_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7",
         )
 
         resolver.graph.should_receive("get_depends_on").with_args(
@@ -994,7 +1004,12 @@ class TestResolver(AdviserTestCase):
 
         resolver._init_context()
         resolver.context.register_package_tuple(
-            to_expand_package_tuple, develop=False, markers=None, extras=["s3", "ui"]
+            to_expand_package_tuple,
+            develop=False,
+            extras=["s3", "ui"],
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7",
         )
 
         resolver.graph.should_receive("get_depends_on").with_args(
@@ -1063,7 +1078,12 @@ class TestResolver(AdviserTestCase):
 
         resolver._init_context()
         resolver.context.register_package_tuple(
-            to_expand_package_tuple, develop=False, markers=None, extras=None
+            to_expand_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7",
         )
         package_version = resolver.context.get_package_version(to_expand_package_tuple)
 
@@ -1185,21 +1205,6 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
         ).and_return(tb_records).once()
 
-        for record in itertools.chain(tb_records[:1], absl_py_records[:1]):
-            # It's expected to have just one of each record as the previous environment
-            # marker was already checked.
-            # XXX: what happens with "compound" environment markers?
-            #   A depends_on X ; python_version >= 3.5
-            #   B depends_on X ; python_version >= 3.6
-            resolver.graph.should_receive("get_python_environment_marker").with_args(
-                *package_version.to_tuple(),
-                dependency_name=record["package_name"],
-                dependency_version=record["package_version"],
-                os_name=record["os_name"],
-                os_version=record["os_version"],
-                python_version=record["python_version"],
-            ).and_return(f"{record['package_name']}-{record['package_name']}").once()
-
         assert resolver.pipeline.sieves, "No sieves to run this test case with"
         for sieve in resolver.pipeline.sieves:
             # No sieve is called with the discarded package based on env marker.
@@ -1247,11 +1252,9 @@ class TestResolver(AdviserTestCase):
             package_version = resolver.context.get_package_version(
                 (record["package_name"], record["package_version"], record["index_url"])
             )
-            assert (
-                package_version.markers
-                == f"{record['package_name']}-{record['package_name']}"
-            ), "Markers not registered properly"
             assert package_version.extras is None
+            assert package_version.markers is None
+            assert not package_version.hashes
             assert package_version.develop is False
 
     def test_expand_state_add_dependencies_unsolved(self, resolver: Resolver) -> None:
@@ -1268,7 +1271,7 @@ class TestResolver(AdviserTestCase):
             "is_fully_specified"
         ).with_args().and_return(False)
 
-        # As tensorflow has not resolved tensorboard dependency subgraph, we will discard expanding state.
+        # As tensorflow has not resolved tensorboard dependency sub-graph, we will discard expanding state.
         tb_records = []
         absl_py_records = [
             {
@@ -1298,15 +1301,6 @@ class TestResolver(AdviserTestCase):
             os_version=resolver.project.runtime_environment.operating_system.version,
             python_version=resolver.project.runtime_environment.python_version,
         ).and_return(tb_records).once()
-
-        resolver.graph.should_receive("get_python_environment_marker").with_args(
-            *package_version.to_tuple(),
-            dependency_name=absl_py_records[0]["package_name"],
-            dependency_version=absl_py_records[0]["package_version"],
-            os_name=absl_py_records[0]["os_name"],
-            os_version=absl_py_records[0]["os_version"],
-            python_version=absl_py_records[0]["python_version"],
-        ).and_return("python_version >= 3.0").once()
 
         state = State(score=0.0)
 
@@ -1395,15 +1389,6 @@ class TestResolver(AdviserTestCase):
             ).and_return(
                 [dependency_record]
             ).once()
-
-            resolver.graph.should_receive("get_python_environment_marker").with_args(
-                *package_version.to_tuple(),
-                dependency_name=dependency_record["package_name"],
-                dependency_version=dependency_record["package_version"],
-                os_name=dependency_record["os_name"],
-                os_version=dependency_record["os_version"],
-                python_version=dependency_record["python_version"],
-            ).and_return(None).once()
 
         state = State(score=0.0)
 
@@ -1614,15 +1599,11 @@ class TestResolver(AdviserTestCase):
 
         flexmock(Product)
         Product.should_receive("from_final_state").with_args(
-            graph=resolver.graph,
-            project=resolver.project,
             context=resolver.context,
             state=final_state1,
         ).and_return(product1).ordered()
 
         Product.should_receive("from_final_state").with_args(
-            graph=resolver.graph,
-            project=resolver.project,
             context=resolver.context,
             state=final_state2,
         ).and_return(product2).ordered()
@@ -1653,8 +1634,6 @@ class TestResolver(AdviserTestCase):
 
         flexmock(Product)
         Product.should_receive("from_final_state").with_args(
-            graph=resolver.graph,
-            project=resolver.project,
             context=resolver.context,
             state=final_state1,
         ).and_return(product1).ordered()

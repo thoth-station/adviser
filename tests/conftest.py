@@ -51,6 +51,24 @@ class PredictorMock(Predictor):
 
 
 @pytest.fixture
+def context(project: Project) -> Context:
+    """A fixture for a clean context."""
+    flexmock(Context)
+    flexmock(GraphDatabase)
+    flexmock(Beam)
+
+    return Context(
+        project=project,
+        graph=GraphDatabase(),
+        library_usage=None,
+        limit=100,
+        count=3,
+        beam=Beam(),
+        recommendation_type=RecommendationType.TESTING,
+    )
+
+
+@pytest.fixture
 def pipeline_config() -> PipelineConfig:
     """A fixture for a pipeline configuration with few representatives of each pipeline unit type."""
     flexmock(PipelineConfig)

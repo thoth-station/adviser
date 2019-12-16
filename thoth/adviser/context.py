@@ -70,7 +70,20 @@ class Context:
         default=attr.Factory(dict),
     )
     dependents = attr.ib(
-        type=Dict[str, Dict[Tuple[str, str, str], Set[Tuple[str, str, str]]]],
+        type=Dict[
+            str,
+            Dict[
+                Tuple[str, str, str],
+                Set[
+                    Tuple[
+                        Tuple[str, str, str],
+                        Optional[str],
+                        Optional[str],
+                        Optional[str],
+                    ]
+                ],
+            ],
+        ],
         kw_only=True,
         default=attr.Factory(dict),
     )
@@ -135,7 +148,6 @@ class Context:
         if registered:
             # If the given package is shared in develop and in the main part, make it main stack part.
             registered.develop = registered.develop or package_version.develop
-            # TODO: check if it is the same entry
             return True
 
         # Direct dependency, no dependency introduced this one.
@@ -172,8 +184,10 @@ class Context:
         *,
         develop: bool,
         dependent_tuple: Optional[Tuple[str, str, str]] = None,
-        markers: Optional[str] = None,
         extras: Optional[List[str]] = None,
+        os_name: Optional[str],
+        os_version: Optional[str],
+        python_version: Optional[str],
     ) -> PackageVersion:
         """Register the given package tuple to pipeline context and return its package version representative."""
         registered = self.package_versions.get(package_tuple)
@@ -181,7 +195,16 @@ class Context:
         if registered:
             # If the given package is shared in develop and in the main part, make it main stack part.
             registered.develop = registered.develop or develop
-            # TODO: check for extras and markers?
+            self._note_dependencies(
+                dependent_tuple,
+                package_tuple,
+                os_name=os_name,
+                os_version=os_version,
+                python_version=python_version,
+            )
+            # This method is called solely on transitive dependencies - for those we do not track
+            # extras as extras are already resolved by solver runs (pre-computed). Keep extras untouched
+            # in this function call.
             return registered
 
         source = self.sources.get(package_tuple[2])
@@ -193,18 +216,26 @@ class Context:
             name=package_tuple[0],
             version="==" + package_tuple[1],
             index=source,
-            markers=markers,
             extras=extras,
             develop=develop,
         )
         self.package_versions[package_tuple] = package_version
-        self._note_dependencies(dependent_tuple, package_tuple)
+        self._note_dependencies(
+            dependent_tuple,
+            package_tuple,
+            os_name=os_name,
+            os_version=os_version,
+            python_version=python_version,
+        )
         return package_version
 
     def _note_dependencies(
         self,
         package_tuple: Optional[Tuple[str, str, str]],
         dependency_tuple: Tuple[str, str, str],
+        os_name: Optional[str] = None,
+        os_version: Optional[str] = None,
+        python_version: Optional[str] = None,
     ) -> None:
         """Note down dependencies that were introduced."""
         # Mapping: package tuple -> dependency tuple
@@ -225,7 +256,12 @@ class Context:
             self.dependents[dependency_tuple[0]][dependency_tuple] = set()
 
         if package_tuple is not None:
-            self.dependents[dependency_tuple[0]][dependency_tuple].add(package_tuple)
+            # Note down only if we have some dependency - otherwise dependency
+            # tuple is a direct dependency. In that case we don't need to keep
+            # track of environments for which the version was resolved.
+            self.dependents[dependency_tuple[0]][dependency_tuple].add(
+                (package_tuple, os_name, os_version, python_version)
+            )
 
     def is_dependency_monkey(self) -> bool:
         """Check if the current context refers to a dependency monkey run."""

@@ -617,20 +617,14 @@ class Resolver:
                 if not self.context.get_package_version(
                     dependency_tuple, graceful=True
                 ):
-                    environment_marker = self.graph.get_python_environment_marker(
-                        *package_tuple,
-                        dependency_name=dependency_tuple[0],
-                        dependency_version=dependency_tuple[1],
-                        os_name=record["os_name"],
-                        os_version=record["os_version"],
-                        python_version=record["python_version"],
-                    )
                     self.context.register_package_tuple(
                         dependency_tuple,
                         dependent_tuple=package_tuple,
                         develop=package_version.develop,  # Propagate develop flag from parent.
-                        markers=environment_marker,
                         extras=None,
+                        os_name=record["os_name"],
+                        os_version=record["os_version"],
+                        python_version=record["python_version"],
                     )
 
                 if dependency_tuple not in all_dependencies[dependency_tuple[0]]:
@@ -757,8 +751,6 @@ class Resolver:
                     final_state.score,
                 )
                 product = Product.from_final_state(
-                    graph=self.graph,
-                    project=self.project,
                     context=self.context,
                     state=final_state,
                 )
