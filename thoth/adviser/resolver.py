@@ -325,9 +325,10 @@ class Resolver:
                         step_result = step.run(state, package_version)
                     except NotAcceptable as exc:
                         _LOGGER.debug(
-                            "Step %r discarded addition of package %r in combination %r: %s",
+                            "Step %r discarded addition of package %r in state %r: %s",
                             step.__class__.__name__,
                             package_version_tuple,
+                            state,
                             str(exc),
                         )
                         raise _NoStateAdd
