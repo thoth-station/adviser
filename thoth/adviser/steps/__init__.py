@@ -21,7 +21,9 @@ from .cve import CvePenalizationStep
 from .dropout import DropoutStep
 
 
+# Relative order in the following list is relevant as it specifies relative
+# order when steps are registered.
 __all__ = [
-    "CvePenalizationStep",
     "DropoutStep",
+    "CvePenalizationStep",
 ]
