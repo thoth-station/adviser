@@ -65,7 +65,7 @@ class Beam:
 
     width = attr.ib(default=None, type=Optional[int])
     _states = attr.ib(
-        default=attr.Factory(list), type=List[Tuple[Tuple[float, int], State]]
+        default=attr.Factory(list), type=List[Tuple[Tuple[float, int, int, int], State]]
     )
     # Mapping id(state) -> index in the heap to guarantee O(1) state index lookup and
     # subsequent O(log(N)) state removal from the beam.
@@ -76,7 +76,7 @@ class Beam:
     # randomness (that would be introduced using a set) across multiple runs.
     _last_added = attr.ib(
         default=attr.Factory(OrderedDict)
-    )  # type: OrderedDict[int, Tuple[Tuple[float, int], State]]
+    )  # type: OrderedDict[int, Tuple[Tuple[float, int, int, int], State]]
     _counter = attr.ib(default=0, type=int)
     _top_idx = attr.ib(default=None, type=Optional[int])
     _beam_history = attr.ib(
@@ -238,7 +238,7 @@ class Beam:
 
         return self._top_idx
 
-    def _heappushpop(self, item: Tuple[Tuple[float, int], State]) -> Tuple[Tuple[float, int], State]:
+    def _heappushpop(self, item: Tuple[Tuple[float, int, int, int], State]) -> Tuple[Tuple[float, int, int, int], State]:
         """Fast version of a heappush followed by a heappop."""
         if self._states and self._states[0] < item:
             item, self._states[0] = self._states[0], item
@@ -248,7 +248,7 @@ class Beam:
 
         return item
 
-    def _heappush(self, item: Tuple[Tuple[float, int], State]) -> None:
+    def _heappush(self, item: Tuple[Tuple[float, int, int, int], State]) -> None:
         """Push item onto heap, maintaining the heap invariant."""
         self._states_idx[id(item[1])] = len(self._states)
         self._states.append(item)
@@ -295,9 +295,14 @@ class Beam:
         self._states[pos] = newitem
         self._states_idx[id(self._states[pos][1])] = pos
 
-    def add_state(self, state: State) -> None:
+    def add_state(self, state: State, iteration: int, iteration_states_added: int) -> None:
         """Add state to the internal state listing (do it in O(log(N)) time."""
-        item = ((state.score, self._counter), state)
+        # Multi-key ordering to guarantee comparision between states (based on sort):
+        #  * highest state first
+        #  * state with the most recent versions of libraries (latest version offset)
+        #  * iterations done by resolver to populate the most recent resolutions first
+        #  * relative ordering of states created within a single iteration round - iteration states added
+        item = ((state.score, -state.latest_version_offset, iteration, -iteration_states_added), state)
 
         if self.width is not None and len(self._states) >= self.width:
             popped = self._heappushpop(item)

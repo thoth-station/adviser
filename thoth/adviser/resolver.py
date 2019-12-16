@@ -299,6 +299,7 @@ class Resolver:
         configuration_table = tuple(package_versions_dict.values())
         configuration_queue = deque([((0, 0), state)])
 
+        iteration_states_added = 0
         while configuration_queue:
             idx, state = configuration_queue.popleft()
             package_version = configuration_table[idx[0]][idx[1]]
@@ -396,10 +397,12 @@ class Resolver:
 
                 cloned_state.add_justification(justification_addition)
                 cloned_state.score += score_addition
+                cloned_state.latest_version_offset += idx[1]
 
                 if len(configuration_table) == idx[0] + 1:
                     # No more to run - we passed all package_version of a type.
-                    self.beam.add_state(cloned_state)
+                    self.beam.add_state(cloned_state, self.context.iteration, iteration_states_added)
+                    iteration_states_added += 1
                 else:
                     configuration_queue.appendleft(((idx[0] + 1, 0), cloned_state))
 
@@ -561,7 +564,7 @@ class Resolver:
                 return state
 
             # No dependency, add back to beam for resolving unresolved in next rounds.
-            self.beam.add_state(state)
+            self.beam.add_state(state, self.context.iteration, 0)
             return None
 
         self._expand_state_add_dependencies(

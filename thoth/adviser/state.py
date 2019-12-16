@@ -33,6 +33,7 @@ class State:
     """Implementation of an adviser's state in state space."""
 
     score = attr.ib(type=float, default=0.0)
+    latest_version_offset = attr.ib(type=int, default=0)
     # Python3.6 fails on OrderedDict subscription, use Dict instead.
     unresolved_dependencies = attr.ib(
         default=attr.Factory(OrderedDict)
@@ -55,6 +56,7 @@ class State:
 
         return {
             "score": self.score,
+            "latest_version_offset": self.latest_version_offset,
             "unresolved_dependencies": self.unresolved_dependencies,
             "resolved_dependencies": self.resolved_dependencies,
             "advised_runtime_environment": advised_runtime_environment,
@@ -83,6 +85,7 @@ class State:
 
         return self.__class__(
             score=self.score,
+            latest_version_offset=self.latest_version_offset,
             unresolved_dependencies=OrderedDict(self.unresolved_dependencies),
             resolved_dependencies=OrderedDict(self.resolved_dependencies),
             advised_runtime_environment=cloned_advised_environment,
