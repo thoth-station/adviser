@@ -37,7 +37,7 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
 
     @given(
         floats(min_value=0.0, allow_nan=False, allow_infinity=False),
-        integers(min_value=1),
+        integers(min_value=0),
         integers(min_value=1),
         integers(min_value=0),
         integers(min_value=0),

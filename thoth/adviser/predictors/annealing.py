@@ -62,9 +62,9 @@ class AdaptiveSimulatedAnnealing(Predictor):
              https://www.mathworks.com/help/gads/how-simulated-annealing-works.html
         """
         # Optimized:
-        #   (accepted_final_states + (iteration/limit)) / limit
+        #   (accepted_final_states + (iteration^2/limit)) / limit
         k = (
-            context.accepted_final_states_count * context.limit + context.iteration
+            context.accepted_final_states_count * context.limit + (context.iteration << 1)
         ) / (context.limit << 1)
         temperature = t0 * (0.95 ** k)
         _LOGGER.debug(
