@@ -23,6 +23,7 @@ from typing import List
 from typing import Optional
 from typing import Generator
 from typing import Tuple
+from typing import Set
 import operator
 import heapq
 
@@ -60,6 +61,16 @@ class Context:
     decision_type = attr.ib(type=Optional[DecisionType], kw_only=True, default=None)
     package_versions = attr.ib(
         type=Dict[Tuple[str, str, str], PackageVersion],
+        kw_only=True,
+        default=attr.Factory(dict),
+    )
+    dependencies = attr.ib(
+        type=Dict[str, Dict[Tuple[str, str, str], Set[Tuple[str, str, str]]]],
+        kw_only=True,
+        default=attr.Factory(dict),
+    )
+    dependents = attr.ib(
+        type=Dict[str, Dict[Tuple[str, str, str], Set[Tuple[str, str, str]]]],
         kw_only=True,
         default=attr.Factory(dict),
     )
@@ -119,14 +130,17 @@ class Context:
 
     def register_package_version(self, package_version: PackageVersion) -> bool:
         """Register the given package version to the context."""
-        registered = self.package_versions.get(package_version.to_tuple())
+        package_tuple = package_version.to_tuple()
+        registered = self.package_versions.get(package_tuple)
         if registered:
             # If the given package is shared in develop and in the main part, make it main stack part.
             registered.develop = registered.develop or package_version.develop
             # TODO: check if it is the same entry
             return True
 
-        self.package_versions[package_version.to_tuple()] = package_version
+        # Direct dependency, no dependency introduced this one.
+        self._note_dependencies(package_tuple=None, dependency_tuple=package_tuple)
+        self.package_versions[package_tuple] = package_version
         return False
 
     def register_accepted_final_state(self, state: State) -> None:
@@ -157,6 +171,7 @@ class Context:
         package_tuple: Tuple[str, str, str],
         *,
         develop: bool,
+        dependent_tuple: Optional[Tuple[str, str, str]] = None,
         markers: Optional[str] = None,
         extras: Optional[List[str]] = None,
     ) -> PackageVersion:
@@ -183,7 +198,34 @@ class Context:
             develop=develop,
         )
         self.package_versions[package_tuple] = package_version
+        self._note_dependencies(dependent_tuple, package_tuple)
         return package_version
+
+    def _note_dependencies(
+        self,
+        package_tuple: Optional[Tuple[str, str, str]],
+        dependency_tuple: Tuple[str, str, str],
+    ) -> None:
+        """Note down dependencies that were introduced."""
+        # Mapping: package tuple -> dependency tuple
+        if package_tuple is not None:
+            if package_tuple[0] not in self.dependencies:
+                self.dependencies[package_tuple[0]] = {}
+
+            if package_tuple not in self.dependencies[package_tuple[0]]:
+                self.dependencies[package_tuple[0]][package_tuple] = set()
+
+            self.dependencies[package_tuple[0]][package_tuple].add(dependency_tuple)
+
+        # Reverse mapping: dependency tuple -> package tuple
+        if dependency_tuple[0] not in self.dependents:
+            self.dependents[dependency_tuple[0]] = {}
+
+        if dependency_tuple not in self.dependents[dependency_tuple[0]]:
+            self.dependents[dependency_tuple[0]][dependency_tuple] = set()
+
+        if package_tuple is not None:
+            self.dependents[dependency_tuple[0]][dependency_tuple].add(package_tuple)
 
     def is_dependency_monkey(self) -> bool:
         """Check if the current context refers to a dependency monkey run."""

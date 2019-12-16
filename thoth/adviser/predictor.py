@@ -22,7 +22,6 @@ import logging
 import os
 
 import attr
-from typing import Optional
 from typing import Any
 
 import matplotlib.figure
@@ -103,4 +102,3 @@ class Predictor:
         ax.patch.set_visible(False)
         for sp in ax.spines.values():
             sp.set_visible(False)
-

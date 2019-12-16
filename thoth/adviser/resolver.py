@@ -627,6 +627,7 @@ class Resolver:
                     )
                     self.context.register_package_tuple(
                         dependency_tuple,
+                        dependent_tuple=package_tuple,
                         develop=package_version.develop,  # Propagate develop flag from parent.
                         markers=environment_marker,
                         extras=None,

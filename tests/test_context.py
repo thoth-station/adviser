@@ -225,6 +225,53 @@ class TestContext(AdviserTestCase):
             package_version_registered is package_version_another
         ), "Different instances returned"
 
+    def test_note_dependencies(self, context: Context) -> None:
+        """Test noting dependencies to the context."""
+        dependency_tuple = ("tensorboard", "2.1.0", "https://pypi.org/simple")
+        package_tuple = ("tensorflow", "2.0.0", "https://pypi.org/simple")
+
+        context.register_package_version(
+            PackageVersion(
+                name=package_tuple[0],
+                version="==" + package_tuple[1],
+                index=Source(package_tuple[2]),
+                develop=False,
+            )
+        )
+
+        context.register_package_tuple(
+            dependency_tuple,
+            develop=True,
+            markers=None,
+            extras=None,
+            dependent_tuple=package_tuple,
+        )
+
+        package_version = context.get_package_version(package_tuple)
+        assert package_version is not None
+        assert package_version.name == package_tuple[0]
+        assert package_version.locked_version == package_tuple[1]
+        assert package_version.index.url == package_tuple[2]
+
+        package_version = context.get_package_version(dependency_tuple)
+        assert package_version is not None
+        assert package_version.name == dependency_tuple[0]
+        assert package_version.locked_version == dependency_tuple[1]
+        assert package_version.index.url == dependency_tuple[2]
+
+        assert package_tuple[0] in context.dependencies
+        assert package_tuple in context.dependencies[package_tuple[0]]
+        assert dependency_tuple in context.dependencies[package_tuple[0]][package_tuple]
+
+        assert dependency_tuple[0] in context.dependents
+        assert dependency_tuple in context.dependents[dependency_tuple[0]]
+        assert package_tuple in context.dependents[dependency_tuple[0]][dependency_tuple]
+
+        # By calling register_package_version we get a notion about direct dependency.
+        assert package_tuple[0] in context.dependents
+        assert package_tuple in context.dependents[package_tuple[0]]
+        assert context.dependents[package_tuple[0]][package_tuple] == set()
+
     def test_is_dependency_monkey(self) -> None:
         """Test checking if the given context is an adviser context."""
         context = Context(
