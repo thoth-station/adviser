@@ -224,6 +224,7 @@ class Resolver:
             library_usage=self.library_usage,
             limit=self.limit,
             count=self.count,
+            beam=self.beam,
             recommendation_type=self.recommendation_type,
             decision_type=self.decision_type,
         )
