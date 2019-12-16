@@ -489,26 +489,10 @@ class Resolver:
                 direct_dependencies[direct_dependency_name] = package_versions
 
         # Create an empty state which will be extended with packages based on step results. We know we have resolved
-        # all the dependencies so start with beam which has just empty state and subsequently expand it based on
+        # all the dependencies so start with an empty beam which and an empty state and subsequently expand it based on
         # resolved direct dependencies.
         self.beam.wipe()
-        for package_versions in direct_dependencies.values():
-            # If the beam is empty, create an initial state to be added to the beam if accepted by pipeline steps.
-            # Even if number of initial states is more than beam.width, we create a list of current states explicitly
-            # to make sure we iterate over all possible combinations. The beam trims down low scoring states
-            # as expected.
-            # As we sort dependencies based on versions, we know we add latest first.
-            if self.beam.size != 0:
-                states = self.beam.iter_states()
-                self.beam.wipe()
-            else:
-                states = (s for s in [State()])
-
-            for state in states:
-                for package_version in package_versions:
-                    self._run_steps(
-                        state, {package_version.name: [package_version]}
-                    )
+        self._run_steps(State(), direct_dependencies)
 
     def _expand_state(self, state: State) -> Optional[State]:
         """Expand the given state, generate new states respecting the pipeline configuration."""
