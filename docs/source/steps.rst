@@ -41,12 +41,6 @@ Real world examples section bellow for examples).
   ``Step.MULTI_PACKAGE_RESOLUTIONS`` to ``True`` in derived classes
   implementing step logic.
 
-As steps are, together with :ref:`sieve pipeline units <sieves>`, called during
-resolution to produce new states, each step pipeline unit has a method called
-:func:`Step.new_iteration <thoth.adviser.steps.Step.new_iteration>` (defaults
-to a no-op) that is called each time when a new resolution round is made. It is
-suitable for keeping context that is related to resolution iterations.
-
 Main usage
 ==========
 

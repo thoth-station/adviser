@@ -46,6 +46,3 @@ class Step(Unit):
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Main entry-point for steps to filter and score packages."""
-
-    def new_iteration(self) -> None:
-        """A method called on a new resolver round."""
