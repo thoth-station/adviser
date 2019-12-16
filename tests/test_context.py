@@ -34,20 +34,6 @@ from .base import AdviserTestCase
 
 
 @pytest.fixture
-def context() -> Context:
-    """A fixture for a clean context."""
-    return Context(
-        project=None,
-        graph=None,
-        library_usage=None,
-        limit=None,
-        count=None,
-        beam=None,
-        recommendation_type=RecommendationType.TESTING,
-    )
-
-
-@pytest.fixture
 def package_version() -> PackageVersion:
     """A fixture for a package version representative."""
     return PackageVersion(
@@ -186,7 +172,12 @@ class TestContext(AdviserTestCase):
 
         assert (
             context.register_package_tuple(
-                package_tuple, develop=True, markers=environment_marker, extras=extras
+                package_tuple,
+                develop=True,
+                extras=extras,
+                os_name="rhel",
+                os_version="8.1",
+                python_version="3.6"
             )
             is not None
         )
@@ -198,7 +189,7 @@ class TestContext(AdviserTestCase):
         assert package_version.develop == True
         assert package_version.index is not None
         assert package_version.index.url == "https://pypi.org/simple"
-        assert package_version.markers == environment_marker
+        assert package_version.markers is None
         assert package_version.extras == extras
 
     def test_register_package_tuple_existing(
@@ -212,13 +203,23 @@ class TestContext(AdviserTestCase):
         extras = ["postgresql"]
 
         package_version_registered = context.register_package_tuple(
-            package_tuple, develop=True, markers=environment_marker, extras=extras
+            package_tuple,
+            develop=True,
+            extras=extras,
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7"
         )
 
         assert package_version_registered is not None
 
         package_version_another = context.register_package_tuple(
-            package_tuple, develop=True, markers=environment_marker, extras=extras
+            package_tuple,
+            develop=True,
+            extras=extras,
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7"
         )
 
         assert (
@@ -242,9 +243,11 @@ class TestContext(AdviserTestCase):
         context.register_package_tuple(
             dependency_tuple,
             develop=True,
-            markers=None,
             extras=None,
             dependent_tuple=package_tuple,
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7",
         )
 
         package_version = context.get_package_version(package_tuple)
@@ -265,7 +268,8 @@ class TestContext(AdviserTestCase):
 
         assert dependency_tuple[0] in context.dependents
         assert dependency_tuple in context.dependents[dependency_tuple[0]]
-        assert package_tuple in context.dependents[dependency_tuple[0]][dependency_tuple]
+        entry = context.dependents[dependency_tuple[0]][dependency_tuple]
+        assert entry == {(package_tuple, "fedora", "31", "3.7")}
 
         # By calling register_package_version we get a notion about direct dependency.
         assert package_tuple[0] in context.dependents

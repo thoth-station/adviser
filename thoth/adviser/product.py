@@ -50,7 +50,7 @@ class Product:
 
     @classmethod
     def from_final_state(
-        cls, *, graph: GraphDatabase, project: Project, context: Context, state: State
+        cls, *, context: Context, state: State
     ) -> "Product":
         """Instantiate advised stack from final state produced by adviser's pipeline."""
         assert state.is_final(), "Instantiating product from a non-final state"
@@ -65,16 +65,38 @@ class Product:
             if not package_version.hashes:
                 # We can re-use already existing package-version - in that case it already keeps hashes from
                 # a previous product instantiation.
-                hashes = graph.get_python_package_hashes_sha256(*package_tuple)
+                hashes = context.graph.get_python_package_hashes_sha256(*package_tuple)
                 package_version.hashes = ["sha256:" + h for h in hashes]
 
                 if not package_version.hashes:
                     _LOGGER.warning("No hashes found for package %r", package_tuple)
 
+                # Fill environment markers by checking dependencies that introduced this dependency.
+                # We do it only if we have no hashes - if hashes are present, the environment marker was
+                # already picked (can be set to None if no marker is present).
+                # For direct dependencies, dependents can return an empty set (if dependency is not
+                # shared with other dependencies) and marker is propagated from PackageVersion registered in
+                # Context.register_package_version.
+                dependents_tuples = context.dependents[package_tuple[0]][package_tuple]
+                for dependent_tuple in dependents_tuples:
+                    environment_marker = context.graph.get_python_environment_marker(
+                        *dependent_tuple[0],
+                        dependency_name=package_tuple[0],
+                        dependency_version=package_tuple[1],
+                        os_name=dependent_tuple[1],
+                        os_version=dependent_tuple[2],
+                        python_version=dependent_tuple[3],
+                    )
+                    if package_version.markers and environment_marker:
+                        # Install dependency if any of dependents need it.
+                        package_version.markers = f"({package_version.markers}) or ({environment_marker})"
+                    elif not package_version.markers and environment_marker:
+                        package_version.markers = environment_marker
+
             package_versions_locked.append(package_version)
 
         advised_project = Project.from_package_versions(
-            packages=list(project.iter_dependencies(with_devel=True)),
+            packages=list(context.project.iter_dependencies(with_devel=True)),
             packages_locked=package_versions_locked,
         )
 
