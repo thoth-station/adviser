@@ -77,7 +77,6 @@ class Beam:
     _last_added = attr.ib(
         default=attr.Factory(OrderedDict)
     )  # type: OrderedDict[int, Tuple[Tuple[float, int, int, int], State]]
-    _counter = attr.ib(default=0, type=int)
     _top_idx = attr.ib(default=None, type=Optional[int])
     _beam_history = attr.ib(
         type=List[Tuple[int, Optional[float]]], default=attr.Factory(list), kw_only=True
@@ -314,7 +313,6 @@ class Beam:
             self._last_added[id(item)] = item
 
         self._top_idx = None
-        self._counter -= 1
 
     def get(self, idx: int) -> State:
         """Get i-th element from the beam (constant time), keep it in the beam.
