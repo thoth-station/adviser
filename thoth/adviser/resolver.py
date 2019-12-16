@@ -26,6 +26,7 @@ from typing import Any
 from typing import Optional
 from typing import List
 from typing import Union
+from typing import Set
 import logging
 from itertools import chain
 from collections import deque
@@ -177,16 +178,25 @@ class Resolver:
         type=Optional[PythonPackageGraphSolver], kw_only=True, default=None
     )
     _context = attr.ib(type=Optional[Context], default=None, kw_only=True)
+    _reported_shared_dependencies = attr.ib(
+        type=Set[Tuple[Tuple[str, str, str], Tuple[str, str, str]]],
+        default=attr.Factory(set),
+        kw_only=True,
+    )
 
     @limit.validator
     @count.validator
     def _positive_int_validator(self, attribute: str, value: int) -> None:
         """Validate the given attribute - the given attribute should have a value of a positive integer."""
         if not isinstance(value, int):
-            raise ValueError(f"Attribute {attribute!r} should be of type int, got {type(value)!r} instead")
+            raise ValueError(
+                f"Attribute {attribute!r} should be of type int, got {type(value)!r} instead"
+            )
 
         if value <= 0:
-            raise ValueError(f"Value for attribute {attribute!r} should be a positive integer, got {value} instead")
+            raise ValueError(
+                f"Value for attribute {attribute!r} should be a positive integer, got {value} instead"
+            )
 
     @property
     def context(self) -> Context:
@@ -228,6 +238,19 @@ class Resolver:
             recommendation_type=self.recommendation_type,
             decision_type=self.decision_type,
         )
+
+    def _report_shared_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
+        """Report information about shared dependency in the dependency tree."""
+        for library in [
+            item[0] for item in self.context.dependents[package_tuple[0]][package_tuple]
+        ]:
+            if (package_tuple, library) not in self._reported_shared_dependencies:
+                self._reported_shared_dependencies.add((package_tuple, library))
+                _LOGGER.warning(
+                    "Consider pinning dependency %r as it is introduced by multiple nodes in the dependency graph: %r",
+                    package_tuple,
+                    library,
+                )
 
     def _run_boots(self) -> None:
         """Run all boots bound to the current annealing run context."""
@@ -302,6 +325,7 @@ class Resolver:
                         # We already have this dependency in stack, run steps that are
                         # required to be run in such cases.
                         multi_package_resolution = True
+                        self._report_shared_dependency(package_version_tuple)
 
                 score_addition = 0.0
                 justification_addition = []
@@ -439,9 +463,7 @@ class Resolver:
                 # database but none was matching the given version range.
                 unresolved.append(package_version.name)
 
-                error_msg = (
-                    f"No versions were found for direct dependency {package_version.name!r}"
-                )
+                error_msg = f"No versions were found for direct dependency {package_version.name!r}"
                 runtime_environment = self.project.runtime_environment
                 if runtime_environment.operating_system.name:
                     error_msg += f"; operating system {runtime_environment.operating_system.name!r}"
@@ -457,7 +479,9 @@ class Resolver:
                 continue
 
         if unresolved:
-            raise UnresolvedDependencies("Unable to resolve all direct dependencies", unresolved=unresolved)
+            raise UnresolvedDependencies(
+                "Unable to resolve all direct dependencies", unresolved=unresolved
+            )
 
         # Now we are free to de-instantiate solver.
         del self._solver
@@ -493,6 +517,7 @@ class Resolver:
         # all the dependencies so start with an empty beam which and an empty state and subsequently expand it based on
         # resolved direct dependencies.
         self.beam.wipe()
+        self._reported_shared_dependencies = set()
         self._run_steps(State(), direct_dependencies)
 
     def _expand_state(self, state: State) -> Optional[State]:
@@ -599,18 +624,15 @@ class Resolver:
                     record["package_version"],
                     record["index_url"],
                 )
-                if not self.context.get_package_version(
-                    dependency_tuple, graceful=True
-                ):
-                    self.context.register_package_tuple(
-                        dependency_tuple,
-                        dependent_tuple=package_tuple,
-                        develop=package_version.develop,  # Propagate develop flag from parent.
-                        extras=None,
-                        os_name=record["os_name"],
-                        os_version=record["os_version"],
-                        python_version=record["python_version"],
-                    )
+                self.context.register_package_tuple(
+                    dependency_tuple,
+                    dependent_tuple=package_tuple,
+                    develop=package_version.develop,  # Propagate develop flag from parent.
+                    extras=None,
+                    os_name=record["os_name"],
+                    os_version=record["os_version"],
+                    python_version=record["python_version"],
+                )
 
                 if dependency_tuple not in all_dependencies[dependency_tuple[0]]:
                     all_dependencies[dependency_tuple[0]].append(dependency_tuple)
@@ -688,11 +710,7 @@ class Resolver:
                 state = self.predictor.run(self.context, self.beam)
                 self.beam.remove(state)
 
-                _LOGGER.debug(
-                    "Expanding state with score %g: %r",
-                    state.score,
-                    state,
-                )
+                _LOGGER.debug("Expanding state with score %g: %r", state.score, state)
                 final_state = self._expand_state(state)
                 if final_state:
                     if self._run_strides(final_state):
@@ -736,8 +754,7 @@ class Resolver:
                     final_state.score,
                 )
                 product = Product.from_final_state(
-                    context=self.context,
-                    state=final_state,
+                    context=self.context, state=final_state
                 )
                 yield product
         except EagerStopPipeline as exc:
@@ -758,7 +775,7 @@ class Resolver:
         self.pipeline.call_post_run()
 
     def resolve_products(
-            self, *, with_devel: bool = True
+        self, *, with_devel: bool = True
     ) -> Generator[Product, None, None]:
         """Resolve raw products as produced by this resolver pipeline."""
         self._init_context()

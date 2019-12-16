@@ -161,5 +161,3 @@ sampling and state space restrictions in beam. In such cases, it is recommended
 to pin down versions of such packages (as ``wheel`` in the example) explicitly
 as a hint to resolver. Otherwise resolution might fail. See logs of an adviser
 run to spot such cases.
-
-This limitation will be addressed in next releases.
