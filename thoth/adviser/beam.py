@@ -232,8 +232,8 @@ class Beam:
         if self._top_idx is None:
             # Perform the operation in O(N/2) ~ O(N) time.
             self._top_idx = len(self._states) // 2
-            for idx, _ in enumerate(self._states[self._top_idx + 1:]):
-                if self._states[self._top_idx][0] < self._states[idx][0]:
+            for idx, _ in enumerate(self._states[self._top_idx + 1:], start=self._top_idx + 1):
+                if self._states[self._top_idx] < self._states[idx]:
                     self._top_idx = idx
 
         return self._top_idx
