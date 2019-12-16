@@ -39,11 +39,6 @@ same type (same package name).
   packages in the Python ecosystem and each package can have different version
   range requirements on package ``six``.
 
-All sieves have a method called :func:`Sieve.new_iteration
-<thoth.adviser.sieves.Sieve.new_iteration>` that is called each time when a new
-resolution round is made. It is suitable for sieves that keep context that
-is related to resolution iterations.
-
 Main usage
 ==========
 

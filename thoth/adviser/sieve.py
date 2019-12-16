@@ -35,6 +35,3 @@ class Sieve(Unit):
         self, package_versions: Generator[PackageVersion, None, None]
     ) -> Generator[PackageVersion, None, None]:
         """Main entry-point for sieves to filter and score packages."""
-
-    def new_iteration(self) -> None:
-        """A method called on a new resolver round."""
