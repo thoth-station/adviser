@@ -56,6 +56,7 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
             limit=limit,
             iteration=iteration,
             count=count,
+            beam=flexmock(size=96),
         )
 
         assert (
