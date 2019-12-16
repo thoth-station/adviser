@@ -98,17 +98,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:67211b7454183a4b61a269003f8b3add76bbaf282236221632eafa0e2ec62e09",
-                "sha256:c53f274991616dc6d84d1b3b4e57a86f146df2132e3bd1b02ce10209bf7a2c49"
+                "sha256:8a3b9bb731270888271cd3e0de8d96b35db86be55cfd47296087a074ff23ea86",
+                "sha256:e8f02208f0127dd73443b8518aacd8207563576e6f6b245a621fdf5080acd5fb"
             ],
-            "version": "==1.10.39"
+            "version": "==1.10.40"
         },
         "botocore": {
             "hashes": [
-                "sha256:2d2b0bf77c417e5fa42b64acfc5501f11537c3a3bc05a93ea3893d1d18c7a1c2",
-                "sha256:9a993f7650e9a6eabb12cb3cc14b339a0d1ca14a80a9f539a6d5a63f2392a781"
+                "sha256:0f30d5f09181231166c4e74ba7335d0740e1645c4354d76271fde0cad606d8a4",
+                "sha256:7e44f4c527c11c90942b3ea32ef4577596b08e77d01ab3f9a260b4873402a84d"
             ],
-            "version": "==1.13.39"
+            "version": "==1.13.40"
         },
         "cachetools": {
             "hashes": [
@@ -897,11 +897,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:389f2f1eb798c0b774321b048139b677462da4d989cd705a277364861b855df9",
-                "sha256:7bdfb76a52e90f5367306cfe955dfdab28f9edbe5555296904cee686704babbf"
+                "sha256:1a8bde9f8f2d782e7b927fe5da8d432fd3f06c71984c2da7e828e0150932712e",
+                "sha256:b6c00000ad8bc2346717196ebc47a99ea6412dfd7c307f76345dda5de3af1897"
             ],
             "index": "pypi",
-            "version": "==4.54.2"
+            "version": "==4.55.0"
         },
         "hypothesis-auto": {
             "hashes": [
@@ -1029,6 +1029,13 @@
                 "sha256:30f610279e8b2578cab6db20741130331735c781b56053c59c4076da27f06b66"
             ],
             "version": "==1.13.0"
+        },
+        "sortedcontainers": {
+            "hashes": [
+                "sha256:974e9a32f56b17c1bac2aebd9dcf197f3eb9cd30553c5852a3187ad162e1a03a",
+                "sha256:d9e96492dd51fae31e60837736b38fe42a187b5404c16606ff7ee7cd582d4c60"
+            ],
+            "version": "==2.1.0"
         },
         "typed-ast": {
             "hashes": [
