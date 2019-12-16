@@ -42,6 +42,7 @@ def context() -> Context:
         library_usage=None,
         limit=None,
         count=None,
+        beam=None,
         recommendation_type=RecommendationType.TESTING,
     )
 
@@ -232,6 +233,7 @@ class TestContext(AdviserTestCase):
             library_usage=None,
             limit=None,
             count=None,
+            beam=None,
             recommendation_type=None,
             decision_type=DecisionType.ALL,
         )
@@ -247,6 +249,7 @@ class TestContext(AdviserTestCase):
             library_usage=None,
             limit=None,
             count=None,
+            beam=None,
             recommendation_type=RecommendationType.LATEST,
             decision_type=None,
         )
@@ -263,6 +266,7 @@ class TestContext(AdviserTestCase):
                 library_usage=None,
                 limit=None,
                 count=None,
+                beam=None,
                 # Decision type and recommendation type cannot be set to None at the same time.
                 recommendation_type=None,
                 decision_type=None,
@@ -277,6 +281,7 @@ class TestContext(AdviserTestCase):
                 library_usage=None,
                 limit=None,
                 count=None,
+                beam=None,
                 # Decision type and recommendation type cannot be set at the same time.
                 recommendation_type=RecommendationType.LATEST,
                 decision_type=DecisionType.ALL,

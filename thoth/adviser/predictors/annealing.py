@@ -20,7 +20,6 @@
 from typing import Any
 from typing import Tuple
 from typing import List
-from typing import Optional
 import logging
 from math import exp
 import random
@@ -53,20 +52,27 @@ class AdaptiveSimulatedAnnealing(Predictor):
     _temperature = attr.ib(type=float, kw_only=True, default=0.0)
 
     @staticmethod
-    def _exp(iteration: int, t0: float, count: int, limit: int) -> float:
+    def _exp(t0: float, context: Context) -> float:
         """Exponential temperature function.
+
+        The exponential function was additionally adjusted to respect number of rounds (iterations)
+        done in the main resolution time to also consider "time" spent in resolver for too large stacks.
 
         See also:
              https://www.mathworks.com/help/gads/how-simulated-annealing-works.html
         """
-        k = count / limit
+        # Optimized:
+        #   (accepted_final_states + (iteration^2/limit)) / limit
+        k = (
+            context.accepted_final_states_count * context.limit + (context.iteration << 1)
+        ) / (context.limit << 1)
         temperature = t0 * (0.95 ** k)
         _LOGGER.debug(
-            "New temperature for (iteration=%d, t0=%g, count=%d, limit=%d, k=%f) = %g",
-            iteration,
+            "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, k=%f) = %g",
+            context.iteration,
             t0,
-            count,
-            limit,
+            context.accepted_final_states_count,
+            context.count,
             k,
             temperature,
         )
@@ -77,13 +83,11 @@ class AdaptiveSimulatedAnnealing(Predictor):
         top_score: float, neighbour_score: float, temperature: float
     ) -> float:
         """Check the probability of acceptance the given solution to expansion."""
+        if temperature <= 0.0:
+            return 0.0
+
         if neighbour_score > top_score:
             return 1.0
-
-        # This should never occur based on resolver logic, but just to be sure...
-        if temperature <= 0.0:
-            _LOGGER.error("Temperature dropped to %g: temperature should be a positive number")
-            return 0.0
 
         acceptance_probability = exp((neighbour_score - top_score) / temperature)
         _LOGGER.debug(
@@ -102,12 +106,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
             _LOGGER.debug("Expanding the first state (hill climbing)")
             return beam.get(0)
 
-        self._temperature = self._exp(
-            context.iteration,
-            self._temperature,
-            context.accepted_final_states_count,
-            context.limit,
-        )
+        self._temperature = self._exp(self._temperature, context)
 
         # Expand highest promising by default.
         to_expand_state = beam.top()

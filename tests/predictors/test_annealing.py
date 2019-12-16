@@ -37,17 +37,29 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
 
     @given(
         floats(min_value=0.0, allow_nan=False, allow_infinity=False),
+        integers(min_value=0),
         integers(min_value=1),
-        integers(min_value=1),
+        integers(min_value=0),
+        integers(min_value=0),
     )
-    def test_exp(self, t0: float, count: int, limit: int) -> None:
+    def test_exp(
+        self,
+        t0: float,
+        accepted_final_states_count: int,
+        limit: int,
+        iteration: int,
+        count: int,
+    ) -> None:
         """Test the exp function never drops bellow 0."""
-        # Iteration parameter has no effect.
+        context = flexmock(
+            accepted_final_states_count=accepted_final_states_count,
+            limit=limit,
+            iteration=iteration,
+            count=count,
+        )
+
         assert (
-            AdaptiveSimulatedAnnealing._exp(
-                iteration=0, t0=t0, count=count, limit=limit
-            )
-            >= 0.0
+            AdaptiveSimulatedAnnealing._exp(t0=t0, context=context) >= 0.0
         ), "Temperature dropped bellow 0 or is NaN"
 
     @given(
