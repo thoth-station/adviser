@@ -396,7 +396,12 @@ class TestResolver(AdviserTestCase):
             state, package_version2
         ).and_return(None).once()
 
+        resolver.should_receive("_report_shared_dependency").with_args(
+            package_version1.to_tuple()
+        ).and_return(None).once()
+
         assert resolver.beam.size == 0
+        resolver._init_context()
         assert (
             resolver._run_steps(
                 state,
@@ -453,6 +458,12 @@ class TestResolver(AdviserTestCase):
             state, package_version1
         ).and_return(None).once()
 
+        # Make sure we report multi package resolution.
+        resolver.should_receive("_report_shared_dependency").with_args(
+            package_version1.to_tuple()
+        ).and_return(None).once()
+
+        resolver._init_context()
         assert resolver.beam.size == 0
         assert (
             resolver._run_steps(state, {package_version1.name: [package_version1]})
@@ -1599,13 +1610,11 @@ class TestResolver(AdviserTestCase):
 
         flexmock(Product)
         Product.should_receive("from_final_state").with_args(
-            context=resolver.context,
-            state=final_state1,
+            context=resolver.context, state=final_state1
         ).and_return(product1).ordered()
 
         Product.should_receive("from_final_state").with_args(
-            context=resolver.context,
-            state=final_state2,
+            context=resolver.context, state=final_state2
         ).and_return(product2).ordered()
 
         resolver.predictor.should_call("post_run").ordered()
@@ -1634,8 +1643,7 @@ class TestResolver(AdviserTestCase):
 
         flexmock(Product)
         Product.should_receive("from_final_state").with_args(
-            context=resolver.context,
-            state=final_state1,
+            context=resolver.context, state=final_state1
         ).and_return(product1).ordered()
 
         # Expect each pipeline unit of a type.
