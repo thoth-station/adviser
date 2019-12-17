@@ -5,3 +5,4 @@ thoth_adviser.egg-info/
 .mypy_cache/
 __pycache__
 build/
+coverage.xml
