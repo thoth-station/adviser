@@ -100,23 +100,24 @@ class AdaptiveSimulatedAnnealing(Predictor):
         )
         return acceptance_probability
 
-    def run(self, context: Context, beam: Beam) -> State:
+    def run(self, context: Context, beam: Beam) -> Tuple[State, str]:
         """Run adaptive simulated annealing on top of beam."""
         if context.recommendation_type == RecommendationType.LATEST:
             # If we have latest recommendations, try to expand the most recent version, always.
             _LOGGER.debug("Expanding the first state (hill climbing)")
-            return beam.get(0)
+            state = beam.top()
+            return state, random.choice(list(state.unresolved_dependencies))
 
         self._temperature = self._exp(self._temperature, context)
 
         # Expand highest promising by default.
-        to_expand_state = beam.top()
+        state = beam.top()
 
         # Pick a random state to be expanded if accepted.
         probable_state_idx = random.randrange(1, beam.size) if beam.size > 1 else 0
         probable_state = beam.get(probable_state_idx)
         acceptance_probability = self._compute_acceptance_probability(
-            to_expand_state.score, probable_state.score, self._temperature
+            state.score, probable_state.score, self._temperature
         )
 
         if probable_state_idx != 0 and acceptance_probability >= random.uniform(
@@ -128,23 +129,23 @@ class AdaptiveSimulatedAnnealing(Predictor):
                 probable_state.score,
             )
             # state_expansion_idx = probable_state_idx
-            to_expand_state = probable_state
+            state = probable_state
         else:
             _LOGGER.debug(
-                "Expanding TOP rated state with score %g", to_expand_state.score
+                "Expanding TOP rated state with score %g", state.score
             )
 
         if self.keep_history:
             self._temperature_history.append(
                 (
                     self._temperature,
-                    to_expand_state is beam.top(),
+                    state is beam.top(),
                     acceptance_probability,
                     context.accepted_final_states_count,
                 )
             )
 
-        return to_expand_state
+        return state, random.choice(list(state.unresolved_dependencies))
 
     def pre_run(self, context: Context) -> None:
         """Initialization before the actual annealing run."""

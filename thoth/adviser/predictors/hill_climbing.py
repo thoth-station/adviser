@@ -45,14 +45,14 @@ class HillClimbing(Predictor):
 
     _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
 
-    def run(self, context: Context, beam: Beam) -> State:
+    def run(self, context: Context, beam: Beam) -> Tuple[State, str]:
         """Get top state from the beam for the next resolution round."""
         state = beam.top()
 
         if self.keep_history:
             self._history.append((state.score, context.accepted_final_states_count))
 
-        return state
+        return state, next(iter(state.unresolved_dependencies))
 
     def plot(self) -> matplotlib.figure.Figure:
         """Plot score of the highest rated stack during hill climbing."""

@@ -525,13 +525,13 @@ class Resolver:
         self._reported_shared_dependencies = set()
         self._run_steps(State(), direct_dependencies)
 
-    def _expand_state(self, state: State) -> Optional[State]:
+    def _expand_state(self, state: State, package_name: str) -> Optional[State]:
         """Expand the given state, generate new states respecting the pipeline configuration."""
         if not state.unresolved_dependencies:
             # No unresolved dependencies, return the state -- its final.
             return state
 
-        _, package_tuple = state.unresolved_dependencies.popitem(last=False)
+        package_tuple = state.unresolved_dependencies.pop(package_name)
 
         # Obtain extras for the given package. Extras are non-empty only for direct dependencies. If indirect
         # dependencies use extras, they don't need to be explicitly stated as solvers mark "hard" dependency on
@@ -729,11 +729,16 @@ class Resolver:
                 self.beam.new_iteration()
                 self.context.iteration += 1
 
-                state = self.predictor.run(self.context, self.beam)
+                state, package_name = self.predictor.run(self.context, self.beam)
                 self.beam.remove(state)
 
-                _LOGGER.debug("Expanding state with score %g: %r", state.score, state)
-                final_state = self._expand_state(state)
+                _LOGGER.debug(
+                    "Resolving package %r in state with score %g: %r",
+                    package_name,
+                    state.score,
+                    state
+                )
+                final_state = self._expand_state(state, package_name)
                 if final_state:
                     if self._run_strides(final_state):
                         self._run_wraps(final_state)

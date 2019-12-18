@@ -23,6 +23,7 @@ import os
 
 import attr
 from typing import Any
+from typing import Tuple
 
 import matplotlib.figure
 
@@ -66,11 +67,11 @@ class Predictor:
         """
 
     @abc.abstractmethod
-    def run(self, context: Context, beam: Beam) -> State:
+    def run(self, context: Context, beam: Beam) -> Tuple[State, str]:
         """The main method used to run the predictor.
 
-        The method accepts a beam of states and returns the state which should be used for next expansion.
-        The beam has to be kept untouched.
+        The method accepts a beam of states and returns the state which should be
+        used for next expansion and package name that should be resolved .The beam has to be kept untouched.
         """
         raise NotImplementedError
 
