@@ -571,19 +571,18 @@ class Resolver:
             self.beam.add_state(state)
             return None
 
-        self._expand_state_add_dependencies(
+        return self._expand_state_add_dependencies(
             state=state,
             package_version=package_version,
             dependencies=list(chain(*dependencies.values())),
         )
-        return None
 
     def _expand_state_add_dependencies(
         self,
         state: State,
         package_version: PackageVersion,
         dependencies: List[Tuple[str, str]],
-    ) -> None:
+    ) -> Optional[State]:
         """Create new states out of existing ones based on dependencies."""
         _LOGGER.debug(
             "Expanding state with dependencies based on packages solved in environments"
@@ -676,7 +675,23 @@ class Resolver:
             else:
                 all_dependencies[dependency_name] = package_versions
 
+        if not all_dependencies and not state.unresolved_dependencies:
+            # A special case when all the dependencies of the resolved one are installed conditionally
+            # based on environment markers but none of the environment markers is evaluated to True. If
+            # no more unresolved dependencies present, the state is final.
+            return state
+
+        if not all_dependencies:
+            # All the dependencies of the resolved one are installed conditionally based on environment
+            # markers but none of the environment markers is evaluated to True. As there are more
+            # dependencies to be added re-add state with adjusted properties.
+            state.iteration = self.context.iteration
+            state.iteration_states_added = 0
+            self.beam.add_state(state)
+            return None
+
         self._run_steps(state, all_dependencies)
+        return None
 
     def _do_resolve_states(
         self, *, with_devel: bool = True
