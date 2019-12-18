@@ -401,7 +401,9 @@ class Resolver:
 
                 if len(configuration_table) == idx[0] + 1:
                     # No more to run - we passed all package_version of a type.
-                    self.beam.add_state(cloned_state, self.context.iteration, iteration_states_added)
+                    cloned_state.iteration = self.context.iteration
+                    cloned_state.iteration_states_added = iteration_states_added
+                    self.beam.add_state(cloned_state)
                     iteration_states_added += 1
                 else:
                     configuration_queue.appendleft(((idx[0] + 1, 0), cloned_state))
@@ -564,7 +566,9 @@ class Resolver:
                 return state
 
             # No dependency, add back to beam for resolving unresolved in next rounds.
-            self.beam.add_state(state, self.context.iteration, 0)
+            state.iteration = self.context.iteration
+            state.iteration_states_added = 0
+            self.beam.add_state(state)
             return None
 
         self._expand_state_add_dependencies(

@@ -297,9 +297,7 @@ class Beam:
         self._states[pos] = newitem
         self._states_idx[id(self._states[pos][1])] = pos
 
-    def add_state(
-        self, state: State, iteration: int, iteration_states_added: int
-    ) -> None:
+    def add_state(self, state: State) -> None:
         """Add state to the internal state listing (do it in O(log(N)) time."""
         # Multi-key ordering to guarantee comparision between states (based on sort):
         #  * highest state first
@@ -310,8 +308,8 @@ class Beam:
             (
                 state.score,
                 -state.latest_version_offset,
-                iteration,
-                -iteration_states_added,
+                state.iteration,
+                -state.iteration_states_added,
             ),
             state,
         )
