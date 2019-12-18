@@ -30,6 +30,7 @@ import attr
 from thoth.python import PackageVersion
 from thoth.storages.exceptions import NotFoundError
 
+from ..enums import RecommendationType
 from ..step import Step
 from ..state import State
 
@@ -50,9 +51,13 @@ class CvePenalizationStep(Step):
         cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
         """Remove CVEs only for advised stacks."""
-        if builder_context.is_adviser_pipeline() and not builder_context.is_included(
-            cls
-        ):
+        if not builder_context.is_adviser_pipeline():
+            return None
+
+        if builder_context.recommendation_type == RecommendationType.LATEST:
+            return None
+
+        if not builder_context.is_included(cls):
             return {}
 
         return None
