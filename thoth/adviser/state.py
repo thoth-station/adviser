@@ -33,6 +33,11 @@ class State:
     """Implementation of an adviser's state in state space."""
 
     score = attr.ib(type=float, default=0.0)
+    latest_version_offset = attr.ib(type=int, default=0)
+    # Iteration in which the state was introduced.
+    iteration = attr.ib(type=int, default=0)
+    # States added in the given iteration.
+    iteration_states_added = attr.ib(type=int, default=0)
     # Python3.6 fails on OrderedDict subscription, use Dict instead.
     unresolved_dependencies = attr.ib(
         default=attr.Factory(OrderedDict)
@@ -54,11 +59,14 @@ class State:
             advised_runtime_environment = self.advised_runtime_environment.to_dict()
 
         return {
+            "advised_runtime_environment": advised_runtime_environment,
+            "iteration": self.iteration,
+            "iteration_states_added": self.iteration_states_added,
+            "justification": self.justification,
+            "latest_version_offset": self.latest_version_offset,
+            "resolved_dependencies": self.resolved_dependencies,
             "score": self.score,
             "unresolved_dependencies": self.unresolved_dependencies,
-            "resolved_dependencies": self.resolved_dependencies,
-            "advised_runtime_environment": advised_runtime_environment,
-            "justification": self.justification,
         }
 
     def is_final(self) -> bool:
@@ -83,6 +91,9 @@ class State:
 
         return self.__class__(
             score=self.score,
+            latest_version_offset=self.latest_version_offset,
+            iteration=self.iteration,
+            iteration_states_added=self.iteration_states_added,
             unresolved_dependencies=OrderedDict(self.unresolved_dependencies),
             resolved_dependencies=OrderedDict(self.resolved_dependencies),
             advised_runtime_environment=cloned_advised_environment,

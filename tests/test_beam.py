@@ -136,35 +136,45 @@ class TestBeam(AdviserTestCase):
         """Test adding states to beam and order during addition when score is same."""
         beam = Beam(width=2)
 
-        state01 = State(score=0.0)
+        state01 = State(score=0.0, iteration=0, iteration_states_added=0)
         state01.add_justification([{"state": "01"}])
         beam.add_state(state01)
 
-        state02 = State(score=0.0)
+        state02 = State(score=0.0, iteration=0, iteration_states_added=1)
         state02.add_justification([{"state": "02"}])
         beam.add_state(state02)
 
-        state03 = State(score=0.0)
+        state03 = State(score=0.0, iteration=1, iteration_states_added=0)
         state03.add_justification([{"state": "03"}])
         beam.add_state(state03)
 
-        state04 = State(score=0.0)
+        state04 = State(score=0.0, iteration=1, iteration_states_added=1)
         state04.add_justification([{"state": "04"}])
         beam.add_state(state04)
 
-        assert list(beam.iter_states_sorted()) == [state01, state02]
-        assert list(beam.iter_states_sorted(reverse=True)) == [state01, state02]
-        assert list(beam.iter_states_sorted(reverse=False)) == [state02, state01]
+        assert list(beam.iter_states_sorted()) == [state03, state04]
+        assert list(beam.iter_states_sorted(reverse=True)) == [state03, state04]
+        assert list(beam.iter_states_sorted(reverse=False)) == [state04, state03]
 
     def test_add_state_order_single(self) -> None:
-        """Test adding states to beam and order during addition when score is same."""
+        """Test adding states to beam and order during addition when score is same - iteration is relevant."""
         beam = Beam(width=1)
 
-        state01 = State(score=0.0)
+        state01 = State(
+            score=0.0,
+            latest_version_offset=0,
+            iteration=1,
+            iteration_states_added=0,
+        )
         state01.add_justification([{"state": "01"}])
         beam.add_state(state01)
 
-        state02 = State(score=0.0)
+        state02 = State(
+            score=0.0,
+            latest_version_offset=0,
+            iteration=0,
+            iteration_states_added=0,
+        )
         state02.add_justification([{"state": "02"}])
         beam.add_state(state02)
 

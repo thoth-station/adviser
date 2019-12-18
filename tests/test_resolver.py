@@ -278,6 +278,7 @@ class TestResolver(AdviserTestCase):
 
         resolver.pipeline.steps = [steps.Step1(), steps.Step2()]
 
+        resolver._init_context()
         assert resolver.beam.size == 0
         assert (
             resolver._run_steps(state1, {pv.name: [pv] for pv in package_versions})
@@ -415,6 +416,9 @@ class TestResolver(AdviserTestCase):
         assert resolver.beam.size == 1
         assert resolver.beam.top().to_dict() == {
             "advised_runtime_environment": None,
+            "iteration": 0,
+            "iteration_states_added": 0,
+            "latest_version_offset": 0,
             "justification": [],
             "resolved_dependencies": OrderedDict(
                 [("tensorflow", ("tensorflow", "2.0.0", "https://pypi.org/simple"))]
@@ -472,6 +476,9 @@ class TestResolver(AdviserTestCase):
         assert resolver.beam.size == 1
         assert resolver.beam.top().to_dict() == {
             "advised_runtime_environment": None,
+            "iteration": 0,
+            "iteration_states_added": 0,
+            "latest_version_offset": 0,
             "justification": [],
             "resolved_dependencies": OrderedDict(
                 [("tensorflow", ("tensorflow", "2.0.0", "https://pypi.org/simple"))]
@@ -553,6 +560,7 @@ class TestResolver(AdviserTestCase):
         tf_package_versions.reverse()
         numpy_package_versions.reverse()
 
+        resolver._init_context()
         assert (
             resolver._run_steps(
                 state,
@@ -567,23 +575,66 @@ class TestResolver(AdviserTestCase):
             numpy_package_versions
         )
 
-        # The run_steps algorithm is in fact an optimized drop-in replacement for itertools.product with
-        # backtracking baked in. As we accept all combinations, let's verify combinations generated are
-        # sames as in case of itertools.product.
-
-        itertools_products = []
-        for combination in itertools.product(
-            tf_package_versions, numpy_package_versions
-        ):
-            itertools_products.append([item.to_tuple() for item in combination])
-
         run_steps_products = []
         for state in resolver.beam.iter_states_sorted():
             run_steps_products.append(
                 [item for item in state.unresolved_dependencies.values()]
             )
 
-        assert itertools_products == run_steps_products
+        # The logic behind creating new states respects relative offset in releases.
+        itertools_products_count = len(list(itertools.product(tf_package_versions, numpy_package_versions)))
+
+        assert itertools_products_count == len(run_steps_products)
+        assert run_steps_products == [
+            [
+                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.17.3", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.17.2", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "1.9.0", "https://pypi.org/simple"),
+                ("numpy", "1.17.3", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.17.1", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "1.9.0", "https://pypi.org/simple"),
+                ("numpy", "1.17.2", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "1.9.0rc1", "https://pypi.org/simple"),
+                ("numpy", "1.17.3", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"),
+                ("numpy", "1.17.0", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "1.9.0", "https://pypi.org/simple"),
+                ("numpy", "1.17.1", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "1.9.0rc1", "https://pypi.org/simple"),
+                ("numpy", "1.17.2", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "1.9.0", "https://pypi.org/simple"),
+                ("numpy", "1.17.0", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "1.9.0rc1", "https://pypi.org/simple"),
+                ("numpy", "1.17.1", "https://pypi.org/simple"),
+            ],
+            [
+                ("tensorflow", "1.9.0rc1", "https://pypi.org/simple"),
+                ("numpy", "1.17.0", "https://pypi.org/simple"),
+            ],
+        ]
 
     def test_run_strides(self, resolver: Resolver) -> None:
         """Test running pipeline strides."""
@@ -1244,6 +1295,9 @@ class TestResolver(AdviserTestCase):
         assert resolver.beam.size == 1
         assert resolver.beam.top().to_dict() == {
             "score": 0.0,
+            "iteration": 0,
+            "iteration_states_added": 0,
+            "latest_version_offset": 0,
             "unresolved_dependencies": OrderedDict(
                 [
                     ("absl-py", ("absl-py", "0.8.1", "https://pypi.org/simple")),
