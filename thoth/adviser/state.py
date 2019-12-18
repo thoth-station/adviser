@@ -38,7 +38,6 @@ class State:
     iteration = attr.ib(type=int, default=0)
     # States added in the given iteration.
     iteration_states_added = attr.ib(type=int, default=0)
-    # Python3.6 fails on OrderedDict subscription, use Dict instead.
     unresolved_dependencies = attr.ib(
         default=attr.Factory(OrderedDict)
     )  # type: OrderedDict[str, Tuple[str, str, str]]
