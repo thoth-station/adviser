@@ -112,6 +112,19 @@ def _instantiate_project(
     return project
 
 
+def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationType) -> type:
+    """Get adviser predictor based on command line option."""
+    if predictor != "AUTO":
+        return getattr(predictors, predictor)
+
+    if recommendation_type == RecommendationType.LATEST:
+        return predictors.HillClimbing
+    elif recommendation_type == RecommendationType.STABLE or recommendation_type == RecommendationType.TESTING:
+        return predictors.AdaptiveSimulatedAnnealing
+
+    raise ValueError(f"Unknown recommendation type: {recommendation_type!r}")
+
+
 @click.group()
 @click.pass_context
 @click.option(
@@ -343,9 +356,9 @@ def provenance(
 @click.option(
     "--predictor",
     envvar="THOTH_ADVISER_PREDICTOR",
-    default="AdaptiveSimulatedAnnealing",
-    type=click.Choice(predictors.__all__),
-    help="Predictor to be used with the resolver.",
+    default="AUTO",
+    type=click.Choice(predictors.__all__ + ["AUTO"]),
+    help="Predictor to be used with the resolver, select the most appropriate one in case of AUTO.",
 )
 @click.option(
     "--pipeline",
@@ -400,18 +413,19 @@ def advise(
     parameters["project"] = project.to_dict()
     if pipeline_config is not None:
         parameters["pipeline"] = pipeline_config.to_dict()
+    predictor_class = _get_adviser_predictor(predictor, recommendation_type)
 
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
     seed = seed if seed is not None else int(time.time())
     _LOGGER.info(
         "Starting resolver using %r predictor with random seed set to %r",
-        predictor,
+        predictor_class.__name__,
         seed,
     )
     random.seed(seed)
 
     resolver = Resolver.get_adviser_instance(
-        predictor=getattr(predictors, predictor)(keep_history=plot is not None),
+        predictor=predictor_class(keep_history=plot is not None),
         project=project,
         library_usage=library_usage,
         recommendation_type=recommendation_type,
