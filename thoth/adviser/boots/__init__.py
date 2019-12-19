@@ -17,6 +17,10 @@
 
 """Boot units implemented in adviser."""
 
+from .ubi import UbiBoot
 from .version_clash import VersionClashBoot
 
-__all__ = ["VersionClashBoot"]
+__all__ = [
+    "UbiBoot",
+    "VersionClashBoot",
+]
