@@ -1662,7 +1662,16 @@ class TestResolver(AdviserTestCase):
             os_version=None,
             python_version=None,
         )
+        resolver.context.iteration = 42
+        state.iteration = 22
+        state.iteration_states_added = 33
+
         assert resolver._expand_state(state) is None
+        assert resolver.beam.size == 1
+        state_added = resolver.beam.get(0)
+        assert state is state_added
+        assert state.iteration == 42
+        assert state.iteration_states_added == 0
 
     def test_do_resolve_states_beam_empty(
         self, resolver: Resolver, final_state: State
