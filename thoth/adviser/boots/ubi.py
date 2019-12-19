@@ -52,7 +52,7 @@ class UbiBoot(Boot):
         return None
 
     def run(self) -> None:
-        """Check for version clash in packages."""
+        """Remap UBI to RHEL as Thoth keeps track of RHEL and UBI is ABI compatible."""
         if self.context.project.runtime_environment.operating_system.name == "ubi":
             _LOGGER.info("Using observations for RHEL instead of UBI, RHEL is ABI compatible with UBI")
             self.context.project.runtime_environment.operating_system.name = "rhel"
