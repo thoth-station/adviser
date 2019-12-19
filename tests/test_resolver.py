@@ -1575,6 +1575,104 @@ class TestResolver(AdviserTestCase):
         assert resolver.beam.size == 1
         assert resolver.beam.top() is initial_state3
 
+    def test_expand_state_no_unresolved(self, resolver: Resolver) -> None:
+        """Test expansion of a state that has no unresolved dependencies."""
+        state = State(score=1.0, unresolved_dependencies=OrderedDict([]))
+        assert resolver._expand_state(state) is state
+
+    def test_marker_leaf_dep_node_marker_false_resolver(self, resolver: Resolver) -> None:
+        """Add a check for leaf dependency nodes for which environment markers apply and remove dependencies."""
+        package_tuple = ("hexsticker", "1.0.0", "https://pypi.org/simple")
+        state = State(
+            score=1.0,
+            unresolved_dependencies=OrderedDict([(package_tuple[0], package_tuple)]),
+        )
+        resolver._init_context()
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+                *package_tuple,
+                os_name=None,
+                os_version=None,
+                python_version=None,
+                extras=frozenset([None]),
+        ).and_return({
+            "enum34": [("enum34", "1.1.6")]
+        }).once()
+
+        resolver.project.runtime_environment.should_receive("is_fully_specified").and_return(True).once()
+
+        resolver.graph.should_receive("get_python_environment_marker_evaluation_result").with_args(
+            *package_tuple,
+            dependency_name="enum34",
+            dependency_version="1.1.6",
+            os_name=None,
+            os_version=None,
+            python_version=None,
+        ).and_return(False).once()
+
+        resolver.context.register_package_tuple(
+            package_tuple,
+            develop=False,
+            os_name=None,
+            os_version=None,
+            python_version=None,
+        )
+        resolver.should_receive("_run_steps").times(0)
+        assert resolver._expand_state(state) is state
+
+    def test_marker_leaf_dep_node_marker_true_unresolved(self, resolver: Resolver) -> None:
+        """Add a check for leaf dependency nodes for which environment markers apply and remove dependencies."""
+        package_tuple = ("hexsticker", "1.0.0", "https://pypi.org/simple")
+        state = State(
+            score=1.0,
+            unresolved_dependencies=OrderedDict([
+                (package_tuple[0], package_tuple),
+                ("flask", ("flask", "1.0.0", "https://pypi.org/simple")),
+            ]),
+        )
+        resolver._init_context()
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+                *package_tuple,
+                os_name=None,
+                os_version=None,
+                python_version=None,
+                extras=frozenset([None]),
+        ).and_return({
+            "enum34": [("enum34", "1.1.6")]
+        }).once()
+
+        resolver.project.runtime_environment.should_receive("is_fully_specified").and_return(True).once()
+
+        resolver.graph.should_receive("get_python_environment_marker_evaluation_result").with_args(
+            *package_tuple,
+            dependency_name="enum34",
+            dependency_version="1.1.6",
+            os_name=None,
+            os_version=None,
+            python_version=None,
+        ).and_return(False).once()
+
+        resolver.should_receive("_run_steps").times(0)
+
+        resolver.context.register_package_tuple(
+            package_tuple,
+            develop=False,
+            os_name=None,
+            os_version=None,
+            python_version=None,
+        )
+        resolver.context.iteration = 42
+        state.iteration = 22
+        state.iteration_states_added = 33
+
+        assert resolver._expand_state(state) is None
+        assert resolver.beam.size == 1
+        state_added = resolver.beam.get(0)
+        assert state is state_added
+        assert state.iteration == 42
+        assert state.iteration_states_added == 0
+
     def test_do_resolve_states_beam_empty(
         self, resolver: Resolver, final_state: State
     ) -> None:
