@@ -735,10 +735,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:d57b06ee8f9ec3178ef5fb952bad50360c939c5e4ac0cf6988c3b2e94a147383"
+                "sha256:216c8766627e3341b8e8ba2b76b6a393c3ee5c8eccb6c4edd02197a803c1d9fb",
+                "sha256:9bcd68b3b5592a150b1beb10eaa944c184f3f1f2bffa744a6033c3d09240d978"
             ],
             "index": "pypi",
-            "version": "==0.19.30"
+            "version": "==0.20.0"
         },
         "timestamp": {
             "hashes": [
@@ -1088,10 +1089,9 @@
         },
         "wcwidth": {
             "hashes": [
-                "sha256:3df37372226d6e63e1b1e1eda15c594bca98a22d33a23832a90998faa96bc65e",
-                "sha256:f4ebe71925af7b40a864553f761ed559b43544f8f71746c2d756c7fe788ade7c"
+                "sha256:8fd29383f539be45b20bd4df0dc29c20ba48654a41e661925e612311e9f3c603"
             ],
-            "version": "==0.1.7"
+            "version": "==0.1.8"
         },
         "zipp": {
             "hashes": [
