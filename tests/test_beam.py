@@ -136,25 +136,21 @@ class TestBeam(AdviserTestCase):
         """Test adding states to beam and order during addition when score is same."""
         beam = Beam(width=2)
 
-        state01 = State(score=0.0, iteration=0, iteration_states_added=0)
+        state01 = State(score=0.0, iteration=0)
         state01.add_justification([{"state": "01"}])
         beam.add_state(state01)
 
-        state02 = State(score=0.0, iteration=0, iteration_states_added=1)
+        state02 = State(score=0.0, iteration=1)
         state02.add_justification([{"state": "02"}])
         beam.add_state(state02)
 
-        state03 = State(score=0.0, iteration=1, iteration_states_added=0)
+        state03 = State(score=0.0, iteration=2)
         state03.add_justification([{"state": "03"}])
         beam.add_state(state03)
 
-        state04 = State(score=0.0, iteration=1, iteration_states_added=1)
-        state04.add_justification([{"state": "04"}])
-        beam.add_state(state04)
-
-        assert list(beam.iter_states_sorted()) == [state03, state04]
-        assert list(beam.iter_states_sorted(reverse=True)) == [state03, state04]
-        assert list(beam.iter_states_sorted(reverse=False)) == [state04, state03]
+        assert list(beam.iter_states_sorted()) == [state03, state02]
+        assert list(beam.iter_states_sorted(reverse=True)) == [state03, state02]
+        assert list(beam.iter_states_sorted(reverse=False)) == [state02, state03]
 
     def test_add_state_order_single(self) -> None:
         """Test adding states to beam and order during addition when score is same - iteration is relevant."""
@@ -162,18 +158,14 @@ class TestBeam(AdviserTestCase):
 
         state01 = State(
             score=0.0,
-            latest_version_offset=0,
             iteration=1,
-            iteration_states_added=0,
         )
         state01.add_justification([{"state": "01"}])
         beam.add_state(state01)
 
         state02 = State(
             score=0.0,
-            latest_version_offset=0,
             iteration=0,
-            iteration_states_added=0,
         )
         state02.add_justification([{"state": "02"}])
         beam.add_state(state02)
@@ -187,61 +179,26 @@ class TestBeam(AdviserTestCase):
         beam = Beam(width=2)
 
         assert list(beam.iter_states()) == []
-        assert list(beam.iter_new_added_states()) == []
+        assert beam.get_last() is None
 
         state01 = State(score=0.0)
         beam.add_state(state01)
 
         assert list(beam.iter_states()) == [state01]
-        assert list(beam.iter_new_added_states()) == [state01]
+        assert beam.get_last() is state01
 
         beam.new_iteration()
 
+        # New iterations do not interleave.
         assert list(beam.iter_states()) == [state01]
-        assert list(beam.iter_new_added_states()) == []
+        assert beam.get_last() is state01
 
         state02 = State(score=0.1)
         beam.add_state(state02)
 
         assert state01 in beam.iter_states()
         assert state02 in beam.iter_states()
-        assert list(beam.iter_new_added_states()) == [state02]
-
-        beam.new_iteration()
-
-        state03 = State(score=0.2)
-        beam.add_state(state03)
-
-        state04 = State(score=0.3)
-        beam.add_state(state04)
-
-        state05 = State(score=0.4)
-        beam.add_state(state05)
-
-        assert beam.size == 2
-        assert state04 in beam.iter_states()
-        assert state05 in beam.iter_states()
-
-        new_added = list(beam.iter_new_added_states())
-        assert len(new_added) == 2
-        assert state04 in new_added
-        assert state05 in new_added
-
-        assert list(beam.iter_new_added_states_sorted()) == [state05, state04]
-        assert list(beam.iter_new_added_states_sorted(reverse=True)) == [state05, state04]
-        assert list(beam.iter_new_added_states_sorted(reverse=False)) == [state04, state05]
-
-        beam.new_iteration()
-
-        state06 = State(score=1.0)
-        beam.add_state(state06)
-
-        state07 = State(score=1.0)
-        beam.add_state(state07)
-
-        assert list(beam.iter_new_added_states_sorted()) == [state06, state07]
-        assert list(beam.iter_new_added_states_sorted(reverse=True)) == [state06, state07]
-        assert list(beam.iter_new_added_states_sorted(reverse=False)) == [state06, state07]
+        assert beam.get_last() is state02
 
     def test_remove(self) -> None:
         """Test removal of a state from beam."""

@@ -31,7 +31,6 @@ from matplotlib.font_manager import FontProperties
 
 from ..beam import Beam
 from ..context import Context
-from ..enums import RecommendationType
 from ..exceptions import NoHistoryKept
 from ..predictor import Predictor
 from ..state import State
@@ -61,10 +60,8 @@ class AdaptiveSimulatedAnnealing(Predictor):
         See also:
              https://www.mathworks.com/help/gads/how-simulated-annealing-works.html
         """
-        # Optimized:
-        #   (accepted_final_states + (iteration^2/limit)) / limit
         k = (
-            context.accepted_final_states_count * context.limit + (context.iteration << 1)
+            context.accepted_final_states_count * context.limit + context.iteration
         ) / (context.limit << 1)
         temperature = t0 * (0.95 ** k)
         _LOGGER.debug(
@@ -77,14 +74,16 @@ class AdaptiveSimulatedAnnealing(Predictor):
             k,
             temperature,
         )
-        return temperature
+        return max(temperature, .0)
 
     @staticmethod
     def _compute_acceptance_probability(
         top_score: float, neighbour_score: float, temperature: float
     ) -> float:
         """Check the probability of acceptance the given solution to expansion."""
-        if temperature <= 0.0:
+        if temperature == 0.0:
+            # This can happen as we consider also iteration in the exp function - if we
+            # drop bellow 0, acceptance probability drops to 0.
             return 0.0
 
         if neighbour_score > top_score:
@@ -100,14 +99,8 @@ class AdaptiveSimulatedAnnealing(Predictor):
         )
         return acceptance_probability
 
-    def run(self, context: Context, beam: Beam) -> Tuple[State, str]:
+    def run(self, context: Context, beam: Beam) -> Tuple[State, Tuple[str, str, str]]:
         """Run adaptive simulated annealing on top of beam."""
-        if context.recommendation_type == RecommendationType.LATEST:
-            # If we have latest recommendations, try to expand the most recent version, always.
-            _LOGGER.debug("Expanding the first state (hill climbing)")
-            state = beam.top()
-            return state, random.choice(list(state.unresolved_dependencies))
-
         self._temperature = self._exp(self._temperature, context)
 
         # Expand highest promising by default.
@@ -130,10 +123,12 @@ class AdaptiveSimulatedAnnealing(Predictor):
             )
             # state_expansion_idx = probable_state_idx
             state = probable_state
+            unresolved_dependency_tuple = state.get_random_unresolved_dependency()
         else:
             _LOGGER.debug(
                 "Expanding TOP rated state with score %g", state.score
             )
+            unresolved_dependency_tuple = state.get_first_unresolved_dependency()
 
         if self.keep_history:
             self._temperature_history.append(
@@ -145,7 +140,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
                 )
             )
 
-        return state, random.choice(list(state.unresolved_dependencies))
+        return state, unresolved_dependency_tuple
 
     def pre_run(self, context: Context) -> None:
         """Initialization before the actual annealing run."""
@@ -201,7 +196,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
         host.spines["right"].set_visible(False)
         host.spines["top"].set_visible(False)
 
-        p1, = host.plot(x, y1, ".g", label="Expansion of a highest rated candidate")
+        host.plot(x, y1, ".g", label="Expansion of a highest rated candidate")
         host.plot(x, y2, ",r", label="Expansion of a neighbour candidate")
         p3, = par1.plot(
             x, y3, ",b", label="Acceptance probability for a neighbour candidate"

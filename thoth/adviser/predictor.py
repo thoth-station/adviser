@@ -67,11 +67,11 @@ class Predictor:
         """
 
     @abc.abstractmethod
-    def run(self, context: Context, beam: Beam) -> Tuple[State, str]:
+    def run(self, context: Context, beam: Beam) -> Tuple[State, Tuple[str, str, str]]:
         """The main method used to run the predictor.
 
         The method accepts a beam of states and returns the state which should be
-        used for next expansion and package name that should be resolved .The beam has to be kept untouched.
+        used for next expansion and package tuple that should be resolved .The beam has to be kept untouched.
         """
         raise NotImplementedError
 
@@ -87,6 +87,13 @@ class Predictor:
 
         The default operation is a noop, but a predictor can perform any post-run operations in this method. This
         method should not raise any exception.
+        """
+
+    def set_reward_signal(self, reward: float) -> None:
+        """Signalize the reward.
+
+        @param reward: set to nan if the given state was not accepted a special value
+                       of inf notifies about a new final state
         """
 
     def plot(self) -> matplotlib.figure.Figure:

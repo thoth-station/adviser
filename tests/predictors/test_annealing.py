@@ -97,13 +97,30 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
             predictor._temperature_history == []
         ), "Predictor's temperature history no discarded"
 
-    def test_run_latest(self) -> None:
-        """Test running simulated annealing for latest recommendation (hill climbing)."""
-        state = State(score=1.0)
-
+    @given(
+        integers(min_value=1, max_value=256),
+        integers(min_value=1, max_value=1024),
+        integers(min_value=1, max_value=1024),
+        integers(min_value=0, max_value=1024),
+        integers(min_value=0, max_value=1024),
+    )
+    def test_run(self, state: State, state_count: int, limit: int, count: int, iteration: int, accepted_final_states: int) -> None:
+        """Test running the annealing."""
         beam = Beam()
-        beam.add_state(state)
+        for _ in range(state_count):
+            cloned_state = state.clone()
+            beam.add_state(cloned_state)
 
-        context = flexmock(recommendation_type=RecommendationType.LATEST)
-
-        assert AdaptiveSimulatedAnnealing().run(context, beam) is state
+        predictor = AdaptiveSimulatedAnnealing()
+        context = flexmock(
+            accepted_final_states_count=accepted_final_states,
+            count=count,
+            iteration=iteration,
+            limit=limit,
+            beam=beam,
+        )
+        next_state, package_tuple = predictor.run(context, beam)
+        assert next_state in beam.iter_states()
+        assert package_tuple is not None
+        assert package_tuple[0] in next_state.unresolved_dependencies
+        assert package_tuple in next_state.unresolved_dependencies[package_tuple[0]].values()

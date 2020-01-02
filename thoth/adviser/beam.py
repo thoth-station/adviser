@@ -65,16 +65,12 @@ class Beam:
 
     width = attr.ib(default=None, type=Optional[int])
     _states = attr.ib(
-        default=attr.Factory(list), type=List[Tuple[Tuple[float, int, int, int], State]]
+        default=attr.Factory(list), type=List[Tuple[Tuple[float, int], State]]
     )
     # Mapping id(state) -> index in the heap to guarantee O(1) state index lookup and
     # subsequent O(log(N)) state removal from the beam.
     _states_idx = attr.ib(default=attr.Factory(dict), type=Dict[int, int])
-    # Use ordered dict to preserve order of inserted states not to introduce
-    # randomness (that would be introduced using a set) across multiple runs.
-    _last_added = attr.ib(
-        default=attr.Factory(OrderedDict)
-    )  # type: OrderedDict[int, Tuple[Tuple[float, int, int, int], State]]
+    _last_added = attr.ib(default=None, type=Optional[State])
     _top_idx = attr.ib(default=None, type=Optional[int])
     _beam_history = attr.ib(
         type=List[Tuple[int, Optional[float]]], default=attr.Factory(list), kw_only=True
@@ -103,8 +99,6 @@ class Beam:
 
         Used to keep track of beam history and to keep track of states added.
         """
-        self._last_added = OrderedDict()
-
         if bool(int(os.getenv("THOTH_ADVISER_NO_HISTORY", 0))):
             return
 
@@ -192,21 +186,6 @@ class Beam:
             )
         )
 
-    def iter_new_added_states(self) -> Generator[State, None, None]:
-        """Iterate over states added in the resolution round."""
-        return (item[1] for item in self._last_added.values())
-
-    def iter_new_added_states_sorted(
-        self, reverse: bool = True
-    ) -> Generator[State, None, None]:
-        """Iterate over newly added states, sorted based on the score."""
-        return (
-            item[1]
-            for item in sorted(
-                self._last_added.values(), key=operator.itemgetter(0), reverse=reverse
-            )
-        )
-
     def top(self) -> State:
         """Return the highest rated state as kept in the beam.
 
@@ -236,8 +215,8 @@ class Beam:
         return self._top_idx
 
     def _heappushpop(
-        self, item: Tuple[Tuple[float, int, int, int], State]
-    ) -> Tuple[Tuple[float, int, int, int], State]:
+        self, item: Tuple[Tuple[float, int], State]
+    ) -> Tuple[Tuple[float, int], State]:
         """Fast version of a heappush followed by a heappop."""
         if self._states and self._states[0] < item:
             item, self._states[0] = self._states[0], item
@@ -247,7 +226,7 @@ class Beam:
 
         return item
 
-    def _heappush(self, item: Tuple[Tuple[float, int, int, int], State]) -> None:
+    def _heappush(self, item: Tuple[Tuple[float, int], State]) -> None:
         """Push item onto heap, maintaining the heap invariant."""
         self._states_idx[id(item[1])] = len(self._states)
         self._states.append(item)
@@ -303,25 +282,22 @@ class Beam:
         #  * highest state first
         #  * state with the most recent versions of libraries (latest version offset)
         #  * iterations done by resolver to populate the most recent resolutions first
-        #  * relative ordering of states created within a single iteration round - iteration states added
         item = (
             (
                 state.score,
-                -state.latest_version_offset,
                 state.iteration,
-                -state.iteration_states_added,
             ),
             state,
         )
 
+        self._last_added = None
         if self.width is not None and len(self._states) >= self.width:
             popped = self._heappushpop(item)
-            self._last_added.pop(id(popped), None)
             if popped is not item:
-                self._last_added[id(item)] = item
+                self._last_added = state
         else:
             self._heappush(item)
-            self._last_added[id(item)] = item
+            self._last_added = state
 
         self._top_idx = None
 
@@ -334,6 +310,10 @@ class Beam:
         point to a heap-like data structure.
         """
         return self._states[idx][1]
+
+    def get_last(self) -> Optional[State]:
+        """Get state that was added in the previous resolution round."""
+        return self._last_added
 
     def remove(self, state: State) -> None:
         """Remove the given state from beam."""
@@ -363,5 +343,6 @@ class Beam:
             self._siftdown(0, idx)
 
         self._top_idx = None
-        self._last_added.pop(to_return[0], None)  # type: ignore
+        if self._last_added == to_return[1]:
+            self._last_added = None
         return to_return[1]

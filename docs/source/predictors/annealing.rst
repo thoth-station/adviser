@@ -97,8 +97,8 @@ picking a random state from the beam is very high (the algorithm is looking for
 a state which would be better than a score of 0.0). This acceptance probability
 is kept even the temperature dropped.
 
-.. image:: _static/history_no_data.png
-   :target: _static/history_no_data.png
+.. image:: ../_static/history_no_data.png
+   :target: ../_static/history_no_data.png
    :alt: Resolving software stacks with simulated annealing with no data available.
 
 On the figure below, there was randomized scoring of top rated states for
@@ -108,6 +108,6 @@ produced and with decreasing temperature during iterations. This caused picking
 the highest rated states for expansion and producing final states out of them
 (fully resolved Python software stacks).
 
-.. image:: _static/history_random_data.png
-   :target: _static/history_random_data.png
+.. image:: ../_static/history_random_data.png
+   :target: ../_static/history_random_data.png
    :alt: Resolving software stacks with simulated annealing with random data.

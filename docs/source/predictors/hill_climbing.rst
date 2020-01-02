@@ -17,6 +17,6 @@ rated state from the beam, finding a local optima (most probably, as hill
 climbing is a `local search algorithm
 <https://en.wikipedia.org/wiki/Local_search_(optimization)>`_).
 
-.. image:: _static/hill_climbing.png
-   :target: _static/hill_climbing.png
+.. image:: ../_static/hill_climbing.png
+   :target: ../_static/hill_climbing.png
    :alt: An example of a history during hill climbing in adviser.

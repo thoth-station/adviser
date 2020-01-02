@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of a random sampling of the state space."""
+"""Implementation of a Random Walk based dependency graph sampling predictor."""
 
 import logging
 import random
@@ -39,14 +39,16 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class Sampling(Predictor):
-    """Implementation of a random sampling of the state space."""
+class RandomWalk(Predictor):
+    """Implementation of a Random Walk based dependency graph sampling predictor."""
 
     _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
 
     def run(self, context: Context, beam: Beam) -> Tuple[State, Tuple[str, str, str]]:
-        """Get random state and random unresolved dependency from the beam for the next resolution round."""
-        state = beam.get(random.randint(0, beam.size - 1))
+        """Generate stacks using random walking."""
+        state = beam.get_last()
+        if state is None:
+            state = beam.get(random.randint(0, beam.size - 1))
 
         if self.keep_history:
             self._history.append((state.score, context.accepted_final_states_count))
@@ -54,7 +56,7 @@ class Sampling(Predictor):
         return state, state.get_random_unresolved_dependency()
 
     def pre_run(self, context: Context) -> None:
-        """Initialization before the sampling run."""
+        """Initialization before the random walk run."""
         self._history = []
 
     def plot(self) -> matplotlib.figure.Figure:

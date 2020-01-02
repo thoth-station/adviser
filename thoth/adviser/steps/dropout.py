@@ -51,17 +51,8 @@ class DropoutStep(Step):
     def should_include(
         cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
-        """Register the dropout step."""
-        if builder_context.is_included(cls):
-            return None
-
-        if (
-            builder_context.is_adviser_pipeline()
-            and builder_context.recommendation_type == RecommendationType.LATEST
-        ):
-            return None
-
-        return {}
+        """Do not register the dropout step."""
+        return None
 
     def run(
         self, state: State, package_version: PackageVersion

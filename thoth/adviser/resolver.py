@@ -26,10 +26,8 @@ from typing import Any
 from typing import Optional
 from typing import List
 from typing import Union
-from typing import Set
 import logging
 from itertools import chain
-from collections import deque
 import contextlib
 import signal
 
@@ -178,11 +176,6 @@ class Resolver:
         type=Optional[PythonPackageGraphSolver], kw_only=True, default=None
     )
     _context = attr.ib(type=Optional[Context], default=None, kw_only=True)
-    _reported_shared_dependencies = attr.ib(
-        type=Set[Tuple[Tuple[str, str, str], Tuple[str, str, str]]],
-        default=attr.Factory(set),
-        kw_only=True,
-    )
 
     @limit.validator
     @count.validator
@@ -239,19 +232,6 @@ class Resolver:
             decision_type=self.decision_type,
         )
 
-    def _report_shared_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
-        """Report information about shared dependency in the dependency tree."""
-        for library in [
-            item[0] for item in self.context.dependents[package_tuple[0]][package_tuple]
-        ]:
-            if (package_tuple, library) not in self._reported_shared_dependencies:
-                self._reported_shared_dependencies.add((package_tuple, library))
-                _LOGGER.warning(
-                    "Consider pinning dependency %r as it is introduced by multiple nodes in the dependency graph: %r",
-                    package_tuple,
-                    library,
-                )
-
     def _run_boots(self) -> None:
         """Run all boots bound to the current annealing run context."""
         for boot in self.pipeline.boots:
@@ -289,131 +269,92 @@ class Resolver:
         yield from result
 
     def _run_steps(
-        self, state: State, package_versions_dict: Dict[str, List[PackageVersion]]
+        self,
+        state: State,
+        package_version: PackageVersion,
+        unresolved_dependencies: Dict[str, List[Tuple[str, str, str]]],
     ) -> None:
-        """Run steps and generate a new state.
+        """Run steps and generate a new state."""
+        package_version_tuple = package_version.to_tuple()
 
-        The algorithm under the hood performs backtracking to make sure each step is run once on
-        the given state. This guarantees less calls to steps making the pipeline more efficient.
-        """
-        configuration_table = tuple(package_versions_dict.values())
-        configuration_queue = deque([((0, 0), state)])
+        multi_package_resolution = False
+        if package_version.name in state.resolved_dependencies:
+            # We already have this dependency in stack, run steps that are
+            # required to be run in such cases. The resolver logic called before guarantees there is
+            # no version or package source clash.
+            multi_package_resolution = True
 
-        iteration_states_added = 0
-        while configuration_queue:
-            idx, state = configuration_queue.popleft()
-            package_version = configuration_table[idx[0]][idx[1]]
-            package_version_tuple = package_version.to_tuple()
-            multi_package_resolution = False
+        score_addition = 0.0
+        justification_addition = []
+        for step in self.pipeline.steps:
+            _LOGGER.debug(
+                "Running step %r for %r", step.__class__.__name__, package_version_tuple
+            )
+
+            if multi_package_resolution and not step.MULTI_PACKAGE_RESOLUTIONS:
+                _LOGGER.debug(
+                    "Skipping running step %r - this step was already run for package %r "
+                    "and the given step has no MULTI_PACKAGE_RESOLUTIONS flag set",
+                    step.__class__.__name__,
+                    package_version_tuple,
+                )
+                continue
 
             try:
-                if package_version.name in state.resolved_dependencies:
-                    if (
-                        state.resolved_dependencies[package_version.name]
-                        != package_version_tuple
-                    ):
-                        # We already have the given dependency - there is a dependency clash (same name,
-                        # different version or index url). Such state is invalid, drop it.
-                        _LOGGER.debug(
-                            "Discarding run of pipeline steps for %r: package %r was already "
-                            "found in different version %r",
-                            package_version_tuple,
-                            package_version.name,
-                            state.resolved_dependencies[package_version.name],
-                        )
-                        raise _NoStateAdd
-                    else:
-                        # We already have this dependency in stack, run steps that are
-                        # required to be run in such cases.
-                        multi_package_resolution = True
-                        self._report_shared_dependency(package_version_tuple)
+                step_result = step.run(state, package_version)
+            except NotAcceptable as exc:
+                _LOGGER.debug(
+                    "Step %r discarded addition of package %r: %s",
+                    step.__class__.__name__,
+                    package_version_tuple,
+                    str(exc),
+                )
+                self.predictor.set_reward_signal(math.nan)
+                return
+            except Exception as exc:
+                raise StepError(
+                    f"Failed to run step {step.__class__.__name__!r} for Python package "
+                    f"{package_version_tuple!r}: {str(exc)}"
+                ) from exc
 
-                score_addition = 0.0
-                justification_addition = []
-                for step in self.pipeline.steps:
-                    _LOGGER.debug(
-                        "Running step %r for %r",
-                        step.__class__.__name__,
-                        package_version_tuple,
-                    )
+            if step_result:
+                step_score_addition, step_justification_addition = step_result
 
-                    if multi_package_resolution and not step.MULTI_PACKAGE_RESOLUTIONS:
-                        _LOGGER.debug(
-                            "Skipping running step %r - this step was already run for package %r "
-                            "and step has no MULTI_PACKAGE_RESOLUTIONS flag set",
-                            step.__class__.__name__,
-                            package_version_tuple,
-                        )
-                        continue
-
-                    try:
-                        step_result = step.run(state, package_version)
-                    except NotAcceptable as exc:
-                        _LOGGER.debug(
-                            "Step %r discarded addition of package %r in state %r: %s",
-                            step.__class__.__name__,
-                            package_version_tuple,
-                            state,
-                            str(exc),
-                        )
-                        raise _NoStateAdd
-                    except Exception as exc:
+                if step_score_addition is not None:
+                    if math.isnan(step_score_addition):
                         raise StepError(
-                            f"Failed to run step {step.__class__.__name__!r} for Python package "
-                            f"{package_version_tuple!r}: {str(exc)}"
-                        ) from exc
+                            "Step %r returned score which is not a number",
+                            step.__class__.__name__,
+                        )
 
-                    if step_result:
-                        step_score_addition, step_justification_addition = step_result
+                    if math.isinf(step_score_addition):
+                        raise StepError(
+                            "Step %r returned score that is infinite",
+                            step.__class__.__name__,
+                        )
 
-                        if step_score_addition is not None:
-                            if math.isnan(step_score_addition):
-                                raise StepError(
-                                    "Step %r returned score which is not a number",
-                                    step.__class__.__name__,
-                                )
+                    score_addition += step_score_addition
 
-                            if math.isinf(step_score_addition):
-                                raise StepError(
-                                    "Step %r returned score that is infinite",
-                                    step.__class__.__name__,
-                                )
+                if step_justification_addition is not None:
+                    justification_addition.extend(step_justification_addition)
 
-                            score_addition += step_score_addition
+        # Remove the expanded package version from the original state not to create loops.
+        state.remove_unresolved_dependency(package_version_tuple)
 
-                        if step_justification_addition is not None:
-                            justification_addition.extend(step_justification_addition)
-            except _NoStateAdd:
-                pass
-            else:
-                cloned_state = state.clone()
+        if state.unresolved_dependencies:
+            self.beam.add_state(state)
+            cloned_state = state.clone()
+        else:
+            cloned_state = state
 
-                if not multi_package_resolution:
-                    # Do NOT re-add package if it was already resolved.
-                    _LOGGER.debug(
-                        "Adding new unresolved dependency %r", package_version_tuple
-                    )
-                    cloned_state.add_unresolved_dependency(package_version_tuple)
-
-                cloned_state.add_justification(justification_addition)
-                cloned_state.score += score_addition
-                cloned_state.latest_version_offset += idx[1]
-
-                if len(configuration_table) == idx[0] + 1:
-                    # No more to run - we passed all package_version of a type.
-                    cloned_state.iteration = self.context.iteration
-                    cloned_state.iteration_states_added = iteration_states_added
-                    self.beam.add_state(cloned_state)
-                    iteration_states_added += 1
-                else:
-                    configuration_queue.appendleft(((idx[0] + 1, 0), cloned_state))
-
-            if idx[1] + 1 < len(configuration_table[idx[0]]):
-                configuration_queue.append(((idx[0], idx[1] + 1), state))
-
-            if len(configuration_table) == idx[0] + 1 and configuration_queue:
-                # Pop last item from the queue to act like in case of back tracking.
-                configuration_queue.appendleft(configuration_queue.pop())
+        cloned_state.set_unresolved_dependencies(unresolved_dependencies)
+        cloned_state.remove_unresolved_dependency_subtree(package_version_tuple[0])
+        cloned_state.add_resolved_dependency(package_version_tuple)
+        cloned_state.iteration = self.context.iteration
+        cloned_state.add_justification(justification_addition)
+        cloned_state.score += score_addition
+        self.predictor.set_reward_signal(score_addition)
+        self.beam.add_state(cloned_state)
 
     def _run_strides(self, state: State) -> bool:
         """Run strides and check if the given state should be accepted."""
@@ -493,11 +434,8 @@ class Resolver:
 
         return resolved_direct_dependencies
 
-    def _prepare_initial_states(self, *, with_devel: bool) -> None:
-        """Prepare initial states for simulated annealing.
-
-        Initial states are all combinations of direct dependencies.
-        """
+    def _prepare_initial_state(self, *, with_devel: bool) -> None:
+        """Prepare initial state for resolver."""
         direct_dependencies = self._resolve_direct_dependencies(with_devel=with_devel)
 
         for direct_dependency_name, package_versions in direct_dependencies.items():
@@ -518,21 +456,17 @@ class Resolver:
             else:
                 direct_dependencies[direct_dependency_name] = package_versions
 
-        # Create an empty state which will be extended with packages based on step results. We know we have resolved
-        # all the dependencies so start with an empty beam which and an empty state and subsequently expand it based on
-        # resolved direct dependencies.
+        # Create an initial state which is made out of all the direct dependencies (kept as unresolved) in
+        # resolved versions.
         self.beam.wipe()
-        self._reported_shared_dependencies = set()
-        self._run_steps(State(), direct_dependencies)
+        state = State.from_direct_dependencies(direct_dependencies)
+        self.beam.add_state(state)
 
-    def _expand_state(self, state: State, package_name: str) -> Optional[State]:
+    def _expand_state(
+        self, state: State, package_tuple: Tuple[str, str, str]
+    ) -> Optional[State]:
         """Expand the given state, generate new states respecting the pipeline configuration."""
-        if not state.unresolved_dependencies:
-            # No unresolved dependencies, return the state -- its final.
-            return state
-
-        package_tuple = state.unresolved_dependencies.pop(package_name)
-
+        _LOGGER.debug("Expanding state by resolving %r", package_tuple)
         # Obtain extras for the given package. Extras are non-empty only for direct dependencies. If indirect
         # dependencies use extras, they don't need to be explicitly stated as solvers mark "hard" dependency on
         # the given package.
@@ -541,7 +475,6 @@ class Resolver:
         )
 
         extras = package_version.extras or []
-        # Add None which will return also dependencies not marked as extra (see get_depends_on semantics for more info).
         extras.append(None)
 
         try:
@@ -551,24 +484,29 @@ class Resolver:
                 os_version=self.project.runtime_environment.operating_system.version,
                 python_version=self.project.runtime_environment.python_version,
                 extras=frozenset(extras),
+                marker_evaluation_result=True
+                if self.project.runtime_environment.is_fully_specified()
+                else None,
             )
         except NotFoundError:
             _LOGGER.warning(
                 "Dependency %r is not yet resolved, cannot expand state", package_tuple
             )
+            self.predictor.set_reward_signal(math.nan)
             return None
 
-        state.resolved_dependencies[package_tuple[0]] = package_tuple
-
         if not dependencies:
+            state.mark_dependency_resolved(package_tuple)
+
             if not state.unresolved_dependencies:
                 # The given package has no dependencies and nothing to resolve more, mark it as resolved.
+                self.predictor.set_reward_signal(math.inf)
                 return state
 
-            # No dependency, add back to beam for resolving unresolved in next rounds.
+            # No dependency, add the state back to the beam for resolving unresolved in next rounds.
             state.iteration = self.context.iteration
-            state.iteration_states_added = 0
             self.beam.add_state(state)
+            self.predictor.set_reward_signal(0.0)
             return None
 
         return self._expand_state_add_dependencies(
@@ -583,33 +521,14 @@ class Resolver:
         package_version: PackageVersion,
         dependencies: List[Tuple[str, str]],
     ) -> Optional[State]:
-        """Create new states out of existing ones based on dependencies."""
+        """Create new state out of existing ones based on dependencies."""
         _LOGGER.debug(
-            "Expanding state with dependencies based on packages solved in environments"
+            "Expanding state with dependencies based on packages solved in software environments"
         )
 
         package_tuple = package_version.to_tuple()
         all_dependencies: Dict[str, List[Tuple[str, str, str]]] = {}
         for dependency_name, dependency_version in dependencies:
-            if self.project.runtime_environment.is_fully_specified():
-                marker_evaluation_result = self.graph.get_python_environment_marker_evaluation_result(
-                    *package_tuple,
-                    dependency_name=dependency_name,
-                    dependency_version=dependency_version,
-                    os_name=self.project.runtime_environment.operating_system.name,
-                    os_version=self.project.runtime_environment.operating_system.version,
-                    python_version=self.project.runtime_environment.python_version,
-                )
-
-                if marker_evaluation_result is False:
-                    _LOGGER.debug(
-                        "Removing package %r in version %r from dependency graph as it will not be installed into "
-                        "the given runtime environment",
-                        dependency_name,
-                        dependency_version,
-                    )
-                    continue
-
             records = self.graph.get_python_package_version_records(
                 package_name=dependency_name,
                 package_version=dependency_version,
@@ -624,12 +543,26 @@ class Resolver:
             if dependency_name not in all_dependencies:
                 all_dependencies[dependency_name] = []
 
+            resolved_dependency_tuple = state.resolved_dependencies.get(dependency_name)
+            if (
+                resolved_dependency_tuple
+                and resolved_dependency_tuple[1] != dependency_version
+            ):
+                _LOGGER.debug(
+                    "Skipping adding dependency %r in version %r as this dependency is already present in state: %r",
+                    dependency_name,
+                    dependency_version,
+                    state.resolved_dependencies[dependency_name],
+                )
+                continue
+
             for record in records:
                 dependency_tuple = (
                     record["package_name"],
                     record["package_version"],
                     record["index_url"],
                 )
+
                 self.context.register_package_tuple(
                     dependency_tuple,
                     dependent_tuple=package_tuple,
@@ -655,9 +588,37 @@ class Resolver:
                 "version requirements",
                 ", ".join(unsolved),
             )
+            self.predictor.set_reward_signal(math.nan)
             return None
 
         for dependency_name, dependency_tuples in all_dependencies.items():
+            if dependency_name in state.unresolved_dependencies:
+                # We have shared dependencies - let's compute intersection and use intersected dependencies if
+                # we can satisfy them. No need to run sieves as they were run in previous iterations on the
+                # intersected dependencies.
+                dependency_tuples = list(
+                    set(dependency_tuples).intersection(
+                        state.unresolved_dependencies[dependency_name].values()
+                    )
+                )
+
+                if not dependency_tuples:
+                    _LOGGER.debug(
+                        "No intersected dependencies for package %r found when resolving %r, "
+                        "aborting creation of a new state",
+                        dependency_name,
+                        package_tuple,
+                    )
+                    self.predictor.set_reward_signal(math.nan)
+                    return None
+
+                dependency_tuples.sort(
+                    key=lambda d: self.context.get_package_version(d).semantic_version,
+                    reverse=True,
+                )
+                all_dependencies[dependency_name] = dependency_tuples
+                continue
+
             package_versions = [
                 self.context.get_package_version(d) for d in dependency_tuples
             ]
@@ -665,20 +626,27 @@ class Resolver:
             package_versions = list(self._run_sieves(package_versions))
             if not package_versions:
                 _LOGGER.debug(
-                    "All dependencies of type %r were discarded by sieves, aborting creation of new states",
+                    "All dependencies of type %r were discarded by sieves, aborting creation of a new state",
                     dependency_name,
                 )
+                self.predictor.set_reward_signal(math.nan)
                 return None
 
             if self.limit_latest_versions:
-                all_dependencies[dependency_name] = package_versions[:self.limit_latest_versions]
+                all_dependencies[dependency_name] = [
+                    pv.to_tuple()
+                    for pv in package_versions[:self.limit_latest_versions]
+                ]
             else:
-                all_dependencies[dependency_name] = package_versions
+                all_dependencies[dependency_name] = [
+                    pv.to_tuple() for pv in package_versions
+                ]
 
         if not all_dependencies and not state.unresolved_dependencies:
             # A special case when all the dependencies of the resolved one are installed conditionally
             # based on environment markers but none of the environment markers is evaluated to True. If
             # no more unresolved dependencies present, the state is final.
+            self.predictor.set_reward_signal(math.inf)
             return state
 
         if not all_dependencies:
@@ -686,11 +654,12 @@ class Resolver:
             # markers but none of the environment markers is evaluated to True. As there are more
             # dependencies to be added re-add state with adjusted properties.
             state.iteration = self.context.iteration
-            state.iteration_states_added = 0
+            state.mark_dependency_resolved(package_tuple)
             self.beam.add_state(state)
+            self.predictor.set_reward_signal(0.0)
             return None
 
-        self._run_steps(state, all_dependencies)
+        self._run_steps(state, package_version, all_dependencies)
         return None
 
     def _do_resolve_states(
@@ -698,7 +667,7 @@ class Resolver:
     ) -> Generator[State, None, None]:
         """Actually perform adaptive simulated annealing."""
         self._run_boots()
-        self._prepare_initial_states(with_devel=with_devel)
+        self._prepare_initial_state(with_devel=with_devel)
 
         _LOGGER.info(
             "Hold tight, Thoth is computing recommendations for your application..."
@@ -715,30 +684,35 @@ class Resolver:
                 ):
                     _LOGGER.info(
                         "Reached limit of stacks to be generated - %r (limit is %r), stopping resolver "
-                        "with the current beam size %d",
+                        "with the current beam size %d in iteration %d",
                         self.context.accepted_final_states_count,
                         self.limit,
                         self.beam.size,
+                        self.context.iteration,
                     )
                     break
 
                 if self.beam.size == 0:
-                    _LOGGER.info("The beam is empty")
+                    _LOGGER.info(
+                        "The beam is empty, iteration %d", self.context.iteration
+                    )
                     break
 
                 self.beam.new_iteration()
                 self.context.iteration += 1
 
-                state, package_name = self.predictor.run(self.context, self.beam)
+                state, unresolved_package_tuple = self.predictor.run(
+                    self.context, self.beam
+                )
                 self.beam.remove(state)
 
                 _LOGGER.debug(
                     "Resolving package %r in state with score %g: %r",
-                    package_name,
+                    unresolved_package_tuple,
                     state.score,
-                    state
+                    state,
                 )
-                final_state = self._expand_state(state, package_name)
+                final_state = self._expand_state(state, unresolved_package_tuple)
                 if final_state:
                     if self._run_strides(final_state):
                         self._run_wraps(final_state)
@@ -777,8 +751,10 @@ class Resolver:
         try:
             for final_state in self._do_resolve_states(with_devel=with_devel):
                 _LOGGER.info(
-                    "Pipeline reached a new final state, yielding pipeline product with a score of %g",
+                    "Pipeline reached a new final state, yielding pipeline product with a score of %g (%d/%d)",
                     final_state.score,
+                    self.context.accepted_final_states_count,
+                    self.context.limit,
                 )
                 product = Product.from_final_state(
                     context=self.context, state=final_state

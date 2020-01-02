@@ -21,9 +21,7 @@ import logging
 
 import attr
 from typing import List
-from typing import Optional
 from typing import Tuple
-from typing import Any
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -45,14 +43,18 @@ class HillClimbing(Predictor):
 
     _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
 
-    def run(self, context: Context, beam: Beam) -> Tuple[State, str]:
+    def run(self, context: Context, beam: Beam) -> Tuple[State, Tuple[str, str, str]]:
         """Get top state from the beam for the next resolution round."""
         state = beam.top()
 
         if self.keep_history:
             self._history.append((state.score, context.accepted_final_states_count))
 
-        return state, next(iter(state.unresolved_dependencies))
+        return state, state.get_first_unresolved_dependency()
+
+    def pre_run(self, context: Context) -> None:
+        """Initialization before the actual hill climbing run."""
+        self._history = []
 
     def plot(self) -> matplotlib.figure.Figure:
         """Plot score of the highest rated stack during hill climbing."""

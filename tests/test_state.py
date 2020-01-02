@@ -17,31 +17,12 @@
 
 """Test state representation."""
 
+import gc
 import pytest
 from collections import OrderedDict
 
 from thoth.adviser.state import State
-from thoth.common import RuntimeEnvironment
 from .base import AdviserTestCase
-
-
-@pytest.fixture
-def state() -> State:
-    """A fixture for a non-final state."""
-    state = State(
-        score=0.1,
-        unresolved_dependencies=OrderedDict(
-            {"flask": ("flask", "1.1.1", "https://pypi.org/simple")}
-        ),
-        resolved_dependencies=OrderedDict(
-            {"hexsticker": ("hexsticker", "1.0.0", "https://pypi.org/simple")}
-        ),
-        advised_runtime_environment=RuntimeEnvironment.from_dict(
-            {"python_version": "3.6"}
-        ),
-    )
-    state.add_justification([{"foo": "bar"}, {"bar": "baz"}])
-    return state
 
 
 @pytest.fixture
@@ -96,6 +77,17 @@ class TestState(AdviserTestCase):
         # Check swallow copies.
         assert cloned_state.unresolved_dependencies is not state.unresolved_dependencies
         assert cloned_state.unresolved_dependencies == state.unresolved_dependencies
+
+        for dependency_name in cloned_state.unresolved_dependencies:
+            assert (
+                cloned_state.unresolved_dependencies[dependency_name]
+                == state.unresolved_dependencies[dependency_name]
+            )
+            assert (
+                cloned_state.unresolved_dependencies[dependency_name]
+                is not state.unresolved_dependencies[dependency_name]
+            )
+
         assert cloned_state.resolved_dependencies is not state.resolved_dependencies
         assert cloned_state.resolved_dependencies == state.resolved_dependencies
         assert (
@@ -108,3 +100,15 @@ class TestState(AdviserTestCase):
         )
         assert cloned_state.justification is not state.justification
         assert cloned_state.justification == state.justification
+
+    def test_parent(self) -> None:
+        """Test referencing parent and weak reference handling."""
+        state = State()
+        cloned_state = state.clone()
+
+        assert cloned_state.parent is state
+
+        del state
+        gc.collect()
+
+        assert cloned_state.parent is None

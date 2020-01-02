@@ -199,7 +199,7 @@ class PipelineBuilder:
         """Instantiate units and return the actual pipeline configuration."""
         # As pipeline steps can have dependencies on each other, iterate over them until we have any change done
         # to the pipeline configuration.
-        _LOGGER.debug("Creating pipeline configuration")
+        _LOGGER.info("Creating pipeline configuration")
         change = True
         while change:
             change = False
