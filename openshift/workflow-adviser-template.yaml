@@ -132,57 +132,57 @@ objects:
           - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
             value: "${THOTH_ADVISER_LIMIT_LATEST_VERSIONS}"
 
-    templates:
-      - name: advise
-        archiveLocation:
-          archiveLogs: true
-        inputs:
-          parameters:
-            - name: THOTH_ADVISER_JOB_ID
-            - name: THOTH_DOCUMENT_ID
-            - name: THOTH_ADVISER_REQUIREMENTS
-            - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
-            - name: THOTH_ADVISER_LIBRARY_USAGE
-            - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
-            - name: THOTH_ADVISER_RECOMMENDATION_TYPE
-            - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
-            - name: THOTH_ADVISER_SEED
-              value: "42"
-            - name: THOTH_ADVISER_PLOT
-              value: "history.png"
-            - name: THOTH_ADVISER_BEAM_WIDTH
-              value: "1000"
-            - name: THOTH_LOG_ADVISER
-              value: "INFO"
-            - name: THOTH_ADVISER_LIMIT
-              value: "1000"
-            - name: THOTH_ADVISER_COUNT
-              value: "1"
-            - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
-              default: "5"
-            - name: THOTH_ADVISER_TIMEOUT_SECONDS
-              value: "3600"
+      templates:
+        - name: advise
+          archiveLocation:
+            archiveLogs: true
+          inputs:
+            parameters:
+              - name: THOTH_ADVISER_JOB_ID
+              - name: THOTH_DOCUMENT_ID
+              - name: THOTH_ADVISER_REQUIREMENTS
+              - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+              - name: THOTH_ADVISER_LIBRARY_USAGE
+              - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
+              - name: THOTH_ADVISER_RECOMMENDATION_TYPE
+              - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+              - name: THOTH_ADVISER_SEED
+                value: "42"
+              - name: THOTH_ADVISER_PLOT
+                value: "history.png"
+              - name: THOTH_ADVISER_BEAM_WIDTH
+                value: "1000"
+              - name: THOTH_LOG_ADVISER
+                value: "INFO"
+              - name: THOTH_ADVISER_LIMIT
+                value: "1000"
+              - name: THOTH_ADVISER_COUNT
+                value: "1"
+              - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+                default: "5"
+              - name: THOTH_ADVISER_TIMEOUT_SECONDS
+                value: "3600"
 
-        outputs:
-          artifacts:
-            - name: advise-result
-              path: "/mnt/workdir/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
-              archive:
-                none: {}
-              s3:
-                key: "argo/advise/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
-                endpoint: "s3.upshift.redhat.com"
-                bucket: "thoth"
-                insecure: true
-                accessKeySecret:
-                  name: argo-artifact-repository
-                  key: accessKey
-                secretKeySecret:
-                  name: argo-artifact-repository
-                  key: secretKey
+          outputs:
+            artifacts:
+              - name: advise-result
+                path: "/mnt/workdir/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+                archive:
+                  none: {}
+                s3:
+                  key: "argo/advise/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+                  endpoint: "s3.upshift.redhat.com"
+                  bucket: "thoth"
+                  insecure: true
+                  accessKeySecret:
+                    name: argo-artifact-repository
+                    key: accessKey
+                  secretKeySecret:
+                    name: argo-artifact-repository
+                    key: secretKey
 
-        container:
-          - name: adviser
+          container:
+            name: adviser
             image: adviser
             env:
               - name: THOTH_DOCUMENT_ID
@@ -275,3 +275,4 @@ objects:
               requests:
                 memory: "1Gi"
                 cpu: 1.5
+
