@@ -88,9 +88,10 @@ class Predictor:
         method should not raise any exception.
         """
 
-    def set_reward_signal(self, reward: float) -> None:
+    def set_reward_signal(self, context: Context, reward: float) -> None:
         """Signalize the reward.
 
+        @param context: resolver context
         @param reward: set to nan if the given state was not accepted a special value
                        of inf notifies about a new final state
         """
