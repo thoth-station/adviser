@@ -173,6 +173,10 @@ class Beam:
         """Remove all states from beam."""
         self._states = []
 
+    def reset(self) -> None:
+        """Recompute internal state of the beam if any changes to the score of states were made."""
+        self._heapify()
+
     def iter_states(self) -> Generator[State, None, None]:
         """Iterate over states, do not respect their score in order of iteration."""
         return (item[1] for item in self._states)
@@ -225,6 +229,12 @@ class Beam:
             self._siftup(0)
 
         return item
+
+    def _heapify(self) -> None:
+        """Transform list into a heap, in-place, in O(N) time."""
+        n = len(self._states)
+        for i in reversed(range(n // 2)):
+            self._siftup(i)
 
     def _heappush(self, item: Tuple[Tuple[float, int], State]) -> None:
         """Push item onto heap, maintaining the heap invariant."""

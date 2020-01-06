@@ -141,6 +141,30 @@ class TestBeam(AdviserTestCase):
 
         assert list(beam.iter_states_sorted()) == [state3, state2, state1, state0]
 
+    def test_reset(self) -> None:
+        """Test reset of the internal state if any changes are made to the score."""
+        beam = Beam()
+
+        state1 = State(score=1.0)
+        beam.add_state(state1)
+        state0 = State(score=0.0)
+        beam.add_state(state0)
+        state2 = State(score=2.0)
+        beam.add_state(state2)
+
+        internal_state = list(beam._states)
+
+        random_state = random.getstate()
+        random.seed(10)
+        try:
+            random.shuffle(beam._states)
+
+            assert beam._states != internal_state
+            beam.reset()
+            assert beam._states == internal_state
+        finally:
+            random.setstate(random_state)
+
     def test_top(self) -> None:
         """Test top element in beam."""
         beam = Beam(width=2)
