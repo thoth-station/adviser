@@ -70,8 +70,8 @@ class Predictor:
     def run(self, context: Context, beam: Beam) -> Tuple[State, Tuple[str, str, str]]:
         """The main method used to run the predictor.
 
-        The method accepts a beam of states and returns the state which should be
-        used for next expansion and package tuple that should be resolved .The beam has to be kept untouched.
+        The method accepts a beam of states and returns the state which should be used for next expansion.
+        The beam has to be kept untouched.
         """
         raise NotImplementedError
 
@@ -89,9 +89,10 @@ class Predictor:
         method should not raise any exception.
         """
 
-    def set_reward_signal(self, reward: float) -> None:
+    def set_reward_signal(self, context: Context, reward: float) -> None:
         """Signalize the reward.
 
+        @param context: resolver context
         @param reward: set to nan if the given state was not accepted a special value
                        of inf notifies about a new final state
         """
