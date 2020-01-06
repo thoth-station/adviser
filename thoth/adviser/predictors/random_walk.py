@@ -18,7 +18,6 @@
 """Implementation of a Random Walk based dependency graph sampling predictor."""
 
 import logging
-import random
 
 import attr
 from typing import List
@@ -28,7 +27,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 
-from ..beam import Beam
 from ..context import Context
 from ..predictor import Predictor
 from ..state import State
@@ -44,11 +42,11 @@ class RandomWalk(Predictor):
 
     _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
 
-    def run(self, context: Context, beam: Beam) -> Tuple[State, Tuple[str, str, str]]:
+    def run(self, context: Context) -> Tuple[State, Tuple[str, str, str]]:
         """Generate stacks using random walking."""
-        state = beam.get_last()
+        state = context.beam.get_last()
         if state is None:
-            state = beam.get_random()
+            state = context.beam.get_random()
 
         if self.keep_history:
             self._history.append((state.score, context.accepted_final_states_count))

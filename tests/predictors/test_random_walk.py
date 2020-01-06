@@ -45,8 +45,8 @@ class TestRandomWalk(AdviserTestCase):
             beam.add_state(cloned_state)
 
         predictor = RandomWalk()
-        context = flexmock(accepted_final_states_count=33)
-        next_state, package_tuple = predictor.run(context, beam)
+        context = flexmock(accepted_final_states_count=33, beam=beam)
+        next_state, package_tuple = predictor.run(context)
         assert next_state in beam.iter_states()
         assert package_tuple is not None
         assert package_tuple[0] in next_state.unresolved_dependencies

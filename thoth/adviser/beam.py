@@ -317,7 +317,7 @@ class Beam:
 
     def get_random(self) -> State:
         """Get a random state from beam."""
-        idx = random.randint(0, self.size) if self.size > 1 else 0
+        idx = random.randint(0, self.size - 1) if self.size > 1 else 0
         return self.get(idx)
 
     def remove(self, state: State) -> None:
