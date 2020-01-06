@@ -17,6 +17,7 @@
 
 """Test implementation of Beam search part in adviser's implementation."""
 
+import random
 import pytest
 
 from hypothesis import given
@@ -98,6 +99,31 @@ class TestBeam(AdviserTestCase):
         assert state2 in list(beam.iter_states())
         assert state1 not in list(beam.iter_states())
         assert state0 not in list(beam.iter_states())
+
+    def test_get_random(self) -> None:
+        """Test getting a random state."""
+        beam = Beam()
+
+        with pytest.raises(IndexError):
+            beam.get_random()
+
+        state1 = State(score=1.0)
+        beam.add_state(state1)
+        assert beam.get_random() is state1
+
+        state2 = State(score=1.0)
+        beam.add_state(state2)
+
+        random_state = random.getstate()
+        random.seed(3)
+        try:
+            assert beam.get_random() is state1
+            beam.add_state(state1)
+            assert beam.get_random() is state2
+            beam.add_state(state2)
+            assert beam.get_random() is state1
+        finally:
+            random.setstate(random_state)
 
     def test_iter_states_sorted(self) -> None:
         """Test asking for states returns a sorted list of states."""
