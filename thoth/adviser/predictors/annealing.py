@@ -29,7 +29,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 
-from ..beam import Beam
 from ..context import Context
 from ..exceptions import NoHistoryKept
 from ..predictor import Predictor
@@ -99,16 +98,16 @@ class AdaptiveSimulatedAnnealing(Predictor):
         )
         return acceptance_probability
 
-    def run(self, context: Context, beam: Beam) -> Tuple[State, Tuple[str, str, str]]:
+    def run(self, context: Context) -> Tuple[State, Tuple[str, str, str]]:
         """Run adaptive simulated annealing on top of beam."""
         self._temperature = self._exp(self._temperature, context)
 
         # Expand highest promising by default.
-        state = beam.top()
+        state = context.beam.top()
 
         # Pick a random state to be expanded if accepted.
-        probable_state_idx = random.randrange(1, beam.size) if beam.size > 1 else 0
-        probable_state = beam.get(probable_state_idx)
+        probable_state_idx = random.randrange(1, context.beam.size) if context.beam.size > 1 else 0
+        probable_state = context.beam.get(probable_state_idx)
         acceptance_probability = self._compute_acceptance_probability(
             state.score, probable_state.score, self._temperature
         )
@@ -134,7 +133,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
             self._temperature_history.append(
                 (
                     self._temperature,
-                    state is beam.top(),
+                    state is context.beam.top(),
                     acceptance_probability,
                     context.accepted_final_states_count,
                 )

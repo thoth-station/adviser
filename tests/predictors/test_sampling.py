@@ -42,8 +42,8 @@ class TestSampling(AdviserTestCase):
             beam.add_state(cloned_state)
 
         predictor = Sampling()
-        context = flexmock(accepted_final_states_count=10)
-        next_state, package_tuple = predictor.run(context, beam)
+        context = flexmock(accepted_final_states_count=10, beam=beam)
+        next_state, package_tuple = predictor.run(context)
         assert next_state is not None
         assert next_state in beam.iter_states()
         assert package_tuple is not None
