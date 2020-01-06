@@ -22,7 +22,6 @@ import random
 
 import attr
 from typing import List
-from typing import Optional
 from typing import Tuple
 
 import matplotlib
@@ -45,14 +44,18 @@ class Sampling(Predictor):
 
     _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
 
-    def run(self, context: Context, beam: Beam) -> State:
-        """Get random state from the beam for the next resolution round."""
+    def run(self, context: Context, beam: Beam) -> Tuple[State, Tuple[str, str, str]]:
+        """Get random state and random unresolved dependency from the beam for the next resolution round."""
         state = beam.get(random.randint(0, beam.size - 1))
 
         if self.keep_history:
             self._history.append((state.score, context.accepted_final_states_count))
 
-        return state
+        return state, state.get_random_unresolved_dependency()
+
+    def pre_run(self, context: Context) -> None:
+        """Initialization before the sampling run."""
+        self._history = []
 
     def plot(self) -> matplotlib.figure.Figure:
         """Plot score of the highest rated stack during sampling."""

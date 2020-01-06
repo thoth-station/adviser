@@ -53,9 +53,10 @@ Predictors
 .. toctree::
    :maxdepth: 1
 
-   sampling
-   hill_climbing
-   annealing
+   predictors/sampling
+   predictors/hill_climbing
+   predictors/monte_carlo
+   predictors/annealing
 
 
 Other functionality provided by thoth-adviser implementation

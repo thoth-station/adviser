@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019, 2020 Fridolin Pokorny
+# Copyright(C) 2019 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of hill climbing in the state space."""
+"""Implementation of a Random Walk based dependency graph sampling predictor."""
 
 import logging
+import random
 
 import attr
 from typing import List
@@ -38,26 +39,28 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class HillClimbing(Predictor):
-    """Implementation of hill climbing in the state space."""
+class RandomWalk(Predictor):
+    """Implementation of a Random Walk based dependency graph sampling predictor."""
 
     _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
 
     def run(self, context: Context, beam: Beam) -> Tuple[State, Tuple[str, str, str]]:
-        """Get top state from the beam for the next resolution round."""
-        state = beam.top()
+        """Generate stacks using random walking."""
+        state = beam.get_last()
+        if state is None:
+            state = beam.get(random.randint(0, beam.size - 1))
 
         if self.keep_history:
             self._history.append((state.score, context.accepted_final_states_count))
 
-        return state, state.get_first_unresolved_dependency()
+        return state, state.get_random_unresolved_dependency()
 
     def pre_run(self, context: Context) -> None:
-        """Initialization before the actual hill climbing run."""
+        """Initialization before the random walk run."""
         self._history = []
 
     def plot(self) -> matplotlib.figure.Figure:
-        """Plot score of the highest rated stack during hill climbing."""
+        """Plot score of the highest rated stack during sampling."""
         if not self._history:
             raise NoHistoryKept("No history datapoints kept")
 
@@ -77,7 +80,7 @@ class HillClimbing(Predictor):
         host.spines["right"].set_visible(False)
         host.spines["top"].set_visible(False)
 
-        p1, = host.plot(x, y1, ",g", label="Highest rated state score")
+        p1, = host.plot(x, y1, ",g", label="Score of a random picked state")
         p2, = par1.plot(x, y2, ",y", label="Number of products conducted")
 
         host.set_xlabel("iteration")

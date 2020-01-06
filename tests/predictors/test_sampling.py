@@ -32,17 +32,33 @@ class TestSampling(AdviserTestCase):
     """Tests related to sampling the state space."""
 
     @given(
-        integers(min_value=1, max_value=1024),
+        integers(min_value=1, max_value=256),
     )
-    def test_run(self, state_count: int) -> None:
+    def test_run(self, state: State, state_count: int) -> None:
         """Test running the sampling method."""
         beam = Beam()
         for _ in range(state_count):
-            state = State()
-            beam.add_state(state)
+            cloned_state = state.clone()
+            beam.add_state(cloned_state)
 
         predictor = Sampling()
         context = flexmock(accepted_final_states_count=10)
-        next_state = predictor.run(context, beam)
+        next_state, package_tuple = predictor.run(context, beam)
         assert next_state is not None
         assert next_state in beam.iter_states()
+        assert package_tuple is not None
+        assert package_tuple[0] in next_state.unresolved_dependencies
+        assert package_tuple in next_state.unresolved_dependencies[package_tuple[0]].values()
+
+    def test_pre_run(self) -> None:
+        """Test pre-run initialization."""
+        context = flexmock(limit=99)
+
+        predictor = Sampling()
+        assert predictor._history == []
+        predictor._history = [(0.66, 33)]
+
+        predictor.pre_run(context)
+        assert (
+            predictor._history == []
+        ), "Predictor's history not discarded"

@@ -32,33 +32,39 @@ To implement a predictor, you need to derive from :class:`Predictor <thoth.advis
   class MyPredictor(Predictor):
       """An example predictor implementation."""
 
-      def run(self, context: Context, beam: Beam) -> State:
+      def run(self, context: Context, beam: Beam) -> Tuple[State, str]:
           """Main entry-point for predictor implementation."""
-          return next(context.iter_states())
+          state = next(context.iter_states())
+          return state, next(iter(state.unresolved_dependencies))
 
 The main method - ``run`` - accepts two parameters - :class:`context
 <thoth.adviser.context.Context>` (adviser's context) and a :class:`beam
 <thoth.adviser.beam.Beam>`. The beam is used as a pool of (not final) states
 that are about to be resolved. The main goal of predictor is to return a state
-present in the beam. This state  will be expanded in the next resolver round.
-The resolver takes first unresolved dependency kept in the state and expands it
-- retrieves all the direct dependencies of that dependency in different
-versions and generates new states out of all the combinations of packages in
-different versions that can occur -- if such transition is valid based on
-Python ecosystem dependency resolving; and dependencies are accepted by
-pipeline :ref:`sieves <sieves>` and :ref:`steps <steps>`.
+present in the beam and package that should be resolved from the returned
+state. The state  will be expanded in the next resolver round by resolving the
+returned package.  The package is resolved by retrieving all the direct
+dependencies of that dependency in different versions and new states are
+generated out of all the combinations of packages in different versions that
+can occur -- if such transition is valid based on Python ecosystem dependency
+resolving; and dependencies are accepted by pipeline :ref:`sieves <sieves>` and
+:ref:`steps <steps>`.
 
 .. warning::
 
   Predictor does not adjust any properties stored in the context or beam!
 
-  The state considered for the next resolution has to stay in the beam.
+  The state and package considered for the next resolution have to stay in the
+  beam.
 
-The example implementation above always expands the first state in the beam.
-Note there is no guarantee on order of states in the beam, unless sorted states
-are requested.
+The example implementation above always expands the first state in the beam by
+resolving direct dependencies of the first package stored in
+:py:attr:`State.unresolved_dependencies
+<thoth.adviser.state.State.unresolved_dependencies>`.  Note there is no
+guarantee on order of states in the beam, unless sorted states are requested.
 
-The beam will always hold at least one state.
+The beam will always hold at least one state. With at least one unresolved
+dependency.
 
 Another example shows expansion of a random state and iteration over all the
 states present in the beam:
@@ -70,7 +76,7 @@ states present in the beam:
       #   return random.randint(0, beam.size - 1)
       for idx, state in enumerate(beam.iter_states()):
           if random.choice((True, False)):
-              return state
+              return state, random.choice(list(state.unresolved_dependencies))
 
       # Fallback to the first state.
       return beam.get(0)

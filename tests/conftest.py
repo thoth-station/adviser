@@ -18,6 +18,7 @@
 """File conftest.py for pytest test suite."""
 
 import random
+from collections import OrderedDict
 
 import pytest
 import flexmock
@@ -28,6 +29,7 @@ from thoth.adviser.enums import RecommendationType
 from thoth.adviser.pipeline_config import PipelineConfig
 from thoth.adviser.resolver import Resolver
 from thoth.adviser.predictor import Predictor
+from thoth.adviser.state import State
 from thoth.common import RuntimeEnvironment
 from thoth.python import Project
 
@@ -150,3 +152,25 @@ def resolver(
         beam_width=Resolver.DEFAULT_BEAM_WIDTH,
         limit_latest_versions=Resolver.DEFAULT_LIMIT_LATEST_VERSIONS,
     )
+
+
+@pytest.fixture
+def state() -> State:
+    """A fixture for a non-final state."""
+    unresolved_dependency = ("flask", "1.1.1", "https://pypi.org/simple")
+    unresolved_dependencies = OrderedDict(
+        [(id(unresolved_dependency), unresolved_dependency)]
+    )
+    state = State(
+        score=0.1,
+        unresolved_dependencies=OrderedDict({"flask": unresolved_dependencies}),
+        resolved_dependencies=OrderedDict(
+            {"hexsticker": ("hexsticker", "1.0.0", "https://pypi.org/simple")}
+        ),
+        advised_runtime_environment=RuntimeEnvironment.from_dict(
+            {"python_version": "3.6"}
+        ),
+    )
+    state.add_justification([{"foo": "bar"}, {"bar": "baz"}])
+    return state
+
