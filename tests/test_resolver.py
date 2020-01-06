@@ -917,7 +917,7 @@ class TestResolver(AdviserTestCase):
         to_expand_package_tuple2 = state2.get_random_unresolved_dependency()
         to_expand_package_tuple1 = state1.get_random_unresolved_dependency()
         resolver.predictor.should_receive("run").with_args(
-            resolver.context, resolver.beam
+            resolver.context
         ).and_return(state2, to_expand_package_tuple2).and_return(state1, to_expand_package_tuple1).twice()
 
         resolver.should_receive("_expand_state").with_args(state2, to_expand_package_tuple2).and_return(
@@ -1071,7 +1071,7 @@ class TestResolver(AdviserTestCase):
         unresolved_dependency2 = state2.get_random_unresolved_dependency()
         unresolved_dependency3 = state3.get_random_unresolved_dependency()
 
-        resolver.predictor.should_receive("run").with_args(object, object)\
+        resolver.predictor.should_receive("run").with_args(object)\
             .and_return(state1, unresolved_dependency1)\
             .and_return(state2, unresolved_dependency2)\
             .and_return(state3, unresolved_dependency3).times(3)

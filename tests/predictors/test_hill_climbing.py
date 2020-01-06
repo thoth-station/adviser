@@ -44,8 +44,8 @@ class TestHillClimbing(AdviserTestCase):
             beam.add_state(cloned_state)
 
         predictor = HillClimbing()
-        context = flexmock(accepted_final_states_count=33)
-        next_state, package_tuple = predictor.run(context, beam)
+        context = flexmock(accepted_final_states_count=33, beam=beam)
+        next_state, package_tuple = predictor.run(context)
         assert next_state is not None
         assert next_state is beam.top()
         assert package_tuple[0] in next_state.unresolved_dependencies

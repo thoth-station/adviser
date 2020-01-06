@@ -119,9 +119,9 @@ class TestBeam(AdviserTestCase):
         try:
             assert beam.get_random() is state1
             beam.add_state(state1)
-            assert beam.get_random() is state2
-            beam.add_state(state2)
             assert beam.get_random() is state1
+            beam.add_state(state1)
+            assert beam.get_random() is state2
         finally:
             random.setstate(random_state)
 
