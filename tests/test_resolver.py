@@ -251,6 +251,7 @@ class TestResolver(AdviserTestCase):
 
         resolver.pipeline.steps = [steps.Step1(), steps.Step2()]
 
+        resolver._init_context()
         assert resolver.beam.size == 0
         assert (
                 resolver._run_steps(state1, package_version, {"numpy": [("numpy", "1.18.0")]})
@@ -385,6 +386,7 @@ class TestResolver(AdviserTestCase):
 
         resolver.pipeline.strides = [strides.Stride1(), strides.Stride2()]
 
+        resolver._init_context()
         assert resolver._run_strides(state) is False
         assert original_state == state, "State is not untouched"
 
