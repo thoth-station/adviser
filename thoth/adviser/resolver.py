@@ -701,9 +701,7 @@ class Resolver:
                 self.beam.new_iteration()
                 self.context.iteration += 1
 
-                state, unresolved_package_tuple = self.predictor.run(
-                    self.context, self.beam
-                )
+                state, unresolved_package_tuple = self.predictor.run(self.context)
                 self.beam.remove(state)
 
                 _LOGGER.debug(
