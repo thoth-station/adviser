@@ -102,6 +102,9 @@ objects:
       serviceAccountName: argo
       podGC:
         strategy: OnWorkflowSuccess
+      volumes:
+        - name: cache
+          emptyDir: {}
       entrypoint: advise
       arguments:
         parameters:
@@ -162,7 +165,6 @@ objects:
                 default: "5"
               - name: THOTH_ADVISER_TIMEOUT_SECONDS
                 value: "3600"
-
           outputs:
             artifacts:
               - name: advise-result
@@ -180,7 +182,6 @@ objects:
                   secretKeySecret:
                     name: argo-artifact-repository
                     key: secretKey
-
           container:
             name: adviser
             image: adviser
@@ -275,3 +276,6 @@ objects:
               requests:
                 memory: "1Gi"
                 cpu: 1.5
+            volumeMounts:
+              - name: cache
+                mountPath: "/mnt/workdir"
