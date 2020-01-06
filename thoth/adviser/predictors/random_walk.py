@@ -48,7 +48,7 @@ class RandomWalk(Predictor):
         """Generate stacks using random walking."""
         state = beam.get_last()
         if state is None:
-            state = beam.get(random.randint(0, beam.size - 1))
+            state = beam.get_random()
 
         if self.keep_history:
             self._history.append((state.score, context.accepted_final_states_count))

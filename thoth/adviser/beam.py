@@ -18,7 +18,7 @@
 """Implementation of Beam for beam searching part of adviser."""
 
 import os
-from collections import OrderedDict
+import random
 from typing import Any
 from typing import List
 from typing import Tuple
@@ -314,6 +314,11 @@ class Beam:
     def get_last(self) -> Optional[State]:
         """Get state that was added in the previous resolution round."""
         return self._last_added
+
+    def get_random(self) -> State:
+        """Get a random state from beam."""
+        idx = random.randint(0, self.size) if self.size > 1 else 0
+        return self.get(idx)
 
     def remove(self, state: State) -> None:
         """Remove the given state from beam."""

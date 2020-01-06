@@ -76,9 +76,8 @@ class SolvedSieve(Sieve):
 
             if has_error and self.configuration["without_error"]:
                 _LOGGER.debug(
-                    "Removing package %r due to build time error on %r",
+                    "Removing package %r due to build time error in the software environment",
                     package_version.to_tuple(),
-                    self.context.project.runtime_environment.to_dict(),
                 )
                 continue
 
