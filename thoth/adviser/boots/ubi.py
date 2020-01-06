@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019, 2020 Fridolin Pokorny
+# Copyright(C) 2019 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,50 +15,44 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Perform a drop out of a new state expansion, randomly."""
+"""A boot to remap UBI to RHEL."""
 
-import random
-
-from typing import Any
-from typing import Optional
-from typing import Tuple
-from typing import List
-from typing import Dict
-from typing import TYPE_CHECKING
 import logging
+from typing import Optional
+from typing import Dict
+from typing import Any
+from typing import TYPE_CHECKING
 
-from thoth.python import PackageVersion
+import attr
 
-from ..exceptions import NotAcceptable
-from ..state import State
-from ..step import Step
-from ..enums import RecommendationType
-
+from ..boot import Boot
+from ..exceptions import CannotProduceStack
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
 
-
 _LOGGER = logging.getLogger(__name__)
 
 
-class DropoutStep(Step):
-    """A step that drops a state transition with a certain probability."""
+@attr.s(slots=True)
+class UbiBoot(Boot):
+    """Remap UBI to RHEL.
 
-    CONFIGURATION_DEFAULT = {"probability": 0.9}
+    As UBI has ABI compatibility with RHEL, remap any UBI to RHEL.
+    """
 
     @classmethod
     def should_include(
         cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
-        """Do not register the dropout step."""
-        return None
-
-    def run(
-        self, state: State, package_version: PackageVersion
-    ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
-        """Do not accept new state, randomly."""
-        if random.random() >= self.configuration["probability"]:
-            raise NotAcceptable
+        """Register self, always."""
+        if not builder_context.is_included(cls):
+            return {}
 
         return None
+
+    def run(self) -> None:
+        """Remap UBI to RHEL as Thoth keeps track of RHEL and UBI is ABI compatible."""
+        if self.context.project.runtime_environment.operating_system.name == "ubi":
+            _LOGGER.info("Using observations for RHEL instead of UBI, RHEL is ABI compatible with UBI")
+            self.context.project.runtime_environment.operating_system.name = "rhel"

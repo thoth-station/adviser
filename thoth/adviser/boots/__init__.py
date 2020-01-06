@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019 Fridolin Pokorny
+# Copyright(C) 2019, 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +17,10 @@
 
 """Boot units implemented in adviser."""
 
+from .ubi import UbiBoot
 from .version_clash import VersionClashBoot
 
-__all__ = ["VersionClashBoot"]
+__all__ = [
+    "UbiBoot",
+    "VersionClashBoot",
+]
