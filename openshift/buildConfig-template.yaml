@@ -89,9 +89,9 @@ objects:
             - name: "THOTH_ADVISE"
               value: ${THOTH_ADVISE}
             - name: "THAMOS_VERBOSE"
-              value: "0"
-            - name: "THAMOS_DEBUG"
               value: "1"
+            - name: "THAMOS_DEBUG"
+              value: "0"
             - name: "THAMOS_CONFIG_TEMPLATE"
               value: ".thoth.yaml"
             - name: "THAMOS_CONFIG_EXPAND_ENV"
