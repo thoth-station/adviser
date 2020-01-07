@@ -238,6 +238,8 @@ class Resolver:
             _LOGGER.debug("Running boot %r", boot.__class__.__name__)
             try:
                 boot.run()
+            except NotAcceptable as exc:
+                raise CannotProduceStack(f"Boot pipeline unit {boot.__class__.__name__} failed: {str(exc)!r}")
             except Exception as exc:
                 raise BootError(
                     f"Failed to run pipeline boot {boot.__class__.__name__!r}: {str(exc)}"
