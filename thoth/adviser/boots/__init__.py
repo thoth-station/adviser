@@ -19,8 +19,10 @@
 
 from .ubi import UbiBoot
 from .version_clash import VersionClashBoot
+from .solved_software_environment import SolvedSoftwareEnvironmentBoot
 
 __all__ = [
+    "SolvedSoftwareEnvironmentBoot",
     "UbiBoot",
     "VersionClashBoot",
 ]

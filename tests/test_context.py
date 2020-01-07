@@ -167,7 +167,6 @@ class TestContext(AdviserTestCase):
         with pytest.raises(NotFound):
             context.get_package_version(package_tuple)
 
-        environment_marker = "python_version >= 3.6"
         extras = ["postgresql"]
 
         assert (
@@ -199,7 +198,6 @@ class TestContext(AdviserTestCase):
         with pytest.raises(NotFound):
             context.get_package_version(package_tuple)
 
-        environment_marker = "python_version >= 3.6"
         extras = ["postgresql"]
 
         package_version_registered = context.register_package_tuple(

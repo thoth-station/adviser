@@ -1205,7 +1205,6 @@ class TestResolver(AdviserTestCase):
         resolver.predictor.should_receive("post_run_report").once()
 
         stack_info = [{"foo": "bar"}]
-        flexmock(Context).new_instances(flexmock(stack_info=stack_info))
 
         with pytest.raises(ValueError):
             assert resolver.context, "Context is already bound to resolver"
@@ -1215,7 +1214,6 @@ class TestResolver(AdviserTestCase):
         assert resolver.context is not None, "Context is not bound to resolver"
         assert report.product_count() == 1
         assert list(report.iter_products()) == [product]
-        assert report.stack_info is stack_info
 
     def test_get_adviser_instance(self, predictor_mock: Predictor) -> None:
         """Test getting a resolver for adviser."""
