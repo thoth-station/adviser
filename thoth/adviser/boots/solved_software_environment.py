@@ -66,7 +66,7 @@ class SolvedSoftwareEnvironmentBoot(Boot):
             )
 
             configurations = (
-                self.context.graph.get_solved_software_environment_configurations()
+                self.context.graph.get_solved_python_package_versions_software_environment_all()
             )
             _LOGGER.warning(
                 "{:<16} {:<16} {:<8}".format("OS name", "OS version", "Python version")

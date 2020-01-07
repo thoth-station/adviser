@@ -17,7 +17,6 @@
 
 """File conftest.py for pytest test suite."""
 
-import random
 from collections import OrderedDict
 
 import pytest
@@ -26,6 +25,7 @@ import flexmock
 from thoth.adviser.context import Context
 from thoth.adviser.beam import Beam
 from thoth.adviser.enums import RecommendationType
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.pipeline_config import PipelineConfig
 from thoth.adviser.resolver import Resolver
 from thoth.adviser.predictor import Predictor
@@ -56,8 +56,8 @@ class PredictorMock(Predictor):
 def context(project: Project) -> Context:
     """A fixture for a clean context."""
     flexmock(Context)
-    flexmock(GraphDatabase)
     flexmock(Beam)
+    flexmock(GraphDatabase)
 
     return Context(
         project=project,
@@ -66,7 +66,7 @@ def context(project: Project) -> Context:
         limit=100,
         count=3,
         beam=Beam(),
-        recommendation_type=RecommendationType.TESTING,
+        recommendation_type=RecommendationType.LATEST,
     )
 
 
@@ -174,3 +174,17 @@ def state() -> State:
     state.add_justification([{"foo": "bar"}, {"bar": "baz"}])
     return state
 
+
+@pytest.fixture
+def builder_context(project: Project) -> PipelineBuilderContext:
+    """A fixture for a pipeline builder context."""
+    flexmock(PipelineBuilderContext)
+    flexmock(GraphDatabase)
+
+    return PipelineBuilderContext(
+        graph=GraphDatabase(),
+        project=project,
+        library_usage=None,
+        decision_type=None,
+        recommendation_type=RecommendationType.LATEST,
+    )
