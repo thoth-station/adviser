@@ -171,6 +171,19 @@ class TestResolver(AdviserTestCase):
 
         assert resolver._run_boots() is None
 
+    def test_run_boots_not_acceptable(self, resolver: Resolver) -> None:
+        """Test running pipeline boots with not acceptable exception raised."""
+        flexmock(boots.Boot1)
+        flexmock(boots.Boot2)
+
+        boots.Boot1.should_receive("run").and_return(None).ordered()
+        boots.Boot2.should_receive("run").and_raise(NotAcceptable).ordered()
+
+        resolver.pipeline.boots = [boots.Boot1(), boots.Boot2()]
+
+        with pytest.raises(CannotProduceStack):
+            resolver.resolve()
+
     def test_run_boots_error(self, resolver: Resolver) -> None:
         """Test running pipeline boots raising boot specific error if any error occurs."""
         flexmock(boots.Boot1)
