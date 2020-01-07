@@ -62,13 +62,23 @@ class SolvedSoftwareEnvironmentBoot(Boot):
                 "No observations found for %r in version %r using Python %r, available configurations:",
                 self.context.project.runtime_environment.operating_system.name,
                 self.context.project.runtime_environment.operating_system.version,
-                self.context.project.runtime_environment.python_version
+                self.context.project.runtime_environment.python_version,
             )
 
-            configurations = self.context.graph.get_solved_software_environment_configurations()
-            _LOGGER.warning("{:<16} {:<16} {:<8}".format("OS name", "OS version", "Python version"))
-            for conf in configurations:
-                _LOGGER.warning("{:<16} {:<16} {:<8}".format(conf["os_name"], conf["os_version"], conf["python_version"]))
+            configurations = (
+                self.context.graph.get_solved_software_environment_configurations()
+            )
+            _LOGGER.warning(
+                "{:<16} {:<16} {:<8}".format("OS name", "OS version", "Python version")
+            )
+            for conf in sorted(
+                configurations,
+                key=lambda i: (i["os_name"], i["os_version"], i["python_version"]),
+            ):
+                _LOGGER.warning(
+                    "{:<16} {:<16} {:<8}".format(
+                        conf["os_name"], conf["os_version"], conf["python_version"]
+                    )
+                )
 
             raise NotAcceptable
-
