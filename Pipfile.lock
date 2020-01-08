@@ -724,11 +724,11 @@
         },
         "thoth-solver": {
             "hashes": [
-                "sha256:5ad829e6ec489ae1fc0caa4a031d7c2e130b3f0cfddd62aeda8a5042311f71b6",
-                "sha256:7a3012078e0ff855336bc0869cd699edaf0f6855bfd5de49da736c42f683a6c8"
+                "sha256:737c2679eb5aba9423d4cc9f595c3f49eef7480b078f83952f6327c04276988a",
+                "sha256:751a3331e04bb84eb944c4883bfcc8b23c1430ed8d48ab00cc0fa692c6e35cd4"
             ],
             "index": "pypi",
-            "version": "==1.4.1"
+            "version": "==1.5.0"
         },
         "thoth-storages": {
             "hashes": [
