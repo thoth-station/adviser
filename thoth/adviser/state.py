@@ -224,9 +224,9 @@ class State:
         """Compute a random number x such as 0 <= x < n, use termial function not to spread numbers uniformly.
 
         To prefer lower numbers more often, termial function is used to assign "weights" for
-        numbers - then random uniform is used in conjuction with weights.
+        numbers - then random uniform is used in conjunction with weights.
 
-        An illustrative example can be cls._random_terminal(4).
+        An illustrative example can be cls._random_terminal(4) which calls:
 
           cls._terminal_function(4) == 10
 
