@@ -400,7 +400,8 @@ class Resolver:
         resolved_direct_dependencies: Dict[
             str, List[PackageVersion]
         ] = self.solver.solve(
-            list(self.project.iter_dependencies(with_devel=with_devel)), graceful=True
+            sorted(self.project.iter_dependencies(with_devel=with_devel), key=lambda p: p.name),
+            graceful=True
         )
 
         unresolved = []
