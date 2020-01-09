@@ -21,6 +21,9 @@ import gc
 import pytest
 from collections import OrderedDict
 
+from hypothesis import given
+from hypothesis.strategies import integers
+
 from thoth.adviser.state import State
 from .base import AdviserTestCase
 
@@ -112,3 +115,55 @@ class TestState(AdviserTestCase):
         gc.collect()
 
         assert cloned_state.parent is None
+
+    @given(
+        integers(min_value=0, max_value=16384),
+    )
+    def test_termial_function(self, n: int) -> None:
+        """Test termial function."""
+        x = State._termial_function(n)
+        assert State._termial_function_solution(x) == n
+
+    @given(
+        integers(min_value=0, max_value=4096),
+    )
+    def test_termial_function_compute(self, n: int) -> None:
+        """Test termial function - compute explicitly results."""
+        x = State._termial_function(n)
+        assert x == sum(range(n + 1))
+
+    @given(
+        integers(max_value=-1, min_value=-16384),
+    )
+    def test_termial_function_error(self, n: int) -> None:
+        """Test termial function."""
+        with pytest.raises(ValueError):
+            State._termial_function(n)
+
+    @given(
+        integers(min_value=1, max_value=16384),
+    )
+    def test_termial_function_solution(self, n: int) -> None:
+        """Test solution to termial function."""
+        x = State._termial_function(n)
+        assert State._termial_function_solution(x - 1) <= n <= State._termial_function_solution(x)
+
+    def test_termial_function_solution_zero(self) -> None:
+        """Test solution to termial function when ."""
+        assert State._termial_function_solution(0) == 0
+
+    @given(
+        integers(min_value=1, max_value=16384),
+    )
+    def test_random_termial(self, n) -> None:
+        """Compute random termial function value."""
+        x = State._random_termial(n)
+        assert 0 <= x < n
+
+    @given(
+        integers(min_value=-4096, max_value=0),
+    )
+    def test_random_termial_error(self, n) -> None:
+        """Test error out when random termial is used wih negative or zero value."""
+        with pytest.raises(ValueError):
+            State._random_termial(n)
