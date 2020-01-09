@@ -11,6 +11,7 @@ metadata:
     template.openshift.io/long-description: >
       This template defines resources needed to run recommendation logic of Thoth to OpenShift.
     template.openshift.io/provider-display-name: Red Hat, Inc.
+    thoth-station.ninja/template-version: 0.4.2
   labels:
     app: thoth
     template: provenance-checker
@@ -39,6 +40,10 @@ parameters:
     required: true
     description: A unique identifier of provenance-checker job.
     displayName: Provenance checker id
+  - name: THOTH_DOCUMENT_ID
+    description: "A unique identifier of the resulting document in a Thoth deployment."
+    displayName: "Document identifier"
+    required: true
   - name: THOTH_WHITELISTED_SOURCES
     required: false
     description: A comma separated values of URLs to whitelisted sources.
@@ -64,6 +69,8 @@ objects:
     kind: Job
     metadata:
       name: ${THOTH_PROVENANCE_CHECKER_JOB_ID}
+      annotations:
+        thoth-station.ninja/template-version: 0.4.2
       labels:
         app: thoth
         component: provenance-checker
@@ -97,8 +104,12 @@ objects:
                     configMapKeyRef:
                       key: storage-bucket-name
                       name: thoth
+                - name: THOTH_DOCUMENT_ID
+                  value: "${THOTH_DOCUMENT_ID}"
                 - name: THOTH_LOG_ADVISER
                   value: "${THOTH_LOG_ADVISER}"
+                - name: THOTH_ADJUST_LOGGING
+                  value: "alembic.runtime.migration:WARNING"
                 - name: THOTH_ADVISER_OUTPUT
                   value: "${THOTH_ADVISER_OUTPUT}"
                 - name: THOTH_ADVISER_REQUIREMENTS

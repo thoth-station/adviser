@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2018, 2019 Fridolin Pokorny
+# Copyright(C) 2018, 2019, 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,62 +14,76 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
+# type: ignore
 
 """Thoth-adviser CLI."""
 
-import os
 import json
-import sys
 import logging
+import os
 import time
-import typing
-import traceback
+import random
+from functools import partial
 from pathlib import Path
-from copy import deepcopy
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Optional
 
+import attr
 import click
-from thoth.adviser import __title__ as analyzer_name
-from thoth.adviser import __version__ as analyzer_version
-from thoth.adviser.enums import PythonRecommendationOutput
-from thoth.adviser.enums import RecommendationType
-from thoth.adviser.enums import DecisionType
-from thoth.adviser.exceptions import InternalError
-from thoth.adviser.exceptions import ThothAdviserException
-from thoth.adviser.python.exceptions import UnableLock
-from thoth.adviser.python import Adviser
-from thoth.adviser.python import GraphDigestsFetcher
-from thoth.adviser.python import dependency_monkey as run_dependency_monkey
-from thoth.adviser.python.dependency_monkey import dm_amun_inspect_wrapper
 from thoth.analyzer import print_command_result
 from thoth.common import init_logging
 from thoth.common import RuntimeEnvironment
 from thoth.python import Pipfile
 from thoth.python import PipfileLock
 from thoth.python import Project
-from thoth.solver.python.base import SolverException
-from thoth.solver.python.base import NoReleasesFound
+
+from thoth.adviser.dependency_monkey import DependencyMonkey
+from thoth.adviser.digests_fetcher import GraphDigestsFetcher
+from thoth.adviser.pipeline_builder import PipelineBuilder
+from thoth.adviser.enums import DecisionType
+from thoth.adviser.enums import PythonRecommendationOutput
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.exceptions import AdviserException
+from thoth.adviser.exceptions import InternalError
+from thoth.adviser import Resolver
+from thoth.adviser import __title__ as analyzer_name
+from thoth.adviser import __version__ as analyzer_version
+from thoth.adviser.run import subprocess_run
+import thoth.adviser.predictors as predictors
 
 init_logging()
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def _print_version(ctx, _, value):
+@attr.s(slots=True)
+class _PrintFunc:
+    """A print function - a workaround for typing and kwargs arguments."""
+
+    func = attr.ib(type=Callable)
+
+    def __call__(self, duration: float, result: Dict[str, Any]) -> None:
+        self.func(duration=duration, result=result)
+
+
+def _print_version(ctx: click.Context, _, value: str):
     """Print adviser version and exit."""
     if not value or ctx.resilient_parsing:
         return
+
     click.echo(analyzer_version)
     ctx.exit()
 
 
 def _instantiate_project(
     requirements: str,
-    requirements_locked: typing.Optional[str],
-    files: bool,
+    requirements_locked: Optional[str] = None,
     runtime_environment: RuntimeEnvironment = None,
 ):
     """Create Project instance based on arguments passed to CLI."""
-    if files:
+    if os.path.isfile(requirements):
         with open(requirements, "r") as requirements_file:
             requirements = requirements_file.read()
 
@@ -96,6 +110,19 @@ def _instantiate_project(
     )
 
     return project
+
+
+def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationType) -> type:
+    """Get adviser predictor based on command line option."""
+    if predictor != "AUTO":
+        return getattr(predictors, predictor)
+
+    if recommendation_type == RecommendationType.LATEST:
+        return predictors.HillClimbing
+    elif recommendation_type == RecommendationType.STABLE or recommendation_type == RecommendationType.TESTING:
+        return predictors.AdaptiveSimulatedAnnealing
+
+    raise ValueError(f"Unknown recommendation type: {recommendation_type!r}")
 
 
 @click.group()
@@ -172,6 +199,7 @@ def cli(ctx=None, verbose=False, metadata=None):
     help="A comma separated list of whitelisted simple repositories providing packages - if not "
     "provided, all indexes are whitelisted (example: https://pypi.org/simple/).",
 )
+<<<<<<< HEAD
 @click.option(
     "--files",
     "-F",
@@ -193,38 +221,55 @@ def provenance(
     files=False,
     no_pretty=False,
     metadata="{}",
+=======
+def provenance(
+    click_ctx: click.Context,
+    requirements: str,
+    requirements_locked: str,
+    output: str,
+    whitelisted_sources: Optional[str] = None,
+    no_pretty: bool = False,
+>>>>>>> 4428a623dbda3b938158d54ee3cccb9a36c2c2c1
 ):
     """Check provenance of packages based on configuration."""
+    parameters = locals()
+    parameters.pop("click_ctx")
     start_time = time.monotonic()
+<<<<<<< HEAD
     _LOGGER.debug("Passed arguments: %s", locals())
     metadata = json.loads(metadata)
+=======
+    _LOGGER.debug("Passed arguments: %s", parameters)
+
+>>>>>>> 4428a623dbda3b938158d54ee3cccb9a36c2c2c1
     whitelisted_sources = whitelisted_sources.split(",") if whitelisted_sources else []
     result = {
         "error": None,
         "report": [],
-        "parameters": {"whitelisted_indexes": whitelisted_sources},
+        "parameters": {"whitelisted_indexes": whitelisted_sources, "project": None},
         "input": None,
     }
     try:
-        project = _instantiate_project(requirements, requirements_locked, files)
-        result["input"] = project.to_dict()
+        project = _instantiate_project(requirements, requirements_locked)
+        result["parameters"]["project"] = project.to_dict()
         report = project.check_provenance(
             whitelisted_sources=whitelisted_sources,
             digests_fetcher=GraphDigestsFetcher(),
         )
-    except ThothAdviserException as exc:
-        # TODO: we should extend exceptions so they are capable of storing more info.
+    except AdviserException as exc:
         if isinstance(exc, InternalError):
             # Re-raise internal exceptions that shouldn't occur here.
             raise
 
         _LOGGER.exception("Error during checking provenance: %s", str(exc))
         result["error"] = True
+        result["error_msg"] = str(exc)
         result["report"] = [
             {"type": "ERROR", "justification": f"{str(exc)} ({type(exc).__name__})"}
         ]
     else:
         result["error"] = False
+        result["error_msg"] = None
         result["report"] = report
 
     print_command_result(
@@ -237,7 +282,8 @@ def provenance(
         pretty=not no_pretty,
         metadata=metadata,
     )
-    return int(result["error"] is True)
+
+    click_ctx.exit(int(result["error"] is True))
 
 
 @cli.command()
@@ -289,18 +335,22 @@ def provenance(
     type=int,
     envvar="THOTH_ADVISER_COUNT",
     help="Number of software stacks shown in the output.",
+    default=Resolver.DEFAULT_COUNT,
+    show_default=True,
 )
 @click.option(
     "--limit",
     type=int,
     envvar="THOTH_ADVISER_LIMIT",
     help="Number of software stacks that should be taken into account (stop after reaching the limit).",
+    default=Resolver.DEFAULT_LIMIT,
+    show_default=True,
 )
 @click.option(
-    "--limit-latest-versions",
+    "--seed",
     type=int,
-    envvar="THOTH_ADVISER_LIMIT_LATEST_VERSIONS",
-    help="Consider only desired number of versions (latest) for a package to limit number of software stacks scored.",
+    envvar="THOTH_ADVISER_SEED",
+    help="A seed used for generating random numbers (defaults to time if omitted).",
 )
 @click.option(
     "--library-usage",
@@ -316,39 +366,61 @@ def provenance(
     help="Runtime environment specification (file or directly JSON) to describe target environment.",
 )
 @click.option(
-    "--files",
-    "-F",
-    is_flag=True,
-    help="Requirements passed represent paths to files on local filesystem.",
+    "--plot", envvar="THOTH_ADVISER_PLOT", type=str, help="Plot history of predictor."
+)
+@click.option(
+    "--beam-width",
+    "-b",
+    envvar="THOTH_ADVISER_BEAM_WIDTH",
+    type=int,
+    default=Resolver.DEFAULT_BEAM_WIDTH,
+    help="Width of the beam used.",
+)
+@click.option(
+    "--limit-latest-versions",
+    envvar="THOTH_ADVISER_LIMIT_LATEST_VERSIONS",
+    type=int,
+    default=Resolver.DEFAULT_LIMIT_LATEST_VERSIONS,
+    help="Limit number of latest versions considered for dependency graphs.",
+)
+@click.option(
+    "--predictor",
+    envvar="THOTH_ADVISER_PREDICTOR",
+    default="AUTO",
+    type=click.Choice(predictors.__all__ + ["AUTO"]),
+    help="Predictor to be used with the resolver, select the most appropriate one in case of AUTO.",
+)
+@click.option(
+    "--pipeline",
+    envvar="THOTH_ADVISER_PIPELINE",
+    default=None,
+    type=str,
+    metavar="PIPELINE",
+    help="Pipeline configuration supplied in a form of JSON/YAML or a path to a file.",
 )
 def advise(
-    click_ctx,
-    requirements,
-    requirements_format=None,
-    requirements_locked=None,
-    recommendation_type=None,
-    runtime_environment=None,
-    output=None,
-    no_pretty=False,
-    files=False,
-    count=None,
-    limit=None,
-    library_usage=None,
-    limit_latest_versions=None,
+    click_ctx: click.Context,
+    *,
+    beam_width: int,
+    count: int,
+    limit: int,
+    output: str,
+    recommendation_type: str,
+    requirements_format: str,
+    requirements: str,
+    predictor: str,
+    library_usage: Optional[str] = None,
+    limit_latest_versions: Optional[int] = None,
+    no_pretty: bool = False,
+    plot: Optional[str] = None,
+    requirements_locked: Optional[str] = None,
+    runtime_environment: Optional[str] = None,
+    seed: Optional[int] = None,
+    pipeline: Optional[str] = None,
 ):
     """Advise package and package versions in the given stack or on solely package only."""
-    start_time = time.monotonic()
-    _LOGGER.debug("Passed arguments: %s", locals())
-    limit = int(limit) if limit else None
-    count = int(count) if count else None
-
-    # A special value of -1 signalizes no limit/count, this is a workaround for Click's option parser.
-    if count == -1:
-        count = None
-    if limit == -1:
-        limit = None
-    if limit_latest_versions == -1:
-        limit_latest_versions = None
+    parameters = locals()
+    parameters.pop("click_ctx")
 
     if library_usage:
         if os.path.isfile(library_usage):
@@ -363,98 +435,53 @@ def advise(
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
     recommendation_type = RecommendationType.by_name(recommendation_type)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
-    result = {
-        "error": None,
-        "report": [],
-        "stack_info": None,
-        "advised_configuration": None,
-        "pipeline_configuration": None,
-        "parameters": {
-            "runtime_environment": runtime_environment.to_dict(),
-            "recommendation_type": recommendation_type.name,
-            "library_usage": library_usage,
-            "requirements_format": requirements_format.name,
-            "limit": limit,
-            "limit_latest_versions": limit_latest_versions,
-            "count": count,
-            "no_pretty": no_pretty,
-        },
-        "input": None,
-    }
-
-    try:
-        project = _instantiate_project(
-            requirements, requirements_locked, files, runtime_environment
-        )
-        result["input"] = project.to_dict()
-        if runtime_environment:
-            _LOGGER.info(
-                "Runtime environment configuration:\n%s",
-                json.dumps(runtime_environment.to_dict(), sort_keys=True, indent=2),
-            )
-        else:
-            _LOGGER.info("No runtime environment configuration supplied")
-        if library_usage:
-            _LOGGER.info(
-                "Library usage:\n%s",
-                json.dumps(library_usage, sort_keys=True, indent=2),
-            )
-        else:
-            _LOGGER.info("No library usage supplied")
-        stack_info, advised_configuration, report, pipeline_configuration = Adviser.compute_on_project(
-            project,
-            recommendation_type=recommendation_type,
-            library_usage=library_usage,
-            count=count,
-            limit=limit,
-            limit_latest_versions=limit_latest_versions,
-        )
-    except ThothAdviserException as exc:
-        # TODO: we should extend exceptions so they are capable of storing more info.
-        if isinstance(exc, InternalError):
-            # Re-raise internal exceptions that shouldn't occur here.
-            raise
-
-        _LOGGER.exception("Error during computing recommendation: %s", str(exc))
-        result["error"] = True
-        result["report"] = [([{"justification": f"{str(exc)}", "type": "ERROR"}], None)]
-    except NoReleasesFound as exc:
-        result["error"] = True
-        result["report"] = [([{
-            "justification": f"{str(exc)}; analysis of the missing package will be "
-                             f"automatically scheduled by the system",
-            "type": "ERROR"
-        }], None)]
-    except (SolverException, UnableLock) as exc:
-        result["error"] = True
-        result["report"] = [([{"justification": str(exc), "type": "ERROR"}], None)]
-    else:
-        # Convert report to a dict so its serialized.
-        result["report"] = [
-            (justification, project.to_dict(), overall_score)
-            for justification, project, overall_score in report
-        ]
-        # Report error if we did not find any recommendation to the user, the
-        # stack_info carries information on why it hasn't been found.
-        result["error"] = len(result["report"]) == 0
-        result["stack_info"] = stack_info
-        if result["error"]:
-            result["stack_info"].append({
-                "type": "ERROR",
-                "justification": "Recommendation engine did not produce any stacks"
-            })
-        result["advised_configuration"] = advised_configuration
-        result["pipeline_configuration"] = pipeline_configuration
-    print_command_result(
-        click_ctx,
-        result,
-        analyzer=analyzer_name,
-        analyzer_version=analyzer_version,
-        output=output,
-        duration=time.monotonic() - start_time,
-        pretty=not no_pretty,
+    project = _instantiate_project(
+        requirements, requirements_locked, runtime_environment
     )
-    return int(result["error"] is True)
+    pipeline_config = None if pipeline is None else PipelineBuilder.load(pipeline)
+
+    parameters["project"] = project.to_dict()
+    if pipeline_config is not None:
+        parameters["pipeline"] = pipeline_config.to_dict()
+    predictor_class = _get_adviser_predictor(predictor, recommendation_type)
+
+    # Use current time to make sure we have possibly reproducible runs - the seed is reported.
+    seed = seed if seed is not None else int(time.time())
+    _LOGGER.info(
+        "Starting resolver using %r predictor with random seed set to %r",
+        predictor_class.__name__,
+        seed,
+    )
+    random.seed(seed)
+
+    resolver = Resolver.get_adviser_instance(
+        predictor=predictor_class(keep_history=plot is not None),
+        project=project,
+        library_usage=library_usage,
+        recommendation_type=recommendation_type,
+        limit=limit,
+        count=count,
+        beam_width=beam_width,
+        limit_latest_versions=limit_latest_versions,
+        pipeline_config=pipeline_config,
+    )
+
+    print_func = _PrintFunc(
+        partial(
+            print_command_result,
+            click_ctx=click_ctx,
+            analyzer=analyzer_name,
+            analyzer_version=analyzer_version,
+            output=output,
+            pretty=not no_pretty,
+        )
+    )
+
+    exit_code = subprocess_run(
+        resolver, print_func, plot=plot, result_dict={"parameters": parameters}
+    )
+
+    click_ctx.exit(int(exit_code != 0))
 
 
 @cli.command("dependency-monkey")
@@ -469,6 +496,15 @@ def advise(
     help="Requirements to be advised.",
 )
 @click.option(
+    "--requirements-format",
+    "-f",
+    envvar="THOTH_REQUIREMENTS_FORMAT",
+    default="pipenv",
+    required=True,
+    type=click.Choice(["pipenv", "requirements"]),
+    help="The output format of requirements that are computed based on recommendations.",
+)
+@click.option(
     "--stack-output",
     "-o",
     type=str,
@@ -477,14 +513,6 @@ def advise(
     required=True,
     help="Output directory or remote API to print results to, in case of URL a POST request "
     "is issued to the Amun REST API.",
-)
-@click.option(
-    "--limit-latest-versions",
-    type=int,
-    envvar="THOTH_ADVISER_LIMIT_LATEST_VERSIONS",
-    metavar="INT",
-    help="Consider only desired number of versions (latest) for "
-    "a package to limit number of software stacks generated.",
 )
 @click.option(
     "--library-usage",
@@ -503,19 +531,16 @@ def advise(
     help="Output directory or remote API where reports of dependency monkey run should be posted..",
 )
 @click.option(
-    "--files",
-    "-F",
-    is_flag=True,
-    help="Requirements passed represent paths to files on local filesystem.",
-)
-@click.option(
     "--seed",
     envvar="THOTH_DEPENDENCY_MONKEY_SEED",
     help="A seed to be used for generating software stack samples (defaults to time if omitted).",
+    type=int,
 )
 @click.option(
     "--count",
+    type=int,
     envvar="THOTH_DEPENDENCY_MONKEY_COUNT",
+    default=Resolver.DEFAULT_COUNT,
     help="Number of software stacks that should be computed.",
 )
 @click.option(
@@ -551,182 +576,133 @@ def advise(
     type=str,
     help="Runtime environment specification (file or directly JSON) to describe target environment.",
 )
+@click.option(
+    "--plot", envvar="THOTH_ADVISER_PLOT", type=str, help="Plot predictor history."
+)
+@click.option(
+    "--beam-width",
+    "-b",
+    envvar="THOTH_ADVISER_BEAM_WIDTH",
+    type=int,
+    default=Resolver.DEFAULT_BEAM_WIDTH,
+    help="Width of the beam used.",
+)
+@click.option(
+    "--limit-latest-versions",
+    envvar="THOTH_ADVISER_LIMIT_LATEST_VERSIONS",
+    type=int,
+    default=Resolver.DEFAULT_LIMIT_LATEST_VERSIONS,
+    help="Limit number of latest versions considered for dependency graphs.",
+)
 @click.option("--no-pretty", "-P", is_flag=True, help="Do not print results nicely.")
+@click.option(
+    "--predictor",
+    envvar="THOTH_ADVISER_PREDICTOR",
+    default="AdaptiveSimulatedAnnealing",
+    type=click.Choice(predictors.__all__),
+    help="Predictor to be used with the resolver.",
+)
+@click.option(
+    "--pipeline",
+    envvar="THOTH_ADVISER_PIPELINE",
+    default=None,
+    type=str,
+    metavar="PIPELINE",
+    help="Pipeline configuration supplied in a form of JSON/YAML or a path to a file.",
+)
 def dependency_monkey(
-    click_ctx,
-    requirements: str,
-    stack_output: str,
+    click_ctx: click.Context,
+    *,
+    beam_width: int,
+    count: int,
+    decision_type: str,
+    predictor: str,
     report_output: str,
-    files: bool,
-    seed: int = None,
-    decision_type: str = None,
+    requirements: str,
+    requirements_format: str,
+    stack_output: str,
+    context: Optional[str] = None,
     dry_run: bool = False,
-    context: str = None,
+    library_usage: Optional[str] = None,
+    limit_latest_versions: Optional[int] = None,
     no_pretty: bool = False,
-    count: int = None,
-    runtime_environment: dict = None,
-    limit_latest_versions: int = None,
-    library_usage: str = None,
+    plot: Optional[str] = None,
+    runtime_environment: str = None,
+    seed: Optional[int] = None,
+    pipeline: Optional[str] = None,
 ):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
-    # We cannot have these as ints in click because they are optional and we
-    # cannot pass empty string as an int as env variable.
-    start_time = time.monotonic()
-    seed = int(seed) if seed else None
-    count = int(count) if count else None
-    limit_latest_versions = (
-        int(limit_latest_versions) if limit_latest_versions else None
-    )
-
-    # A special value of -1 signalizes no limit, this is a workaround for Click's option parser.
-    if count == -1:
-        count = None
-    if limit_latest_versions == -1:
-        limit_latest_versions = None
-
-    runtime_environment = RuntimeEnvironment.load(runtime_environment)
-    decision_type = DecisionType.by_name(decision_type)
-    project = _instantiate_project(
-        requirements,
-        requirements_locked=None,
-        files=files,
-        runtime_environment=runtime_environment,
-    )
+    parameters = locals()
+    parameters.pop("click_ctx")
 
     if library_usage:
         if os.path.isfile(library_usage):
             try:
                 library_usage = json.loads(Path(library_usage).read_text())
             except Exception as exc:
-                _LOGGER.error("Failed to load library usage file %r: %s", library_usage, str(exc))
+                _LOGGER.error("Failed to load library usage file %r", library_usage)
                 raise
         else:
             library_usage = json.loads(library_usage)
 
-    if runtime_environment:
-        _LOGGER.info(
-            "Runtime environment configuration:\n%s",
-            json.dumps(runtime_environment.to_dict(), sort_keys=True, indent=2),
-        )
-    else:
-        _LOGGER.info("No runtime environment configuration supplied")
-    if library_usage:
-        _LOGGER.info(
-            "Library usage:\n%s", json.dumps(library_usage, sort_keys=True, indent=2)
-        )
-    else:
-        _LOGGER.info("No library usage supplied")
-
-    result = {
-        "error": None,
-        "parameters": {
-            "requirements": project.pipfile.to_dict(),
-            "runtime_environment": runtime_environment.to_dict(),
-            "seed": seed,
-            "decision_type": decision_type.name,
-            "library_usage": library_usage,
-            "context": deepcopy(
-                context
-            ),  # We reuse context later, perform deepcopy to report the one on input.
-            "stack_output": stack_output,
-            "report_output": report_output,
-            "files": files,
-            "dry_run": dry_run,
-            "no_pretty": no_pretty,
-            "count": count,
-        },
-        "input": None,
-        "output": [],
-        "computed": None,
-    }
-
-    try:
-        report = run_dependency_monkey(
-            project,
-            stack_output,
-            seed=seed,
-            decision_type=decision_type,
-            dry_run=dry_run,
-            context=context,
-            count=count,
-            limit_latest_versions=limit_latest_versions,
-            library_usage=library_usage,
-        )
-        # Place report into result.
-        result.update(report)
-    except SolverException:
-        _LOGGER.exception("An error occurred during dependency monkey run")
-        result["error"] = traceback.format_exc()
-    print_command_result(
-        click_ctx,
-        result,
-        analyzer=analyzer_name,
-        analyzer_version=analyzer_version,
-        output=report_output,
-        duration=time.monotonic() - start_time,
-        pretty=not no_pretty,
-    )
-
-    return sys.exit(result["error"] is not None)
-
-
-@cli.command("submit-amun")
-@click.option(
-    "--requirements",
-    "-r",
-    type=str,
-    envvar="THOTH_ADVISER_REQUIREMENTS",
-    required=True,
-    help="Requirements to be advised.",
-)
-@click.option(
-    "--requirements-locked",
-    "-r",
-    type=str,
-    envvar="THOTH_ADVISER_REQUIREMENTS",
-    required=True,
-    help="Requirements to be advised.",
-)
-@click.option(
-    "--stack-output",
-    "-o",
-    type=str,
-    envvar="THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT",
-    metavar="OUTPUT",
-    required=True,
-    help="Output directory or remote API to print results to, in case of URL a POST request "
-    "is issued to the Amun REST API.",
-)
-@click.option(
-    "--files",
-    "-F",
-    is_flag=True,
-    help="Requirements passed represent paths to files on local filesystem.",
-)
-@click.option(
-    "--context",
-    type=str,
-    envvar="THOTH_AMUN_CONTEXT",
-    metavar="AMUN_JSON",
-    help="The context into which computed stacks should be placed; if omitteed, "
-    "raw software stacks will be created. This option cannot be set when generating "
-    "software stacks onto filesystem.",
-)
-def submit_amun(
-    requirements: str,
-    requirements_locked: str,
-    stack_output: str,
-    files: bool,
-    context: str = None,
-):
-    """Submit the given project to Amun for inspection - mostly for debug purposes."""
+    runtime_environment = RuntimeEnvironment.load(runtime_environment)
+    requirements_format = PythonRecommendationOutput.by_name(requirements_format)
     project = _instantiate_project(
-        requirements, requirements_locked=requirements_locked, files=files
+        requirements, runtime_environment=runtime_environment
     )
-    context = json.loads(context) if context else {}
-    inspection_id = dm_amun_inspect_wrapper(stack_output, context, project, 0)
-    click.echo(inspection_id)
+    pipeline_config = None if pipeline is None else PipelineBuilder.load(pipeline)
+
+    parameters["project"] = project.to_dict()
+    if pipeline_config is not None:
+        parameters["pipeline"] = pipeline_config.to_dict()
+
+    # Use current time to make sure we have possibly reproducible runs - the seed is reported.
+    seed = seed if seed is not None else int(time.time())
+    _LOGGER.info(
+        "Starting resolver using predictor %r with random seed set to %r",
+        predictor,
+        seed,
+    )
+    random.seed(seed)
+
+    resolver = Resolver.get_dependency_monkey_instance(
+        predictor=getattr(predictors, predictor)(keep_history=plot is not None),
+        project=project,
+        library_usage=library_usage,
+        count=count,
+        beam_width=beam_width,
+        limit_latest_versions=limit_latest_versions,
+        decision_type=decision_type,
+        pipeline_config=pipeline_config,
+    )
+
+    dependency_monkey_runner = DependencyMonkey(
+        resolver=resolver,
+        stack_output=stack_output,
+        context=context,
+        dry_run=dry_run,
+        decision_type=decision_type,
+    )
+
+    print_func = _PrintFunc(
+        partial(
+            print_command_result,
+            click_ctx=click_ctx,
+            analyzer=analyzer_name,
+            analyzer_version=analyzer_version,
+            output=report_output,
+            pretty=not no_pretty,
+        )
+    )
+
+    exit_code = subprocess_run(
+        dependency_monkey_runner,
+        print_func,
+        result_dict={"parameters": parameters},
+        plot=plot,
+    )
+
+    click_ctx.exit(int(exit_code != 0))
 
 
-if __name__ == "__main__":
-    cli()
+__name__ == "__main__" and cli()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2018, 2019 Fridolin Pokorny
+# Copyright(C) 2018, 2019, 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ class _ExtendedEnum(Enum):
     """A custom enum with extended functionality."""
 
     @classmethod
-    def by_name(cls, name: str):
+    def by_name(cls, name: str) -> "Enum":
         """Retrieve enum based on its name."""
         try:
             return cls.__members__[name.upper()]

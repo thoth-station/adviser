@@ -1,0 +1,281 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: adviser
+  annotations:
+    description: "Thoth: Adviser"
+    openshift.io/display-name: "Thoth: Adviser"
+    version: 0.5.0
+    tags: thoth,ai-stacks,adviser
+    template.openshift.io/documentation-url: https://github.com/Thoth-Station/
+    template.openshift.io/long-description: >
+      This template defines resources needed to run recommendation logic of Thoth to OpenShift.
+    template.openshift.io/provider-display-name: "Red Hat, Inc."
+  labels:
+    app: thoth
+    template: adviser
+    component: adviser
+
+parameters:
+  - name: THOTH_ADVISER_JOB_ID
+    required: true
+    description: A unique dentifier of adviser job.
+    displayName: Adviser id
+  - name: THOTH_ADVISER_REQUIREMENTS
+    required: false
+    description: Raw stack requirements
+  - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+    required: false
+    description: Fully pinned down stack
+    displayName: Locked requirements
+  - name: THOTH_ADVISER_LIBRARY_USAGE
+    required: false
+    description: Usage of libraries for adviser's resolution algorithm.
+    displayName: Library usage
+  - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
+    required: false
+    description: Format of input
+    displayName: Requirements format
+  - name: THOTH_ADVISER_RECOMMENDATION_TYPE
+    required: false
+    description: Type of requested recommendation
+    displayName: Recommendation type
+  - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+    required: false
+    description: Runtime environment to create recommendation for
+    displayName: Runtime environment
+  - name: THOTH_ADVISER_SEED
+    required: true
+    description: Random seed to run adviser with.
+    displayName: Random seed
+    # Keep seed constant across adviser runs so that two runs with same knowledge base report same results to user.
+    # Not to answer with a different stack each time a request is made.
+    value: "42"
+  - name: THOTH_ADVISER_PLOT
+    required: false
+    description: A path to history file to store annealing progress history.
+    displayName: History plot file
+    # TODO: Let's keep history for debugging purposes for now.
+    value: "history.png"
+  - name: THOTH_ADVISER_BEAM_WIDTH
+    required: true
+    description: Adviser's beam width to restrict memory requirements with states generated.
+    displayName: Beam width
+    value: "1000"
+  - name: THOTH_LOG_ADVISER
+    required: false
+    description: Log adviser actions
+    displayName: Log adviser actions
+    value: INFO
+  - name: THOTH_ADVISER_LIMIT
+    required: false
+    description: Limit number of software stacks scored.
+    displayName: Adviser limit.
+    value: "1000"
+  - name: THOTH_ADVISER_COUNT
+    required: false
+    description: Number of software stacks returned in the recommendation.
+    displayName: Adviser count.
+    value: "1"
+  - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+    required: false
+    description: Limit number of versions starting from latest in stacks.
+    displayName: Limit latest versions.
+    value: "5"
+  - name: THOTH_ADVISER_TIMEOUT_SECONDS
+    required: true
+    description: Give adviser specified number of seconds on CPU to compute results.
+    displayName: Adviser timeout seconds.
+    value: "3600"
+
+objects:
+  - apiVersion: argoproj.io/v1alpha1
+    kind: Workflow
+    metadata:
+      name: "${THOTH_ADVISER_JOB_ID}"
+      annotations:
+        thoth-station.ninja/template-version: 0.5.0
+      labels:
+        app: thoth
+        component: adviser
+    spec:
+      serviceAccountName: argo
+      podGC:
+        strategy: OnWorkflowSuccess
+      volumes:
+        - name: cache
+          emptyDir: {}
+      entrypoint: advise
+      arguments:
+        parameters:
+          - name: THOTH_ADVISER_JOB_ID
+            value: "${THOTH_ADVISER_JOB_ID}"
+          - name: THOTH_DOCUMENT_ID
+            value: "${THOTH_ADVISER_JOB_ID}"
+          - name: THOTH_ADVISER_REQUIREMENTS
+            value: "${THOTH_ADVISER_REQUIREMENTS}"
+          - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+            value: "${THOTH_ADVISER_REQUIREMENTS_LOCKED}"
+          - name: THOTH_ADVISER_LIBRARY_USAGE
+            value: "${THOTH_ADVISER_LIBRARY_USAGE}"
+          - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
+            value: "${THOTH_ADVISER_REQUIREMENTS_FORMAT}"
+          - name: THOTH_ADVISER_RECOMMENDATION_TYPE
+            value: "${THOTH_ADVISER_RECOMMENDATION_TYPE}"
+          - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+            value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
+          - name: THOTH_ADVISER_SEED
+            value: "${THOTH_ADVISER_SEED}"
+          - name: THOTH_ADVISER_BEAM_WIDTH
+            value: "${THOTH_ADVISER_BEAM_WIDTH}"
+          - name: THOTH_ADVISER_LIMIT
+            value: "${THOTH_ADVISER_LIMIT}"
+          - name: THOTH_ADVISER_COUNT
+            value: "${THOTH_ADVISER_COUNT}"
+          - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+            value: "${THOTH_ADVISER_LIMIT_LATEST_VERSIONS}"
+
+      templates:
+        - name: advise
+          archiveLocation:
+            archiveLogs: true
+          inputs:
+            parameters:
+              - name: THOTH_ADVISER_JOB_ID
+              - name: THOTH_DOCUMENT_ID
+              - name: THOTH_ADVISER_REQUIREMENTS
+              - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+              - name: THOTH_ADVISER_LIBRARY_USAGE
+              - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
+              - name: THOTH_ADVISER_RECOMMENDATION_TYPE
+              - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+              - name: THOTH_ADVISER_SEED
+                value: "42"
+              - name: THOTH_ADVISER_PLOT
+                value: "history.png"
+              - name: THOTH_ADVISER_BEAM_WIDTH
+                value: "1000"
+              - name: THOTH_LOG_ADVISER
+                value: "INFO"
+              - name: THOTH_ADVISER_LIMIT
+                value: "1000"
+              - name: THOTH_ADVISER_COUNT
+                value: "1"
+              - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+                default: "5"
+              - name: THOTH_ADVISER_TIMEOUT_SECONDS
+                value: "3600"
+          outputs:
+            artifacts:
+              - name: advise-result
+                path: "/mnt/workdir/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+                archive:
+                  none: {}
+                s3:
+                  key: "argo/advise/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+                  endpoint: "s3.upshift.redhat.com"
+                  bucket: "thoth"
+                  insecure: true
+                  accessKeySecret:
+                    name: argo-artifact-repository
+                    key: accessKey
+                  secretKeySecret:
+                    name: argo-artifact-repository
+                    key: secretKey
+          container:
+            name: adviser
+            image: adviser
+            env:
+              - name: THOTH_DOCUMENT_ID
+                value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+              - name: THOTH_ADVISER_FORK
+                value: "1"
+              - name: THOTH_LOG_ADVISER
+                value: "{{inputs.parameters.THOTH_LOG_ADVISER}}"
+              - name: THOTH_ADJUST_LOGGING
+                value: "alembic.runtime.migration:WARNING"
+              - name: THOTH_ADVISER_COUNT
+                value: "{{inputs.parameters.THOTH_ADVISER_COUNT}}"
+              - name: THOTH_ADVISER_LIMIT
+                value: "{{inputs.parameters.THOTH_ADVISER_LIMIT}}"
+              - name: THOTH_ADVISER_REQUIREMENTS
+                value: "{{inputs.parameters.THOTH_ADVISER_REQUIREMENTS}}"
+              - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+                value: "{{inputs.parameters.THOTH_ADVISER_REQUIREMENTS_LOCKED}}"
+              - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
+                value: "{{inputs.parameters.THOTH_ADVISER_REQUIREMENTS_FORMAT}}"
+              - name: THOTH_ADVISER_RECOMMENDATION_TYPE
+                value: "{{inputs.parameters.THOTH_ADVISER_RECOMMENDATION_TYPE}}"
+              - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+                value: "{{inputs.parameters.THOTH_ADVISER_RUNTIME_ENVIRONMENT}}"
+              - name: THOTH_ADVISER_SEED
+                value: "{{inputs.parameters.THOTH_ADVISER_SEED}}"
+              - name: THOTH_ADVISER_PLOT
+                value: "{{inputs.parameters.THOTH_ADVISER_PLOT}}"
+              - name: THOTH_ADVISER_BEAM_WIDTH
+                value: "{{inputs.parameters.THOTH_ADVISER_BEAM_WIDTH}}"
+              - name: THOTH_ADVISER_SUBCOMMAND
+                value: "advise"
+              - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+                value: "{{inputs.parameters.THOTH_ADVISER_LIMIT_LATEST_VERSIONS}}"
+              - name: THOTH_ADVISER_LIBRARY_USAGE
+                value: "{{inputs.parameters.THOTH_ADVISER_LIBRARY_USAGE}}"
+              - name: ISIS_API_URL
+                valueFrom:
+                  configMapKeyRef:
+                    name: thoth
+                    key: isis-api-url
+              - name: PROMETHEUS_PUSHGATEWAY_HOST
+                valueFrom:
+                  configMapKeyRef:
+                    key: prometheus-pushgateway-host
+                    name: thoth
+              - name: PROMETHEUS_PUSHGATEWAY_PORT
+                valueFrom:
+                  configMapKeyRef:
+                    name: thoth
+                    key: prometheus-pushgateway-port
+              - name: THOTH_DEPLOYMENT_NAME
+                valueFrom:
+                  configMapKeyRef:
+                    name: thoth
+                    key: storage-bucket-name
+              - name: SENTRY_DSN
+                valueFrom:
+                  secretKeyRef:
+                    name: thoth
+                    key: sentry-dsn
+              - name: KNOWLEDGE_GRAPH_HOST
+                valueFrom:
+                  configMapKeyRef:
+                    name: thoth
+                    key: postgresql-host
+              - name: KNOWLEDGE_GRAPH_PORT
+                value: "5432"
+              - name: KNOWLEDGE_GRAPH_SSL_DISABLED
+                value: "1"
+              - name: KNOWLEDGE_GRAPH_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: postgresql
+                    key: database-user
+              - name: KNOWLEDGE_GRAPH_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: postgresql
+                    key: database-password
+              - name: KNOWLEDGE_GRAPH_DATABASE
+                valueFrom:
+                  secretKeyRef:
+                    name: postgresql
+                    key: database-name
+            resources:
+              limits:
+                memory: "1Gi"
+                cpu: 1.5
+              requests:
+                memory: "1Gi"
+                cpu: 1.5
+            volumeMounts:
+              - name: cache
+                mountPath: "/mnt/workdir"

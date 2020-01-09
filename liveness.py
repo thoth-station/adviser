@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019 Fridolin Pokorny
+# Copyright(C) 2019, 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ def main() -> int:
             continue
 
         print("Killing process with PID %d" % pid)
-        os.kill(pid, signal.SIGTERM)
+        os.kill(pid, signal.SIGINT)
         Path(_LIVENESS_PROBE_KILL_FILE).touch()
 
     # Let liveness probe always fail with timeout.

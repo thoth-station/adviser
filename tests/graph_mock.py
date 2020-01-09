@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2018, 2019 Fridolin Pokorny
+# Copyright(C) 2018, 2019, 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
+# type: ignore
 
 """Mocking responses from the graph database."""
 
@@ -22,11 +23,13 @@ import typing
 from collections import deque
 
 import yaml
-from base import AdviserTestCase
+from .base import AdviserTestCase
 
 
 class MockedGraphDatabase:
     """A mocked graph database using YAML files as data."""
+
+    DEFAULT_COUNT = 100
 
     def __init__(self, database_file: str):
         with open(
@@ -41,19 +44,22 @@ class MockedGraphDatabase:
     def connect(self):
         pass
 
-    def get_all_versions_python_package(
+    def get_solved_python_package_versions_all(
         self,
         package_name: str,
         os_name: str = None,
         os_version: str = None,
         python_version: str = None,
         without_error: bool = True,
+        count: bool = DEFAULT_COUNT,
+        start_offset: bool = 0,
+        distinct: bool = True,
     ) -> typing.List[tuple]:
         """Get all versions for the given Python package."""
         result = []
         for version, info in self.db.get(package_name, {}).items():
             for entry in info:
-                result.append((version, entry["index_url"]))
+                result.append((package_name, version, entry["index_url"]))
 
         return result
 

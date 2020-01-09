@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2018, 2019 Fridolin Pokorny
+# Copyright(C) 2019, 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Core logic for adviser test suite."""
+"""A base class for implementing adviser's test cases."""
 
 import os
+from pathlib import Path
 
 
 class AdviserTestCase:
-    """A base class for adviser test cases."""
+    """A base class for implementing adviser's test cases."""
 
-    data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+    data_dir = Path(os.path.dirname(os.path.realpath(__file__))) / "data"

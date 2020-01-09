@@ -1,8 +1,9 @@
 attrs
-click<6.7
-contoml
-thoth-analyzer
-thoth-common
+click
+contoml==0.30
+matplotlib
+thoth-python
 thoth-solver
 thoth-storages
-thoth-storages
+toml
+pyyaml

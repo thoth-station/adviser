@@ -1,9 +1,8 @@
-__pycache__
-*.pyc
-.cache
-thoth_adviser.egg-info/
-*.eggs/
+.eggs/
 .coverage
+thoth_adviser.egg-info/
+.hypothesis.mypy_cache/
+.mypy_cache/
+__pycache__
 build/
-docs/source/conf.py
-docs/source/thoth.*.rst
+coverage.xml

@@ -1,7 +1,7 @@
 Thoth Adviser
 -------------
 
-A recommendation engine for project `Thoth <https://github.com/thoth-station/>`_.
+A recommendation engine and software stack generation for project `Thoth <https://github.com/thoth-station/>`_.
 
 There are the following main goals of thoth-adviser (as of now):
 
@@ -97,10 +97,9 @@ and using its command line interface:
 When thoth-adviser is scheduled in a deployment, it is actually executed as a
 CLI with arguments passed via environment variables.
 
-See `Dgraph <https://github.com/thoth-station/dgraph-thoth-config>`_
-repository on how to run a Dgraph instance locally and
-example `notebooks <https://github.com/thoth-station/notebooks>`_ which can feed
-your Dgraph instance for experiments.
+See `thoth-storages repository <https://github.com/thoth-station/storages>`_
+repository on how to run Thoth's knowledge graph locally and
+example `notebooks <https://github.com/thoth-station/notebooks>`_ for experiments.
 
 Running adviser locally
 =======================
@@ -111,21 +110,12 @@ in implementation. You can do so easily by running:
 .. code-block:: console
 
   pipenv install
-  PYTHONPATH=. GRAPH_TLS_PATH=<graph-tls-path> GRAPH_SERVICE_HOST=<graph-service-host> pipenv run ./thoth-adviser --help
+  PYTHONPATH=. pipenv run ./thoth-adviser --help
 
-This command will set `<graph-service-host>` (Dgraph
-deployed in test environment) as your source for advises and information for
-resolver to correctly resolve dependencies. Feel free to use `a local
-Dgraph instance`, as explaind here<https://github.com/thoth-station/thoth-storages>,
-if it suits your needs. Also, follow the developer's guide to get `more
+This command will run adviser locally - adviser will try to connect to a local
+PostgreSQL instance and compute recommendations. `Browse docs here
+<https://github.com/thoth-station/thoth-storages>`_ to see how to setup a local
+PostgreSQL instance. Also, follow the developer's guide to get `more
 information about developer's setup
 <https://github.com/thoth-station/thoth/blob/master/docs/developers_guide.rst>`_.
 
-As adviser is very memory intense application, it is recommended to run it in a
-container with memory limit set for large application stacks. To do so, use
-`s2i` utility to build the container and then run it as show below:
-
-.. code-block:: console
-
-  s2i build . centos/python-36-centos7 thoth-adviser
-  docker run -m 8G -e THOTH_ADVISER_SUBCOMMAND=advise -e GRAPH_SERVICE_HOST=<graph-service-host> thoth-adviser
