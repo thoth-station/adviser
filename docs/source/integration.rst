@@ -32,6 +32,32 @@ If you use ``requirements.txt``, the easiest way how to convert to Pipenv's
 And add both file produced, ``Pipfile`` and ``Pipfile.lock``, into your Git
 repository.
 
+It's also possible to use `pip <https://pip.pypa.io/en/stable/user_guide/>`_
+format as well as format used by
+`pip-tools <https://pypi.org/project/pip-tools/>`_. To use these formats,
+you will need to adjust ``requirements_format`` configuration option in your
+``.thoth.yaml`` configuration file.
+
+.. note::
+
+  It's recommended to use Pipenv if possible. Pipenv introduces more consistent
+  files that track Python package indexes used as well as artifact hashes in the
+  lock file explicitly.
+
+By switching to ``pip``/``pip-compile`` file format the behaviour of file lookup
+is following (sorted based on priority):
+
+* if ``requirements.txt`` and ``requirements.in`` files are present,
+  ``requirements.txt`` file is used as a lockfile and ``requirements.in`` states
+  direct dependencies (``pip-tools`` behavior)
+
+* if just ``requirements.in`` file is present, it is used as a file
+  containing direct dependencies (``pip-tools`` behaviour)
+
+* if just ``requirements.txt`` file is present, it is used as a file
+  containing direct dependencies (raw ``pip`` behaviour)
+
+
 Command Line Interface - Thamos CLI
 ===================================
 
