@@ -784,7 +784,7 @@ class Resolver:
         """Resolve raw products as produced by this resolver pipeline."""
         self._init_context()
         with Unit.assigned_context(self.context):
-            return self._do_resolve_products(with_devel=with_devel)
+            yield from self._do_resolve_products(with_devel=with_devel)
 
     def resolve(self, *, with_devel: bool = True) -> Report:
         """Resolve software stacks and return resolver report."""
