@@ -173,11 +173,11 @@ class State:
 
     @staticmethod
     def _termial_function(n: int) -> int:
-        """Compute termial function, with red hats off to Donald Knuth.
+        r"""Compute termial function, with red hats off to Donald Knuth.
 
         Termial function is:
 
-          sum_{k=0}^n k
+          \sum_{k=0}^n k
 
         Let's use the solution using binomial coefficient - (n + 1) over 2.
         """
