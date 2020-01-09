@@ -20,13 +20,13 @@
 import pytest
 import flexmock
 
+import math
 from collections import OrderedDict
 from copy import deepcopy
 import itertools
 from typing import List
 import random
 
-from thoth.adviser.context import Context
 from thoth.adviser.beam import Beam
 from thoth.adviser.resolver import Resolver
 from thoth.adviser.state import State
@@ -265,6 +265,9 @@ class TestResolver(AdviserTestCase):
         resolver.pipeline.steps = [steps.Step1(), steps.Step2()]
 
         resolver._init_context()
+
+        resolver.predictor.should_receive("set_reward_signal").with_args(resolver.context, math.nan).once()
+
         assert resolver.beam.size == 0
         assert (
                 resolver._run_steps(state1, package_version, {"numpy": [("numpy", "1.18.0")]})
@@ -296,6 +299,34 @@ class TestResolver(AdviserTestCase):
             )
 
         assert original_state == state, "State is not untouched"
+
+    def test_run_steps_multi_package_resolution(self, resolver: Resolver, package_version: PackageVersion) -> None:
+        """Test running pipeline step with a multi package resolution flag set."""
+        flexmock(steps.Step1)
+        flexmock(steps.Step2)
+
+        state = State()
+
+        state.add_resolved_dependency(package_version.to_tuple())
+        state.add_unresolved_dependency(package_version.to_tuple())
+
+        resolver.pipeline.steps = [steps.Step1(), steps.Step2()]
+
+        steps.Step1.MULTI_PACKAGE_RESOLUTIONS = True
+        steps.Step2.MULTI_PACKAGE_RESOLUTIONS = False
+
+        resolver._init_context()
+
+        resolver.pipeline.steps[0].should_receive("run").with_args(state, package_version).and_return(None).once()
+        resolver.pipeline.steps[1].should_receive("run").times(0)
+
+        assert resolver._run_steps(
+            state,
+            package_version,
+            {"flask": [("flask", "0.12", "https://pypi.org/simple")]}
+        ) is None
+        assert resolver.beam.size == 1
+        assert resolver.beam.top() is state
 
     def test_run_steps_error(
         self, resolver: Resolver, package_version: PackageVersion
@@ -663,6 +694,7 @@ class TestResolver(AdviserTestCase):
             extras=frozenset(["postgresql", None]),
             marker_evaluation_result=None,
         ).and_raise(NotFoundError).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(resolver.context, math.nan).once()
         assert resolver._expand_state(state, to_expand_package_tuple) is None
         assert resolver.beam.size == 0
 
@@ -695,6 +727,8 @@ class TestResolver(AdviserTestCase):
             len(state.unresolved_dependencies) == 1
         ), "State in the test case should have only once dependency to resolve in order to check production of a final state"
 
+        resolver.predictor.should_receive("set_reward_signal").with_args(resolver.context, math.inf).once()
+
         original_resolved_count = len(state.resolved_dependencies)
 
         assert (
@@ -705,6 +739,300 @@ class TestResolver(AdviserTestCase):
         assert to_expand_package_tuple not in state.iter_unresolved_dependencies()
         assert resolver.beam.size == 0, "Some adjustments to beam were made"
         assert len(state.resolved_dependencies) == original_resolved_count + 1
+
+    def test_expand_state_no_intersection(self, resolver: Resolver, state: State) -> None:
+        """Test expanding a state with no intersected dependencies."""
+        to_expand_package_tuple = ("tensorflow", "2.0.0", "https://pypi.org/simple")
+
+        resolver.project.runtime_environment.operating_system.name = "fedora"
+        resolver.project.runtime_environment.operating_system.version = "31"
+        resolver.project.runtime_environment.python_version = "3.7"
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+            *to_expand_package_tuple,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+            extras=frozenset({None}),
+            marker_evaluation_result=True,
+        ).and_return({None: [("absl-py", "0.9.0"), ("absl-py", "0.8.0")]}).once()
+
+        absl_py_090_records = [{
+                "package_name": "absl-py",
+                "package_version": "0.9.0",
+                "index_url": "https://pypi.org/simple",
+                "os_name": "fedora",
+                "os_version": "31",
+                "python_version": "3.7",
+            }
+        ]
+
+        absl_py_080_records = [{
+                "package_name": "absl-py",
+                "package_version": "0.8.0",
+                "index_url": "https://pypi.org/simple",
+                "os_name": "fedora",
+                "os_version": "31",
+                "python_version": "3.7",
+            }
+        ]
+
+        # No intersected dependencies.
+        state.add_unresolved_dependency(("absl-py", "0.7.0", "https://pypi.org/simple"))
+        state.add_unresolved_dependency(("absl-py", "0.6.0", "https://pypi.org/simple"))
+
+        resolver.graph.should_receive("get_python_package_version_records").with_args(
+            package_name="absl-py",
+            package_version="0.9.0",
+            index_url=None,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        ).and_return(absl_py_090_records).ordered()
+
+        resolver.graph.should_receive("get_python_package_version_records").with_args(
+            package_name="absl-py",
+            package_version="0.8.0",
+            index_url=None,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        ).and_return(absl_py_080_records).ordered()
+
+        resolver._init_context()
+        resolver.context.register_package_tuple(
+            to_expand_package_tuple,
+            develop=False,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        )
+
+        resolver.predictor.should_receive("set_reward_signal").with_args(resolver.context, math.nan).once()
+        assert resolver._expand_state(state, to_expand_package_tuple) is None
+
+    def test_expand_state_sieves_discarded(self, resolver: Resolver, state: State) -> None:
+        """Test expanding a state but all dependencies are filtered out by sieves."""
+        to_expand_package_tuple = ("tensorflow", "2.0.0", "https://pypi.org/simple")
+
+        resolver.project.runtime_environment.operating_system.name = "fedora"
+        resolver.project.runtime_environment.operating_system.version = "31"
+        resolver.project.runtime_environment.python_version = "3.7"
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+            *to_expand_package_tuple,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+            extras=frozenset({None}),
+            marker_evaluation_result=True,
+        ).and_return({None: [("absl-py", "0.8.0")]}).once()
+
+        absl_py_080_records = [{
+            "package_name": "absl-py",
+            "package_version": "0.8.0",
+            "index_url": "https://pypi.org/simple",
+            "os_name": "fedora",
+            "os_version": "31",
+            "python_version": "3.7",
+        }]
+
+        resolver.graph.should_receive("get_python_package_version_records").with_args(
+            package_name="absl-py",
+            package_version="0.8.0",
+            index_url=None,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        ).and_return(absl_py_080_records).ordered()
+
+        resolver._init_context()
+
+        resolver.pipeline.sieves[0].should_receive("run").with_args(object).and_raise(NotAcceptable).once()
+
+        resolver.context.register_package_tuple(
+            to_expand_package_tuple,
+            develop=False,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        )
+
+        resolver.predictor.should_receive("set_reward_signal").with_args(resolver.context, math.nan).once()
+        assert resolver._expand_state(state, to_expand_package_tuple) is None
+
+    def test_expand_state_intersection_adjust(self, resolver: Resolver, state: State) -> None:
+        """Test expanding a state with intersected dependencies - intersected dependencies are adjusted."""
+        to_expand_package_tuple = ("tensorflow", "2.0.0", "https://pypi.org/simple")
+
+        resolver.project.runtime_environment.operating_system.name = "rhel"
+        resolver.project.runtime_environment.operating_system.version = "9"
+        resolver.project.runtime_environment.python_version = "3.7"
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+            *to_expand_package_tuple,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+            extras=frozenset({None}),
+            marker_evaluation_result=True,
+        ).and_return({None: [("absl-py", "0.9.0"), ("absl-py", "0.8.0")]}).once()
+
+        absl_py_090_records = [{
+                "package_name": "absl-py",
+                "package_version": "0.9.0",
+                "index_url": "https://pypi.org/simple",
+                "os_name": "fedora",
+                "os_version": "31",
+                "python_version": "3.7",
+            }
+        ]
+
+        absl_py_080_records = [{
+                "package_name": "absl-py",
+                "package_version": "0.8.0",
+                "index_url": "https://pypi.org/simple",
+                "os_name": "fedora",
+                "os_version": "31",
+                "python_version": "3.7",
+            }
+        ]
+
+        # No intersected dependencies.
+        state.add_unresolved_dependency(("absl-py", "0.8.0", "https://pypi.org/simple"))
+        state.add_unresolved_dependency(("absl-py", "0.6.0", "https://pypi.org/simple"))
+
+        resolver.graph.should_receive("get_python_package_version_records").with_args(
+            package_name="absl-py",
+            package_version="0.9.0",
+            index_url=None,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        ).and_return(absl_py_090_records).ordered()
+
+        resolver.graph.should_receive("get_python_package_version_records").with_args(
+            package_name="absl-py",
+            package_version="0.8.0",
+            index_url=None,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        ).and_return(absl_py_080_records).ordered()
+
+        resolver._init_context()
+        resolver.context.register_package_tuple(
+            to_expand_package_tuple,
+            develop=False,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        )
+
+        resolver.context.iteration += 1
+        resolver.beam.wipe()
+
+        resolver.pipeline.steps[0].should_receive("run").and_return((0.1, [])).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(resolver.context, 0.1).once()
+
+        assert resolver.beam.size == 0
+        assert resolver._expand_state(state, to_expand_package_tuple) is None
+        assert resolver.beam.size == 2
+
+        state0 = resolver.beam.get(0)
+        state1 = resolver.beam.get(1)
+
+        assert state0 is state
+
+        assert ("absl-py", "0.8.0", "https://pypi.org/simple") in state.iter_unresolved_dependencies()
+        assert ("absl-py", "0.6.0", "https://pypi.org/simple") in state.iter_unresolved_dependencies()
+        assert ("absl-py", "0.9.0", "https://pypi.org/simple") not in state.iter_unresolved_dependencies()
+
+        # Only ("absl-py", "0.8.0", "https://pypi.org/simple") is in intersection.
+
+        assert ("absl-py", "0.8.0", "https://pypi.org/simple") in state1.iter_unresolved_dependencies()
+        assert ("absl-py", "0.6.0", "https://pypi.org/simple") not in state1.iter_unresolved_dependencies()
+        assert ("absl-py", "0.9.0", "https://pypi.org/simple") not in state1.iter_unresolved_dependencies()
+
+    def test_expand_state_no_unresolved(self, resolver: Resolver, state: State) -> None:
+        """Test expanding a state with no new dependencies and no more unresolved dependencies left."""
+        to_expand_package_tuple = ("enum34", "1.1.6", "https://pypi.org/simple")
+
+        # No unresolved dependencies.
+        for unresolved_dependency in state.iter_unresolved_dependencies():
+            state.remove_unresolved_dependency(unresolved_dependency)
+
+        resolver.project.runtime_environment.operating_system.name = "fedora"
+        resolver.project.runtime_environment.operating_system.version = "32"
+        resolver.project.runtime_environment.python_version = "3.8"
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+            *to_expand_package_tuple,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+            extras=frozenset({None}),
+            marker_evaluation_result=True,
+        ).and_return({None: []}).once()
+
+        resolver._init_context()
+        resolver.context.register_package_tuple(
+            to_expand_package_tuple,
+            develop=False,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        )
+
+        resolver.context.iteration += 1
+        resolver.beam.wipe()
+
+        resolver.predictor.should_receive("set_reward_signal").with_args(resolver.context, math.inf).once()
+
+        assert resolver.beam.size == 0
+        assert resolver._expand_state(state, to_expand_package_tuple) is state
+        assert resolver.beam.size == 0
+
+    def test_expand_state_no_all_dependencies(self, resolver: Resolver, state: State) -> None:
+        """Test expanding a state with no new dependencies and with unresolved dependencies."""
+        to_expand_package_tuple = ("enum34", "1.1.6", "https://pypi.org/simple")
+        state.add_unresolved_dependency(to_expand_package_tuple)
+
+        resolver.project.runtime_environment.operating_system.name = "fedora"
+        resolver.project.runtime_environment.operating_system.version = "31"
+        resolver.project.runtime_environment.python_version = "3.7"
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+            *to_expand_package_tuple,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+            extras=frozenset({None}),
+            marker_evaluation_result=True,
+        ).and_return({None: []}).once()
+
+        resolver._init_context()
+        resolver.context.register_package_tuple(
+            to_expand_package_tuple,
+            develop=False,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        )
+
+        resolver.context.iteration += 1
+        resolver.beam.wipe()
+
+        resolver.pipeline.steps[0].should_receive("run").times(0)
+        resolver.predictor.should_receive("set_reward_signal").with_args(resolver.context, 0.0).once()
+
+        assert resolver.beam.size == 0
+        assert resolver._expand_state(state, to_expand_package_tuple) is None
+        assert resolver.beam.size == 1
+
+        assert resolver.beam.top() is state
+        assert state.iteration == resolver.context.iteration
+        assert to_expand_package_tuple in state.iter_resolved_dependencies()
 
     def test_expand_state_no_dependencies_not_final(
         self, resolver: Resolver, state: State
@@ -736,6 +1064,8 @@ class TestResolver(AdviserTestCase):
             extras=frozenset(["s3", "ui", None]),
             marker_evaluation_result=None,
         ).and_return([]).once()
+
+        resolver.predictor.should_receive("set_reward_signal").with_args(resolver.context, 0.0).once()
 
         original_resolved_count = len(state.resolved_dependencies)
 
@@ -852,6 +1182,7 @@ class TestResolver(AdviserTestCase):
         state = State(score=0.0)
 
         resolver._init_context()
+        resolver.predictor.should_receive("set_reward_signal").with_args(resolver.context, math.nan).once()
         resolver.context.register_package_version(package_version)
         resolver._expand_state_add_dependencies(
             state=state,
@@ -996,7 +1327,7 @@ class TestResolver(AdviserTestCase):
             "is_fully_specified"
         ).and_return(True).once()
 
-        resolver.context.register_package_tuple(
+        package_version = resolver.context.register_package_tuple(
             package_tuple,
             develop=False,
             os_name=None,
@@ -1004,6 +1335,8 @@ class TestResolver(AdviserTestCase):
             python_version=None,
         )
 
+        resolver.pipeline.steps[0].should_receive("run").with_args(state, package_version).and_return((0.1, [])).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(resolver.context, 0.1).once()
         assert resolver._expand_state(state, package_tuple) is None
         assert resolver.beam.size == 1
 
