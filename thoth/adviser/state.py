@@ -184,7 +184,7 @@ class State:
         if n < 0:
             raise ValueError("Termial function used with negative number")
 
-        return ((n**2) + n) // 2
+        return ((n**2) + n) >> 1
 
     @staticmethod
     def _termial_function_solution(x: int) -> int:
@@ -217,7 +217,7 @@ class State:
           b = 1/2
           c = -x
         """
-        return math.floor(-1/2 + math.sqrt(1/4 + 2*x))
+        return math.floor(-0.5 + math.sqrt(0.25 + (x << 1)))
 
     @classmethod
     def _random_termial(cls, n: int) -> int:
@@ -226,9 +226,9 @@ class State:
         To prefer lower numbers more often, termial function is used to assign "weights" for
         numbers - then random uniform is used in conjunction with weights.
 
-        An illustrative example can be cls._random_terminal(4) which calls:
+        An illustrative example can be cls._random_termial(4) which calls:
 
-          cls._terminal_function(4) == 10
+          cls._termial_function(4) == 10
 
         This way, we create 10 "cells" where (assignment range is inclusive):
 
@@ -238,7 +238,7 @@ class State:
            * 9 is assigned to number 0
 
         Now a random uniform call picks from 0 - 9 (inclusively), then we check what interval we have hit.
-        The value returned inverts priority, so for cls._terminal_function(4) probabilities are:
+        The value returned inverts priority, so for cls._termial_function(4) probabilities are:
 
           * 0 - 4/10 = 0.4
           * 1 - 3/10 = 0.3

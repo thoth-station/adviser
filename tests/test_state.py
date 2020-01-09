@@ -149,7 +149,7 @@ class TestState(AdviserTestCase):
         assert State._termial_function_solution(x - 1) <= n <= State._termial_function_solution(x)
 
     def test_termial_function_solution_zero(self) -> None:
-        """Test solution to termial function when ."""
+        """Test solution to termial function when x is set to zero."""
         assert State._termial_function_solution(0) == 0
 
     @given(
