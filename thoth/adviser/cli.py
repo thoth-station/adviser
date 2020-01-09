@@ -199,29 +199,6 @@ def cli(ctx=None, verbose=False, metadata=None):
     help="A comma separated list of whitelisted simple repositories providing packages - if not "
     "provided, all indexes are whitelisted (example: https://pypi.org/simple/).",
 )
-<<<<<<< HEAD
-@click.option(
-    "--files",
-    "-F",
-    is_flag=True,
-    help="Requirements passed represent paths to files on local filesystem.",
-)
-@click.option(
-    "--metadata",
-    "-m",
-    help="Metadata for provenance",
-    envvar="THOTH_ADVISER_METADATA",
-)
-def provenance(
-    click_ctx,
-    requirements,
-    requirements_locked=None,
-    whitelisted_sources=None,
-    output=None,
-    files=False,
-    no_pretty=False,
-    metadata="{}",
-=======
 def provenance(
     click_ctx: click.Context,
     requirements: str,
@@ -229,19 +206,13 @@ def provenance(
     output: str,
     whitelisted_sources: Optional[str] = None,
     no_pretty: bool = False,
->>>>>>> 4428a623dbda3b938158d54ee3cccb9a36c2c2c1
 ):
     """Check provenance of packages based on configuration."""
     parameters = locals()
     parameters.pop("click_ctx")
     start_time = time.monotonic()
-<<<<<<< HEAD
-    _LOGGER.debug("Passed arguments: %s", locals())
-    metadata = json.loads(metadata)
-=======
     _LOGGER.debug("Passed arguments: %s", parameters)
 
->>>>>>> 4428a623dbda3b938158d54ee3cccb9a36c2c2c1
     whitelisted_sources = whitelisted_sources.split(",") if whitelisted_sources else []
     result = {
         "error": None,
