@@ -57,6 +57,10 @@ is following (sorted based on priority):
 * if just ``requirements.txt`` file is present, it is used as a file
   containing direct dependencies (raw ``pip`` behaviour)
 
+Thoth's output of ``requirements.txt`` uses implicitly hashes of artifacts -
+equivalent to ``pip-compile --generate-hashes``. It is required to state artifact
+hashes if ``requirements.txt`` is treated as a lockfile.
+
 
 Command Line Interface - Thamos CLI
 ===================================
