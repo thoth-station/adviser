@@ -17,6 +17,7 @@
 
 """A state of not fully resolved software stack in adviser's recommendations implementation."""
 
+import math
 from typing import Any
 from typing import Tuple
 from typing import Dict
@@ -170,12 +171,93 @@ class State:
                 f"No unresolved dependency found in state: {self!r}"
             ) from exc
 
-    def get_random_unresolved_dependency(self) -> Tuple[str, str, str]:
+    @staticmethod
+    def _termial_function(n: int) -> int:
+        r"""Compute termial function, with red hats off to Donald Knuth.
+
+        Termial function is:
+
+          \sum_{k=0}^n k
+
+        Let's use the solution using binomial coefficient - (n + 1) over 2.
+        """
+        if n < 0:
+            raise ValueError("Termial function used with negative number")
+
+        return ((n**2) + n) >> 1
+
+    @staticmethod
+    def _termial_function_solution(x: int) -> int:
+        """Compute solution to termial function.
+
+        Let termial function be:
+
+           (n**2 + n) / 2 = x
+
+        This function computes non-negative ceil(n) so that it satisfies x.
+
+        The solution is optimized to compute a generic parabolic intersection for termial function:
+
+           x1 = (-b + sqrt(b**2 - 4*a*c)) / 2*a
+           x2 = (-b - sqrt(b**2 - 4*a*c)) / 2*a
+
+        Note solution x2 can be discarded based on termial function usage in the sources.
+
+        The original formula:
+
+           a*x**2 + b*x + c = 0
+
+        for solution:
+
+           (n**2)/2 + n/2 = x
+
+        where:
+
+          a = 1/2
+          b = 1/2
+          c = -x
+        """
+        return math.floor(-0.5 + math.sqrt(0.25 + (x << 1)))
+
+    @classmethod
+    def _random_termial(cls, n: int) -> int:
+        """Compute a random number x such as 0 <= x < n, use termial function not to spread numbers uniformly.
+
+        To prefer lower numbers more often, termial function is used to assign "weights" for
+        numbers - then random uniform is used in conjunction with weights.
+
+        An illustrative example can be cls._random_termial(4) which calls:
+
+          cls._termial_function(4) == 10
+
+        This way, we create 10 "cells" where (assignment range is inclusive):
+
+           * 0 - 3 are assigned to number 3
+           * 4 - 6 are assigned to number 2
+           * 7 - 8 are assigned to number 1
+           * 9 is assigned to number 0
+
+        Now a random uniform call picks from 0 - 9 (inclusively), then we check what interval we have hit.
+        The value returned inverts priority, so for cls._termial_function(4) probabilities are:
+
+          * 0 - 4/10 = 0.4
+          * 1 - 3/10 = 0.3
+          * 2 - 2/10 = 0.2
+          * 3 - 1/10 = 0.1
+        """
+        x = cls._termial_function(n)
+        return n - 1 - cls._termial_function_solution(random.randrange(0, x))
+
+    def get_random_unresolved_dependency(self, prefer_recent: bool = True) -> Tuple[str, str, str]:
         """Get a very first unresolved dependency tuple."""
         unresolved_dependency_name = random.choice(list(self.unresolved_dependencies))
-        unresolved_dependency_id = random.choice(
-            list(self.unresolved_dependencies[unresolved_dependency_name])
-        )
+
+        choices = list(self.unresolved_dependencies[unresolved_dependency_name])
+        if prefer_recent:
+            unresolved_dependency_id = choices[self._random_termial(len(choices))]
+        else:
+            unresolved_dependency_id = random.choice(choices)
+
         return self.unresolved_dependencies[unresolved_dependency_name][
             unresolved_dependency_id
         ]
