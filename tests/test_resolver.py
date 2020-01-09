@@ -496,7 +496,8 @@ class TestResolver(AdviserTestCase):
         """Test error produced if no direct dependencies were resolved."""
         solver_mock = flexmock()
         solver_mock.should_receive("solve").with_args(
-            list(resolver.project.iter_dependencies(with_devel=True)), graceful=True
+            sorted(resolver.project.iter_dependencies(with_devel=True), key=lambda p: p.name),
+            graceful=True
         ).and_return({}).once()
 
         resolver._solver = solver_mock
@@ -516,7 +517,8 @@ class TestResolver(AdviserTestCase):
         """Test error produced if not all direct dependencies were resolved."""
         solver_mock = flexmock()
         solver_mock.should_receive("solve").with_args(
-            list(resolver.project.iter_dependencies(with_devel=True)), graceful=True
+            sorted(resolver.project.iter_dependencies(with_devel=True), key=lambda p: p.name),
+            graceful=True
         ).and_return({"tensorflow": tf_package_versions, "flask": []}).once()
 
         resolver._solver = solver_mock
@@ -544,7 +546,8 @@ class TestResolver(AdviserTestCase):
         }
         solver_mock = flexmock()
         solver_mock.should_receive("solve").with_args(
-            list(resolver.project.iter_dependencies(with_devel=True)), graceful=True
+            sorted(resolver.project.iter_dependencies(with_devel=True), key=lambda p: p.name),
+            graceful=True
         ).and_return(resolved).once()
 
         resolver._solver = solver_mock
