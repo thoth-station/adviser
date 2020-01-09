@@ -49,7 +49,7 @@ class Sampling(Predictor):
         if self.keep_history:
             self._history.append((state.score, context.accepted_final_states_count))
 
-        return state, state.get_random_unresolved_dependency()
+        return state, state.get_random_unresolved_dependency(prefer_recent=False)
 
     def pre_run(self, context: Context) -> None:
         """Initialization before the sampling run."""
