@@ -20,9 +20,15 @@
 from .ubi import UbiBoot
 from .version_clash import VersionClashBoot
 from .solved_software_environment import SolvedSoftwareEnvironmentBoot
+from .fully_specified_environment import FullySpecifiedEnvironment
 
+
+# Relative ordering of units is relevant, as the order specifies order
+# in which the asked to be registered - any dependencies between them
+# can be mentioned here.
 __all__ = [
     "SolvedSoftwareEnvironmentBoot",
+    "FullySpecifiedEnvironment",
     "UbiBoot",
     "VersionClashBoot",
 ]
