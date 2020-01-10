@@ -84,7 +84,7 @@ parameters:
     required: false
     description: A seed to be used for generating software stack samples.
     value: ""
-  - name: THOTH_DEPENDENCY_MONKEY_DECISION
+  - name: THOTH_DEPENDENCY_MONKEY_DECISION_TYPE
     required: false
     description:
       A decision function that should be used for generating software stack
@@ -174,8 +174,8 @@ objects:
                   value: "${THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT}"
                 - name: THOTH_DEPENDENCY_MONKEY_SEED
                   value: "${THOTH_DEPENDENCY_MONKEY_SEED}"
-                - name: THOTH_DEPENDENCY_MONKEY_DECISION
-                  value: "${THOTH_DEPENDENCY_MONKEY_DECISION}"
+                - name: THOTH_DEPENDENCY_MONKEY_DECISION_TYPE
+                  value: "${THOTH_DEPENDENCY_MONKEY_DECISION_TYPE}"
                 - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
                   value: "${THOTH_DEPENDENCY_MONKEY_DRY_RUN}"
                 - name: THOTH_DEPENDENCY_MONKEY_LIMIT
