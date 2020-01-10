@@ -5,13 +5,13 @@ metadata:
   annotations:
     description: "Thoth: Dependency Monkey"
     openshift.io/display-name: "Thoth: Dependency Monkey"
-    version: 0.4.3
+    version: 0.4.4
     tags: thoth,ai-stacks,dependency-monkey
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
       This template defines resources needed to run recommendation logic of Thoth to OpenShift.
     template.openshift.io/provider-display-name: Red Hat, Inc.
-    thoth-station.ninja/template-version: 0.4.3
+    thoth-station.ninja/template-version: 0.4.4
   labels:
     app: thoth
     template: dependency-monkey
@@ -84,7 +84,7 @@ parameters:
     required: false
     description: A seed to be used for generating software stack samples.
     value: ""
-  - name: THOTH_DEPENDENCY_MONKEY_DECISION
+  - name: THOTH_DEPENDENCY_MONKEY_DECISION_TYPE
     required: false
     description:
       A decision function that should be used for generating software stack
@@ -116,7 +116,7 @@ objects:
     metadata:
       name: ${THOTH_DEPENDENCY_MONKEY_JOB_ID}
       annotations:
-        thoth-station.ninja/template-version: 0.4.3
+        thoth-station.ninja/template-version: 0.4.4
       labels:
         app: thoth
         component: dependency-monkey
@@ -174,8 +174,8 @@ objects:
                   value: "${THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT}"
                 - name: THOTH_DEPENDENCY_MONKEY_SEED
                   value: "${THOTH_DEPENDENCY_MONKEY_SEED}"
-                - name: THOTH_DEPENDENCY_MONKEY_DECISION
-                  value: "${THOTH_DEPENDENCY_MONKEY_DECISION}"
+                - name: THOTH_DEPENDENCY_MONKEY_DECISION_TYPE
+                  value: "${THOTH_DEPENDENCY_MONKEY_DECISION_TYPE}"
                 - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
                   value: "${THOTH_DEPENDENCY_MONKEY_DRY_RUN}"
                 - name: THOTH_DEPENDENCY_MONKEY_LIMIT
