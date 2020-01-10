@@ -23,6 +23,9 @@ from .prereleases import CutPreReleasesSieve
 from .solved import SolvedSieve
 
 
+# Relative ordering of units is relevant, as the order specifies order
+# in which the asked to be registered - any dependencies between them
+# can be mentioned here.
 __all__ = [
     "CutLockedSieve",
     "CutPreReleasesSieve",
