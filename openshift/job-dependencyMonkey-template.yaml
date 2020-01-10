@@ -178,8 +178,6 @@ objects:
                   value: "${THOTH_DEPENDENCY_MONKEY_DECISION}"
                 - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
                   value: "${THOTH_DEPENDENCY_MONKEY_DRY_RUN}"
-                - name: THOTH_DEPENDENCY_MONKEY_LIMIT
-                  value: "${THOTH_DEPENDENCY_MONKEY_LIMIT}"
                 - name: THOTH_DEPENDENCY_MONKEY_COUNT
                   value: "${THOTH_DEPENDENCY_MONKEY_COUNT}"
                 - name: THOTH_AMUN_CONTEXT
