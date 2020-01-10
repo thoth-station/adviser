@@ -101,6 +101,12 @@ See `thoth-storages repository <https://github.com/thoth-station/storages>`_
 repository on how to run Thoth's knowledge graph locally and
 example `notebooks <https://github.com/thoth-station/notebooks>`_ for experiments.
 
+Adviser also considers environment variable ``THOTH_ADVISER_BLOCKED_UNITS`` that
+states a comma separated list of pipeline units that should not be added to
+the pipeline. This can be handy if an issue with a unit arises in a deployment - Thoth
+operator can remove pipeline unit by adjusting adviser template and provide
+this configuration without a need to deploy a new version of adviser.
+
 Running adviser locally
 =======================
 
