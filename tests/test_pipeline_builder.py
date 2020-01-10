@@ -17,6 +17,7 @@
 
 """Test pipeline builder used for building pipeline configuration."""
 
+import os
 from typing import Union
 from typing import Dict
 
@@ -38,6 +39,7 @@ from thoth.adviser.unit import Unit
 from thoth.adviser.wrap import Wrap
 from thoth.adviser.exceptions import PipelineConfigurationError
 from thoth.adviser.exceptions import UnknownPipelineUnitError
+from thoth.python import Project
 
 import tests.units as units
 
@@ -212,6 +214,44 @@ class TestPipelineBuilder(AdviserTestCase):
             ],
             "wraps": [{"name": "Wrap2", "configuration": {}}],
         }
+
+    @use_test_units
+    def test_blocked_units(self, project: Project) -> None:
+        """Test preventing a pipeline unit from being added to pipeline configuration."""
+        flexmock(units.boots.Boot1).should_receive("should_include").and_return({}).and_return(None).times(2)
+        flexmock(units.steps.Step1).should_receive("should_include").and_return({}).and_return(None).times(2)
+
+        pipeline = PipelineBuilder.get_adviser_pipeline_config(
+            recommendation_type=RecommendationType.LATEST,
+            graph=None,
+            project=project,
+            library_usage=None,
+        )
+
+        assert len(pipeline.boots) == 1
+        assert pipeline.boots[0].__class__ is units.boots.Boot1
+
+        assert len(pipeline.steps) == 1
+        assert pipeline.steps[0].__class__ is units.steps.Step1
+
+        assert "THOTH_ADVISER_BLOCKED_UNITS" not in os.environ
+
+        try:
+            os.environ["THOTH_ADVISER_BLOCKED_UNITS"] = f"{units.boots.Boot1.__name__},{units.steps.Step1.__name__}"
+
+            flexmock(units.boots.Boot1).should_receive("should_include").times(0)
+            flexmock(units.steps.Step1).should_receive("should_include").times(0)
+
+            pipeline = PipelineBuilder.get_adviser_pipeline_config(
+                recommendation_type=RecommendationType.LATEST,
+                graph=None,
+                project=None,
+                library_usage=None,
+            )
+            assert len(pipeline.boots) == 0
+            assert len(pipeline.steps) == 0
+        finally:
+            os.environ.pop("THOTH_ADVISER_BLOCKED_UNITS")
 
     @use_test_units
     def test_from_dict(self) -> None:
