@@ -713,10 +713,10 @@
         },
         "thoth-common": {
             "hashes": [
-                "sha256:6703315ae90ac44c81eb433a269ab52972ef723113907c4ee48ce3ae3ccd049a",
-                "sha256:d25e02d7bac3b451492b8fe259046a20e69af9f90f506dbb23128503c63753a1"
+                "sha256:3fd4827951809955f2c0247b6d7ee430b244924b910c220039976cb6193f61cb",
+                "sha256:a57d3e05b7d9aced43d2072d0b233251a7b9bab7520db1fb32f6770823d87ad9"
             ],
-            "version": "==0.9.23"
+            "version": "==0.9.24"
         },
         "thoth-python": {
             "hashes": [
@@ -736,11 +736,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:1a8a7b6f95593b5fe28cb2024bc0d9b7480363909e161f72337c8578212f8fb1",
-                "sha256:d46d25ebfcf43c54e7b24141237f8fa2b0714ec46159aa6fc0fe4f0d96de3815"
+                "sha256:be4a7c7bd4b6d83b6d85bc54a8543e0cd293c03ddabfaba93fa958ae7e9b6c4b",
+                "sha256:c977c6b9d520cc703c321ad9e5181b59f7ca791ddf5d25b0767dc04f412e374c"
             ],
             "index": "pypi",
-            "version": "==0.21.0"
+            "version": "==0.21.1"
         },
         "timestamp": {
             "hashes": [
