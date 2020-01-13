@@ -111,7 +111,8 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
         beam = Beam()
         for _ in range(state_count):
             cloned_state = state.clone()
-            beam.add_state(cloned_state)
+            cloned_state.iteration = state.iteration + 1
+            beam.add_state((cloned_state.score, cloned_state.iteration), cloned_state)
 
         predictor = AdaptiveSimulatedAnnealing()
         context = flexmock(

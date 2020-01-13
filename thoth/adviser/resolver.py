@@ -344,7 +344,7 @@ class Resolver:
         state.remove_unresolved_dependency(package_version_tuple)
 
         if state.unresolved_dependencies:
-            self.beam.add_state(state)
+            self.beam.add_state(self.predictor.get_beam_key(state), state)
             cloned_state = state.clone()
         else:
             cloned_state = state
@@ -356,7 +356,7 @@ class Resolver:
         cloned_state.add_justification(justification_addition)
         cloned_state.score += score_addition
         self.predictor.set_reward_signal(score_addition)
-        self.beam.add_state(cloned_state)
+        self.beam.add_state(self.predictor.get_beam_key(cloned_state), cloned_state)
 
     def _run_strides(self, state: State) -> bool:
         """Run strides and check if the given state should be accepted."""
@@ -465,7 +465,7 @@ class Resolver:
         # resolved versions.
         self.beam.wipe()
         state = State.from_direct_dependencies(direct_dependencies)
-        self.beam.add_state(state)
+        self.beam.add_state(self.predictor.get_beam_key(state), state)
 
     def _expand_state(
         self, state: State, package_tuple: Tuple[str, str, str]
@@ -510,7 +510,7 @@ class Resolver:
 
             # No dependency, add the state back to the beam for resolving unresolved in next rounds.
             state.iteration = self.context.iteration
-            self.beam.add_state(state)
+            self.beam.add_state(self.predictor.get_beam_key(state), state)
             self.predictor.set_reward_signal(0.0)
             return None
 
@@ -660,7 +660,7 @@ class Resolver:
             # dependencies to be added re-add state with adjusted properties.
             state.iteration = self.context.iteration
             state.mark_dependency_resolved(package_tuple)
-            self.beam.add_state(state)
+            self.beam.add_state(self.predictor.get_beam_key(state), state)
             self.predictor.set_reward_signal(0.0)
             return None
 
