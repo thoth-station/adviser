@@ -19,6 +19,7 @@
 
 import os
 import flexmock
+import pytest
 
 from .base import AdviserTestCase
 
@@ -44,3 +45,13 @@ class TestPredictor(AdviserTestCase):
 
         predictor = predictor_mock_class()
         assert predictor.keep_history is False
+
+    def test_assign_context(self, predictor_mock_class: type) -> None:
+        """Test assigning context to predictor."""
+        predictor = predictor_mock_class()
+        with pytest.raises(ValueError):
+            predictor.context
+
+        context = flexmock()
+        with predictor.assigned_context(context):
+            assert predictor.context is context
