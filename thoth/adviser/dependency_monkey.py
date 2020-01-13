@@ -75,7 +75,7 @@ class DependencyMonkey:
                 self.stack_output,
             )
             output_func = partial(  # type: ignore
-                self._dm_amun_output, self.stack_output, self.context
+                self._dm_amun_output, self.stack_output, self.context or {}
             )
         else:
             _LOGGER.debug(

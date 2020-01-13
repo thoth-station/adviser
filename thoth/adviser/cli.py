@@ -649,7 +649,7 @@ def dependency_monkey(
     dependency_monkey_runner = DependencyMonkey(
         resolver=resolver,
         stack_output=stack_output,
-        context=context,
+        context=json.loads(context) if context else {},
         dry_run=dry_run,
         decision_type=decision_type,
     )
