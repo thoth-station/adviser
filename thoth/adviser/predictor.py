@@ -58,7 +58,10 @@ class Predictor:
     """A base class for implementing a predictor for resolver."""
 
     keep_history = attr.ib(
-        type=bool, kw_only=True, default=None, converter=_keep_history
+        type=bool,
+        kw_only=True,
+        default=None,
+        converter=_keep_history
     )
 
     _CONTEXT: Optional[Context] = None
@@ -80,6 +83,25 @@ class Predictor:
             raise ValueError("Requesting resolver context outside of resolver run")
 
         return self._CONTEXT
+
+    def get_beam_key(self, state: State) -> object:
+        """Retrieve a key that will be used to keep states in the beam.
+
+        The key returned should always uniquely sort two states, that is, there should not exist
+        >>> state1 = State(score=1.0)  # any score value
+        >>> self.get_beam_key(state1)
+        such as there exist state2 for which
+        >>> state2 = State(score=1.0)  # any score value
+        >>> self.get_beam_key(state1) == self.get_beam_key(state2)
+
+        The simplest way how to differentiate keys of two states is to use resolver's iteration, that is always
+        unique for any state, and prioritizes states that have more resolved dependencies over the ones that
+        have less resolved dependencies but the same score.
+
+        This method should not be treated as staticmethod or as classmethod - a predictor
+        can construct key based on its own internal state.
+        """
+        return state.score, state.iteration
 
     def pre_run(self) -> None:
         """Pre-initialize the predictor.
