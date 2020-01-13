@@ -311,7 +311,7 @@ class Resolver:
                     package_version_tuple,
                     str(exc),
                 )
-                self.predictor.set_reward_signal(self.context, math.nan)
+                self.predictor.set_reward_signal(math.nan)
                 return
             except Exception as exc:
                 raise StepError(
@@ -355,7 +355,7 @@ class Resolver:
         cloned_state.iteration = self.context.iteration
         cloned_state.add_justification(justification_addition)
         cloned_state.score += score_addition
-        self.predictor.set_reward_signal(self.context, score_addition)
+        self.predictor.set_reward_signal(score_addition)
         self.beam.add_state(cloned_state)
 
     def _run_strides(self, state: State) -> bool:
@@ -427,6 +427,8 @@ class Resolver:
                 _LOGGER.warning(error_msg)
                 continue
 
+            _LOGGER.info("Found direct dependency %r", package_version.name)
+
         if unresolved:
             raise UnresolvedDependencies(
                 "Unable to resolve all direct dependencies", unresolved=unresolved
@@ -492,10 +494,10 @@ class Resolver:
                 else None,
             )
         except NotFoundError:
-            _LOGGER.warning(
+            _LOGGER.debug(
                 "Dependency %r is not yet resolved, cannot expand state", package_tuple
             )
-            self.predictor.set_reward_signal(self.context, math.nan)
+            self.predictor.set_reward_signal(math.nan)
             return None
 
         if not dependencies:
@@ -503,13 +505,13 @@ class Resolver:
 
             if not state.unresolved_dependencies:
                 # The given package has no dependencies and nothing to resolve more, mark it as resolved.
-                self.predictor.set_reward_signal(self.context, math.inf)
+                self.predictor.set_reward_signal(math.inf)
                 return state
 
             # No dependency, add the state back to the beam for resolving unresolved in next rounds.
             state.iteration = self.context.iteration
             self.beam.add_state(state)
-            self.predictor.set_reward_signal(self.context, 0.0)
+            self.predictor.set_reward_signal(0.0)
             return None
 
         return self._expand_state_add_dependencies(
@@ -591,7 +593,7 @@ class Resolver:
                 "version requirements",
                 ", ".join(unsolved),
             )
-            self.predictor.set_reward_signal(self.context, math.nan)
+            self.predictor.set_reward_signal(math.nan)
             return None
 
         for dependency_name, dependency_tuples in all_dependencies.items():
@@ -612,7 +614,7 @@ class Resolver:
                         dependency_name,
                         package_tuple,
                     )
-                    self.predictor.set_reward_signal(self.context, math.nan)
+                    self.predictor.set_reward_signal(math.nan)
                     return None
 
                 dependency_tuples.sort(
@@ -632,7 +634,7 @@ class Resolver:
                     "All dependencies of type %r were discarded by sieves, aborting creation of a new state",
                     dependency_name,
                 )
-                self.predictor.set_reward_signal(self.context, math.nan)
+                self.predictor.set_reward_signal(math.nan)
                 return None
 
             if self.limit_latest_versions:
@@ -649,7 +651,7 @@ class Resolver:
             # A special case when all the dependencies of the resolved one are installed conditionally
             # based on environment markers but none of the environment markers is evaluated to True. If
             # no more unresolved dependencies present, the state is final.
-            self.predictor.set_reward_signal(self.context, math.inf)
+            self.predictor.set_reward_signal(math.inf)
             return state
 
         if not all_dependencies:
@@ -659,7 +661,7 @@ class Resolver:
             state.iteration = self.context.iteration
             state.mark_dependency_resolved(package_tuple)
             self.beam.add_state(state)
-            self.predictor.set_reward_signal(self.context, 0.0)
+            self.predictor.set_reward_signal(0.0)
             return None
 
         self._run_steps(state, package_version, all_dependencies)
@@ -704,7 +706,7 @@ class Resolver:
                 self.beam.new_iteration()
                 self.context.iteration += 1
 
-                state, unresolved_package_tuple = self.predictor.run(self.context)
+                state, unresolved_package_tuple = self.predictor.run()
                 self.beam.remove(state)
 
                 _LOGGER.debug(
@@ -745,7 +747,7 @@ class Resolver:
                 "taken into account"
             )
 
-        self.predictor.pre_run(self.context)
+        self.predictor.pre_run()
         self.pipeline.call_pre_run()
 
         start_time = time.monotonic()
@@ -775,7 +777,7 @@ class Resolver:
             self.context.accepted_final_states_count,
         )
 
-        self.predictor.post_run(self.context)
+        self.predictor.post_run()
         self.pipeline.call_post_run()
 
     def resolve_products(
@@ -783,7 +785,7 @@ class Resolver:
     ) -> Generator[Product, None, None]:
         """Resolve raw products as produced by this resolver pipeline."""
         self._init_context()
-        with Unit.assigned_context(self.context):
+        with Unit.assigned_context(self.context), self.predictor.assigned_context(self.context):
             yield from self._do_resolve_products(with_devel=with_devel)
 
     def resolve(self, *, with_devel: bool = True) -> Report:
@@ -791,7 +793,7 @@ class Resolver:
         report = Report(count=self.count, pipeline=self.pipeline)
 
         self._init_context()
-        with Unit.assigned_context(self.context):
+        with Unit.assigned_context(self.context), self.predictor.assigned_context(self.context):
             for product in self._do_resolve_products(with_devel=with_devel):
                 report.add_product(product)
 
@@ -801,7 +803,7 @@ class Resolver:
             if self.context.stack_info:
                 report.set_stack_info(self.context.stack_info)
 
-            self.predictor.post_run_report(self.context, report)
+            self.predictor.post_run_report(report)
             self.pipeline.call_post_run_report(report)
 
         return report

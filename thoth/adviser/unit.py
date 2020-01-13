@@ -100,7 +100,7 @@ class Unit(metaclass=abc.ABCMeta):
     def context(self) -> Context:
         """Get context in which the unit runs in."""
         if self._CONTEXT is None:
-            raise ValueError("Requesting pipeline context outside of pipeline run")
+            raise ValueError("Requesting resolver context outside of resolver run")
 
         return self._CONTEXT
 

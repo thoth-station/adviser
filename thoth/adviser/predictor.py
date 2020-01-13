@@ -20,10 +20,13 @@
 import abc
 import logging
 import os
+from contextlib import contextmanager
 
 import attr
 from typing import Any
 from typing import Tuple
+from typing import Optional
+from typing import Generator
 
 import matplotlib.figure
 
@@ -58,7 +61,27 @@ class Predictor:
         type=bool, kw_only=True, default=None, converter=_keep_history
     )
 
-    def pre_run(self, context: Context) -> None:
+    _CONTEXT: Optional[Context] = None
+
+    @classmethod
+    @contextmanager
+    def assigned_context(cls, context: Context) -> Generator[None, None, None]:
+        """Assign context to predictor."""
+        try:
+            cls._CONTEXT = context
+            yield
+        finally:
+            cls._CONTEXT = None
+
+    @property
+    def context(self) -> Context:
+        """Get context in which the unit runs in."""
+        if self._CONTEXT is None:
+            raise ValueError("Requesting resolver context outside of resolver run")
+
+        return self._CONTEXT
+
+    def pre_run(self) -> None:
         """Pre-initialize the predictor.
 
         This method is called before any resolving with a freshly instantiated context. The default operation is a noop,
@@ -66,32 +89,23 @@ class Predictor:
         """
 
     @abc.abstractmethod
-    def run(self, context: Context) -> Tuple[State, Tuple[str, str, str]]:
-        """The main method used to run the predictor.
-
-        The method accepts context with a beam of states and returns the state which should be
-        used for next expansion and package tuple that should be resolved .The beam has to be kept untouched.
-        """
+    def run(self) -> Tuple[State, Tuple[str, str, str]]:
+        """The main method used to run the predictor."""
         raise NotImplementedError
 
-    def post_run(self, context: Context) -> None:
-        """Post-run method run after the resolving has been done.
+    def post_run(self) -> None:
+        """Post-run method run after the resolving has been done."""
 
-        The default operation is a noop, but a predictor can perform any post-run operations in this method. This
-        method should not raise any exception.
-        """
-
-    def post_run_report(self, context: Context, report: Report) -> None:
+    def post_run_report(self, report: Report) -> None:
         """Post-run method run after the resolving has finished - this method is called only if resolving with a report.
 
         The default operation is a noop, but a predictor can perform any post-run operations in this method. This
         method should not raise any exception.
         """
 
-    def set_reward_signal(self, context: Context, reward: float) -> None:
+    def set_reward_signal(self, reward: float) -> None:
         """Signalize the reward.
 
-        @param context: resolver context
         @param reward: set to nan if the given state was not accepted a special value
                        of inf notifies about a new final state
         """
