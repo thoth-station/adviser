@@ -286,20 +286,9 @@ class Beam:
         self._states[pos] = newitem
         self._states_idx[id(self._states[pos][1])] = pos
 
-    def add_state(self, state: State) -> None:
+    def add_state(self, key: object, state: State) -> None:
         """Add state to the internal state listing (do it in O(log(N)) time."""
-        # Multi-key ordering to guarantee comparision between states (based on sort):
-        #  * highest state first
-        #  * state with the most recent versions of libraries (latest version offset)
-        #  * iterations done by resolver to populate the most recent resolutions first
-        item = (
-            (
-                state.score,
-                state.iteration,
-            ),
-            state,
-        )
-
+        item = (key, state)
         self._last_added = None
         if self.width is not None and len(self._states) >= self.width:
             popped = self._heappushpop(item)

@@ -1243,9 +1243,9 @@ class TestResolver(AdviserTestCase):
 
         flexmock(Beam)
         resolver.beam.should_receive("new_iteration").and_return(None).twice()
-        resolver.beam.add_state(state1)
-        resolver.beam.add_state(state2)
-        resolver.beam.add_state(state3)
+        resolver.beam.add_state(state1.score, state1)
+        resolver.beam.add_state(state2.score, state2)
+        resolver.beam.add_state(state3.score, state3)
 
         resolver.limit = 1
         resolver._init_context()
@@ -1407,9 +1407,9 @@ class TestResolver(AdviserTestCase):
         state3 = State(score=2.0)
         state3.add_unresolved_dependency(("flask", "1.2.0", "https://pypi.org/simple"))
 
-        resolver.beam.add_state(state1)
-        resolver.beam.add_state(state2)
-        resolver.beam.add_state(state3)
+        resolver.beam.add_state(state1.score, state1)
+        resolver.beam.add_state(state2.score, state2)
+        resolver.beam.add_state(state3.score, state3)
 
         resolver._init_context()
 
