@@ -20,6 +20,7 @@
 import pytest
 import flexmock
 
+import gc
 import math
 from collections import OrderedDict
 from copy import deepcopy
@@ -1674,3 +1675,103 @@ class TestResolver(AdviserTestCase):
                 beam_width=Resolver.DEFAULT_BEAM_WIDTH,
                 limit_latest_versions=Resolver.DEFAULT_LIMIT_LATEST_VERSIONS,
             )
+
+    def test_finalize_initial_state(self, resolver: Resolver, tf_package_versions: List[PackageVersion]) -> None:
+        """Test finalization of an initial state objects."""
+        initial_state_id_called = None
+        def finalize_state(state_id: int) -> None:
+            nonlocal initial_state_id_called
+            initial_state_id_called = state_id
+
+        resolver.should_receive("_resolve_direct_dependencies").with_args(
+            with_devel=False
+        ).and_return(
+            {
+                "tensorflow": tf_package_versions,
+            }
+        ).once()
+
+        resolver.predictor.finalize_state = finalize_state
+
+        resolver._init_context()
+        resolver._prepare_initial_state(with_devel=False)
+        assert resolver.beam.size == 1
+
+        initial_state = resolver.beam.pop(0)
+
+        assert resolver.beam.size == 0
+
+        initial_state_id = id(initial_state)
+        del initial_state
+        gc.collect()
+
+        assert initial_state_id_called == initial_state_id
+
+    def test_finalize_state(self, resolver: Resolver, state: State) -> None:
+        """Test finalization of a state objects."""
+        state_id_called = None
+        def finalize_state(state_id: int) -> None:
+            nonlocal state_id_called
+            state_id_called = state_id
+
+        # Keep just one state - the one expanded, we do not care about initial state.
+        resolver.beam.width = 1
+
+        package_tuple = ("hexsticker", "1.0.0", "https://pypi.org/simple")
+        state = State(score=1.0)
+        state.add_unresolved_dependency(package_tuple)
+
+        state.add_unresolved_dependency(("selinon", "1.0.0", "https://pypi.org/simple"))
+
+        resolver._init_context()
+        resolver.context.iteration = 42
+        resolver.predictor.finalize_state = finalize_state
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+            *package_tuple,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+            extras=frozenset({None}),
+            marker_evaluation_result=None,
+        ).and_return({"click": [("click", "1.0.0")]}).once()
+
+        click_records = [
+            {
+                "package_name": "click",
+                "package_version": "1.0.0",
+                "index_url": "https://pypi.org/simple",
+                "os_name": resolver.project.runtime_environment.operating_system.name,
+                "os_version": resolver.project.runtime_environment.operating_system.version,
+                "python_version": resolver.project.runtime_environment.python_version,
+            },
+        ]
+        resolver.graph.should_receive("get_python_package_version_records").with_args(
+            package_name="click",
+            package_version="1.0.0",
+            index_url=None,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        ).and_return(click_records).once()
+
+        resolver.context.register_package_tuple(
+            package_tuple,
+            develop=False,
+            os_name=None,
+            os_version=None,
+            python_version=None,
+        )
+
+        assert resolver._expand_state(state, package_tuple) is None
+        assert resolver.beam.size == 1
+
+        state = resolver.beam.pop(0)
+
+        assert resolver.beam.size == 0
+
+        state_id = id(state)
+        del state
+        gc.collect()
+
+        assert state_id_called == state_id
