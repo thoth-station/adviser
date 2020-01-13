@@ -568,7 +568,7 @@ def advise(
 @click.option(
     "--predictor",
     envvar="THOTH_ADVISER_PREDICTOR",
-    default="AdaptiveSimulatedAnnealing",
+    default="RandomWalk",
     type=click.Choice(predictors.__all__),
     help="Predictor to be used with the resolver.",
 )
