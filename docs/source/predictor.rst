@@ -8,15 +8,30 @@ Predictor. This section discusses about the latter one. Predictor abstraction
 was introduced to guide resolver in expansion of states (performing steps until
 a final state is reached). This guidance can have two main purposes:
 
-* Expand states that are the most promising ones to be used by users - used for recommending software stacks in adviser
-* Expand states for which Thoth has no observation about - used for filling Thoth's knowledge base using :ref:`Dependency Monkey <dependency_monkey>` and `Amun <https://github.com/thoth-station/amun-api>`_
+* Expand states that are the most promising ones to be used by users - used for
+  recommending software stacks in adviser
+
+* Expand states for which Thoth has no observation about - used for filling
+  Thoth's knowledge base using :ref:`Dependency Monkey <dependency_monkey>` and
+  `Amun <https://github.com/thoth-station/amun-api>`_
+
+.. note::
+
+  The :ref:`introductory section <introduction>` discusses about intuition
+  behind Thoth's adviser resolver that is based on two core components -
+  Predictor and Resolver. The resolution is treated as a `Markov Decision
+  Process (MDP) <https://en.wikipedia.org/wiki/Markov_decision_process>`_. See
+  :ref:`Introduction section <introduction>` on more info and intuition behind
+  MDP in the resolver's implementation.
 
 The two main purposes above make Thoth a self-learning system.
 
 Implementing a predictor
 ========================
 
-To implement a predictor, you need to derive from :class:`Predictor <thoth.adviser.predictor.Predictor>` class and implement at least the :func:`run <thoth.adviser.predictor.Predictor.run>` method:
+To implement a predictor, you need to derive from :class:`Predictor
+<thoth.adviser.predictor.Predictor>` class and implement at least the
+:func:`run <thoth.adviser.predictor.Predictor.run>` method:
 
 .. code-block:: python
 
@@ -116,9 +131,16 @@ resolution.
 
 Additional methods that can be provided are:
 
-* :func:`Predictor.post_run <thoth.adviser.predictor.Predictor.post_run>` - run after the stack generation pipeline is finished to tear down the predictor
-* :func:`Predictor.post_run_report <thoth.adviser.predictor.Predictor.post_run_report>` - run after the stack generation pipeline is finished and report is constructed as per user request (see :ref:`resolver for more info <resolver>`)
-* :func:`Predictor.plot <thoth.adviser.predictor.Predictor.plot>` - used to plot predictor's history
+* :func:`Predictor.post_run <thoth.adviser.predictor.Predictor.post_run>` - run
+  after the stack generation pipeline is finished to tear down the predictor
+
+* :func:`Predictor.post_run_report
+  <thoth.adviser.predictor.Predictor.post_run_report>` - run after the stack
+  generation pipeline is finished and report is constructed as per user request
+  (see :ref:`resolver for more info <resolver>`)
+
+* :func:`Predictor.plot <thoth.adviser.predictor.Predictor.plot>` - used to
+  plot predictor's history
 
 See :ref:`Adaptive Simulated Annealing <annealing>` as an example of a
 predictor that samples state space or performs hill climbing.
