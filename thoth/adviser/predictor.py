@@ -109,6 +109,7 @@ class Predictor:
         This method is called before any resolving with a freshly instantiated context. The default operation is a noop,
         but predictor can perform any initial setup in this method. This method should not raise any exception.
         """
+        # noop
 
     @abc.abstractmethod
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
@@ -117,6 +118,7 @@ class Predictor:
 
     def post_run(self) -> None:
         """Post-run method run after the resolving has been done."""
+        # noop
 
     def post_run_report(self, report: Report) -> None:
         """Post-run method run after the resolving has finished - this method is called only if resolving with a report.
@@ -124,6 +126,7 @@ class Predictor:
         The default operation is a noop, but a predictor can perform any post-run operations in this method. This
         method should not raise any exception.
         """
+        # noop
 
     def set_reward_signal(self, reward: float) -> None:
         """Signalize the reward.
@@ -131,6 +134,19 @@ class Predictor:
         @param reward: set to nan if the given state was not accepted a special value
                        of inf notifies about a new final state
         """
+        # noop
+
+    def finalize_state(self, state_id: int) -> None:
+        """Finalizer called when the given state is about to be destructed by garbage collector.
+
+        Method suitable if predictor keeps internal state for states. Note that this method is not
+        called for remaining states if the resolver terminates.
+
+        @param state_id: id of state that is about to be finalized
+        """
+        print("id <<<", state_id)
+        print(11111)
+        # noop
 
     def plot(self) -> matplotlib.figure.Figure:
         """Plot information about predictor."""

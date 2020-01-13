@@ -30,6 +30,7 @@ import logging
 from itertools import chain
 import contextlib
 import signal
+import weakref
 
 from thoth.python import PackageVersion
 from thoth.python import Project
@@ -346,6 +347,8 @@ class Resolver:
         if state.unresolved_dependencies:
             self.beam.add_state(self.predictor.get_beam_key(state), state)
             cloned_state = state.clone()
+            finalize_object = weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state))
+            finalize_object.atexit = False
         else:
             cloned_state = state
 
@@ -465,6 +468,8 @@ class Resolver:
         # resolved versions.
         self.beam.wipe()
         state = State.from_direct_dependencies(direct_dependencies)
+        finalize_object = weakref.finalize(state, self.predictor.finalize_state, id(state))
+        finalize_object.atexit = False
         self.beam.add_state(self.predictor.get_beam_key(state), state)
 
     def _expand_state(
