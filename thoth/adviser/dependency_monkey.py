@@ -121,6 +121,8 @@ class DependencyMonkey:
         """A wrapper around Amun inspection call."""
         context = dict(context)
         context["python"] = generated_project.to_dict()
+        # No need to supply runtime environment information.
+        context["python"].pop("runtime_environment", None)
         response = amun.inspect(output, **context)
         _LOGGER.info(
             "Submitted Amun inspection #%d: %r", count, response["inspection_id"]
