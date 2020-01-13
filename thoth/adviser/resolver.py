@@ -350,6 +350,7 @@ class Resolver:
             finalize_object = weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state))
             finalize_object.atexit = False
         else:
+            # Optimization - reuse the old one as it would be discarded anyway.
             cloned_state = state
 
         cloned_state.set_unresolved_dependencies(unresolved_dependencies)
@@ -500,22 +501,37 @@ class Resolver:
             )
         except NotFoundError:
             _LOGGER.debug(
-                "Dependency %r is not yet resolved, cannot expand state", package_tuple
+                "Dependency %r is not yet resolved, cannot expand state",
+                package_tuple
             )
             self.predictor.set_reward_signal(math.nan)
             return None
 
         if not dependencies:
-            state.mark_dependency_resolved(package_tuple)
+            state.remove_unresolved_dependency(package_tuple)
 
             if not state.unresolved_dependencies:
                 # The given package has no dependencies and nothing to resolve more, mark it as resolved.
+                state.add_resolved_dependency(package_tuple)
                 self.predictor.set_reward_signal(math.inf)
                 return state
 
-            # No dependency, add the state back to the beam for resolving unresolved in next rounds.
-            state.iteration = self.context.iteration
+            # Re-add with removed unresolved dependency.
             self.beam.add_state(self.predictor.get_beam_key(state), state)
+
+            cloned_state = state.clone()
+            # Mark dependency resolved in the newly created state and add it to beam.
+            cloned_state.remove_unresolved_dependency_subtree(package_tuple[0])
+            cloned_state.add_resolved_dependency(package_tuple)
+            cloned_state.iteration = self.context.iteration
+
+            if not cloned_state.unresolved_dependencies:
+                self.predictor.set_reward_signal(math.inf)
+                return cloned_state
+
+            finalize_object = weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state))
+            finalize_object.atexit = False
+            self.beam.add_state(self.predictor.get_beam_key(cloned_state), cloned_state)
             self.predictor.set_reward_signal(0.0)
             return None
 
