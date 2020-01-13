@@ -144,8 +144,6 @@ class Predictor:
 
         @param state_id: id of state that is about to be finalized
         """
-        print("id <<<", state_id)
-        print(11111)
         # noop
 
     def plot(self) -> matplotlib.figure.Figure:
