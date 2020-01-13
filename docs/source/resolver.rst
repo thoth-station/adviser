@@ -19,13 +19,18 @@ are produced new states that are added to a pool of states, called beam.
 Resolver tightly cooperates with :ref:`predictor <predictor>` that guides
 resolver to resolve desired software stacks.
 
-:ref:`Resolver respects Python ecosystem <compatibility>` and resolution done
-by pip or Pipenv, but in a more clever way compatibility to also include
-observations about Python packages from Thoth's knowledge base. Instead of
-implementing `3SAT
+:ref:`Thoth's resolver respects Python ecosystem <compatibility>` to resolve
+software stacks as done by pip or Pipenv. This is achieved in a different way
+to also include observations about Python packages from Thoth's knowledge base.
+Instead of implementing `3SAT
 <https://en.wikipedia.org/wiki/Boolean_satisfiability_problem>`_ the resolver
 operates directly on dependency graphs that are lazily expanded by expanding
-not-yet resolved dependencies in resolver states.
+not-yet resolved dependencies in resolver states. The whole resolution is
+treated as a `Markov Decision Process (MDP)
+<https://en.wikipedia.org/wiki/Markov_decision_process>`_ and the expansion of
+dependencies is seen as a step in the MDP. See :ref:`Introduction section
+<introduction>` on more info and intuition behind MDP in the resolver
+implementation.
 
 Dependencies of not-yet resolved packages (unresolved dependencies) are
 resolved based on pre-computed dependency information stored in the Thoth's
