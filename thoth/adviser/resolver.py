@@ -379,8 +379,7 @@ class Resolver:
         if state.unresolved_dependencies:
             self.beam.add_state(self.predictor.get_beam_key(state), state)
             cloned_state = state.clone()
-            finalize_object = weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state))
-            finalize_object.atexit = False
+            weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state)).atexit = False
         else:
             # Optimization - reuse the old one as it would be discarded anyway.
             cloned_state = state
@@ -501,8 +500,7 @@ class Resolver:
         # resolved versions.
         self.beam.wipe()
         state = State.from_direct_dependencies(direct_dependencies)
-        finalize_object = weakref.finalize(state, self.predictor.finalize_state, id(state))
-        finalize_object.atexit = False
+        weakref.finalize(state, self.predictor.finalize_state, id(state)).atexit = False
         self.beam.add_state(self.predictor.get_beam_key(state), state)
 
     def _expand_state(
@@ -559,11 +557,10 @@ class Resolver:
             cloned_state.iteration = self.context.iteration
 
             if not cloned_state.unresolved_dependencies:
-                self.predictor.set_reward_signal(math.inf)
+                self.predictor.set_reward_signal(cloned_state, math.inf)
                 return cloned_state
 
-            finalize_object = weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state))
-            finalize_object.atexit = False
+            weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state)).atexit = False
             self.beam.add_state(self.predictor.get_beam_key(cloned_state), cloned_state)
             self.predictor.set_reward_signal(state, 0.0)
             return None
@@ -710,7 +707,7 @@ class Resolver:
                     pv.to_tuple() for pv in package_versions
                 ]
 
-        if not all_dependencies and not state.unresolved_dependencies:
+        if not (all_dependencies or state.unresolved_dependencies):
             # A special case when all the dependencies of the resolved one are installed conditionally
             # based on environment markers but none of the environment markers is evaluated to True. If
             # no more unresolved dependencies present, the state is final.
