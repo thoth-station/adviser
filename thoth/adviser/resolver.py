@@ -326,14 +326,12 @@ class Resolver:
                 if step_score_addition is not None:
                     if math.isnan(step_score_addition):
                         raise StepError(
-                            "Step %r returned score which is not a number",
-                            step.__class__.__name__,
+                            f"Step {step.__class__.__name__} returned score which is not a number",
                         )
 
                     if math.isinf(step_score_addition):
                         raise StepError(
-                            "Step %r returned score that is infinite",
-                            step.__class__.__name__,
+                            f"Step {step.__class__.__name__} returned score that is infinite",
                         )
 
                     score_addition += step_score_addition
