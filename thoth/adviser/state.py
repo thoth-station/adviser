@@ -171,6 +171,19 @@ class State:
                 f"No unresolved dependency found in state: {self!r}"
             ) from exc
 
+    def get_random_first_unresolved_dependency(self) -> Tuple[str, str, str]:
+        """Get a very first unresolved dependency tuple."""
+        unresolved_dependency_name = random.choice(list(self.unresolved_dependencies))
+        try:
+            unresolved_dependency_id = next(
+                iter(self.unresolved_dependencies[unresolved_dependency_name])
+            )
+            return self.unresolved_dependencies[unresolved_dependency_name][unresolved_dependency_id]
+        except StopIteration as exc:
+            raise ValueError(
+                f"No unresolved dependency found in state: {self!r}"
+            ) from exc
+
     @staticmethod
     def _termial_function(n: int) -> int:
         r"""Compute termial function, with red hats off to Donald Knuth.
