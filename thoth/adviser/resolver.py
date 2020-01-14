@@ -229,11 +229,11 @@ class Resolver:
 
     def _log_once_init(self) -> None:
         """Re-initialize log-once state."""
-        self._log_unresolved = set()
-        self._log_unsolved = set()
-        self._log_sieved = set()
-        self._log_step_not_acceptable = set()
-        self._log_no_intersected = set()
+        self._log_unresolved.clear()
+        self._log_unsolved.clear()
+        self._log_sieved.clear()
+        self._log_step_not_acceptable.clear()
+        self._log_no_intersected.clear()
 
     @staticmethod
     def _log_once(
@@ -655,10 +655,9 @@ class Resolver:
                     self._log_once(
                         self._log_no_intersected,
                         (package_tuple, dependency_name),
-                        "No intersected dependencies for package %r found when resolving %r (introduced by %r), "
+                        "No intersected dependencies for package %r found when resolving %r, "
                         "trying different resolution path...",
                         dependency_name,
-                        package_version,
                         package_tuple,
                     )
                     self.predictor.set_reward_signal(state, math.nan)
