@@ -26,6 +26,7 @@ from typing import Any
 from typing import Optional
 from typing import List
 from typing import Union
+from typing import Set
 import logging
 from itertools import chain
 import contextlib
@@ -178,6 +179,12 @@ class Resolver:
     )
     _context = attr.ib(type=Optional[Context], default=None, kw_only=True)
 
+    _log_unresolved = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
+    _log_unsolved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
+    _log_sieved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
+    _log_step_not_acceptable = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
+    _log_no_intersected = attr.ib(type=Tuple[Tuple[str, str, str], str], default=attr.Factory(set), kw_only=True)
+
     @limit.validator
     @count.validator
     def _positive_int_validator(self, attribute: str, value: int) -> None:
@@ -219,6 +226,31 @@ class Resolver:
             self._beam = Beam(self.beam_width)
 
         return self._beam
+
+    def _log_once_init(self) -> None:
+        """Re-initialize log-once state."""
+        self._log_unresolved = set()
+        self._log_unsolved = set()
+        self._log_sieved = set()
+        self._log_step_not_acceptable = set()
+        self._log_no_intersected = set()
+
+    @staticmethod
+    def _log_once(
+        log_state: Set[object],
+        log_state_key: object,
+        msg: str,
+        *args: object,
+        level: int = logging.WARNING,
+        **kwargs: object,
+    ) -> None:
+        """Log the given message once."""
+        if log_state_key in log_state:
+            # Already logged, noop.
+            return
+
+        log_state.add(log_state_key)
+        _LOGGER.log(level, msg, *args, **kwargs)
 
     def _init_context(self) -> None:
         """Initialize context instance."""
@@ -306,7 +338,9 @@ class Resolver:
             try:
                 step_result = step.run(state, package_version)
             except NotAcceptable as exc:
-                _LOGGER.debug(
+                self._log_once(
+                    self._log_step_not_acceptable,
+                    package_version_tuple,
                     "Step %r discarded addition of package %r: %s",
                     step.__class__.__name__,
                     package_version_tuple,
@@ -497,8 +531,11 @@ class Resolver:
                 else None,
             )
         except NotFoundError:
-            _LOGGER.debug(
-                "Dependency %r is not yet resolved, cannot expand state", package_tuple
+            self._log_once(
+                self._log_unresolved,
+                package_tuple,
+                "Dependency %r is not yet resolved, trying different resolution path...",
+                package_tuple
             )
             self.predictor.set_reward_signal(state, math.nan)
             return None
@@ -591,11 +628,15 @@ class Resolver:
             if not package_versions
         ]
         if unsolved:
-            _LOGGER.debug(
-                "Aborting creation of new states as no solved releases found for %r which would satisfy "
-                "version requirements",
-                ", ".join(unsolved),
-            )
+            for unsolved_item in unsolved:
+                self._log_once(
+                    self._log_unsolved,
+                    unsolved_item,
+                    "No solved releases found for %r which would satisfy version requirements of %r, "
+                    "trying different resolution path...",
+                    unsolved_item,
+                    package_tuple
+                )
             self.predictor.set_reward_signal(state, math.nan)
             return None
 
@@ -611,10 +652,13 @@ class Resolver:
                 )
 
                 if not dependency_tuples:
-                    _LOGGER.debug(
-                        "No intersected dependencies for package %r found when resolving %r, "
-                        "aborting creation of a new state",
+                    self._log_once(
+                        self._log_no_intersected,
+                        (package_tuple, dependency_name),
+                        "No intersected dependencies for package %r found when resolving %r (introduced by %r), "
+                        "trying different resolution path...",
                         dependency_name,
+                        package_version,
                         package_tuple,
                     )
                     self.predictor.set_reward_signal(state, math.nan)
@@ -633,9 +677,12 @@ class Resolver:
             package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
             package_versions = list(self._run_sieves(package_versions))
             if not package_versions:
-                _LOGGER.debug(
-                    "All dependencies of type %r were discarded by sieves, aborting creation of a new state",
+                self._log_once(
+                    self._log_sieved,
                     dependency_name,
+                    "All dependencies of type %r were discarded by resolver pipeline sieves, "
+                    "trying different resolution path...",
+                    dependency_name
                 )
                 self.predictor.set_reward_signal(state, math.nan)
                 return None
@@ -674,6 +721,7 @@ class Resolver:
         self, *, with_devel: bool = True
     ) -> Generator[State, None, None]:
         """Actually perform adaptive simulated annealing."""
+        self._log_once_init()
         self._run_boots()
         self._prepare_initial_state(with_devel=with_devel)
 
