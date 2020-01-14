@@ -125,6 +125,30 @@ class TestBeam(AdviserTestCase):
         finally:
             random.setstate(random_state)
 
+    def test_get_by_id(self) -> None:
+        """Test getting a state by its id."""
+        beam = Beam()
+
+        state1 = State()
+        beam.add_state(0, state1)
+
+        state2 = State()
+        beam.add_state(0, state2)
+
+        assert beam.get_by_id(id(state1)) is state1
+        assert beam.get_by_id(id(state2)) is state2
+
+    def test_get_by_id_error(self) -> None:
+        """Test getting a state by its id raising an error."""
+        beam = Beam()
+        with pytest.raises(KeyError):
+            beam.get_by_id(1)
+
+        state = State()
+        beam.add_state(0, state)
+        with pytest.raises(KeyError):
+            beam.get_by_id(0)
+
     def test_iter_states_sorted(self) -> None:
         """Test asking for states returns a sorted list of states."""
         beam = Beam(width=4)

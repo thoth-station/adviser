@@ -118,7 +118,7 @@ def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationTy
         return getattr(predictors, predictor)
 
     if recommendation_type == RecommendationType.LATEST:
-        return predictors.HillClimbing
+        return predictors.ApproximatingLatest
     elif recommendation_type == RecommendationType.STABLE or recommendation_type == RecommendationType.TESTING:
         return predictors.AdaptiveSimulatedAnnealing
 

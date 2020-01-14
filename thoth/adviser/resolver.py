@@ -26,6 +26,7 @@ from typing import Any
 from typing import Optional
 from typing import List
 from typing import Union
+from typing import Set
 import logging
 from itertools import chain
 import contextlib
@@ -178,6 +179,12 @@ class Resolver:
     )
     _context = attr.ib(type=Optional[Context], default=None, kw_only=True)
 
+    _log_unresolved = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
+    _log_unsolved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
+    _log_sieved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
+    _log_step_not_acceptable = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
+    _log_no_intersected = attr.ib(type=Tuple[Tuple[str, str, str], str], default=attr.Factory(set), kw_only=True)
+
     @limit.validator
     @count.validator
     def _positive_int_validator(self, attribute: str, value: int) -> None:
@@ -219,6 +226,31 @@ class Resolver:
             self._beam = Beam(self.beam_width)
 
         return self._beam
+
+    def _log_once_init(self) -> None:
+        """Re-initialize log-once state."""
+        self._log_unresolved.clear()
+        self._log_unsolved.clear()
+        self._log_sieved.clear()
+        self._log_step_not_acceptable.clear()
+        self._log_no_intersected.clear()
+
+    @staticmethod
+    def _log_once(
+        log_state: Set[object],
+        log_state_key: object,
+        msg: str,
+        *args: object,
+        level: int = logging.WARNING,
+        **kwargs: object,
+    ) -> None:
+        """Log the given message once."""
+        if log_state_key in log_state:
+            # Already logged, noop.
+            return
+
+        log_state.add(log_state_key)
+        _LOGGER.log(level, msg, *args, **kwargs)
 
     def _init_context(self) -> None:
         """Initialize context instance."""
@@ -306,13 +338,15 @@ class Resolver:
             try:
                 step_result = step.run(state, package_version)
             except NotAcceptable as exc:
-                _LOGGER.debug(
+                self._log_once(
+                    self._log_step_not_acceptable,
+                    package_version_tuple,
                     "Step %r discarded addition of package %r: %s",
                     step.__class__.__name__,
                     package_version_tuple,
                     str(exc),
                 )
-                self.predictor.set_reward_signal(math.nan)
+                self.predictor.set_reward_signal(state, math.nan)
                 return
             except Exception as exc:
                 raise StepError(
@@ -326,14 +360,12 @@ class Resolver:
                 if step_score_addition is not None:
                     if math.isnan(step_score_addition):
                         raise StepError(
-                            "Step %r returned score which is not a number",
-                            step.__class__.__name__,
+                            f"Step {step.__class__.__name__} returned score which is not a number",
                         )
 
                     if math.isinf(step_score_addition):
                         raise StepError(
-                            "Step %r returned score that is infinite",
-                            step.__class__.__name__,
+                            f"Step {step.__class__.__name__} returned score that is infinite",
                         )
 
                     score_addition += step_score_addition
@@ -359,7 +391,7 @@ class Resolver:
         cloned_state.iteration = self.context.iteration
         cloned_state.add_justification(justification_addition)
         cloned_state.score += score_addition
-        self.predictor.set_reward_signal(score_addition)
+        self.predictor.set_reward_signal(cloned_state, score_addition)
         self.beam.add_state(self.predictor.get_beam_key(cloned_state), cloned_state)
 
     def _run_strides(self, state: State) -> bool:
@@ -500,11 +532,13 @@ class Resolver:
                 else None,
             )
         except NotFoundError:
-            _LOGGER.debug(
-                "Dependency %r is not yet resolved, cannot expand state",
+            self._log_once(
+                self._log_unresolved,
+                package_tuple,
+                "Dependency %r is not yet resolved, trying different resolution path...",
                 package_tuple
             )
-            self.predictor.set_reward_signal(math.nan)
+            self.predictor.set_reward_signal(state, math.nan)
             return None
 
         if not dependencies:
@@ -512,8 +546,7 @@ class Resolver:
 
             if not state.unresolved_dependencies:
                 # The given package has no dependencies and nothing to resolve more, mark it as resolved.
-                state.add_resolved_dependency(package_tuple)
-                self.predictor.set_reward_signal(math.inf)
+                self.predictor.set_reward_signal(state, math.inf)
                 return state
 
             # Re-add with removed unresolved dependency.
@@ -532,7 +565,7 @@ class Resolver:
             finalize_object = weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state))
             finalize_object.atexit = False
             self.beam.add_state(self.predictor.get_beam_key(cloned_state), cloned_state)
-            self.predictor.set_reward_signal(0.0)
+            self.predictor.set_reward_signal(state, 0.0)
             return None
 
         return self._expand_state_add_dependencies(
@@ -609,12 +642,16 @@ class Resolver:
             if not package_versions
         ]
         if unsolved:
-            _LOGGER.debug(
-                "Aborting creation of new states as no solved releases found for %r which would satisfy "
-                "version requirements",
-                ", ".join(unsolved),
-            )
-            self.predictor.set_reward_signal(math.nan)
+            for unsolved_item in unsolved:
+                self._log_once(
+                    self._log_unsolved,
+                    unsolved_item,
+                    "No solved releases found for %r which would satisfy version requirements of %r, "
+                    "trying different resolution path...",
+                    unsolved_item,
+                    package_tuple
+                )
+            self.predictor.set_reward_signal(state, math.nan)
             return None
 
         for dependency_name, dependency_tuples in all_dependencies.items():
@@ -629,13 +666,15 @@ class Resolver:
                 )
 
                 if not dependency_tuples:
-                    _LOGGER.debug(
+                    self._log_once(
+                        self._log_no_intersected,
+                        (package_tuple, dependency_name),
                         "No intersected dependencies for package %r found when resolving %r, "
-                        "aborting creation of a new state",
+                        "trying different resolution path...",
                         dependency_name,
                         package_tuple,
                     )
-                    self.predictor.set_reward_signal(math.nan)
+                    self.predictor.set_reward_signal(state, math.nan)
                     return None
 
                 dependency_tuples.sort(
@@ -651,11 +690,14 @@ class Resolver:
             package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
             package_versions = list(self._run_sieves(package_versions))
             if not package_versions:
-                _LOGGER.debug(
-                    "All dependencies of type %r were discarded by sieves, aborting creation of a new state",
+                self._log_once(
+                    self._log_sieved,
                     dependency_name,
+                    "All dependencies of type %r were discarded by resolver pipeline sieves, "
+                    "trying different resolution path...",
+                    dependency_name
                 )
-                self.predictor.set_reward_signal(math.nan)
+                self.predictor.set_reward_signal(state, math.nan)
                 return None
 
             if self.limit_latest_versions:
@@ -672,7 +714,7 @@ class Resolver:
             # A special case when all the dependencies of the resolved one are installed conditionally
             # based on environment markers but none of the environment markers is evaluated to True. If
             # no more unresolved dependencies present, the state is final.
-            self.predictor.set_reward_signal(math.inf)
+            self.predictor.set_reward_signal(state, math.inf)
             return state
 
         if not all_dependencies:
@@ -682,7 +724,7 @@ class Resolver:
             state.iteration = self.context.iteration
             state.mark_dependency_resolved(package_tuple)
             self.beam.add_state(self.predictor.get_beam_key(state), state)
-            self.predictor.set_reward_signal(0.0)
+            self.predictor.set_reward_signal(state, 0.0)
             return None
 
         self._run_steps(state, package_version, all_dependencies)
@@ -692,6 +734,7 @@ class Resolver:
         self, *, with_devel: bool = True
     ) -> Generator[State, None, None]:
         """Actually perform adaptive simulated annealing."""
+        self._log_once_init()
         self._run_boots()
         self._prepare_initial_state(with_devel=with_devel)
 
