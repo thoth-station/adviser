@@ -103,7 +103,7 @@ def subprocess_run(
                 dict(error=False, error_msg=None, report=report.to_dict())
             )
         except AdviserRunException as exc:
-            _LOGGER.warning("Adviser run failed: %s", str(exc))
+            _LOGGER.error("Resolver run failed: %s", str(exc))
             result_dict.update(dict(error=True, error_msg=str(exc), report=exc.to_dict()))
         except Exception as exc:
             _LOGGER.exception("Adviser raised exception: %s", str(exc))
