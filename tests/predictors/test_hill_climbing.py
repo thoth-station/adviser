@@ -21,8 +21,6 @@ import flexmock
 from hypothesis import given
 from hypothesis.strategies import integers
 
-import random
-
 from thoth.adviser.beam import Beam
 from thoth.adviser.predictors import HillClimbing
 from thoth.adviser.state import State
