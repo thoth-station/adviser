@@ -319,6 +319,10 @@ class Beam:
         idx = random.randint(0, self.size - 1) if self.size > 1 else 0
         return self.get(idx)
 
+    def get_by_id(self, state_id: int) -> State:
+        """Get a state by its id."""
+        return self._states[self._states_idx[state_id]][1]
+
     def remove(self, state: State) -> None:
         """Remove the given state from beam."""
         idx = self._states_idx.get(id(state))
