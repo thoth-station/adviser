@@ -759,8 +759,9 @@ class Resolver:
                     break
 
                 if self.beam.size == 0:
-                    _LOGGER.info(
-                        "The beam is empty, iteration %d", self.context.iteration
+                    _LOGGER.warning(
+                        "No more possible paths found for resolution, terminating resolver in iteration %d",
+                        self.context.iteration
                     )
                     break
 
