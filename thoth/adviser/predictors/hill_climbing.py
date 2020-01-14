@@ -75,7 +75,7 @@ class HillClimbing(Predictor):
         host.spines["right"].set_visible(False)
         host.spines["top"].set_visible(False)
 
-        p1, = host.plot(x, y1, ",g", label="Highest rated state score")
+        p1, = host.plot(x, y1, ",g", label="Score of the expanded state")
         p2, = par1.plot(x, y2, ",y", label="Number of products conducted")
 
         host.set_xlabel("iteration")

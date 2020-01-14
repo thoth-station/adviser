@@ -20,6 +20,7 @@
 import gc
 import pytest
 from collections import OrderedDict
+import random
 
 from hypothesis import given
 from hypothesis.strategies import integers
@@ -70,6 +71,34 @@ class TestState(AdviserTestCase):
         assert not final_state.is_final()
         final_state.unresolved_dependencies.pop("selinon")
         assert final_state.is_final()
+
+    def test_get_random_first_unresolved_dependency(self) -> None:
+        """Test getting random first unresolved dependency."""
+        state = State(score=1.0)
+        package_tuple1 = ("tensorflow", "2.1.0", "https://pypi.org/simple")
+        package_tuple2 = ("selinon", "1.0.0", "https://pypi.org/simple")
+
+        state.add_unresolved_dependency(package_tuple1)
+
+        assert state.get_random_first_unresolved_dependency() is package_tuple1
+
+        state.add_unresolved_dependency(package_tuple2)
+
+        random_state = random.getstate()
+        try:
+            random.seed(42)
+            assert state.get_random_first_unresolved_dependency() is package_tuple1
+            assert state.get_random_first_unresolved_dependency() is package_tuple1
+            assert state.get_random_first_unresolved_dependency() is package_tuple2
+            assert state.get_random_first_unresolved_dependency() is package_tuple1
+        finally:
+            random.setstate(random_state)
+
+    def test_get_random_first_unresolved_dependency_error(self) -> None:
+        """Test raising an error on random first unresolved dependency if no dependency is available."""
+        state = State(score=1.0)
+        with pytest.raises(IndexError):
+            state.get_random_first_unresolved_dependency()
 
     def test_clone(self, state: State) -> None:
         """Test cloning of states and their memory footprints."""
