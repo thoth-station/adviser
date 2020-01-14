@@ -219,7 +219,7 @@ class Beam:
         return self._top_idx
 
     def _heappushpop(
-        self, item: Tuple[Tuple[float, int], State]
+        self, item: Tuple[object, State]
     ) -> Tuple[Tuple[float, int], State]:
         """Fast version of a heappush followed by a heappop."""
         if self._states and self._states[0] < item:
@@ -236,7 +236,7 @@ class Beam:
         for i in reversed(range(n // 2)):
             self._siftup(i)
 
-    def _heappush(self, item: Tuple[Tuple[float, int], State]) -> None:
+    def _heappush(self, item: Tuple[object, State]) -> None:
         """Push item onto heap, maintaining the heap invariant."""
         self._states_idx[id(item[1])] = len(self._states)
         self._states.append(item)
