@@ -702,8 +702,10 @@ class TestResolver(AdviserTestCase):
         assert resolver._expand_state(state, to_expand_package_tuple) is None
         assert resolver.beam.size == 0
 
-    def test_expand_state_no_dependencies_final(
-        self, resolver: Resolver, state: State
+    def test_expand_state_no_dependencies_final_simple(
+        self,
+        resolver: Resolver,
+        state: State
     ) -> None:
         """Test expanding a state when the given package has no dependencies producing final state."""
         to_expand_package_tuple = state.get_random_unresolved_dependency()
@@ -729,20 +731,227 @@ class TestResolver(AdviserTestCase):
 
         assert (
             len(state.unresolved_dependencies) == 1
-        ), "State in the test case should have only once dependency to resolve in order to check production of a final state"
+        ), "State in the test case should have only once dependency to resolve in " \
+           "order to check production of a final state"
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(state, math.inf).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(object, math.inf).once()
 
         original_resolved_count = len(state.resolved_dependencies)
+        original_unresolved_count = len(state.unresolved_dependencies)
 
         assert (
             resolver._expand_state(state, to_expand_package_tuple) is state
         ), "State returned is not the one passed"
 
-        assert to_expand_package_tuple in state.iter_resolved_dependencies()
+        # We test a fast-path when state can be directly returned.
+        assert resolver.beam.size == 0
+        assert to_expand_package_tuple not in state.iter_resolved_dependencies()
         assert to_expand_package_tuple not in state.iter_unresolved_dependencies()
-        assert resolver.beam.size == 0, "Some adjustments to beam were made"
-        assert len(state.resolved_dependencies) == original_resolved_count + 1
+        assert len(state.resolved_dependencies) == original_resolved_count
+        assert len(state.unresolved_dependencies) == original_unresolved_count - 1
+
+    def test_expand_state_no_dependencies_final(self, resolver: Resolver, state: State) -> None:
+        """Test state expansion with multiple dependencies of a same type."""
+        to_expand_package_tuple = state.get_random_unresolved_dependency()
+        additional_package_tuple = ("numpy", "1.0.0", "https://pypi.org/simple")
+
+        assert to_expand_package_tuple != additional_package_tuple
+
+        resolver._init_context()
+        resolver.context.register_package_tuple(
+            to_expand_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="rhel",
+            os_version="8.0",
+            python_version="3.7",
+        )
+
+        resolver.context.register_package_tuple(
+            additional_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="rhel",
+            os_version="8.0",
+            python_version="3.7",
+        )
+
+        state.add_unresolved_dependency(additional_package_tuple)
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+            *to_expand_package_tuple,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.operating_system.version,
+            extras=frozenset([None]),
+            marker_evaluation_result=None,
+        ).and_return([]).once()
+
+        assert len(state.unresolved_dependencies) == 2
+
+        resolver.predictor.should_receive("set_reward_signal").with_args(object, 0.0).once()
+
+        original_resolved_count = len(state.resolved_dependencies)
+        original_unresolved_count = len(state.unresolved_dependencies)
+
+        resolver.context.iteration = state.iteration + 1
+        assert resolver._expand_state(state, to_expand_package_tuple) is None
+
+        assert resolver.beam.get_last() is not state
+        assert resolver.beam.size == 2
+
+        assert to_expand_package_tuple not in state.iter_resolved_dependencies()
+        assert to_expand_package_tuple not in state.iter_unresolved_dependencies()
+        assert additional_package_tuple in state.iter_unresolved_dependencies()
+        assert len(state.resolved_dependencies) == original_resolved_count
+        assert len(state.unresolved_dependencies) == original_unresolved_count - 1
+
+        state_added = resolver.beam.top()
+        assert to_expand_package_tuple in state_added.iter_resolved_dependencies()
+        assert to_expand_package_tuple not in state_added.iter_unresolved_dependencies()
+        assert len(state_added.resolved_dependencies) == original_resolved_count + 1
+        assert len(state_added.unresolved_dependencies) == original_unresolved_count - 1
+
+    def test_expand_state_no_dependencies_final_multiple_different(
+        self,
+        resolver: Resolver,
+        state: State
+    ) -> None:
+        """Test state expansion with multiple dependencies of a same type."""
+        to_expand_package_tuple = ("connexion", "2.0.0", "https://pypi.org/simple")
+        additional_package_tuple = ("connexion", "1.0.0", "https://pypi.org/simple")
+
+        resolver._init_context()
+        resolver.context.register_package_tuple(
+            to_expand_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="ubi",
+            os_version="8.1",
+            python_version="3.6",
+        )
+
+        resolver.context.register_package_tuple(
+            additional_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="ubi",
+            os_version="8.1",
+            python_version="3.6",
+        )
+
+        state.add_unresolved_dependency(to_expand_package_tuple)
+        state.add_unresolved_dependency(additional_package_tuple)
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+            *to_expand_package_tuple,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.operating_system.version,
+            extras=frozenset([None]),
+            marker_evaluation_result=None,
+        ).and_return([]).once()
+
+        assert len(list(state.iter_unresolved_dependencies())) == 3
+
+        resolver.predictor.should_receive("set_reward_signal").with_args(object, 0.0).once()
+
+        original_resolved_count = len(list(state.iter_resolved_dependencies()))
+        original_unresolved_count = len(list(state.iter_unresolved_dependencies()))
+
+        resolver.context.iteration = state.iteration + 1
+        assert resolver._expand_state(state, to_expand_package_tuple) is None
+
+        assert resolver.beam.get_last() is not state
+        assert resolver.beam.size == 2
+
+        assert to_expand_package_tuple not in state.iter_resolved_dependencies()
+        assert to_expand_package_tuple not in state.iter_unresolved_dependencies()
+        assert additional_package_tuple in state.iter_unresolved_dependencies()
+        assert additional_package_tuple not in state.iter_resolved_dependencies()
+        assert len(state.resolved_dependencies) == original_resolved_count
+        assert len(state.unresolved_dependencies) == original_unresolved_count - 1
+
+        state_added = resolver.beam.top()
+        assert to_expand_package_tuple in state_added.iter_resolved_dependencies()
+        assert to_expand_package_tuple not in state_added.iter_unresolved_dependencies()
+        assert additional_package_tuple not in state_added.iter_resolved_dependencies()
+        assert additional_package_tuple not in state_added.iter_unresolved_dependencies()
+        assert len(list(state_added.iter_resolved_dependencies())) == original_resolved_count + 1
+        # All dependencies of type to_expand_package_tuple[0] removed.
+        assert len(list(state_added.iter_unresolved_dependencies())) == original_unresolved_count - 2
+
+    def test_expand_state_no_dependencies_final_multiple_same(
+        self,
+        resolver: Resolver,
+        state: State
+    ) -> None:
+        """Test state expansion with multiple dependencies without same type."""
+        to_expand_package_tuple = ("connexion", "2.0.0", "https://pypi.org/simple")
+        additional_package_tuple = ("connexion", "1.0.0", "https://pypi.org/simple")
+
+        resolver._init_context()
+        resolver.context.register_package_tuple(
+            to_expand_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="ubi",
+            os_version="8.1",
+            python_version="3.6",
+        )
+
+        resolver.context.register_package_tuple(
+            additional_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="ubi",
+            os_version="8.1",
+            python_version="3.6",
+        )
+
+        # Discard any present.
+        state.unresolved_dependencies = OrderedDict()
+        state.add_unresolved_dependency(to_expand_package_tuple)
+        state.add_unresolved_dependency(additional_package_tuple)
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+            *to_expand_package_tuple,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.operating_system.version,
+            extras=frozenset([None]),
+            marker_evaluation_result=None,
+        ).and_return([]).once()
+
+        assert len(list(state.iter_unresolved_dependencies())) == 2
+
+        resolver.predictor.should_receive("set_reward_signal").with_args(object, math.inf).once()
+
+        original_resolved_count = len(list(state.iter_resolved_dependencies()))
+        original_unresolved_count = len(list(state.iter_unresolved_dependencies()))
+
+        resolver.context.iteration = state.iteration + 1
+        state_added = resolver._expand_state(state, to_expand_package_tuple)
+        assert state_added is not None
+        assert state_added is not state
+
+        assert resolver.beam.get_last() is state
+        assert resolver.beam.size == 1
+
+        assert to_expand_package_tuple not in state.iter_resolved_dependencies()
+        assert to_expand_package_tuple not in state.iter_unresolved_dependencies()
+        assert additional_package_tuple in state.iter_unresolved_dependencies()
+        assert additional_package_tuple not in state.iter_resolved_dependencies()
+        assert len(state.resolved_dependencies) == original_resolved_count
+        assert len(state.unresolved_dependencies) == original_unresolved_count - 1
+
+        assert to_expand_package_tuple in state_added.iter_resolved_dependencies()
+        assert to_expand_package_tuple not in state_added.iter_unresolved_dependencies()
+        assert additional_package_tuple not in state_added.iter_resolved_dependencies()
+        assert additional_package_tuple not in state_added.iter_unresolved_dependencies()
+        assert len(list(state_added.iter_resolved_dependencies())) == original_resolved_count + 1
+        # All dependencies of type to_expand_package_tuple[0] removed.
+        assert len(list(state_added.iter_unresolved_dependencies())) == 0
 
     def test_expand_state_no_intersection(self, resolver: Resolver, state: State) -> None:
         """Test expanding a state with no intersected dependencies."""
@@ -1073,18 +1282,22 @@ class TestResolver(AdviserTestCase):
 
         original_resolved_count = len(state.resolved_dependencies)
 
+        resolver.context.iteration = state.iteration + 1
         returned_value = resolver._expand_state(state, to_expand_package_tuple)
 
+        last_state_added = resolver.beam.get_last()
+
+        assert resolver.beam.size == 2
+        assert last_state_added in resolver.beam.iter_states()
+        assert state in resolver.beam.iter_states()
+        assert last_state_added is not None
         assert returned_value is None, "No state should be returned"
-        assert to_expand_package_tuple in state.iter_resolved_dependencies()
-        assert (
-            len(state.resolved_dependencies) == original_resolved_count + 1
-        ), "State returned has no adjusted resolved dependencies"
-        assert (
-            "flask" in state.unresolved_dependencies
-        ), "State returned has no adjusted resolved dependencies"
-        assert resolver.beam.size == 1, "State not present in beam"
-        assert resolver.beam.top() is state, "State in the beam is not the one passed"
+        assert to_expand_package_tuple in last_state_added.iter_resolved_dependencies()
+        assert to_expand_package_tuple not in last_state_added.iter_unresolved_dependencies()
+        assert to_expand_package_tuple not in state.iter_resolved_dependencies()
+        assert to_expand_package_tuple not in state.iter_unresolved_dependencies()
+        assert len(state.resolved_dependencies) == original_resolved_count
+        assert "flask" in state.unresolved_dependencies
 
     def test_expand_state_add_dependencies_call(
         self, resolver: Resolver, state: State
