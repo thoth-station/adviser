@@ -1676,6 +1676,16 @@ class TestResolver(AdviserTestCase):
                 limit_latest_versions=Resolver.DEFAULT_LIMIT_LATEST_VERSIONS,
             )
 
+    def test_no_direct_dependencies_error(self, resolver: Resolver) -> None:
+        """Test raising an error if no direct dependencies were resolved."""
+        resolver.should_receive("_resolve_direct_dependencies").with_args(
+            with_devel=True
+        ).and_return({}).once()
+
+        resolver._init_context()
+        with pytest.raises(CannotProduceStack):
+            resolver._prepare_initial_state(with_devel=True)
+
     def test_finalize_initial_state(self, resolver: Resolver, tf_package_versions: List[PackageVersion]) -> None:
         """Test finalization of an initial state objects."""
         initial_state_id_called = None
