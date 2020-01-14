@@ -128,9 +128,10 @@ class Predictor:
         """
         # noop
 
-    def set_reward_signal(self, reward: float) -> None:
+    def set_reward_signal(self, state: State, reward: float) -> None:
         """Signalize the reward.
 
+        @param state: (child) state for which the reward signal is triggered
         @param reward: set to nan if the given state was not accepted a special value
                        of inf notifies about a new final state
         """
