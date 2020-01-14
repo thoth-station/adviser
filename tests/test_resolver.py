@@ -267,7 +267,7 @@ class TestResolver(AdviserTestCase):
 
         resolver._init_context()
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(math.nan).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(state1, math.nan).once()
 
         assert resolver.beam.size == 0
         assert (
@@ -698,7 +698,7 @@ class TestResolver(AdviserTestCase):
             extras=frozenset(["postgresql", None]),
             marker_evaluation_result=None,
         ).and_raise(NotFoundError).once()
-        resolver.predictor.should_receive("set_reward_signal").with_args(math.nan).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(state, math.nan).once()
         assert resolver._expand_state(state, to_expand_package_tuple) is None
         assert resolver.beam.size == 0
 
@@ -731,7 +731,7 @@ class TestResolver(AdviserTestCase):
             len(state.unresolved_dependencies) == 1
         ), "State in the test case should have only once dependency to resolve in order to check production of a final state"
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(math.inf).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(state, math.inf).once()
 
         original_resolved_count = len(state.resolved_dependencies)
 
@@ -812,7 +812,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
         )
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(math.nan).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(state, math.nan).once()
         assert resolver._expand_state(state, to_expand_package_tuple) is None
 
     def test_expand_state_sieves_discarded(self, resolver: Resolver, state: State) -> None:
@@ -862,7 +862,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
         )
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(math.nan).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(state, math.nan).once()
         assert resolver._expand_state(state, to_expand_package_tuple) is None
 
     def test_expand_state_intersection_adjust(self, resolver: Resolver, state: State) -> None:
@@ -937,7 +937,7 @@ class TestResolver(AdviserTestCase):
         resolver.beam.wipe()
 
         resolver.pipeline.steps[0].should_receive("run").and_return((0.1, [])).once()
-        resolver.predictor.should_receive("set_reward_signal").with_args(0.1).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(object, 0.1).once()
 
         assert resolver.beam.size == 0
         assert resolver._expand_state(state, to_expand_package_tuple) is None
@@ -991,7 +991,7 @@ class TestResolver(AdviserTestCase):
         resolver.context.iteration += 1
         resolver.beam.wipe()
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(math.inf).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(state, math.inf).once()
 
         assert resolver.beam.size == 0
         assert resolver._expand_state(state, to_expand_package_tuple) is state
@@ -1028,7 +1028,7 @@ class TestResolver(AdviserTestCase):
         resolver.beam.wipe()
 
         resolver.pipeline.steps[0].should_receive("run").times(0)
-        resolver.predictor.should_receive("set_reward_signal").with_args(0.0).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(object, 0.0).once()
 
         assert resolver.beam.size == 0
         assert resolver._expand_state(state, to_expand_package_tuple) is None
@@ -1069,7 +1069,7 @@ class TestResolver(AdviserTestCase):
             marker_evaluation_result=None,
         ).and_return([]).once()
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(0.0).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(state, 0.0).once()
 
         original_resolved_count = len(state.resolved_dependencies)
 
@@ -1186,7 +1186,7 @@ class TestResolver(AdviserTestCase):
         state = State(score=0.0)
 
         resolver._init_context()
-        resolver.predictor.should_receive("set_reward_signal").with_args(math.nan).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(state, math.nan).once()
         resolver.context.register_package_version(package_version)
         resolver._expand_state_add_dependencies(
             state=state,
@@ -1339,7 +1339,7 @@ class TestResolver(AdviserTestCase):
         )
 
         resolver.pipeline.steps[0].should_receive("run").with_args(state, package_version).and_return((0.1, [])).once()
-        resolver.predictor.should_receive("set_reward_signal").with_args(0.1).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(object, 0.1).once()
         assert resolver._expand_state(state, package_tuple) is None
         assert resolver.beam.size == 1
 

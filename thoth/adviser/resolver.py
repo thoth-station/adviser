@@ -312,7 +312,7 @@ class Resolver:
                     package_version_tuple,
                     str(exc),
                 )
-                self.predictor.set_reward_signal(math.nan)
+                self.predictor.set_reward_signal(state, math.nan)
                 return
             except Exception as exc:
                 raise StepError(
@@ -356,7 +356,7 @@ class Resolver:
         cloned_state.iteration = self.context.iteration
         cloned_state.add_justification(justification_addition)
         cloned_state.score += score_addition
-        self.predictor.set_reward_signal(score_addition)
+        self.predictor.set_reward_signal(cloned_state, score_addition)
         self.beam.add_state(self.predictor.get_beam_key(cloned_state), cloned_state)
 
     def _run_strides(self, state: State) -> bool:
@@ -500,7 +500,7 @@ class Resolver:
             _LOGGER.debug(
                 "Dependency %r is not yet resolved, cannot expand state", package_tuple
             )
-            self.predictor.set_reward_signal(math.nan)
+            self.predictor.set_reward_signal(state, math.nan)
             return None
 
         if not dependencies:
@@ -508,13 +508,13 @@ class Resolver:
 
             if not state.unresolved_dependencies:
                 # The given package has no dependencies and nothing to resolve more, mark it as resolved.
-                self.predictor.set_reward_signal(math.inf)
+                self.predictor.set_reward_signal(state, math.inf)
                 return state
 
             # No dependency, add the state back to the beam for resolving unresolved in next rounds.
             state.iteration = self.context.iteration
             self.beam.add_state(self.predictor.get_beam_key(state), state)
-            self.predictor.set_reward_signal(0.0)
+            self.predictor.set_reward_signal(state, 0.0)
             return None
 
         return self._expand_state_add_dependencies(
@@ -596,7 +596,7 @@ class Resolver:
                 "version requirements",
                 ", ".join(unsolved),
             )
-            self.predictor.set_reward_signal(math.nan)
+            self.predictor.set_reward_signal(state, math.nan)
             return None
 
         for dependency_name, dependency_tuples in all_dependencies.items():
@@ -617,7 +617,7 @@ class Resolver:
                         dependency_name,
                         package_tuple,
                     )
-                    self.predictor.set_reward_signal(math.nan)
+                    self.predictor.set_reward_signal(state, math.nan)
                     return None
 
                 dependency_tuples.sort(
@@ -637,7 +637,7 @@ class Resolver:
                     "All dependencies of type %r were discarded by sieves, aborting creation of a new state",
                     dependency_name,
                 )
-                self.predictor.set_reward_signal(math.nan)
+                self.predictor.set_reward_signal(state, math.nan)
                 return None
 
             if self.limit_latest_versions:
@@ -654,7 +654,7 @@ class Resolver:
             # A special case when all the dependencies of the resolved one are installed conditionally
             # based on environment markers but none of the environment markers is evaluated to True. If
             # no more unresolved dependencies present, the state is final.
-            self.predictor.set_reward_signal(math.inf)
+            self.predictor.set_reward_signal(state, math.inf)
             return state
 
         if not all_dependencies:
@@ -664,7 +664,7 @@ class Resolver:
             state.iteration = self.context.iteration
             state.mark_dependency_resolved(package_tuple)
             self.beam.add_state(self.predictor.get_beam_key(state), state)
-            self.predictor.set_reward_signal(0.0)
+            self.predictor.set_reward_signal(state, 0.0)
             return None
 
         self._run_steps(state, package_version, all_dependencies)
