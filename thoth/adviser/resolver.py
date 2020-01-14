@@ -379,9 +379,9 @@ class Resolver:
         if state.unresolved_dependencies:
             self.beam.add_state(self.predictor.get_beam_key(state), state)
             cloned_state = state.clone()
-            finalize_object = weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state))
-            finalize_object.atexit = False
+            weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state)).atexit = False
         else:
+            # Optimization - reuse the old one as it would be discarded anyway.
             cloned_state = state
 
         cloned_state.set_unresolved_dependencies(unresolved_dependencies)
@@ -503,8 +503,7 @@ class Resolver:
         # resolved versions.
         self.beam.wipe()
         state = State.from_direct_dependencies(direct_dependencies)
-        finalize_object = weakref.finalize(state, self.predictor.finalize_state, id(state))
-        finalize_object.atexit = False
+        weakref.finalize(state, self.predictor.finalize_state, id(state)).atexit = False
         self.beam.add_state(self.predictor.get_beam_key(state), state)
 
     def _expand_state(
@@ -544,16 +543,28 @@ class Resolver:
             return None
 
         if not dependencies:
-            state.mark_dependency_resolved(package_tuple)
+            state.remove_unresolved_dependency(package_tuple)
 
             if not state.unresolved_dependencies:
                 # The given package has no dependencies and nothing to resolve more, mark it as resolved.
                 self.predictor.set_reward_signal(state, math.inf)
                 return state
 
-            # No dependency, add the state back to the beam for resolving unresolved in next rounds.
-            state.iteration = self.context.iteration
+            # Re-add with removed unresolved dependency.
             self.beam.add_state(self.predictor.get_beam_key(state), state)
+
+            cloned_state = state.clone()
+            # Mark dependency resolved in the newly created state and add it to beam.
+            cloned_state.remove_unresolved_dependency_subtree(package_tuple[0])
+            cloned_state.add_resolved_dependency(package_tuple)
+            cloned_state.iteration = self.context.iteration
+
+            if not cloned_state.unresolved_dependencies:
+                self.predictor.set_reward_signal(cloned_state, math.inf)
+                return cloned_state
+
+            weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state)).atexit = False
+            self.beam.add_state(self.predictor.get_beam_key(cloned_state), cloned_state)
             self.predictor.set_reward_signal(state, 0.0)
             return None
 
@@ -699,7 +710,7 @@ class Resolver:
                     pv.to_tuple() for pv in package_versions
                 ]
 
-        if not all_dependencies and not state.unresolved_dependencies:
+        if not (all_dependencies or state.unresolved_dependencies):
             # A special case when all the dependencies of the resolved one are installed conditionally
             # based on environment markers but none of the environment markers is evaluated to True. If
             # no more unresolved dependencies present, the state is final.
@@ -751,8 +762,9 @@ class Resolver:
                     break
 
                 if self.beam.size == 0:
-                    _LOGGER.info(
-                        "The beam is empty, iteration %d", self.context.iteration
+                    _LOGGER.warning(
+                        "No more possible paths found for resolution, terminating resolver in iteration %d",
+                        self.context.iteration
                     )
                     break
 
