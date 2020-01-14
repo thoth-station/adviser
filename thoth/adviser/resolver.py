@@ -478,6 +478,9 @@ class Resolver:
         """Prepare initial state for resolver."""
         direct_dependencies = self._resolve_direct_dependencies(with_devel=with_devel)
 
+        if not direct_dependencies:
+            raise CannotProduceStack("No direct dependencies found")
+
         for direct_dependency_name, package_versions in direct_dependencies.items():
             # Register the given dependency first.
             for direct_dependency in package_versions:
