@@ -1651,3 +1651,26 @@
 * :pushpin: Automatic update of dependency hypothesis from 4.53.1 to 4.53.2
 * Bump version in templates
 * Fork only in the cluster
+
+## Release 0.7.3 (2020-01-14T20:20:14)
+* Raise an error if no direct dependencies were found
+* Report error on resolution failure
+* Create more descriptive message
+* Add tests for no dependencies cases during resolution
+* Rebase and simplify code
+* Fix log message reported
+* Log interesting checkpoints during resolution to user
+* Reward signal now propagates state for which the reward signal is computed
+* Introduce a method for getting a state by its id
+* Fix exception error messages produced
+* Fix beam method signatures
+* Remove unused import statement
+* Introduce approximating latest predictor
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.5 to 0.21.6
+* Re-add state with no unresolved dependencies back to beam on resolution
+* Remvoe accidentally committed print statement
+* Introduce finalizers for predictor's memory footprint optimization
+* Predictor should pick key to beam
+* Introduce assigned context to predictor
+* Extend docs with MDP
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.4 to 0.21.5
