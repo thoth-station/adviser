@@ -18,8 +18,10 @@
 """Various helpers and utility functions."""
 
 import os
+import logging
 
 from typing import Any
+from typing import Set
 
 
 def should_keep_history(value: Any) -> bool:
@@ -38,3 +40,21 @@ def should_keep_history(value: Any) -> bool:
     raise ValueError(
         f"Unknown keep history configuration value: {value!r} if of type {type(value)!r}"
     )
+
+
+def log_once(
+    logger: logging.Logger,
+    log_state: Set[object],
+    log_state_key: object,
+    msg: str,
+    *args: object,
+    level: int = logging.WARNING,
+    **kwargs: object,
+) -> None:
+    """Log the given message once."""
+    if log_state_key in log_state:
+        # Already logged, noop.
+        return
+
+    log_state.add(log_state_key)
+    logger.log(level, msg, *args, **kwargs)

@@ -61,6 +61,7 @@ from .report import Report
 from .solver import PythonPackageGraphSolver
 from .state import State
 from .unit import Unit
+from .utils import log_once
 
 import attr
 
@@ -246,23 +247,6 @@ class Resolver:
         self._log_step_not_acceptable.clear()
         self._log_no_intersected.clear()
 
-    @staticmethod
-    def _log_once(
-        log_state: Set[object],
-        log_state_key: object,
-        msg: str,
-        *args: object,
-        level: int = logging.WARNING,
-        **kwargs: object,
-    ) -> None:
-        """Log the given message once."""
-        if log_state_key in log_state:
-            # Already logged, noop.
-            return
-
-        log_state.add(log_state_key)
-        _LOGGER.log(level, msg, *args, **kwargs)
-
     def _init_context(self) -> None:
         """Initialize context instance."""
         self._context = Context(
@@ -349,7 +333,8 @@ class Resolver:
             try:
                 step_result = step.run(state, package_version)
             except NotAcceptable as exc:
-                self._log_once(
+                log_once(
+                    _LOGGER,
                     self._log_step_not_acceptable,
                     package_version_tuple,
                     "Step %r discarded addition of package %r: %s",
@@ -542,7 +527,8 @@ class Resolver:
                 else None,
             )
         except NotFoundError:
-            self._log_once(
+            log_once(
+                _LOGGER,
                 self._log_unresolved,
                 package_tuple,
                 "Dependency %r is not yet resolved, trying different resolution path...",
@@ -653,7 +639,8 @@ class Resolver:
         ]
         if unsolved:
             for unsolved_item in unsolved:
-                self._log_once(
+                log_once(
+                    _LOGGER,
                     self._log_unsolved,
                     unsolved_item,
                     "No solved releases found for %r which would satisfy version requirements of %r, "
@@ -676,7 +663,8 @@ class Resolver:
                 )
 
                 if not dependency_tuples:
-                    self._log_once(
+                    log_once(
+                        _LOGGER,
                         self._log_no_intersected,
                         (package_tuple, dependency_name),
                         "No intersected dependencies for package %r found when resolving %r, "
@@ -700,7 +688,8 @@ class Resolver:
             package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
             package_versions = list(self._run_sieves(package_versions))
             if not package_versions:
-                self._log_once(
+                log_once(
+                    _LOGGER,
                     self._log_sieved,
                     dependency_name,
                     "All dependencies of type %r were discarded by resolver pipeline sieves, "

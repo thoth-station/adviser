@@ -22,16 +22,18 @@ from typing import Any
 from typing import Optional
 from typing import Dict
 from typing import List
+from typing import Tuple
+from typing import Set
 
 import attr
 
 from thoth.common import RuntimeEnvironment
 from thoth.python import Project
 from thoth.python import PackageVersion
-from thoth.storages import GraphDatabase
 
 from .context import Context
 from .state import State
+from .utils import log_once
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,6 +42,8 @@ _LOGGER = logging.getLogger(__name__)
 @attr.s(slots=True, eq=False, order=False)
 class Product:
     """A representation of an advised stack."""
+
+    _LOG_HASHES: Set[Tuple[str, str, str]] = set()
 
     project = attr.ib(type=Project)
     score = attr.ib(type=float)
@@ -69,7 +73,7 @@ class Product:
                 package_version.hashes = ["sha256:" + h for h in hashes]
 
                 if not package_version.hashes:
-                    _LOGGER.warning("No hashes found for package %r", package_tuple)
+                    log_once(_LOGGER, cls._LOG_HASHES, package_tuple, "No hashes found for package %r", package_tuple)
 
                 # Fill environment markers by checking dependencies that introduced this dependency.
                 # We do it only if we have no hashes - if hashes are present, the environment marker was
