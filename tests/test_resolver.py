@@ -244,51 +244,61 @@ class TestResolver(AdviserTestCase):
         assert list(resolver._run_sieves(tf_package_versions)) == []
 
     def test_run_steps_not_acceptable(
-            self, resolver: Resolver, package_version: PackageVersion
+        self, resolver: Resolver, package_version: PackageVersion
     ) -> None:
         """Test running steps when not acceptable is raised."""
         state1 = State()
         state1.score = 0.1
         state1.add_justification([{"hello": "thoth"}])
-        state1.add_resolved_dependency(("hexsticker", "1.2.0", "https://pypi.org/simple"))
+        state1.add_resolved_dependency(
+            ("hexsticker", "1.2.0", "https://pypi.org/simple")
+        )
 
         flexmock(steps.Step1)
         flexmock(steps.Step2)
 
-        steps.Step1.should_receive("run").with_args(
-            state1, package_version
-        ).and_return((1.0, [{"baz": "bar"}])).ordered()
+        steps.Step1.should_receive("run").with_args(state1, package_version).and_return(
+            (1.0, [{"baz": "bar"}])
+        ).ordered()
 
-        steps.Step2.should_receive("run").with_args(
-            state1, package_version
-        ).and_raise(NotAcceptable).ordered()
+        steps.Step2.should_receive("run").with_args(state1, package_version).and_raise(
+            NotAcceptable
+        ).ordered()
 
         resolver.pipeline.steps = [steps.Step1(), steps.Step2()]
 
         resolver._init_context()
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(state1, math.nan).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            state1, package_version.to_tuple(), math.nan
+        ).once()
 
         assert resolver.beam.size == 0
         assert (
-                resolver._run_steps(state1, package_version, {"numpy": [("numpy", "1.18.0")]})
-                is None
+            resolver._run_steps(
+                state1, package_version, {"numpy": [("numpy", "1.18.0")]}
+            )
+            is None
         )
         assert resolver.beam.size == 0
 
-    def test_run_steps_step_error(self, resolver: Resolver, package_version: PackageVersion) -> None:
+    def test_run_steps_step_error(
+        self, resolver: Resolver, package_version: PackageVersion
+    ) -> None:
         """Test raising a step error when a step raises an unexpected error."""
         state = State()
         state.score = 0.1
         state.add_justification([{"hello": "thoth"}])
-        state.add_unresolved_dependency(("hexsticker", "1.2.0", "https://pypi.org/simple"))
+        state.add_unresolved_dependency(
+            ("hexsticker", "1.2.0", "https://pypi.org/simple")
+        )
 
         original_state = deepcopy(state)
 
         flexmock(steps.Step1)
-        steps.Step1.should_receive("run").with_args(
-            state, package_version
-        ).and_raise(NameError).once()
+        steps.Step1.should_receive("run").with_args(state, package_version).and_raise(
+            NameError
+        ).once()
 
         resolver.pipeline.steps = [steps.Step1()]
 
@@ -301,7 +311,9 @@ class TestResolver(AdviserTestCase):
 
         assert original_state == state, "State is not untouched"
 
-    def test_run_steps_multi_package_resolution(self, resolver: Resolver, package_version: PackageVersion) -> None:
+    def test_run_steps_multi_package_resolution(
+        self, resolver: Resolver, package_version: PackageVersion
+    ) -> None:
         """Test running pipeline step with a multi package resolution flag set."""
         flexmock(steps.Step1)
         flexmock(steps.Step2)
@@ -318,14 +330,19 @@ class TestResolver(AdviserTestCase):
 
         resolver._init_context()
 
-        resolver.pipeline.steps[0].should_receive("run").with_args(state, package_version).and_return(None).once()
+        resolver.pipeline.steps[0].should_receive("run").with_args(
+            state, package_version
+        ).and_return(None).once()
         resolver.pipeline.steps[1].should_receive("run").times(0)
 
-        assert resolver._run_steps(
-            state,
-            package_version,
-            {"flask": [("flask", "0.12", "https://pypi.org/simple")]}
-        ) is None
+        assert (
+            resolver._run_steps(
+                state,
+                package_version,
+                {"flask": [("flask", "0.12", "https://pypi.org/simple")]},
+            )
+            is None
+        )
         assert resolver.beam.size == 1
         assert resolver.beam.top() is state
 
@@ -345,27 +362,27 @@ class TestResolver(AdviserTestCase):
         original_state = deepcopy(state)
 
         flexmock(steps.Step1)
-        steps.Step1.should_receive("run").with_args(
-            state, package_version
-        ).and_raise(NameError).once()
+        steps.Step1.should_receive("run").with_args(state, package_version).and_raise(
+            NameError
+        ).once()
 
         resolver.pipeline.steps = [steps.Step1()]
 
         with pytest.raises(StepError):
-            assert resolver._run_steps(
-                state,
-                package_version,
-                {"flask": ("flask", "1.0.0", "https://pypi.org/simple")}
-            ) is None
+            assert (
+                resolver._run_steps(
+                    state,
+                    package_version,
+                    {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
+                )
+                is None
+            )
 
         assert original_state == state, "State is not untouched"
 
     @pytest.mark.parametrize("score", [float("inf"), float("nan")])
     def test_run_steps_inf_nan(
-        self,
-        score: float,
-        resolver: Resolver,
-        package_version: PackageVersion,
+        self, score: float, resolver: Resolver, package_version: PackageVersion
     ):
         state = State()
         state.score = 0.1
@@ -379,18 +396,21 @@ class TestResolver(AdviserTestCase):
         original_state = deepcopy(state)
 
         flexmock(steps.Step1)
-        steps.Step1.should_receive("run").with_args(
-            state, package_version
-        ).and_return((score, [{"foo": "bar"}])).once()
+        steps.Step1.should_receive("run").with_args(state, package_version).and_return(
+            (score, [{"foo": "bar"}])
+        ).once()
 
         resolver.pipeline.steps = [steps.Step1()]
 
         with pytest.raises(StepError):
-            assert resolver._run_steps(
-                state,
-                package_version,
-                {"flask": ("flask", "1.0.0", "https://pypi.org/simple")}
-            ) is None
+            assert (
+                resolver._run_steps(
+                    state,
+                    package_version,
+                    {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
+                )
+                is None
+            )
 
         assert original_state == state, "State is not untouched"
 
@@ -497,8 +517,11 @@ class TestResolver(AdviserTestCase):
         """Test error produced if no direct dependencies were resolved."""
         solver_mock = flexmock()
         solver_mock.should_receive("solve").with_args(
-            sorted(resolver.project.iter_dependencies(with_devel=True), key=lambda p: p.name),
-            graceful=True
+            sorted(
+                resolver.project.iter_dependencies(with_devel=True),
+                key=lambda p: p.name,
+            ),
+            graceful=True,
         ).and_return({}).once()
 
         resolver._solver = solver_mock
@@ -518,8 +541,11 @@ class TestResolver(AdviserTestCase):
         """Test error produced if not all direct dependencies were resolved."""
         solver_mock = flexmock()
         solver_mock.should_receive("solve").with_args(
-            sorted(resolver.project.iter_dependencies(with_devel=True), key=lambda p: p.name),
-            graceful=True
+            sorted(
+                resolver.project.iter_dependencies(with_devel=True),
+                key=lambda p: p.name,
+            ),
+            graceful=True,
         ).and_return({"tensorflow": tf_package_versions, "flask": []}).once()
 
         resolver._solver = solver_mock
@@ -547,8 +573,11 @@ class TestResolver(AdviserTestCase):
         }
         solver_mock = flexmock()
         solver_mock.should_receive("solve").with_args(
-            sorted(resolver.project.iter_dependencies(with_devel=True), key=lambda p: p.name),
-            graceful=True
+            sorted(
+                resolver.project.iter_dependencies(with_devel=True),
+                key=lambda p: p.name,
+            ),
+            graceful=True,
         ).and_return(resolved).once()
 
         resolver._solver = solver_mock
@@ -672,7 +701,8 @@ class TestResolver(AdviserTestCase):
         state = resolver.beam.top()
         unresolved_dependencies = set(state.iter_unresolved_dependencies())
         assert unresolved_dependencies == (
-                {pv.to_tuple() for pv in numpy_package_versions} | {pv.to_tuple() for pv in tf_package_versions}
+            {pv.to_tuple() for pv in numpy_package_versions}
+            | {pv.to_tuple() for pv in tf_package_versions}
         )
         assert list(state.iter_resolved_dependencies()) == []
 
@@ -698,14 +728,14 @@ class TestResolver(AdviserTestCase):
             extras=frozenset(["postgresql", None]),
             marker_evaluation_result=None,
         ).and_raise(NotFoundError).once()
-        resolver.predictor.should_receive("set_reward_signal").with_args(state, math.nan).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            state, to_expand_package_tuple, math.nan
+        ).once()
         assert resolver._expand_state(state, to_expand_package_tuple) is None
         assert resolver.beam.size == 0
 
     def test_expand_state_no_dependencies_final_simple(
-        self,
-        resolver: Resolver,
-        state: State
+        self, resolver: Resolver, state: State
     ) -> None:
         """Test expanding a state when the given package has no dependencies producing final state."""
         to_expand_package_tuple = state.get_random_unresolved_dependency()
@@ -729,12 +759,14 @@ class TestResolver(AdviserTestCase):
             marker_evaluation_result=None,
         ).and_return([]).once()
 
-        assert (
-            len(state.unresolved_dependencies) == 1
-        ), "State in the test case should have only once dependency to resolve in " \
-           "order to check production of a final state"
+        assert len(state.unresolved_dependencies) == 1, (
+            "State in the test case should have only once dependency to resolve in "
+            "order to check production of a final state"
+        )
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(object, math.inf).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            object, to_expand_package_tuple, math.inf
+        ).once()
 
         original_resolved_count = len(state.resolved_dependencies)
         original_unresolved_count = len(state.unresolved_dependencies)
@@ -750,7 +782,9 @@ class TestResolver(AdviserTestCase):
         assert len(state.resolved_dependencies) == original_resolved_count
         assert len(state.unresolved_dependencies) == original_unresolved_count - 1
 
-    def test_expand_state_no_dependencies_final(self, resolver: Resolver, state: State) -> None:
+    def test_expand_state_no_dependencies_final(
+        self, resolver: Resolver, state: State
+    ) -> None:
         """Test state expansion with multiple dependencies of a same type."""
         to_expand_package_tuple = state.get_random_unresolved_dependency()
         additional_package_tuple = ("numpy", "1.0.0", "https://pypi.org/simple")
@@ -789,7 +823,9 @@ class TestResolver(AdviserTestCase):
 
         assert len(state.unresolved_dependencies) == 2
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(object, 0.0).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            object, to_expand_package_tuple, 0.0
+        ).once()
 
         original_resolved_count = len(state.resolved_dependencies)
         original_unresolved_count = len(state.unresolved_dependencies)
@@ -813,9 +849,7 @@ class TestResolver(AdviserTestCase):
         assert len(state_added.unresolved_dependencies) == original_unresolved_count - 1
 
     def test_expand_state_no_dependencies_final_multiple_different(
-        self,
-        resolver: Resolver,
-        state: State
+        self, resolver: Resolver, state: State
     ) -> None:
         """Test state expansion with multiple dependencies of a same type."""
         to_expand_package_tuple = ("connexion", "2.0.0", "https://pypi.org/simple")
@@ -854,7 +888,9 @@ class TestResolver(AdviserTestCase):
 
         assert len(list(state.iter_unresolved_dependencies())) == 3
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(object, 0.0).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            object, to_expand_package_tuple, 0.0
+        ).once()
 
         original_resolved_count = len(list(state.iter_resolved_dependencies()))
         original_unresolved_count = len(list(state.iter_unresolved_dependencies()))
@@ -876,15 +912,21 @@ class TestResolver(AdviserTestCase):
         assert to_expand_package_tuple in state_added.iter_resolved_dependencies()
         assert to_expand_package_tuple not in state_added.iter_unresolved_dependencies()
         assert additional_package_tuple not in state_added.iter_resolved_dependencies()
-        assert additional_package_tuple not in state_added.iter_unresolved_dependencies()
-        assert len(list(state_added.iter_resolved_dependencies())) == original_resolved_count + 1
+        assert (
+            additional_package_tuple not in state_added.iter_unresolved_dependencies()
+        )
+        assert (
+            len(list(state_added.iter_resolved_dependencies()))
+            == original_resolved_count + 1
+        )
         # All dependencies of type to_expand_package_tuple[0] removed.
-        assert len(list(state_added.iter_unresolved_dependencies())) == original_unresolved_count - 2
+        assert (
+            len(list(state_added.iter_unresolved_dependencies()))
+            == original_unresolved_count - 2
+        )
 
     def test_expand_state_no_dependencies_final_multiple_same(
-        self,
-        resolver: Resolver,
-        state: State
+        self, resolver: Resolver, state: State
     ) -> None:
         """Test state expansion with multiple dependencies without same type."""
         to_expand_package_tuple = ("connexion", "2.0.0", "https://pypi.org/simple")
@@ -925,7 +967,9 @@ class TestResolver(AdviserTestCase):
 
         assert len(list(state.iter_unresolved_dependencies())) == 2
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(object, math.inf).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            object, to_expand_package_tuple, math.inf
+        ).once()
 
         original_resolved_count = len(list(state.iter_resolved_dependencies()))
         original_unresolved_count = len(list(state.iter_unresolved_dependencies()))
@@ -948,12 +992,19 @@ class TestResolver(AdviserTestCase):
         assert to_expand_package_tuple in state_added.iter_resolved_dependencies()
         assert to_expand_package_tuple not in state_added.iter_unresolved_dependencies()
         assert additional_package_tuple not in state_added.iter_resolved_dependencies()
-        assert additional_package_tuple not in state_added.iter_unresolved_dependencies()
-        assert len(list(state_added.iter_resolved_dependencies())) == original_resolved_count + 1
+        assert (
+            additional_package_tuple not in state_added.iter_unresolved_dependencies()
+        )
+        assert (
+            len(list(state_added.iter_resolved_dependencies()))
+            == original_resolved_count + 1
+        )
         # All dependencies of type to_expand_package_tuple[0] removed.
         assert len(list(state_added.iter_unresolved_dependencies())) == 0
 
-    def test_expand_state_no_intersection(self, resolver: Resolver, state: State) -> None:
+    def test_expand_state_no_intersection(
+        self, resolver: Resolver, state: State
+    ) -> None:
         """Test expanding a state with no intersected dependencies."""
         to_expand_package_tuple = ("tensorflow", "2.0.0", "https://pypi.org/simple")
 
@@ -970,7 +1021,8 @@ class TestResolver(AdviserTestCase):
             marker_evaluation_result=True,
         ).and_return({None: [("absl-py", "0.9.0"), ("absl-py", "0.8.0")]}).once()
 
-        absl_py_090_records = [{
+        absl_py_090_records = [
+            {
                 "package_name": "absl-py",
                 "package_version": "0.9.0",
                 "index_url": "https://pypi.org/simple",
@@ -980,7 +1032,8 @@ class TestResolver(AdviserTestCase):
             }
         ]
 
-        absl_py_080_records = [{
+        absl_py_080_records = [
+            {
                 "package_name": "absl-py",
                 "package_version": "0.8.0",
                 "index_url": "https://pypi.org/simple",
@@ -1021,10 +1074,14 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
         )
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(state, math.nan).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            state, to_expand_package_tuple, math.nan
+        ).once()
         assert resolver._expand_state(state, to_expand_package_tuple) is None
 
-    def test_expand_state_sieves_discarded(self, resolver: Resolver, state: State) -> None:
+    def test_expand_state_sieves_discarded(
+        self, resolver: Resolver, state: State
+    ) -> None:
         """Test expanding a state but all dependencies are filtered out by sieves."""
         to_expand_package_tuple = ("tensorflow", "2.0.0", "https://pypi.org/simple")
 
@@ -1041,14 +1098,16 @@ class TestResolver(AdviserTestCase):
             marker_evaluation_result=True,
         ).and_return({None: [("absl-py", "0.8.0")]}).once()
 
-        absl_py_080_records = [{
-            "package_name": "absl-py",
-            "package_version": "0.8.0",
-            "index_url": "https://pypi.org/simple",
-            "os_name": "fedora",
-            "os_version": "31",
-            "python_version": "3.7",
-        }]
+        absl_py_080_records = [
+            {
+                "package_name": "absl-py",
+                "package_version": "0.8.0",
+                "index_url": "https://pypi.org/simple",
+                "os_name": "fedora",
+                "os_version": "31",
+                "python_version": "3.7",
+            }
+        ]
 
         resolver.graph.should_receive("get_python_package_version_records").with_args(
             package_name="absl-py",
@@ -1061,7 +1120,9 @@ class TestResolver(AdviserTestCase):
 
         resolver._init_context()
 
-        resolver.pipeline.sieves[0].should_receive("run").with_args(object).and_raise(NotAcceptable).once()
+        resolver.pipeline.sieves[0].should_receive("run").with_args(object).and_raise(
+            NotAcceptable
+        ).once()
 
         resolver.context.register_package_tuple(
             to_expand_package_tuple,
@@ -1071,10 +1132,14 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
         )
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(state, math.nan).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            state, to_expand_package_tuple, math.nan
+        ).once()
         assert resolver._expand_state(state, to_expand_package_tuple) is None
 
-    def test_expand_state_intersection_adjust(self, resolver: Resolver, state: State) -> None:
+    def test_expand_state_intersection_adjust(
+        self, resolver: Resolver, state: State
+    ) -> None:
         """Test expanding a state with intersected dependencies - intersected dependencies are adjusted."""
         to_expand_package_tuple = ("tensorflow", "2.0.0", "https://pypi.org/simple")
 
@@ -1091,7 +1156,8 @@ class TestResolver(AdviserTestCase):
             marker_evaluation_result=True,
         ).and_return({None: [("absl-py", "0.9.0"), ("absl-py", "0.8.0")]}).once()
 
-        absl_py_090_records = [{
+        absl_py_090_records = [
+            {
                 "package_name": "absl-py",
                 "package_version": "0.9.0",
                 "index_url": "https://pypi.org/simple",
@@ -1101,7 +1167,8 @@ class TestResolver(AdviserTestCase):
             }
         ]
 
-        absl_py_080_records = [{
+        absl_py_080_records = [
+            {
                 "package_name": "absl-py",
                 "package_version": "0.8.0",
                 "index_url": "https://pypi.org/simple",
@@ -1146,7 +1213,9 @@ class TestResolver(AdviserTestCase):
         resolver.beam.wipe()
 
         resolver.pipeline.steps[0].should_receive("run").and_return((0.1, [])).once()
-        resolver.predictor.should_receive("set_reward_signal").with_args(object, 0.1).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            object, to_expand_package_tuple, 0.1
+        ).once()
 
         assert resolver.beam.size == 0
         assert resolver._expand_state(state, to_expand_package_tuple) is None
@@ -1157,15 +1226,39 @@ class TestResolver(AdviserTestCase):
 
         assert state0 is state
 
-        assert ("absl-py", "0.8.0", "https://pypi.org/simple") in state.iter_unresolved_dependencies()
-        assert ("absl-py", "0.6.0", "https://pypi.org/simple") in state.iter_unresolved_dependencies()
-        assert ("absl-py", "0.9.0", "https://pypi.org/simple") not in state.iter_unresolved_dependencies()
+        assert (
+            "absl-py",
+            "0.8.0",
+            "https://pypi.org/simple",
+        ) in state.iter_unresolved_dependencies()
+        assert (
+            "absl-py",
+            "0.6.0",
+            "https://pypi.org/simple",
+        ) in state.iter_unresolved_dependencies()
+        assert (
+            "absl-py",
+            "0.9.0",
+            "https://pypi.org/simple",
+        ) not in state.iter_unresolved_dependencies()
 
         # Only ("absl-py", "0.8.0", "https://pypi.org/simple") is in intersection.
 
-        assert ("absl-py", "0.8.0", "https://pypi.org/simple") in state1.iter_unresolved_dependencies()
-        assert ("absl-py", "0.6.0", "https://pypi.org/simple") not in state1.iter_unresolved_dependencies()
-        assert ("absl-py", "0.9.0", "https://pypi.org/simple") not in state1.iter_unresolved_dependencies()
+        assert (
+            "absl-py",
+            "0.8.0",
+            "https://pypi.org/simple",
+        ) in state1.iter_unresolved_dependencies()
+        assert (
+            "absl-py",
+            "0.6.0",
+            "https://pypi.org/simple",
+        ) not in state1.iter_unresolved_dependencies()
+        assert (
+            "absl-py",
+            "0.9.0",
+            "https://pypi.org/simple",
+        ) not in state1.iter_unresolved_dependencies()
 
     def test_expand_state_no_unresolved(self, resolver: Resolver, state: State) -> None:
         """Test expanding a state with no new dependencies and no more unresolved dependencies left."""
@@ -1200,13 +1293,17 @@ class TestResolver(AdviserTestCase):
         resolver.context.iteration += 1
         resolver.beam.wipe()
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(state, math.inf).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            state, to_expand_package_tuple, math.inf
+        ).once()
 
         assert resolver.beam.size == 0
         assert resolver._expand_state(state, to_expand_package_tuple) is state
         assert resolver.beam.size == 0
 
-    def test_expand_state_no_all_dependencies(self, resolver: Resolver, state: State) -> None:
+    def test_expand_state_no_all_dependencies(
+        self, resolver: Resolver, state: State
+    ) -> None:
         """Test expanding a state with no new dependencies and with unresolved dependencies."""
         to_expand_package_tuple = ("enum34", "1.1.6", "https://pypi.org/simple")
         state.add_unresolved_dependency(to_expand_package_tuple)
@@ -1237,7 +1334,9 @@ class TestResolver(AdviserTestCase):
         resolver.beam.wipe()
 
         resolver.pipeline.steps[0].should_receive("run").times(0)
-        resolver.predictor.should_receive("set_reward_signal").with_args(object, 0.0).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            object, to_expand_package_tuple, 0.0
+        ).once()
 
         assert resolver.beam.size == 0
         assert resolver._expand_state(state, to_expand_package_tuple) is None
@@ -1278,7 +1377,9 @@ class TestResolver(AdviserTestCase):
             marker_evaluation_result=None,
         ).and_return([]).once()
 
-        resolver.predictor.should_receive("set_reward_signal").with_args(state, 0.0).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            state, to_expand_package_tuple, 0.0
+        ).once()
 
         original_resolved_count = len(state.resolved_dependencies)
 
@@ -1293,7 +1394,10 @@ class TestResolver(AdviserTestCase):
         assert last_state_added is not None
         assert returned_value is None, "No state should be returned"
         assert to_expand_package_tuple in last_state_added.iter_resolved_dependencies()
-        assert to_expand_package_tuple not in last_state_added.iter_unresolved_dependencies()
+        assert (
+            to_expand_package_tuple
+            not in last_state_added.iter_unresolved_dependencies()
+        )
         assert to_expand_package_tuple not in state.iter_resolved_dependencies()
         assert to_expand_package_tuple not in state.iter_unresolved_dependencies()
         assert len(state.resolved_dependencies) == original_resolved_count
@@ -1399,7 +1503,9 @@ class TestResolver(AdviserTestCase):
         state = State(score=0.0)
 
         resolver._init_context()
-        resolver.predictor.should_receive("set_reward_signal").with_args(state, math.nan).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            state, package_version.to_tuple(), math.nan
+        ).once()
         resolver.context.register_package_version(package_version)
         resolver._expand_state_add_dependencies(
             state=state,
@@ -1449,11 +1555,17 @@ class TestResolver(AdviserTestCase):
         ), "No strides in the pipeline configuration to run test with"
 
         state1 = State(score=0.0)
-        state1.add_unresolved_dependency(("thoth-pipenv", "2018.12.17", "https://pypi.org/simple"))
+        state1.add_unresolved_dependency(
+            ("thoth-pipenv", "2018.12.17", "https://pypi.org/simple")
+        )
         state2 = State(score=1.0)
-        state2.add_unresolved_dependency(("selinon", "1.0.0", "https://pypi.org/simple"))
+        state2.add_unresolved_dependency(
+            ("selinon", "1.0.0", "https://pypi.org/simple")
+        )
         state3 = State(score=2.0)
-        state2.add_unresolved_dependency(("hexsticker", "1.0.0", "https://pypi.org/simple"))
+        state2.add_unresolved_dependency(
+            ("hexsticker", "1.0.0", "https://pypi.org/simple")
+        )
 
         flexmock(Beam)
         resolver.beam.should_receive("new_iteration").and_return(None).twice()
@@ -1479,16 +1591,17 @@ class TestResolver(AdviserTestCase):
 
         to_expand_package_tuple2 = state2.get_random_unresolved_dependency()
         to_expand_package_tuple1 = state1.get_random_unresolved_dependency()
-        resolver.predictor.should_receive("run").with_args(
-        ).and_return(state2, to_expand_package_tuple2).and_return(state1, to_expand_package_tuple1).twice()
+        resolver.predictor.should_receive("run").with_args().and_return(
+            state2, to_expand_package_tuple2
+        ).and_return(state1, to_expand_package_tuple1).twice()
 
-        resolver.should_receive("_expand_state").with_args(state2, to_expand_package_tuple2).and_return(
-            None
-        ).once()
+        resolver.should_receive("_expand_state").with_args(
+            state2, to_expand_package_tuple2
+        ).and_return(None).once()
 
-        resolver.should_receive("_expand_state").with_args(state1, to_expand_package_tuple1).and_return(
-            final_state
-        ).once()
+        resolver.should_receive("_expand_state").with_args(
+            state1, to_expand_package_tuple1
+        ).and_return(final_state).once()
 
         states = list(resolver._do_resolve_states(with_devel=True))
         assert states == [final_state]
@@ -1498,9 +1611,7 @@ class TestResolver(AdviserTestCase):
         assert resolver.beam.size == 1
         assert resolver.beam.top() is state3
 
-    def test_expand_state_marker_true(
-        self, resolver: Resolver
-    ) -> None:
+    def test_expand_state_marker_true(self, resolver: Resolver) -> None:
         """Add a check for leaf dependency nodes for which environment markers apply and remove dependencies."""
         package_tuple = ("hexsticker", "1.0.0", "https://pypi.org/simple")
         state = State(score=1.0)
@@ -1528,7 +1639,7 @@ class TestResolver(AdviserTestCase):
                 "os_name": resolver.project.runtime_environment.operating_system.name,
                 "os_version": resolver.project.runtime_environment.operating_system.version,
                 "python_version": resolver.project.runtime_environment.python_version,
-            },
+            }
         ]
         resolver.graph.should_receive("get_python_package_version_records").with_args(
             package_name="enum34",
@@ -1551,19 +1662,23 @@ class TestResolver(AdviserTestCase):
             python_version=None,
         )
 
-        resolver.pipeline.steps[0].should_receive("run").with_args(state, package_version).and_return((0.1, [])).once()
-        resolver.predictor.should_receive("set_reward_signal").with_args(object, 0.1).once()
+        resolver.pipeline.steps[0].should_receive("run").with_args(
+            state, package_version
+        ).and_return((0.1, [])).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            object, package_tuple, 0.1
+        ).once()
         assert resolver._expand_state(state, package_tuple) is None
         assert resolver.beam.size == 1
 
         state = resolver.beam.top()
 
-        assert list(state.iter_unresolved_dependencies()) == [("enum34", "1.1.6", "https://pypi.org/simple")]
+        assert list(state.iter_unresolved_dependencies()) == [
+            ("enum34", "1.1.6", "https://pypi.org/simple")
+        ]
         assert list(state.iter_resolved_dependencies()) == [package_tuple]
 
-    def test_expand_state_marker_false(
-        self, resolver: Resolver
-    ) -> None:
+    def test_expand_state_marker_false(self, resolver: Resolver) -> None:
         """Add a check for leaf dependency nodes for which environment markers apply and remove dependencies."""
         package_tuple = ("hexsticker", "1.0.0", "https://pypi.org/simple")
         state = State(score=1.0)
@@ -1635,22 +1750,25 @@ class TestResolver(AdviserTestCase):
         unresolved_dependency2 = state2.get_random_unresolved_dependency()
         unresolved_dependency3 = state3.get_random_unresolved_dependency()
 
-        resolver.predictor.should_receive("run").with_args()\
-            .and_return(state1, unresolved_dependency1)\
-            .and_return(state2, unresolved_dependency2)\
-            .and_return(state3, unresolved_dependency3).times(3)
+        resolver.predictor.should_receive("run").with_args().and_return(
+            state1, unresolved_dependency1
+        ).and_return(state2, unresolved_dependency2).and_return(
+            state3, unresolved_dependency3
+        ).times(
+            3
+        )
 
-        resolver.should_receive("_expand_state").with_args(state3, unresolved_dependency3).and_return(
-            final_state
-        ).once()
+        resolver.should_receive("_expand_state").with_args(
+            state3, unresolved_dependency3
+        ).and_return(final_state).once()
 
-        resolver.should_receive("_expand_state").with_args(state1, unresolved_dependency1).and_return(
-            final_state
-        ).once()
+        resolver.should_receive("_expand_state").with_args(
+            state1, unresolved_dependency1
+        ).and_return(final_state).once()
 
-        resolver.should_receive("_expand_state").with_args(state2, unresolved_dependency2).and_return(
-            final_state
-        ).once()
+        resolver.should_receive("_expand_state").with_args(
+            state2, unresolved_dependency2
+        ).and_return(final_state).once()
 
         for boot in resolver.pipeline.boots:
             boot.should_receive("run").with_args().and_return(None).once()
@@ -1899,20 +2017,19 @@ class TestResolver(AdviserTestCase):
         with pytest.raises(CannotProduceStack):
             resolver._prepare_initial_state(with_devel=True)
 
-    def test_finalize_initial_state(self, resolver: Resolver, tf_package_versions: List[PackageVersion]) -> None:
+    def test_finalize_initial_state(
+        self, resolver: Resolver, tf_package_versions: List[PackageVersion]
+    ) -> None:
         """Test finalization of an initial state objects."""
         initial_state_id_called = None
+
         def finalize_state(state_id: int) -> None:
             nonlocal initial_state_id_called
             initial_state_id_called = state_id
 
         resolver.should_receive("_resolve_direct_dependencies").with_args(
             with_devel=False
-        ).and_return(
-            {
-                "tensorflow": tf_package_versions,
-            }
-        ).once()
+        ).and_return({"tensorflow": tf_package_versions}).once()
 
         resolver.predictor.finalize_state = finalize_state
 
@@ -1933,6 +2050,7 @@ class TestResolver(AdviserTestCase):
     def test_finalize_state(self, resolver: Resolver, state: State) -> None:
         """Test finalization of a state objects."""
         state_id_called = None
+
         def finalize_state(state_id: int) -> None:
             nonlocal state_id_called
             state_id_called = state_id
@@ -1967,7 +2085,7 @@ class TestResolver(AdviserTestCase):
                 "os_name": resolver.project.runtime_environment.operating_system.name,
                 "os_version": resolver.project.runtime_environment.operating_system.version,
                 "python_version": resolver.project.runtime_environment.python_version,
-            },
+            }
         ]
         resolver.graph.should_receive("get_python_package_version_records").with_args(
             package_name="click",
