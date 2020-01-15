@@ -373,11 +373,7 @@ class Resolver:
                 if step_justification_addition is not None:
                     justification_addition.extend(step_justification_addition)
 
-        # Remove the expanded package version from the original state not to create loops.
-        state.remove_unresolved_dependency(package_version_tuple)
-
         if state.unresolved_dependencies:
-            self.beam.add_state(self.predictor.get_beam_key(state), state)
             cloned_state = state.clone()
             weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state)).atexit = False
         else:
@@ -518,6 +514,8 @@ class Resolver:
             package_tuple, graceful=False
         )
 
+        state.remove_unresolved_dependency(package_tuple)
+
         extras = package_version.extras or []
         extras.append(None)
 
@@ -543,8 +541,6 @@ class Resolver:
             return None
 
         if not dependencies:
-            state.remove_unresolved_dependency(package_tuple)
-
             if not state.unresolved_dependencies:
                 # The given package has no dependencies and nothing to resolve more, mark it as resolved.
                 self.predictor.set_reward_signal(state, package_tuple, math.inf)
@@ -567,6 +563,9 @@ class Resolver:
             self.beam.add_state(self.predictor.get_beam_key(cloned_state), cloned_state)
             self.predictor.set_reward_signal(state, package_tuple, 0.0)
             return None
+
+        if state.unresolved_dependencies:
+            self.beam.add_state(self.predictor.get_beam_key(state), state)
 
         return self._expand_state_add_dependencies(
             state=state,
@@ -709,23 +708,6 @@ class Resolver:
                 all_dependencies[dependency_name] = [
                     pv.to_tuple() for pv in package_versions
                 ]
-
-        if not (all_dependencies or state.unresolved_dependencies):
-            # A special case when all the dependencies of the resolved one are installed conditionally
-            # based on environment markers but none of the environment markers is evaluated to True. If
-            # no more unresolved dependencies present, the state is final.
-            self.predictor.set_reward_signal(state, package_tuple, math.inf)
-            return state
-
-        if not all_dependencies:
-            # All the dependencies of the resolved one are installed conditionally based on environment
-            # markers but none of the environment markers is evaluated to True. As there are more
-            # dependencies to be added re-add state with adjusted properties.
-            state.iteration = self.context.iteration
-            state.mark_dependency_resolved(package_tuple)
-            self.beam.add_state(self.predictor.get_beam_key(state), state)
-            self.predictor.set_reward_signal(state, package_tuple, 0.0)
-            return None
 
         self._run_steps(state, package_version, all_dependencies)
         return None
