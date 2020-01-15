@@ -329,22 +329,26 @@ class TestResolver(AdviserTestCase):
         steps.Step2.MULTI_PACKAGE_RESOLUTIONS = False
 
         resolver._init_context()
+        resolver.context.iteration = state.iteration + 1
 
         resolver.pipeline.steps[0].should_receive("run").with_args(
             state, package_version
         ).and_return(None).once()
         resolver.pipeline.steps[1].should_receive("run").times(0)
 
-        assert (
-            resolver._run_steps(
-                state,
-                package_version,
-                {"flask": [("flask", "0.12", "https://pypi.org/simple")]},
-            )
-            is None
-        )
+        dependency_tuple = ("flask", "0.12", "https://pypi.org/simple")
+        assert resolver._run_steps(
+            state,
+            package_version,
+            {"flask": [dependency_tuple]}
+        ) is None
         assert resolver.beam.size == 1
-        assert resolver.beam.top() is state
+        assert resolver.beam.top() is not state
+
+        state_added = resolver.beam.top()
+
+        assert set(state_added.iter_resolved_dependencies()) == (set(state.iter_resolved_dependencies()) | {package_version.to_tuple()})
+        assert list(state_added.iter_unresolved_dependencies()) == [dependency_tuple]
 
     def test_run_steps_error(
         self, resolver: Resolver, package_version: PackageVersion
@@ -1259,92 +1263,6 @@ class TestResolver(AdviserTestCase):
             "0.9.0",
             "https://pypi.org/simple",
         ) not in state1.iter_unresolved_dependencies()
-
-    def test_expand_state_no_unresolved(self, resolver: Resolver, state: State) -> None:
-        """Test expanding a state with no new dependencies and no more unresolved dependencies left."""
-        to_expand_package_tuple = ("enum34", "1.1.6", "https://pypi.org/simple")
-
-        # No unresolved dependencies.
-        for unresolved_dependency in state.iter_unresolved_dependencies():
-            state.remove_unresolved_dependency(unresolved_dependency)
-
-        resolver.project.runtime_environment.operating_system.name = "fedora"
-        resolver.project.runtime_environment.operating_system.version = "32"
-        resolver.project.runtime_environment.python_version = "3.8"
-
-        resolver.graph.should_receive("get_depends_on").with_args(
-            *to_expand_package_tuple,
-            os_name=resolver.project.runtime_environment.operating_system.name,
-            os_version=resolver.project.runtime_environment.operating_system.version,
-            python_version=resolver.project.runtime_environment.python_version,
-            extras=frozenset({None}),
-            marker_evaluation_result=True,
-        ).and_return({None: []}).once()
-
-        resolver._init_context()
-        resolver.context.register_package_tuple(
-            to_expand_package_tuple,
-            develop=False,
-            os_name=resolver.project.runtime_environment.operating_system.name,
-            os_version=resolver.project.runtime_environment.operating_system.version,
-            python_version=resolver.project.runtime_environment.python_version,
-        )
-
-        resolver.context.iteration += 1
-        resolver.beam.wipe()
-
-        resolver.predictor.should_receive("set_reward_signal").with_args(
-            state, to_expand_package_tuple, math.inf
-        ).once()
-
-        assert resolver.beam.size == 0
-        assert resolver._expand_state(state, to_expand_package_tuple) is state
-        assert resolver.beam.size == 0
-
-    def test_expand_state_no_all_dependencies(
-        self, resolver: Resolver, state: State
-    ) -> None:
-        """Test expanding a state with no new dependencies and with unresolved dependencies."""
-        to_expand_package_tuple = ("enum34", "1.1.6", "https://pypi.org/simple")
-        state.add_unresolved_dependency(to_expand_package_tuple)
-
-        resolver.project.runtime_environment.operating_system.name = "fedora"
-        resolver.project.runtime_environment.operating_system.version = "31"
-        resolver.project.runtime_environment.python_version = "3.7"
-
-        resolver.graph.should_receive("get_depends_on").with_args(
-            *to_expand_package_tuple,
-            os_name=resolver.project.runtime_environment.operating_system.name,
-            os_version=resolver.project.runtime_environment.operating_system.version,
-            python_version=resolver.project.runtime_environment.python_version,
-            extras=frozenset({None}),
-            marker_evaluation_result=True,
-        ).and_return({None: []}).once()
-
-        resolver._init_context()
-        resolver.context.register_package_tuple(
-            to_expand_package_tuple,
-            develop=False,
-            os_name=resolver.project.runtime_environment.operating_system.name,
-            os_version=resolver.project.runtime_environment.operating_system.version,
-            python_version=resolver.project.runtime_environment.python_version,
-        )
-
-        resolver.context.iteration += 1
-        resolver.beam.wipe()
-
-        resolver.pipeline.steps[0].should_receive("run").times(0)
-        resolver.predictor.should_receive("set_reward_signal").with_args(
-            object, to_expand_package_tuple, 0.0
-        ).once()
-
-        assert resolver.beam.size == 0
-        assert resolver._expand_state(state, to_expand_package_tuple) is None
-        assert resolver.beam.size == 1
-
-        assert resolver.beam.top() is state
-        assert state.iteration == resolver.context.iteration
-        assert to_expand_package_tuple in state.iter_resolved_dependencies()
 
     def test_expand_state_no_dependencies_not_final(
         self, resolver: Resolver, state: State
