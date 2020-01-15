@@ -831,9 +831,11 @@ class Resolver:
         except EagerStopPipeline as exc:
             _LOGGER.info("Stopping pipeline eagerly as per request: %s", str(exc))
 
+        duration = time.monotonic() - start_time
         _LOGGER.info(
-            "Resolver took %g seconds in total (consumer time also included)",
-            time.monotonic() - start_time,
+            "Resolver took %g seconds in total, pipeline speed %g stacks/second",
+            duration,
+            self.context.accepted_final_states_count / duration,
         )
 
         _LOGGER.info(
