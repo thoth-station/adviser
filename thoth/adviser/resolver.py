@@ -819,7 +819,8 @@ class Resolver:
         try:
             for final_state in self._do_resolve_states(with_devel=with_devel):
                 _LOGGER.info(
-                    "Pipeline reached a new final state, yielding pipeline product with a score of %g (%d/%d)",
+                    f"Pipeline reached a new final state, yielding pipeline product "
+                    f"with a score of %g - %{int(math.log10(self.context.limit)) + 1}d/%d",
                     final_state.score,
                     self.context.accepted_final_states_count,
                     self.context.limit,
