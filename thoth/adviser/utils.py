@@ -26,7 +26,8 @@ def should_keep_history(value: Any) -> bool:
     """Check if the history should be kept.
 
     Used as click's converter. If not set explicitly during invocation, check
-    environment variable to turn of history tracking.
+    environment variable to turn off history tracking. The default value of
+    `value' is None which triggers checks in environment variables.
     """
     if value is None:
         return not bool(int(os.getenv("THOTH_ADVISER_NO_HISTORY", 0)))
