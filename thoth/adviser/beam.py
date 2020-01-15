@@ -36,6 +36,7 @@ import attr
 
 from .exceptions import NoHistoryKept
 from .state import State
+from .utils import should_keep_history
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,6 +65,13 @@ class Beam:
     """
 
     width = attr.ib(default=None, type=Optional[int])
+    keep_history = attr.ib(
+        type=bool,
+        kw_only=True,
+        default=None,
+        converter=should_keep_history
+    )
+
     _states = attr.ib(
         default=attr.Factory(list), type=List[Tuple[Tuple[float, int], State]]
     )
@@ -99,7 +107,7 @@ class Beam:
 
         Used to keep track of beam history and to keep track of states added.
         """
-        if bool(int(os.getenv("THOTH_ADVISER_NO_HISTORY", 0))):
+        if not self.keep_history:
             return
 
         self._beam_history.append(
