@@ -19,7 +19,6 @@
 
 import abc
 import logging
-import os
 from contextlib import contextmanager
 
 import attr
@@ -33,24 +32,9 @@ import matplotlib.figure
 from .context import Context
 from .report import Report
 from .state import State
+from .utils import should_keep_history
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def _keep_history(value: Any) -> bool:
-    """Check if the predictor history should be kept.
-
-    If not set explicitly during invocation, check environment variable to turn of history tracking.
-    """
-    if value is None:
-        return not bool(int(os.getenv("THOTH_ADVISER_NO_HISTORY", 0)))
-
-    if isinstance(value, bool):
-        return value
-
-    raise ValueError(
-        f"Unknown keep temperature history value: {value!r} if of type {type(value)!r}"
-    )
 
 
 @attr.s(slots=True)
@@ -61,7 +45,7 @@ class Predictor:
         type=bool,
         kw_only=True,
         default=None,
-        converter=_keep_history
+        converter=should_keep_history
     )
 
     _CONTEXT: Optional[Context] = None
