@@ -17,6 +17,7 @@
 
 """The main resolving algorithm working on top of states."""
 
+import os
 import time
 import math
 from typing import Generator
@@ -147,6 +148,8 @@ class Resolver:
     DEFAULT_COUNT = 3
     DEFAULT_BEAM_WIDTH = -1
     DEFAULT_LIMIT_LATEST_VERSIONS = -1
+    DEFAULT_LOG_FINAL_STATE_COUNT = 500
+    DEFAULT_LOG_FINAL_STATE_TOP = False
 
     pipeline = attr.ib(type=PipelineConfig, kw_only=True)
     project = attr.ib(type=Project, kw_only=True)
@@ -172,6 +175,14 @@ class Resolver:
         converter=_limit_latest_versions,  # type: ignore
     )
     stop_resolving = attr.ib(type=bool, default=False)
+    log_final_state_count = attr.ib(
+        type=int,
+        default=os.getenv("THOTH_ADVISER_LOG_FINAL_STATE_COUNT", DEFAULT_LOG_FINAL_STATE_COUNT)
+    )
+    log_final_state_top = attr.ib(
+        type=bool,
+        default=os.getenv("THOTH_ADVISER_LOG_FINAL_STATE_TOP", DEFAULT_LOG_FINAL_STATE_TOP)
+    )
 
     _beam = attr.ib(type=Optional[Beam], kw_only=True, default=None)
     _solver = attr.ib(
@@ -800,13 +811,36 @@ class Resolver:
         start_time = time.monotonic()
         try:
             for final_state in self._do_resolve_states(with_devel=with_devel):
-                _LOGGER.info(
-                    f"Pipeline reached a new final state, yielding pipeline product "
-                    f"with a score of %g - %{int(math.log10(self.context.limit)) + 1}d/%d",
+                _LOGGER.debug(
+                    "Pipeline reached a new final state, yielding pipeline product "
+                    "with a score of %g - %d/%d",
                     final_state.score,
                     self.context.accepted_final_states_count,
                     self.context.limit,
                 )
+
+                if (self.context.accepted_final_states_count - 1) % self.log_final_state_count == 0:
+                    if self.log_final_state_top:
+                        # As logging top can give additional overhead, print top only if the user requested so.
+                        _LOGGER.info(
+                            "Pipeline reached %d final states out of %d requested in iteration %d "
+                            "(pipeline pace %.02f stacks/second), top rated software stack has a score of %g",
+                            self.context.accepted_final_states_count,
+                            self.context.limit,
+                            self.context.iteration,
+                            self.context.accepted_final_states_count / (time.monotonic() - start_time),
+                            self.beam.top().score,
+                        )
+                    else:
+                        _LOGGER.info(
+                            "Pipeline reached %d final states out of %d requested in "
+                            "iteration %d (pipeline pace %.02f stacks/second)",
+                            self.context.accepted_final_states_count,
+                            self.context.limit,
+                            self.context.iteration,
+                            self.context.accepted_final_states_count / (time.monotonic() - start_time),
+                        )
+
                 product = Product.from_final_state(
                     context=self.context, state=final_state
                 )
