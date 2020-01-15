@@ -122,12 +122,12 @@ class AdaptiveSimulatedAnnealing(Predictor):
             )
             # state_expansion_idx = probable_state_idx
             state = probable_state
-            unresolved_dependency_tuple = state.get_random_unresolved_dependency()
+            unresolved_dependency_tuple = state.get_random_unresolved_dependency(prefer_recent=False)
         else:
             _LOGGER.debug(
                 "Expanding TOP rated state with score %g", state.score
             )
-            unresolved_dependency_tuple = state.get_first_unresolved_dependency()
+            unresolved_dependency_tuple = state.get_random_unresolved_dependency(prefer_recent=True)
 
         if self.keep_history:
             self._temperature_history.append(
