@@ -548,17 +548,18 @@ class Resolver:
                 "Dependency %r is not yet resolved, trying different resolution path...",
                 package_tuple
             )
+            if not state.unresolved_dependencies:
+                self.beam.remove(state)
+
             self.predictor.set_reward_signal(state, package_tuple, math.nan)
             return None
 
         if not dependencies:
             if not state.unresolved_dependencies:
                 # The given package has no dependencies and nothing to resolve more, mark it as resolved.
+                self.beam.remove(state)
                 self.predictor.set_reward_signal(state, package_tuple, math.inf)
                 return state
-
-            # Re-add with removed unresolved dependency.
-            self.beam.add_state(self.predictor.get_beam_key(state), state)
 
             cloned_state = state.clone()
             # Mark dependency resolved in the newly created state and add it to beam.
@@ -575,8 +576,8 @@ class Resolver:
             self.predictor.set_reward_signal(state, package_tuple, 0.0)
             return None
 
-        if state.unresolved_dependencies:
-            self.beam.add_state(self.predictor.get_beam_key(state), state)
+        if not state.unresolved_dependencies:
+            self.beam.remove(state)
 
         return self._expand_state_add_dependencies(
             state=state,
@@ -765,7 +766,6 @@ class Resolver:
                 self.context.iteration += 1
 
                 state, unresolved_package_tuple = self.predictor.run()
-                self.beam.remove(state)
 
                 _LOGGER.debug(
                     "Resolving package %r in state with score %g: %r",

@@ -710,11 +710,13 @@ class TestResolver(AdviserTestCase):
         )
         assert list(state.iter_resolved_dependencies()) == []
 
-    def test_expand_state_not_found(self, resolver: Resolver, state: State) -> None:
-        """Test expanding a state when a package was not found."""
-        to_expand_package_tuple = state.get_random_unresolved_dependency()
+    def test_expand_state_not_found_one_unresolved(self, resolver: Resolver, state: State) -> None:
+        """Test expanding a state (with one unresolved dependency) when a package was not found."""
+        assert len(list(state.iter_unresolved_dependencies())) == 1
+        to_expand_package_tuple = state.get_first_unresolved_dependency()
 
         resolver._init_context()
+        resolver.beam.add_state(0, state)
         resolver.context.register_package_tuple(
             to_expand_package_tuple,
             develop=False,
@@ -738,6 +740,49 @@ class TestResolver(AdviserTestCase):
         assert resolver._expand_state(state, to_expand_package_tuple) is None
         assert resolver.beam.size == 0
 
+    def test_expand_state_not_found_more_unresolved(self, resolver: Resolver, state: State) -> None:
+        """Test expanding a state (with more unresolved dependencies) when a package was not found."""
+        to_expand_package_tuple = state.get_first_unresolved_dependency()
+        additional_package_tuple = ("selinon", "1.2.0", "https://pypi.org/simple")
+
+        state.add_unresolved_dependency(additional_package_tuple)
+
+        assert len(list(state.iter_unresolved_dependencies())) > 1
+
+        resolver._init_context()
+        resolver.beam.add_state(0, state)
+        resolver.context.register_package_tuple(
+            to_expand_package_tuple,
+            develop=False,
+            extras=["postgresql"],
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7",
+        )
+
+        resolver.context.register_package_tuple(
+            additional_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7",
+        )
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+            *to_expand_package_tuple,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.operating_system.version,
+            extras=frozenset(["postgresql", None]),
+            marker_evaluation_result=None,
+        ).and_raise(NotFoundError).once()
+        resolver.predictor.should_receive("set_reward_signal").with_args(
+            state, to_expand_package_tuple, math.nan
+        ).once()
+        assert resolver._expand_state(state, to_expand_package_tuple) is None
+        assert resolver.beam.size == 1
+
     def test_expand_state_no_dependencies_final_simple(
         self, resolver: Resolver, state: State
     ) -> None:
@@ -745,6 +790,7 @@ class TestResolver(AdviserTestCase):
         to_expand_package_tuple = state.get_random_unresolved_dependency()
 
         resolver._init_context()
+        resolver.beam.add_state(0, state)
         resolver.context.register_package_tuple(
             to_expand_package_tuple,
             develop=False,
@@ -796,6 +842,7 @@ class TestResolver(AdviserTestCase):
         assert to_expand_package_tuple != additional_package_tuple
 
         resolver._init_context()
+        resolver.beam.add_state((0, 0), state)
         resolver.context.register_package_tuple(
             to_expand_package_tuple,
             develop=False,
@@ -860,6 +907,7 @@ class TestResolver(AdviserTestCase):
         additional_package_tuple = ("connexion", "1.0.0", "https://pypi.org/simple")
 
         resolver._init_context()
+        resolver.beam.add_state((0, 0), state)
         resolver.context.register_package_tuple(
             to_expand_package_tuple,
             develop=False,
@@ -937,6 +985,7 @@ class TestResolver(AdviserTestCase):
         additional_package_tuple = ("connexion", "1.0.0", "https://pypi.org/simple")
 
         resolver._init_context()
+        resolver.beam.add_state((0, 0), state)
         resolver.context.register_package_tuple(
             to_expand_package_tuple,
             develop=False,
@@ -983,7 +1032,7 @@ class TestResolver(AdviserTestCase):
         assert state_added is not None
         assert state_added is not state
 
-        assert resolver.beam.get_last() is state
+        assert resolver.beam.top() is state
         assert resolver.beam.size == 1
 
         assert to_expand_package_tuple not in state.iter_resolved_dependencies()
@@ -1070,6 +1119,7 @@ class TestResolver(AdviserTestCase):
         ).and_return(absl_py_080_records).ordered()
 
         resolver._init_context()
+        resolver.beam.add_state((0, 0), state)
         resolver.context.register_package_tuple(
             to_expand_package_tuple,
             develop=False,
@@ -1123,6 +1173,7 @@ class TestResolver(AdviserTestCase):
         ).and_return(absl_py_080_records).ordered()
 
         resolver._init_context()
+        resolver.beam.add_state((0, 0), state)
 
         resolver.pipeline.sieves[0].should_receive("run").with_args(object).and_raise(
             NotAcceptable
@@ -1205,6 +1256,8 @@ class TestResolver(AdviserTestCase):
         ).and_return(absl_py_080_records).ordered()
 
         resolver._init_context()
+        resolver.beam.wipe()
+        resolver.beam.add_state((0, 0), state)
         resolver.context.register_package_tuple(
             to_expand_package_tuple,
             develop=False,
@@ -1214,14 +1267,13 @@ class TestResolver(AdviserTestCase):
         )
 
         resolver.context.iteration += 1
-        resolver.beam.wipe()
 
         resolver.pipeline.steps[0].should_receive("run").and_return((0.1, [])).once()
         resolver.predictor.should_receive("set_reward_signal").with_args(
             object, to_expand_package_tuple, 0.1
         ).once()
 
-        assert resolver.beam.size == 0
+        assert resolver.beam.size == 1
         assert resolver._expand_state(state, to_expand_package_tuple) is None
         assert resolver.beam.size == 2
 
@@ -1277,6 +1329,7 @@ class TestResolver(AdviserTestCase):
         state.add_unresolved_dependency(("flask", "0.12", "https://pypi.org/simple"))
 
         resolver._init_context()
+        resolver.beam.add_state((0, 0), state)
         resolver.context.register_package_tuple(
             to_expand_package_tuple,
             develop=False,
@@ -1355,6 +1408,7 @@ class TestResolver(AdviserTestCase):
         ).once()
 
         resolver._init_context()
+        resolver.beam.add_state((0, 0), state)
         resolver.context.register_package_tuple(
             to_expand_package_tuple,
             develop=False,
@@ -1526,8 +1580,6 @@ class TestResolver(AdviserTestCase):
         assert resolver.context.iteration == 2
         assert resolver.context.accepted_final_states_count == 1
         assert resolver.context.discarded_final_states_count == 0
-        assert resolver.beam.size == 1
-        assert resolver.beam.top() is state3
 
     def test_expand_state_marker_true(self, resolver: Resolver) -> None:
         """Add a check for leaf dependency nodes for which environment markers apply and remove dependencies."""
@@ -1536,6 +1588,7 @@ class TestResolver(AdviserTestCase):
         state.add_unresolved_dependency(package_tuple)
 
         resolver._init_context()
+        resolver.beam.add_state((0, 0), state)
         resolver.project.runtime_environment.operating_system.name = "ubi"
         resolver.project.runtime_environment.operating_system.version = "8.1"
         resolver.project.runtime_environment.python_version = "3.6"
@@ -1603,6 +1656,7 @@ class TestResolver(AdviserTestCase):
         state.add_unresolved_dependency(package_tuple)
 
         resolver._init_context()
+        resolver.beam.add_state((0, 0), state)
         resolver.project.runtime_environment.operating_system.name = "rhel"
         resolver.project.runtime_environment.operating_system.version = "8.1"
         resolver.project.runtime_environment.python_version = "3.6"
@@ -1632,77 +1686,21 @@ class TestResolver(AdviserTestCase):
         assert resolver.beam.size == 0
 
     def test_do_resolve_states_beam_empty(
-        self, resolver: Resolver, final_state: State
+        self, resolver: Resolver
     ) -> None:
         """Resolve states until the beam is not empty."""
-        assert (
-            resolver.pipeline.boots
-        ), "No boots in the pipeline configuration to run test with"
-        assert (
-            len(resolver.pipeline.strides) == 1
-        ), "Wrong number of strides in the pipeline configuration for this test case"
-        assert (
-            resolver.pipeline.wraps
-        ), "No strides in the pipeline configuration to run test with"
-
-        state1 = State(score=0.0)
-        state1.add_unresolved_dependency(("flask", "1.0.0", "https://pypi.org/simple"))
-
-        state2 = State(score=1.0)
-        state2.add_unresolved_dependency(("flask", "1.1.0", "https://pypi.org/simple"))
-
-        state3 = State(score=2.0)
-        state3.add_unresolved_dependency(("flask", "1.2.0", "https://pypi.org/simple"))
-
-        resolver.beam.add_state(state1.score, state1)
-        resolver.beam.add_state(state2.score, state2)
-        resolver.beam.add_state(state3.score, state3)
-
         resolver._init_context()
+        resolver.beam.wipe()
 
         resolver.should_receive("_prepare_initial_state").with_args(
             with_devel=True
         ).and_return(None).once()
 
-        unresolved_dependency1 = state1.get_random_unresolved_dependency()
-        unresolved_dependency2 = state2.get_random_unresolved_dependency()
-        unresolved_dependency3 = state3.get_random_unresolved_dependency()
-
-        resolver.predictor.should_receive("run").with_args().and_return(
-            state1, unresolved_dependency1
-        ).and_return(state2, unresolved_dependency2).and_return(
-            state3, unresolved_dependency3
-        ).times(
-            3
-        )
-
-        resolver.should_receive("_expand_state").with_args(
-            state3, unresolved_dependency3
-        ).and_return(final_state).once()
-
-        resolver.should_receive("_expand_state").with_args(
-            state1, unresolved_dependency1
-        ).and_return(final_state).once()
-
-        resolver.should_receive("_expand_state").with_args(
-            state2, unresolved_dependency2
-        ).and_return(final_state).once()
-
-        for boot in resolver.pipeline.boots:
-            boot.should_receive("run").with_args().and_return(None).once()
-
-        resolver.pipeline.strides[0].should_receive("run").with_args(
-            final_state
-        ).and_return(None).and_raise(NotAcceptable).and_return(None).times(3)
-
-        for wrap in resolver.pipeline.wraps:
-            wrap.should_receive("run").with_args(final_state).and_return(None).times(2)
-
         states = list(resolver._do_resolve_states(with_devel=True))
-        assert states == [final_state, final_state]
-        assert resolver.context.iteration == 3
-        assert resolver.context.accepted_final_states_count == 2
-        assert resolver.context.discarded_final_states_count == 1
+        assert states == []
+        assert resolver.context.iteration == 0
+        assert resolver.context.accepted_final_states_count == 0
+        assert resolver.context.discarded_final_states_count == 0
         assert resolver.beam.size == 0
 
     def test_resolve_products(self, resolver: Resolver) -> None:
