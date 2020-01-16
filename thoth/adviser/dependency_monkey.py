@@ -64,7 +64,12 @@ class DependencyMonkey:
 
     def resolve(self, *, with_devel: bool = True) -> DependencyMonkeyReport:
         """Perform simulated annealing and run dependency monkey on products."""
-        if self.stack_output == "-":
+        if self.dry_run:
+            _LOGGER.warning("Dry run of Dependency Monkey is set, stacks will be just computed")
+            output_func = partial(  # type: ignore
+                self._dm_dry_run, self.stack_output
+            )
+        elif self.stack_output == "-":
             _LOGGER.debug(
                 "Results of Dependency Monkey run will be printed to standard output"
             )
@@ -113,6 +118,18 @@ class DependencyMonkey:
         # level resolver method `resolve_products' and this object maintains report.
         self.resolver.pipeline.call_post_run_report(report)
         return report
+
+    @staticmethod
+    def _dm_dry_run(
+        output: str, count: int, _: Project
+    ) -> None:
+        """A wrapper around dry-run flag."""
+        _LOGGER.info(
+            "Stack %d would be outputted to %r, but dry run flag was set, skipping...",
+            count,
+            output
+        )
+        return None
 
     @staticmethod
     def _dm_amun_output(
