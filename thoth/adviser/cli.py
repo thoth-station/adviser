@@ -55,7 +55,7 @@ import thoth.adviser.predictors as predictors
 
 init_logging()
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger("thoth.adviser")
 
 
 @attr.s(slots=True)
