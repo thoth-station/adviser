@@ -83,7 +83,7 @@ parameters:
   - name: THOTH_DEPENDENCY_MONKEY_SEED
     required: false
     description: A seed to be used for generating software stack samples.
-    value: ""
+    value: "42"
   - name: THOTH_DEPENDENCY_MONKEY_DECISION_TYPE
     required: false
     description:
