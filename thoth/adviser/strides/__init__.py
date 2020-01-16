@@ -18,9 +18,13 @@
 """Implementation of strides used to filter out resolved stacks."""
 
 from .random_decision import RandomDecisionStride
+from .one_version import OneVersionStride
 
 
 # Relative ordering of units is relevant, as the order specifies order
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
-__all__ = ["RandomDecisionStride"]
+__all__ = [
+    "RandomDecisionStride",
+    "OneVersionStride",
+]
