@@ -21,6 +21,7 @@ from .index_enabled import PackageIndexSieve
 from .locked import CutLockedSieve
 from .prereleases import CutPreReleasesSieve
 from .solved import SolvedSieve
+from .version_constraint import VersionConstraintSieve
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -31,4 +32,5 @@ __all__ = [
     "CutPreReleasesSieve",
     "PackageIndexSieve",
     "SolvedSieve",
+    "VersionConstraintSieve",
 ]
