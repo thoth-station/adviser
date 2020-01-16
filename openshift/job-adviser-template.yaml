@@ -109,7 +109,7 @@ parameters:
     required: false
     description: Limit number of versions starting from latest in stacks.
     displayName: Limit latest versions
-    default: "5"
+    value: "5"
   - name: THOTH_ADVISER_TIMEOUT_SECONDS
     required: true
     description: Give adviser specified number of seconds on CPU to compute results.
