@@ -55,6 +55,8 @@ class State:
     )
     _parent = attr.ib(default=None, type=weakref)
 
+    _EPSILON = 0.1
+
     @property
     def parent(self) -> Optional["State"]:
         """Retrieve parent to this state.
@@ -267,7 +269,13 @@ class State:
 
         choices = list(self.unresolved_dependencies[unresolved_dependency_name])
         if prefer_recent:
-            unresolved_dependency_id = choices[self._random_termial(len(choices))]
+            # perform multi-armed bandit - epsilon-greedy strategy
+            unresolved_dependency_id = None
+            if len(choices) > 1 and self._EPSILON >= random.random():
+                unresolved_dependency_id = choices[self._random_termial(len(choices))]
+
+            if unresolved_dependency_id is None:
+                unresolved_dependency_id = choices[0]
         else:
             unresolved_dependency_id = random.choice(choices)
 
