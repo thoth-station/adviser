@@ -454,7 +454,11 @@ class Resolver:
                 _LOGGER.warning(error_msg)
                 continue
 
-            _LOGGER.info("Found direct dependency %r", package_version.name)
+            _LOGGER.info(
+                "Found direct dependency %r with version specification %r",
+                package_version.name,
+                package_version.version
+            )
 
         if unresolved:
             raise UnresolvedDependencies(
