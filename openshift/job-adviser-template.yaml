@@ -161,7 +161,7 @@ objects:
                 - name: THOTH_LOG_ADVISER
                   value: "${THOTH_LOG_ADVISER}"
                 - name: THOTH_ADJUST_LOGGING
-                  value: "alembic.runtime.migration:WARNING,thoth.common:WARNING"
+                  value: "alembic.runtime.migration:WARNING,thoth.common:WARNING,thoth.analyzer.cli:WARNING"
                 - name: THOTH_ADVISER_METADATA
                   value: "${THOTH_ADVISER_METADATA}"
                 - name: THOTH_SENTRY_IGNORE_LOGGER
