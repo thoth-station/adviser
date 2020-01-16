@@ -45,14 +45,7 @@ class RandomDecisionStride(Stride):
     def should_include(
         cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
-        """Remove CVEs only for advised stacks."""
-        if (
-            builder_context.is_dependency_monkey_pipeline()
-            and not builder_context.is_included(cls)
-            and builder_context.decision_type == DecisionType.RANDOM
-        ):
-            return {}
-
+        """Allow inclusion only per user request."""
         return None
 
     def run(self, state: State) -> None:
