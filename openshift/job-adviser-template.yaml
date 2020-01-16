@@ -90,6 +90,11 @@ parameters:
     description: Log adviser actions
     displayName: Log adviser actions
     value: INFO
+  - name: THOTH_ADVISER_METADATA
+    required: false
+    description: Metadata carried with the adviser request
+    displayName: Adviser metadata
+    value: "null"
   - name: THOTH_ADVISER_LIMIT
     required: false
     description: Limit number of software stacks scored.
@@ -104,7 +109,7 @@ parameters:
     required: false
     description: Limit number of versions starting from latest in stacks.
     displayName: Limit latest versions
-    default: "5"
+    value: "5"
   - name: THOTH_ADVISER_TIMEOUT_SECONDS
     required: true
     description: Give adviser specified number of seconds on CPU to compute results.
@@ -163,6 +168,8 @@ objects:
                   value: "${THOTH_LOG_ADVISER}"
                 - name: THOTH_ADJUST_LOGGING
                   value: "alembic.runtime.migration:WARNING"
+                - name: THOTH_ADVISER_METADATA
+                  value: "${THOTH_ADVISER_METADATA}"
                 - name: THOTH_SENTRY_IGNORE_LOGGER
                   value: "thoth.adviser.run"
                 - name: THOTH_ADVISER_OUTPUT
