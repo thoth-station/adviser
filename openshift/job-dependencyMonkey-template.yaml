@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: dependency-monkey
+  name: dependency-monkey-workload-operator
   annotations:
     description: "Thoth: Dependency Monkey"
     openshift.io/display-name: "Thoth: Dependency Monkey"

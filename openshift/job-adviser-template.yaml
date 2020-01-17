@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: adviser
+  name: adviser-workload-operator
   annotations:
     description: "Thoth: Adviser"
     openshift.io/display-name: "Thoth: Adviser"
