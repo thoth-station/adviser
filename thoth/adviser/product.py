@@ -30,6 +30,7 @@ import attr
 from thoth.common import RuntimeEnvironment
 from thoth.python import Project
 from thoth.python import PackageVersion
+from thoth.storages.exceptions import NotFoundError
 
 from .context import Context
 from .state import State
@@ -83,14 +84,22 @@ class Product:
                 # Context.register_package_version.
                 dependents_tuples = context.dependents[package_tuple[0]][package_tuple]
                 for dependent_tuple in dependents_tuples:
-                    environment_marker = context.graph.get_python_environment_marker(
-                        *dependent_tuple[0],
-                        dependency_name=package_tuple[0],
-                        dependency_version=package_tuple[1],
-                        os_name=dependent_tuple[1],
-                        os_version=dependent_tuple[2],
-                        python_version=dependent_tuple[3],
-                    )
+                    try:
+                        environment_marker = context.graph.get_python_environment_marker(
+                            *dependent_tuple[0],
+                            dependency_name=package_tuple[0],
+                            dependency_version=package_tuple[1],
+                            os_name=dependent_tuple[1],
+                            os_version=dependent_tuple[2],
+                            python_version=dependent_tuple[3],
+                        )
+                    except NotFoundError:
+                        # This can happen if we do resolution that is agnostic to runtime
+                        # environment. In that case a dependency introduced in one runtime
+                        # environment does not need to co-exist in another runtime environment considering
+                        # marker evaluation result.
+                        continue
+
                     if package_version.markers and environment_marker:
                         # Install dependency if any of dependents need it.
                         package_version.markers = f"({package_version.markers}) or ({environment_marker})"
