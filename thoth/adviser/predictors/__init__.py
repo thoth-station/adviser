@@ -22,6 +22,7 @@ from .hill_climbing import HillClimbing
 from .latest import ApproximatingLatest
 from .random_walk import RandomWalk
 from .sampling import Sampling
+from .temporal_difference import TemporalDifference
 
 
 __all__ = [
@@ -30,4 +31,5 @@ __all__ = [
     "HillClimbing",
     "RandomWalk",
     "Sampling",
+    "TemporalDifference",
 ]
