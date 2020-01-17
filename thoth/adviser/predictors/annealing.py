@@ -50,7 +50,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
     _temperature = attr.ib(type=float, kw_only=True, default=0.0)
 
     @staticmethod
-    def _exp(t0: float, context: Context) -> float:
+    def _temperature_function(t0: float, context: Context) -> float:
         """Exponential temperature function.
 
         The exponential function was additionally adjusted to respect number of rounds (iterations)
@@ -100,7 +100,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Run adaptive simulated annealing on top of beam."""
-        self._temperature = self._exp(self._temperature, self.context)
+        self._temperature = self._temperature_function(self._temperature, self.context)
 
         # Expand highest promising by default.
         state = self.context.beam.max()
@@ -112,9 +112,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
             state.score, probable_state.score, self._temperature
         )
 
-        if probable_state_idx != 0 and acceptance_probability >= random.uniform(
-            0.0, 1.0
-        ):
+        if probable_state_idx != 0 and acceptance_probability >= random.random():
             # Skip to probable state, do not use the top rated state.
             _LOGGER.debug(
                 "Performing transition to a neighbour state with score %g",
