@@ -85,7 +85,7 @@ objects:
             - name: UPGRADE_PIP_TO_LATEST
               value: ""
             - name: "THOTH_DRY_RUN"
-              value: "1"
+              value: "0"
             - name: "THOTH_ADVISE"
               value: ${THOTH_ADVISE}
             - name: "THAMOS_VERBOSE"
