@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: provenance-checker
+  name: provenance-checker-workload-operator
   annotations:
     description: "Thoth: Provenance Checker"
     openshift.io/display-name: "Thoth: Provenance Checker"
