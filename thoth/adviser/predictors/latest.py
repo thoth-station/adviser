@@ -18,6 +18,7 @@
 """Implementation of predictor used for resolving latest stacks in the state space."""
 
 import logging
+import math
 
 import attr
 from typing import Tuple
@@ -38,6 +39,28 @@ class ApproximatingLatest(HillClimbing):
     if resolution to all latest cannot be satisfied.
     """
 
+    _hop = attr.ib(type=bool, default=False)
+    _hop_logged = attr.ib(type=bool, default=False)
+
+    def set_reward_signal(self, state: State, package_tuple: Tuple[str, str, str], reward: float) -> None:
+        """Set hop to True if we did not get resolve any stack with latest."""
+        super().set_reward_signal(state, package_tuple, reward)
+
+        if math.isnan(reward):
+            self._hop = True
+            if not self._hop_logged:
+                _LOGGER.warning("The latest stack couldn't be resolved, performing hops across package versions")
+                self._hop_logged = True
+
+        if math.isinf(reward):
+            self._hop = False
+
+    def pre_run(self) -> None:
+        """Initialize local variables before each predictor run per resolver."""
+        super().pre_run()
+        self._hop = False
+        self._hop_logged = False
+
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Get last state expanded and expand first unresolved dependency."""
         state = self.context.beam.get_last()
@@ -48,4 +71,7 @@ class ApproximatingLatest(HillClimbing):
         if self.keep_history:
             self._history.append((state.score, self.context.accepted_final_states_count))
 
-        return state, state.get_random_unresolved_dependency(prefer_recent=True)
+        if self._hop:
+            return state, state.get_random_unresolved_dependency(prefer_recent=True)
+
+        return state, state.get_first_unresolved_dependency()
