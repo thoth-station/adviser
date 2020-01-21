@@ -41,10 +41,10 @@
         },
         "amun": {
             "hashes": [
-                "sha256:31874a37ac91c011c0b4958dcaaf4fe7e725f5247db4195e9ed21ff2c635233d",
-                "sha256:a03dd036268d8d18a0872308f1be7bb6d93716b1fe7fd26340f578edeca7c25b"
+                "sha256:7b36f255a914c40ab12ee571d7324d344748919f220fe0eb750de8b1df81809b",
+                "sha256:a6c8b63b04a72d9c27149a771e6f90ec0c43563121e33ebd0c386088aaf1640d"
             ],
-            "version": "==0.3.3"
+            "version": "==0.3.5"
         },
         "argo-workflows": {
             "hashes": [
@@ -461,10 +461,10 @@
         },
         "pexpect": {
             "hashes": [
-                "sha256:2094eefdfcf37a1fdbfb9aa090862c1a4878e5c7e0e7e7088bdb511c558e5cd1",
-                "sha256:9e2c1fd0e6ee3a49b28f95d4b33bc389c89b20af6a1255906e90ff1262ce62eb"
+                "sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937",
+                "sha256:fc65a43959d153d0114afe13997d439c22823a27cefceb5ff35c2178c6784c0c"
             ],
-            "version": "==4.7.0"
+            "version": "==4.8.0"
         },
         "pipdeptree": {
             "hashes": [
@@ -742,11 +742,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:1ff2f54a96f590eefc6686a69521ba7d9eedc5b95cd11567784b2de1d93d82a8",
-                "sha256:6df3e7e8c94b4becae776a122c5998536ad91b44ddcaf6f989deb4ba32fc4a04"
+                "sha256:089715513fbffa0dee1968bc5e5a29f69f4731b25f00a6fd01959620204a9f68",
+                "sha256:fa3d2aa65b9f1eb20194e3d3e86789ca21d4b7a6297a9a28a2dcdc9c94c081ce"
             ],
             "index": "pypi",
-            "version": "==0.21.9"
+            "version": "==0.21.10"
         },
         "timestamp": {
             "hashes": [
