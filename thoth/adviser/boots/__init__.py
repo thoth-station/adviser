@@ -17,10 +17,11 @@
 
 """Boot units implemented in adviser."""
 
+from .fully_specified_environment import FullySpecifiedEnvironment
+from .rhel_version import RHELVersionBoot
+from .solved_software_environment import SolvedSoftwareEnvironmentBoot
 from .ubi import UbiBoot
 from .version_clash import VersionClashBoot
-from .solved_software_environment import SolvedSoftwareEnvironmentBoot
-from .fully_specified_environment import FullySpecifiedEnvironment
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -28,6 +29,7 @@ from .fully_specified_environment import FullySpecifiedEnvironment
 # can be mentioned here.
 __all__ = [
     "SolvedSoftwareEnvironmentBoot",
+    "RHELVersionBoot",
     "FullySpecifiedEnvironment",
     "UbiBoot",
     "VersionClashBoot",
