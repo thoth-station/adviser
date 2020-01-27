@@ -434,6 +434,7 @@ def advise(
         beam_width=beam_width,
         limit_latest_versions=limit_latest_versions,
         pipeline_config=pipeline_config,
+        cli_parameters=parameters,
     )
 
     print_func = _PrintFunc(
@@ -644,6 +645,7 @@ def dependency_monkey(
         limit_latest_versions=limit_latest_versions,
         decision_type=decision_type,
         pipeline_config=pipeline_config,
+        cli_parameters=parameters,
     )
 
     dependency_monkey_runner = DependencyMonkey(

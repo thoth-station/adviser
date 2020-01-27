@@ -175,6 +175,7 @@ class Resolver:
         default=DEFAULT_LIMIT_LATEST_VERSIONS,
         converter=_limit_latest_versions,  # type: ignore
     )
+    cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict))
     stop_resolving = attr.ib(type=bool, default=False)
     log_final_state_count = attr.ib(
         type=int,
@@ -258,6 +259,7 @@ class Resolver:
             beam=self.beam,
             recommendation_type=self.recommendation_type,
             decision_type=self.decision_type,
+            cli_parameters=self.cli_parameters,
         )
 
     def _run_boots(self) -> None:
@@ -916,6 +918,7 @@ class Resolver:
         project: Project,
         recommendation_type: RecommendationType,
         pipeline_config: Optional[Union[PipelineConfig, Dict[str, Any]]] = None,
+        cli_parameters: Optional[Dict[str, Any]] = None,
     ) -> "Resolver":
         """Get instance of resolver based on the project given to recommend software stacks."""
         graph = graph or GraphDatabase()
@@ -939,7 +942,7 @@ class Resolver:
                     f"Unknown pipeline configuration type: {type(pipeline_config)!r}"
                 )
 
-        resolver = cls(
+        return cls(
             beam_width=beam_width,
             count=count,
             graph=graph,
@@ -950,9 +953,8 @@ class Resolver:
             predictor=predictor,
             project=project,
             recommendation_type=recommendation_type,
+            cli_parameters=cli_parameters or {},
         )
-
-        return resolver
 
     @classmethod
     def get_dependency_monkey_instance(
@@ -967,6 +969,7 @@ class Resolver:
         project: Project,
         decision_type: DecisionType,
         pipeline_config: Optional[Union[PipelineConfig, Dict[str, Any]]] = None,
+        cli_parameters: Optional[Dict[str, Any]] = None,
     ) -> "Resolver":
         """Get instance of resolver based on the project given to run dependency monkey."""
         graph = graph or GraphDatabase()
@@ -990,7 +993,7 @@ class Resolver:
                     f"Unknown pipeline configuration type: {type(pipeline_config)!r}"
                 )
 
-        resolver = cls(
+        return cls(
             beam_width=beam_width,
             count=count,
             limit=count,  # always match as limit is always same as count for Dependency Monkey.
@@ -1001,6 +1004,5 @@ class Resolver:
             predictor=predictor,
             project=project,
             decision_type=decision_type,
+            cli_parameters=cli_parameters or {},
         )
-
-        return resolver
