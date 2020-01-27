@@ -364,6 +364,23 @@ class Resolver:
                             f"Step {step.__class__.__name__} returned score that is infinite",
                         )
 
+                    if step_score_addition > step.SCORE_MAX:
+                        _LOGGER.warning(
+                            "Step %r returned score higher than allowed (%g), normalizing to %g",
+                            step.__class__.__name__,
+                            step_score_addition,
+                            step.SCORE_MAX,
+                        )
+                        step_score_addition = step.SCORE_MAX
+                    elif step_score_addition < step.SCORE_MIN:
+                        _LOGGER.warning(
+                            "Step %r returned score lower than allowed (%g), normalizing to %g",
+                            step.__class__.__name__,
+                            step_score_addition,
+                            step.SCORE_MIN,
+                        )
+                        step_score_addition = step.SCORE_MIN
+
                     score_addition += step_score_addition
 
                 if step_justification_addition is not None:
