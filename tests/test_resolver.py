@@ -37,6 +37,7 @@ from thoth.adviser.pipeline_config import PipelineConfig
 from thoth.adviser.pipeline_builder import PipelineBuilder
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.enums import DecisionType
+from thoth.adviser.step import Step
 from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
 from thoth.python import Source
@@ -337,17 +338,18 @@ class TestResolver(AdviserTestCase):
         resolver.pipeline.steps[1].should_receive("run").times(0)
 
         dependency_tuple = ("flask", "0.12", "https://pypi.org/simple")
-        assert resolver._run_steps(
-            state,
-            package_version,
-            {"flask": [dependency_tuple]}
-        ) is None
+        assert (
+            resolver._run_steps(state, package_version, {"flask": [dependency_tuple]})
+            is None
+        )
         assert resolver.beam.size == 1
         assert resolver.beam.top() is not state
 
         state_added = resolver.beam.top()
 
-        assert set(state_added.iter_resolved_dependencies()) == (set(state.iter_resolved_dependencies()) | {package_version.to_tuple()})
+        assert set(state_added.iter_resolved_dependencies()) == (
+            set(state.iter_resolved_dependencies()) | {package_version.to_tuple()}
+        )
         assert list(state_added.iter_unresolved_dependencies()) == [dependency_tuple]
 
     def test_run_steps_error(
@@ -710,7 +712,9 @@ class TestResolver(AdviserTestCase):
         )
         assert list(state.iter_resolved_dependencies()) == []
 
-    def test_expand_state_not_found_one_unresolved(self, resolver: Resolver, state: State) -> None:
+    def test_expand_state_not_found_one_unresolved(
+        self, resolver: Resolver, state: State
+    ) -> None:
         """Test expanding a state (with one unresolved dependency) when a package was not found."""
         assert len(list(state.iter_unresolved_dependencies())) == 1
         to_expand_package_tuple = state.get_first_unresolved_dependency()
@@ -740,7 +744,9 @@ class TestResolver(AdviserTestCase):
         assert resolver._expand_state(state, to_expand_package_tuple) is None
         assert resolver.beam.size == 0
 
-    def test_expand_state_not_found_more_unresolved(self, resolver: Resolver, state: State) -> None:
+    def test_expand_state_not_found_more_unresolved(
+        self, resolver: Resolver, state: State
+    ) -> None:
         """Test expanding a state (with more unresolved dependencies) when a package was not found."""
         to_expand_package_tuple = state.get_first_unresolved_dependency()
         additional_package_tuple = ("selinon", "1.2.0", "https://pypi.org/simple")
@@ -1685,9 +1691,7 @@ class TestResolver(AdviserTestCase):
         assert resolver._expand_state(state, package_tuple) is state
         assert resolver.beam.size == 0
 
-    def test_do_resolve_states_beam_empty(
-        self, resolver: Resolver
-    ) -> None:
+    def test_do_resolve_states_beam_empty(self, resolver: Resolver) -> None:
         """Resolve states until the beam is not empty."""
         resolver._init_context()
         resolver.beam.wipe()
@@ -2032,3 +2036,45 @@ class TestResolver(AdviserTestCase):
         gc.collect()
 
         assert state_id_called == state_id
+
+    @pytest.mark.parametrize(
+        "score_returned, score_expected",
+        [
+            (Step.SCORE_MAX + 100.0, Step.SCORE_MAX),
+            (Step.SCORE_MIN - 100.0, Step.SCORE_MIN),
+        ],
+    )
+    def test_step_boundaries(
+        self,
+        score_returned: float,
+        score_expected: float,
+        resolver: Resolver,
+        package_version: PackageVersion,
+    ) -> None:
+        """Test adjusting return values of step units."""
+        state = State()
+        state.resolved_dependencies["hexsticker"] = (
+            "hexsticker",
+            "1.2.0",
+            "https://pypi.org/simple",
+        )
+
+        flexmock(steps.Step1)
+        steps.Step1.should_receive("run").with_args(state, package_version).and_return(
+            (score_returned, [])
+        ).once()
+
+        resolver.pipeline.steps = [steps.Step1()]
+
+        resolver._init_context()
+        with steps.Step1.assigned_context(resolver.context):
+            assert (
+                resolver._run_steps(
+                    state,
+                    package_version,
+                    {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
+                )
+                is None
+            )
+        state = resolver.beam.top()
+        assert state.score == score_expected
