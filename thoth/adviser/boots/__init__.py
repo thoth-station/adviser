@@ -18,6 +18,7 @@
 """Boot units implemented in adviser."""
 
 from .fully_specified_environment import FullySpecifiedEnvironment
+from .python_version import PythonVersionBoot
 from .rhel_version import RHELVersionBoot
 from .solved_software_environment import SolvedSoftwareEnvironmentBoot
 from .ubi import UbiBoot
@@ -29,6 +30,8 @@ from .version_clash import VersionClashBoot
 # can be mentioned here.
 __all__ = [
     "UbiBoot",
+    "PythonVersionBoot",
+    "SolvedSoftwareEnvironmentBoot",
     "RHELVersionBoot",
     "FullySpecifiedEnvironment",
     "SolvedSoftwareEnvironmentBoot",
