@@ -24,6 +24,7 @@ import math
 import attr
 from typing import Tuple
 from typing import Optional
+from typing import Dict
 
 from ..state import State
 from .td import TemporalDifference
@@ -56,14 +57,12 @@ class MCTS(TemporalDifference):
         # We have reached a final/terminal state - mark down policy we used and accumulated reward.
         total_reward = state.score
         for package_tuple in state.iter_resolved_dependencies():
-            if package_tuple[0] not in self._actions:
-                self._actions[package_tuple[0]] = {}
+            package_tuple_hash = hash(package_tuple)
+            old = self._actions.get(package_tuple_hash)
+            if old is None:
+                old = (0.0, 0)
 
-            if package_tuple not in self._actions[package_tuple[0]]:
-                self._actions[package_tuple[0]][package_tuple] = [0.0, 0]
-
-            self._actions[package_tuple[0]][package_tuple][0] += total_reward
-            self._actions[package_tuple[0]][package_tuple][1] += 1
+            self._actions[package_tuple_hash] = (old[0] + total_reward, old[1] + 1)
 
         # We have reached a new final - get another next time.
         self._next_state = None
