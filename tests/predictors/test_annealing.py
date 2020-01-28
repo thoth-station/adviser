@@ -42,7 +42,7 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
         integers(min_value=0),
         integers(min_value=0),
     )
-    def test_exp(
+    def test_temperature_function(
         self,
         t0: float,
         accepted_final_states_count: int,
@@ -60,7 +60,7 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
         )
 
         assert (
-            AdaptiveSimulatedAnnealing._exp(t0=t0, context=context) >= 0.0
+            AdaptiveSimulatedAnnealing._temperature_function(t0=t0, context=context) >= 0.0
         ), "Temperature dropped bellow 0 or is NaN"
 
     @given(
