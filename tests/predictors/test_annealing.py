@@ -17,7 +17,6 @@
 
 """Test implementation of Adaptive Simulated Annealing (ASA)."""
 
-import os
 import flexmock
 
 from hypothesis import given
@@ -25,7 +24,6 @@ from hypothesis.strategies import integers
 from hypothesis.strategies import floats
 
 from thoth.adviser.beam import Beam
-from thoth.adviser.enums import RecommendationType
 from thoth.adviser.predictors import AdaptiveSimulatedAnnealing
 from thoth.adviser.state import State
 
@@ -50,7 +48,7 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
         iteration: int,
         count: int,
     ) -> None:
-        """Test the exp function never drops bellow 0."""
+        """Test the temperature function never drops bellow 0."""
         context = flexmock(
             accepted_final_states_count=accepted_final_states_count,
             limit=limit,
@@ -59,8 +57,9 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
             beam=flexmock(size=96),
         )
 
+        predictor = AdaptiveSimulatedAnnealing()
         assert (
-            AdaptiveSimulatedAnnealing._temperature_function(t0=t0, context=context) >= 0.0
+            predictor._temperature_function(t0=t0, context=context) >= 0.0
         ), "Temperature dropped bellow 0 or is NaN"
 
     @given(
