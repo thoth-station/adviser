@@ -18,8 +18,6 @@
 """Filter out stacks which have buildtime errors."""
 
 import logging
-
-import logging
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -37,7 +35,8 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-class AbiCompatability(Step):
+
+class AbiCompatabilitySieve(Sieve):
     """Remove packages if the image being used doesn't have necessary ABI."""
 
     @classmethod
@@ -45,33 +44,40 @@ class AbiCompatability(Step):
         cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
         """Remove indexes which are not enabled in pipeline configuration."""
-        if not builder_context.is_included(cls):
+        if not builder_context.is_included(cls) and builder_context.project.runtime_environment.is_fully_specified():
             return {}
 
         return None
 
     def pre_run(self):
+        """Initialize image_symbols."""
         runtime_environment = self.context.project.runtime_environment
-        self.image_symbols = self.context.graph.get_image_symbols(
+        self.image_symbols = set(self.context.graph.get_analyzed_image_symbols_all(
                             os_name=runtime_environment.operating_system.name,
                             os_version=runtime_environment.operating_system.version,
                             cuda_version=runtime_environment.cuda_version,
                             python_version=runtime_environment.python_version
-                        )
+                        ))
+
+        _LOGGER.debug("Analyzed image has the following symbols: %r", self.image_symbols)
 
     def run(self, package_versions: Generator[PackageVersion, None, None]):
         """If package requires non-present symbols remove it."""
-
         for package_version in package_versions:
             package_symbols = self.context.graph.get_python_package_required_symbols(
                                 package_name=package_version.name,
-                                package_version=package_version.version,
-                                index_url=package_version.index)
-            if(set(package_symbols) - set(self.image_symbols) == set()):
+                                package_version=package_version.locked_version,
+                                index_url=package_version.index.url)
+            missing_symbols = set(package_symbols) - self.image_symbols
+            _LOGGER.debug("Package requires the following symbols: %r", package_symbols)
+            if missing_symbols == set():
                 # Say that package had correct symbols
-                _LOGGER.debug("All symbols necessary for %r-%r are present.", package_version.name, package_version.version)
+                _LOGGER.debug("All symbols necessary for %r-%r are present.",
+                              package_version.name, package_version.version)
                 yield package_version
             else:
                 # Log removed package
-                _LOGGER.debug("Removed package %r-%r due to missing symbols.", package_version.name, package_version.version)
+                _LOGGER.debug("Removed package %r-%r due to missing symbols.",
+                              package_version.name, package_version.version)
+                _LOGGER.debug("The following symbols are not present: %r", str(missing_symbols))
                 continue
