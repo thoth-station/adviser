@@ -1,0 +1,81 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: finished-webhook
+  annotations:
+    thoth-station.ninja/template-version: 0.1.0-dev
+  labels:
+    app: thoth
+    component: finished-webhook
+spec:
+  templates:
+    - name: finished-webhook
+      inputs:
+        parameters:
+          - name: "WORKFLOW_NAME"
+          - name: "THOTH_DOCUMENT_ID"
+          - name: "THOTH_ADVISER_METADATA"
+        artifacts:
+          - name: "adviser-document"
+            path: "/mnt/adviser/document/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+      script:
+        command:
+          - python
+        env:
+          - name: "FINISHED_WEBHOOK"
+            value: "https://paas.psi.redhat.com/console/project/aicoe-prod-bots/browse/routes/qeb-hwt"
+          - name: WEBHOOK_SECRET
+            valueFrom:
+              configMapKeyRef:
+                key: WEBHOOK_SECRET
+                name: qeb-hwt-github-app
+        name: trigger-finished-webhook
+        image: "quay.io/thoth-station/thamos:v0.8.0-dev"
+        source: |
+          import hmac
+          import json
+          import os
+          import requests
+          import uuid
+
+          metadata = json.loads("{{inputs.parameters.THOTH_ADVISER_METADATA}}")
+          payload = json.dumps({"analysis_id": "{{inputs.parameters.THOTH_DOCUMENT_ID}}"})
+
+          data = {
+              "event": metadata["github_event_type"],
+              "check_run_id": int(metadata["github_check_run_id"]),
+              "installation": '{"id": int(metadata["installation_id"])}',
+              "repo_url": metadata["origin"],
+              "revision": metadata["revision"],
+              "payload": payload,
+          }
+
+          key=os.environ["WEBHOOK_SECRET"]
+
+          secret = key.encode("UTF-8")
+          signature = hmac.new(secret, data, digestmod="sha1")
+
+          headers = {
+              "Accept": "application/vnd.github.antiope-preview+json",
+              "Content-Type": "application/json",
+              "User-Agent": "Workflow/{{inputs.parameters.WORKFLOW_NAME}}",
+              "X-GitHub-Delivery": str(uuid.uuid4()),
+              "X-GitHub-Event": metadata["github_event_type"],
+              "X-Hub-Signature": f"sha1={signature.hexdigest()}",
+          }
+
+          print("Headers:\n", headers)
+          print("Payload:\n", data)
+
+          WEBHOOK_RECEIVER_URL = os.environ["FINISHED_WEBHOOK"]
+
+          response = requests.post(WEBHOOK_RECEIVER_URL, data=data, headers=headers)
+          response.raise_for_status()
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
