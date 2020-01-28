@@ -23,6 +23,7 @@ from .latest import ApproximatingLatest
 from .random_walk import RandomWalk
 from .sampling import Sampling
 from .td import TemporalDifference
+from .mcts import MCTS
 
 
 __all__ = [
@@ -32,4 +33,5 @@ __all__ = [
     "RandomWalk",
     "Sampling",
     "TemporalDifference",
+    "MCTS",
 ]
