@@ -73,7 +73,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Run Temporal Difference (TD) with adaptive simulated annealing schedule."""
-        self._temperature = self._exp(self._temperature, self.context)
+        self._temperature = self._temperature_function(self._temperature, self.context)
 
         # Expand highest promising by default.
         state = self.context.beam.top()
