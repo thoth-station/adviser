@@ -17,19 +17,11 @@ spec:
           - name: "THOTH_DOCUMENT_ID"
           - name: "THOTH_ADVISER_METADATA"
         artifacts:
-          - name: "adviser-document"
-            path: "/mnt/adviser/document/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+          - name: outputdocument
+            path: "/mnt/component/document/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
       script:
         command:
-          - python
-        env:
-          - name: "FINISHED_WEBHOOK"
-            value: "https://paas.psi.redhat.com/console/project/aicoe-prod-bots/browse/routes/qeb-hwt"
-          - name: WEBHOOK_SECRET
-            valueFrom:
-              configMapKeyRef:
-                key: WEBHOOK_SECRET
-                name: qeb-hwt-github-app
+          - python3
         name: trigger-finished-webhook
         image: "quay.io/thoth-station/thamos:v0.8.0-dev"
         source: |
@@ -39,7 +31,7 @@ spec:
           import requests
           import uuid
 
-          metadata = json.loads("{{inputs.parameters.THOTH_ADVISER_METADATA}}")
+          metadata = {{inputs.parameters.THOTH_ADVISER_METADATA}}
           payload = json.dumps({"analysis_id": "{{inputs.parameters.THOTH_DOCUMENT_ID}}"})
 
           data = {
@@ -72,10 +64,18 @@ spec:
 
           response = requests.post(WEBHOOK_RECEIVER_URL, data=data, headers=headers)
           response.raise_for_status()
+        env:
+          - name: "FINISHED_WEBHOOK"
+            value: "https://paas.psi.redhat.com/console/project/aicoe-prod-bots/browse/routes/qeb-hwt"
+          - name: WEBHOOK_SECRET
+            valueFrom:
+              secretKeyRef:
+                key: WEBHOOK_SECRET
+                name: qeb-hwt-github-app
         resources:
           limits:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 250m
+            memory: 256Mi
           requests:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 250m
+            memory: 256Mi

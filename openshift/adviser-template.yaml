@@ -44,6 +44,11 @@ parameters:
     required: false
     description: Runtime environment to create recommendation for
     displayName: Runtime environment
+  - name: THOTH_ADVISER_METADATA
+    required: false
+    description: Metadata carried with the adviser request
+    displayName: Adviser metadata
+    value: "null"
   - name: THOTH_ADVISER_SEED
     required: true
     description: Random seed to run adviser with.
@@ -51,12 +56,6 @@ parameters:
     # Keep seed constant across adviser runs so that two runs with same knowledge base report same results to user.
     # Not to answer with a different stack each time a request is made.
     value: "42"
-  - name: THOTH_ADVISER_PLOT
-    required: false
-    description: A path to history file to store annealing progress history.
-    displayName: History plot file
-    # TODO: Let's keep history for debugging purposes for now.
-    value: "history.png"
   - name: THOTH_ADVISER_BEAM_WIDTH
     required: true
     description: Adviser's beam width to restrict memory requirements with states generated.
@@ -67,11 +66,6 @@ parameters:
     description: Log adviser actions
     displayName: Log adviser actions
     value: INFO
-  - name: THOTH_ADVISER_METADATA
-    required: false
-    description: Metadata carried with the adviser request
-    displayName: Adviser metadata
-    value: "null"
   - name: THOTH_ADVISER_LIMIT
     required: false
     description: Limit number of software stacks scored.
@@ -109,19 +103,20 @@ objects:
         app: thoth
         component: adviser
     spec:
-      serviceAccountName: argo
+      serviceAccountName: user-api
       podGC:
         strategy: OnWorkflowSuccess
-      volumes:
-        - name: cache
-          emptyDir: {}
-      entrypoint: advise
+      entrypoint: adviser
       arguments:
         parameters:
           - name: THOTH_ADVISER_JOB_ID
             value: "${THOTH_ADVISER_JOB_ID}"
           - name: THOTH_DOCUMENT_ID
             value: "${THOTH_ADVISER_JOB_ID}"
+          - name: THOTH_LOG_ADVISER
+            value: "${THOTH_LOG_ADVISER}"
+          - name: THOTH_ADVISER_TIMEOUT_SECONDS
+            value: "${THOTH_ADVISER_TIMEOUT_SECONDS}"
           - name: THOTH_ADVISER_REQUIREMENTS
             value: "${THOTH_ADVISER_REQUIREMENTS}"
           - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
@@ -148,6 +143,9 @@ objects:
             value: "${THOTH_ADVISER_LIMIT_LATEST_VERSIONS}"
           - name: THOTH_FORCE_SYNC
             value: "${THOTH_FORCE_SYNC}"
+      volumes:
+        - name: workdir
+          emptyDir: {}
       templates:
         - name: "adviser"
           archiveLocation:
@@ -159,48 +157,39 @@ objects:
                   name: "advise"
                   template: "advise"
                 arguments:
-                  artifacts:
-                    - name: advise-result
-                      path: "/mnt/workdir/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
-                      archive:
-                        none: {}
-                      s3:
-                        key: "argo/advise/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
-                        endpoint: "s3.upshift.redhat.com"
-                        bucket: "thoth"
-                        insecure: true
-                        accessKeySecret:
-                          name: argo-artifact-repository
-                          key: accessKey
-                        secretKeySecret:
-                          name: argo-artifact-repository
-                          key: secretKey
                   parameters:
                     - name: THOTH_ADVISER_JOB_ID
+                      value: "{{workflow.parameters.THOTH_ADVISER_JOB_ID}}"
                     - name: THOTH_DOCUMENT_ID
-                    - name: THOTH_ADVISER_REQUIREMENTS
-                    - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
-                    - name: THOTH_ADVISER_LIBRARY_USAGE
-                    - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
-                    - name: THOTH_ADVISER_RECOMMENDATION_TYPE
-                    - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
-                    - name: THOTH_ADVISER_SEED
-                    - name: THOTH_ADVISER_METADATA
-                      value: "42"
-                    - name: THOTH_ADVISER_PLOT
-                      value: "history.png"
-                    - name: THOTH_ADVISER_BEAM_WIDTH
-                      value: "1000"
+                      value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
                     - name: THOTH_LOG_ADVISER
-                      value: "INFO"
+                      value: "{{workflow.parameters.THOTH_LOG_ADVISER}}"
+                    - name: THOTH_ADVISER_REQUIREMENTS
+                      value: "{{workflow.parameters.THOTH_ADVISER_REQUIREMENTS}}"
+                    - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+                      value: "{{workflow.parameters.THOTH_ADVISER_REQUIREMENTS_LOCKED}}"
+                    - name: THOTH_ADVISER_LIBRARY_USAGE
+                      value: "{{workflow.parameters.THOTH_ADVISER_LIBRARY_USAGE}}"
+                    - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
+                      value: "{{workflow.parameters.THOTH_ADVISER_REQUIREMENTS_FORMAT}}"
+                    - name: THOTH_ADVISER_RECOMMENDATION_TYPE
+                      value: "{{workflow.parameters.THOTH_ADVISER_RECOMMENDATION_TYPE}}"
+                    - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+                      value: "{{workflow.parameters.THOTH_ADVISER_RUNTIME_ENVIRONMENT}}"
+                    - name: THOTH_ADVISER_METADATA
+                      value: "{{workflow.parameters.THOTH_ADVISER_METADATA}}"
+                    - name: THOTH_ADVISER_SEED
+                      value: "{{workflow.parameters.THOTH_ADVISER_SEED}}"
+                    - name: THOTH_ADVISER_BEAM_WIDTH
+                      value: "{{workflow.parameters.THOTH_ADVISER_BEAM_WIDTH}}"
                     - name: THOTH_ADVISER_LIMIT
-                      value: "1000"
+                      value: "{{workflow.parameters.THOTH_ADVISER_LIMIT}}"
                     - name: THOTH_ADVISER_COUNT
-                      value: "1"
+                      value: "{{workflow.parameters.THOTH_ADVISER_COUNT}}"
                     - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
-                      default: "5"
+                      value: "{{workflow.parameters.THOTH_ADVISER_LIMIT_LATEST_VERSIONS}}"
                     - name: THOTH_ADVISER_TIMEOUT_SECONDS
-                      value: "3600"
+                      value: "{{workflow.parameters.THOTH_ADVISER_TIMEOUT_SECONDS}}"
 
               - name: "graph-sync-advise"
                 dependencies:
@@ -210,8 +199,8 @@ objects:
                   template: "graph-sync"
                 arguments:
                   artifacts:
-                    - name: document
-                      from: "{{tasks.advise.outputs.artifacts.document}}"
+                    - name: outputdocument
+                      from: "{{tasks.advise.outputs.artifacts.outputdocument}}"
                   parameters:
                     - name: "THOTH_DOCUMENT_ID"
                       value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
@@ -222,12 +211,12 @@ objects:
                 dependencies:
                   - "advise"
                 templateRef:
-                  name: "trigger-finished-webhook"
+                  name: "finished-webhook"
                   template: "finished-webhook"
                 arguments:
                   artifacts:
-                    - name: document
-                      from: "{{tasks.advise.outputs.artifacts.document}}"
+                    - name: outputdocument
+                      from: "{{tasks.advise.outputs.artifacts.outputdocument}}"
                   parameters:
                     - name: "WORKFLOW_NAME"
                       value: "{{workflow.parameters.THOTH_ADVISER_JOB_ID}}"

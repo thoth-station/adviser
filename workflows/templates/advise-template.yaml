@@ -11,8 +11,6 @@ metadata:
 spec:
   templates:
     - name: advise
-      archiveLocation:
-        archiveLogs: true
       inputs:
         parameters:
           - name: THOTH_ADVISER_JOB_ID
@@ -23,15 +21,13 @@ spec:
           - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
           - name: THOTH_ADVISER_RECOMMENDATION_TYPE
           - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
-          - name: THOTH_ADVISER_SEED
           - name: THOTH_ADVISER_METADATA
+          - name: THOTH_ADVISER_SEED
             value: "42"
-          - name: THOTH_ADVISER_PLOT
-            value: "history.png"
           - name: THOTH_ADVISER_BEAM_WIDTH
             value: "1000"
           - name: THOTH_LOG_ADVISER
-            value: "INFO"
+            value: "DEBUG"
           - name: THOTH_ADVISER_LIMIT
             value: "1000"
           - name: THOTH_ADVISER_COUNT
@@ -42,12 +38,12 @@ spec:
             value: "3600"
       outputs:
         artifacts:
-          - name: document
+          - name: outputdocument
             path: "/mnt/workdir/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
             archive:
               none: {}
             s3:
-              key: "argo/advise/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+              key: "argo/adviser/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
               endpoint: "s3.upshift.redhat.com"
               bucket: "thoth"
               insecure: true
@@ -58,17 +54,21 @@ spec:
                 name: argo-artifact-repository
                 key: secretKey
       container:
-        name: adviser
-        image: adviser
+        name: advise
+        image: "quay.io/thoth-station/adviser:v0.6.0-dev"
         env:
           - name: THOTH_DOCUMENT_ID
             value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+          - name: THOTH_ADVISER_OUTPUT
+            value: "/mnt/workdir/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
           - name: THOTH_ADVISER_FORK
             value: "1"
           - name: THOTH_LOG_ADVISER
             value: "{{inputs.parameters.THOTH_LOG_ADVISER}}"
           - name: THOTH_ADJUST_LOGGING
-            value: "alembic.runtime.migration:WARNING"
+            value: "alembic.runtime.migration:WARNING,thoth.common:WARNING,thoth.analyzer.cli:WARNING"
+          - name: THOTH_SENTRY_IGNORE_LOGGER
+            value: "thoth.adviser.run"
           - name: THOTH_ADVISER_COUNT
             value: "{{inputs.parameters.THOTH_ADVISER_COUNT}}"
           - name: THOTH_ADVISER_LIMIT
@@ -83,12 +83,10 @@ spec:
             value: "{{inputs.parameters.THOTH_ADVISER_RECOMMENDATION_TYPE}}"
           - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
             value: "{{inputs.parameters.THOTH_ADVISER_RUNTIME_ENVIRONMENT}}"
-          - name: THOTH_ADVISER_SEED
-            value: "{{inputs.parameters.THOTH_ADVISER_SEED}}"
           - name: THOTH_ADVISER_METADATA
             value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
-          - name: THOTH_ADVISER_PLOT
-            value: "{{inputs.parameters.THOTH_ADVISER_PLOT}}"
+          - name: THOTH_ADVISER_SEED
+            value: "{{inputs.parameters.THOTH_ADVISER_SEED}}"
           - name: THOTH_ADVISER_BEAM_WIDTH
             value: "{{inputs.parameters.THOTH_ADVISER_BEAM_WIDTH}}"
           - name: THOTH_ADVISER_SUBCOMMAND
@@ -146,13 +144,13 @@ spec:
               secretKeyRef:
                 name: postgresql
                 key: database-name
+        volumeMounts:
+          - name: workdir
+            mountPath: /mnt/workdir
         resources:
           limits:
-            memory: "1Gi"
-            cpu: 1.5
+            cpu: 250m
+            memory: 256Mi
           requests:
-            memory: "1Gi"
-            cpu: 1.5
-        volumeMounts:
-          - name: cache
-            mountPath: "/mnt/workdir"
+            cpu: 250m
+            memory: 256Mi
