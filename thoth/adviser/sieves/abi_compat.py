@@ -68,6 +68,12 @@ class AbiCompatabilitySieve(Sieve):
                                 package_name=package_version.name,
                                 package_version=package_version.locked_version,
                                 index_url=package_version.index.url)
+            
+            # Shortcut if package requires no symbols
+            if package_symbols == []:
+                yield package_version
+                continue
+
             missing_symbols = set(package_symbols) - self.image_symbols
             _LOGGER.debug("Package requires the following symbols: %r", package_symbols)
             if missing_symbols == set():
