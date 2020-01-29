@@ -59,31 +59,36 @@ class AbiCompatabilitySieve(Sieve):
                             python_version=runtime_environment.python_version
                         ))
 
+        self.cache = {}
+
         _LOGGER.debug("Analyzed image has the following symbols: %r", self.image_symbols)
+
+    def _cache_and_return(self, package_name: str, package_version: str, index_url: str):
+        cache_key = f"{package_name}-{package_version}-{index_url}"
+        if cache_key not in self.cache:
+            self.cache[cache_key] = set(self.context.graph.get_python_package_required_symbols(
+                                package_name=package_name,
+                                package_version=package_version,
+                                index_url=index_url))
+
+        return self.cache[cache_key]
 
     def run(self, package_versions: Generator[PackageVersion, None, None]):
         """If package requires non-present symbols remove it."""
-        for package_version in package_versions:
-            package_symbols = self.context.graph.get_python_package_required_symbols(
-                                package_name=package_version.name,
-                                package_version=package_version.locked_version,
-                                index_url=package_version.index.url)
-            
+        for pkg_vers in package_versions:
+            package_symbols = self._cache_and_return(pkg_vers.name, pkg_vers.locked_version, pkg_vers.index.url)
+
             # Shortcut if package requires no symbols
-            if package_symbols == []:
-                yield package_version
+            if package_symbols == set():
+                yield pkg_vers
                 continue
 
-            missing_symbols = set(package_symbols) - self.image_symbols
-            _LOGGER.debug("Package requires the following symbols: %r", package_symbols)
+            missing_symbols = package_symbols - self.image_symbols
             if missing_symbols == set():
-                # Say that package had correct symbols
-                _LOGGER.debug("All symbols necessary for %r-%r are present.",
-                              package_version.name, package_version.version)
-                yield package_version
+                yield pkg_vers
             else:
                 # Log removed package
                 _LOGGER.debug("Removed package %r-%r due to missing symbols.",
-                              package_version.name, package_version.version)
+                              pkg_vers.name, pkg_vers.version)
                 _LOGGER.debug("The following symbols are not present: %r", str(missing_symbols))
                 continue

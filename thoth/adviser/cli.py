@@ -203,15 +203,7 @@ def provenance(
     click_ctx: click.Context,
     requirements: str,
     requirements_locked: str,
-<<<<<<< HEAD
-<<<<<<< HEAD
     output: str,
-=======
-    output: str,d_sources=None,
->>>>>>> Changes from incorrect branch
-=======
-    output: str,
->>>>>>> Extra argument removed
     whitelisted_sources: Optional[str] = None,
     no_pretty: bool = False,
 ):
