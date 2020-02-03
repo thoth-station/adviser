@@ -904,11 +904,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:3c4369a4b0a1348561048bcda5f1db951a1b8e2a514ea8e8c70d36e656bf6fa0",
-                "sha256:94f0910bc87e0ae8c098f4ada28dfdc381245e0c8079c674292b417dbde144b5"
+                "sha256:37a1ccbc5a0f177c0f37e40f1b61aee8bb92e55cc84b43fb26b32968ec4ac07e",
+                "sha256:c7f5694f7bc27e49d5c41120adc6e075c1a7d625b7c80df44681c0ecaa84323e"
             ],
             "index": "pypi",
-            "version": "==4.57.1"
+            "version": "==5.4.1"
         },
         "hypothesis-auto": {
             "hashes": [
