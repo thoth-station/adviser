@@ -103,7 +103,7 @@ objects:
         app: thoth
         component: adviser
     spec:
-      serviceAccountName: user-api
+      serviceAccountName: argo
       podGC:
         strategy: OnWorkflowSuccess
       entrypoint: adviser
@@ -145,6 +145,8 @@ objects:
             value: "${THOTH_FORCE_SYNC}"
       volumes:
         - name: workdir
+          emptyDir: {}
+        - name: output
           emptyDir: {}
       templates:
         - name: "adviser"
@@ -214,9 +216,6 @@ objects:
                   name: "finished-webhook"
                   template: "finished-webhook"
                 arguments:
-                  artifacts:
-                    - name: outputdocument
-                      from: "{{tasks.advise.outputs.artifacts.outputdocument}}"
                   parameters:
                     - name: "WORKFLOW_NAME"
                       value: "{{workflow.parameters.THOTH_ADVISER_JOB_ID}}"

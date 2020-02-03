@@ -16,9 +16,6 @@ spec:
           - name: "WORKFLOW_NAME"
           - name: "THOTH_DOCUMENT_ID"
           - name: "THOTH_ADVISER_METADATA"
-        artifacts:
-          - name: outputdocument
-            path: "/mnt/component/document/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
       script:
         command:
           - python3
@@ -32,7 +29,8 @@ spec:
           import uuid
 
           metadata = {{inputs.parameters.THOTH_ADVISER_METADATA}}
-          payload = json.dumps({"analysis_id": "{{inputs.parameters.THOTH_DOCUMENT_ID}}"})
+          payload = {}
+          payload["analysis_id"] = "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
 
           data = {
               "event": metadata["github_event_type"],
@@ -44,9 +42,10 @@ spec:
           }
 
           key=os.environ["WEBHOOK_SECRET"]
+          msg = json.dumps(data).encode("UTF-8")
 
           secret = key.encode("UTF-8")
-          signature = hmac.new(secret, data, digestmod="sha1")
+          signature = hmac.new(secret, msg, digestmod="sha1")
 
           headers = {
               "Accept": "application/vnd.github.antiope-preview+json",
@@ -58,15 +57,15 @@ spec:
           }
 
           print("Headers:\n", headers)
-          print("Payload:\n", data)
+          print("Data:\n", data)
 
-          WEBHOOK_RECEIVER_URL = os.environ["FINISHED_WEBHOOK"]
+          WEBHOOK_CALLBACK_URL = os.environ["WEBHOOK_CALLBACK_URL"]
 
-          response = requests.post(WEBHOOK_RECEIVER_URL, data=data, headers=headers)
+          response = requests.post(WEBHOOK_CALLBACK_URL, data=data, headers=headers)
           response.raise_for_status()
         env:
-          - name: "FINISHED_WEBHOOK"
-            value: "https://paas.psi.redhat.com/console/project/aicoe-prod-bots/browse/routes/qeb-hwt"
+          - name: "WEBHOOK_CALLBACK_URL"
+            value: "http://qeb-hwt-aicoe-prod-bots.cloud.paas.psi.redhat.com"
           - name: WEBHOOK_SECRET
             valueFrom:
               secretKeyRef:
