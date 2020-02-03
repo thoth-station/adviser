@@ -912,11 +912,11 @@
         },
         "hypothesis-auto": {
             "hashes": [
-                "sha256:2b686456837417f8e3f746542edd0c55b9645962dccb569aa200f37443bc1cc8",
-                "sha256:52a8c4dc15202a1ab2b3369ab5fef1ab4eaf195a1ba9084b4c116d203afd7600"
+                "sha256:5e2c2fb09dc09842512d80630bb792359a1d33d2c0473ad47ee23da0be9e32b1",
+                "sha256:fea8560c4522c0fd490ed8cc17e420b95dabebb11b9b334c59bf2d768839015f"
             ],
             "index": "pypi",
-            "version": "==1.1.3"
+            "version": "==1.1.4"
         },
         "importlib-metadata": {
             "hashes": [
