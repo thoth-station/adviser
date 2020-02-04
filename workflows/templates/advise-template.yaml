@@ -1,0 +1,156 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: advise
+  annotations:
+    thoth-station.ninja/template-version: 0.1.0-dev
+  labels:
+    app: thoth
+    component: advise
+spec:
+  templates:
+    - name: advise
+      inputs:
+        parameters:
+          - name: THOTH_ADVISER_JOB_ID
+          - name: THOTH_DOCUMENT_ID
+          - name: THOTH_ADVISER_REQUIREMENTS
+          - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+          - name: THOTH_ADVISER_LIBRARY_USAGE
+          - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
+          - name: THOTH_ADVISER_RECOMMENDATION_TYPE
+          - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+          - name: THOTH_ADVISER_METADATA
+          - name: THOTH_ADVISER_SEED
+            value: "42"
+          - name: THOTH_ADVISER_BEAM_WIDTH
+            value: "1000"
+          - name: THOTH_LOG_ADVISER
+            value: "DEBUG"
+          - name: THOTH_ADVISER_LIMIT
+            value: "1000"
+          - name: THOTH_ADVISER_COUNT
+            value: "1"
+          - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+            default: "5"
+          - name: THOTH_ADVISER_TIMEOUT_SECONDS
+            value: "3600"
+      outputs:
+        artifacts:
+          - name: outputdocument
+            path: "/mnt/workdir/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+            archive:
+              none: {}
+            s3:
+              key: "argo/adviser/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+              endpoint: "s3.upshift.redhat.com"
+              bucket: "thoth"
+              insecure: true
+              accessKeySecret:
+                name: argo-artifact-repository
+                key: accessKey
+              secretKeySecret:
+                name: argo-artifact-repository
+                key: secretKey
+      container:
+        name: advise
+        image: "quay.io/thoth-station/adviser:v0.6.0-dev"
+        env:
+          - name: THOTH_DOCUMENT_ID
+            value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+          - name: THOTH_ADVISER_OUTPUT
+            value: "/mnt/workdir/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+          - name: THOTH_ADVISER_FORK
+            value: "1"
+          - name: THOTH_LOG_ADVISER
+            value: "{{inputs.parameters.THOTH_LOG_ADVISER}}"
+          - name: THOTH_ADJUST_LOGGING
+            value: "alembic.runtime.migration:WARNING,thoth.common:WARNING,thoth.analyzer.cli:WARNING"
+          - name: THOTH_SENTRY_IGNORE_LOGGER
+            value: "thoth.adviser.run"
+          - name: THOTH_ADVISER_COUNT
+            value: "{{inputs.parameters.THOTH_ADVISER_COUNT}}"
+          - name: THOTH_ADVISER_LIMIT
+            value: "{{inputs.parameters.THOTH_ADVISER_LIMIT}}"
+          - name: THOTH_ADVISER_REQUIREMENTS
+            value: "{{inputs.parameters.THOTH_ADVISER_REQUIREMENTS}}"
+          - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+            value: "{{inputs.parameters.THOTH_ADVISER_REQUIREMENTS_LOCKED}}"
+          - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
+            value: "{{inputs.parameters.THOTH_ADVISER_REQUIREMENTS_FORMAT}}"
+          - name: THOTH_ADVISER_RECOMMENDATION_TYPE
+            value: "{{inputs.parameters.THOTH_ADVISER_RECOMMENDATION_TYPE}}"
+          - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+            value: "{{inputs.parameters.THOTH_ADVISER_RUNTIME_ENVIRONMENT}}"
+          - name: THOTH_ADVISER_METADATA
+            value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
+          - name: THOTH_ADVISER_SEED
+            value: "{{inputs.parameters.THOTH_ADVISER_SEED}}"
+          - name: THOTH_ADVISER_BEAM_WIDTH
+            value: "{{inputs.parameters.THOTH_ADVISER_BEAM_WIDTH}}"
+          - name: THOTH_ADVISER_SUBCOMMAND
+            value: "advise"
+          - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+            value: "{{inputs.parameters.THOTH_ADVISER_LIMIT_LATEST_VERSIONS}}"
+          - name: THOTH_ADVISER_LIBRARY_USAGE
+            value: "{{inputs.parameters.THOTH_ADVISER_LIBRARY_USAGE}}"
+          - name: ISIS_API_URL
+            valueFrom:
+              configMapKeyRef:
+                name: thoth
+                key: isis-api-url
+          - name: PROMETHEUS_PUSHGATEWAY_HOST
+            valueFrom:
+              configMapKeyRef:
+                key: prometheus-pushgateway-host
+                name: thoth
+          - name: PROMETHEUS_PUSHGATEWAY_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: thoth
+                key: prometheus-pushgateway-port
+          - name: THOTH_DEPLOYMENT_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: thoth
+                key: storage-bucket-name
+          - name: SENTRY_DSN
+            valueFrom:
+              secretKeyRef:
+                name: thoth
+                key: sentry-dsn
+          - name: KNOWLEDGE_GRAPH_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: thoth
+                key: postgresql-host
+          - name: KNOWLEDGE_GRAPH_PORT
+            value: "5432"
+          - name: KNOWLEDGE_GRAPH_SSL_DISABLED
+            value: "1"
+          - name: KNOWLEDGE_GRAPH_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgresql
+                key: database-user
+          - name: KNOWLEDGE_GRAPH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgresql
+                key: database-password
+          - name: KNOWLEDGE_GRAPH_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: postgresql
+                key: database-name
+        volumeMounts:
+          - name: workdir
+            mountPath: /mnt/workdir
+        resources:
+          limits:
+            cpu: 250m
+            memory: 256Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
