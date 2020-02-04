@@ -251,7 +251,6 @@ def provenance(
         output=output,
         duration=time.monotonic() - start_time,
         pretty=not no_pretty,
-        metadata=metadata,
     )
 
     click_ctx.exit(int(result["error"] is True))
