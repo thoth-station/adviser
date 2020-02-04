@@ -47,9 +47,9 @@ from .base import AdviserTestCase
 class PredictorMock(Predictor):
     """A mocked predictor for testing, which always returns a random index to beam."""
 
-    def run(self, context: Context) -> int:
+    def run(self) -> int:
         """The main method used for predictor."""
-        return context.beam.get_random()
+        return self.context.beam.get_random()
 
 
 @pytest.fixture

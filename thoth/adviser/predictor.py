@@ -19,35 +19,22 @@
 
 import abc
 import logging
-import os
+from contextlib import contextmanager
 
 import attr
 from typing import Any
 from typing import Tuple
+from typing import Optional
+from typing import Generator
 
 import matplotlib.figure
 
 from .context import Context
 from .report import Report
 from .state import State
+from .utils import should_keep_history
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def _keep_history(value: Any) -> bool:
-    """Check if the predictor history should be kept.
-
-    If not set explicitly during invocation, check environment variable to turn of history tracking.
-    """
-    if value is None:
-        return not bool(int(os.getenv("THOTH_ADVISER_NO_HISTORY", 0)))
-
-    if isinstance(value, bool):
-        return value
-
-    raise ValueError(
-        f"Unknown keep temperature history value: {value!r} if of type {type(value)!r}"
-    )
 
 
 @attr.s(slots=True)
@@ -55,46 +42,95 @@ class Predictor:
     """A base class for implementing a predictor for resolver."""
 
     keep_history = attr.ib(
-        type=bool, kw_only=True, default=None, converter=_keep_history
+        type=bool,
+        kw_only=True,
+        default=None,
+        converter=should_keep_history
     )
 
-    def pre_run(self, context: Context) -> None:
+    _CONTEXT: Optional[Context] = None
+
+    @classmethod
+    @contextmanager
+    def assigned_context(cls, context: Context) -> Generator[None, None, None]:
+        """Assign context to predictor."""
+        try:
+            cls._CONTEXT = context
+            yield
+        finally:
+            cls._CONTEXT = None
+
+    @property
+    def context(self) -> Context:
+        """Get context in which the unit runs in."""
+        if self._CONTEXT is None:
+            raise ValueError("Requesting resolver context outside of resolver run")
+
+        return self._CONTEXT
+
+    def get_beam_key(self, state: State) -> object:
+        """Retrieve a key that will be used to keep states in the beam.
+
+        The key returned should always uniquely sort two states, that is, there should not exist
+        >>> state1 = State(score=1.0)  # any score value
+        >>> self.get_beam_key(state1)
+        such as there exist state2 for which
+        >>> state2 = State(score=1.0)  # any score value
+        >>> self.get_beam_key(state1) == self.get_beam_key(state2)
+
+        The simplest way how to differentiate keys of two states is to use resolver's iteration, that is always
+        unique for any state, and prioritizes states that have more resolved dependencies over the ones that
+        have less resolved dependencies but the same score.
+
+        This method should not be treated as staticmethod or as classmethod - a predictor
+        can construct key based on its own internal state.
+        """
+        return state.score, state.iteration
+
+    def pre_run(self) -> None:
         """Pre-initialize the predictor.
 
         This method is called before any resolving with a freshly instantiated context. The default operation is a noop,
         but predictor can perform any initial setup in this method. This method should not raise any exception.
         """
+        # noop
 
     @abc.abstractmethod
-    def run(self, context: Context) -> Tuple[State, Tuple[str, str, str]]:
-        """The main method used to run the predictor.
-
-        The method accepts context with a beam of states and returns the state which should be
-        used for next expansion and package tuple that should be resolved .The beam has to be kept untouched.
-        """
+    def run(self) -> Tuple[State, Tuple[str, str, str]]:
+        """The main method used to run the predictor."""
         raise NotImplementedError
 
-    def post_run(self, context: Context) -> None:
-        """Post-run method run after the resolving has been done.
+    def post_run(self) -> None:
+        """Post-run method run after the resolving has been done."""
+        # noop
 
-        The default operation is a noop, but a predictor can perform any post-run operations in this method. This
-        method should not raise any exception.
-        """
-
-    def post_run_report(self, context: Context, report: Report) -> None:
+    def post_run_report(self, report: Report) -> None:
         """Post-run method run after the resolving has finished - this method is called only if resolving with a report.
 
         The default operation is a noop, but a predictor can perform any post-run operations in this method. This
         method should not raise any exception.
         """
+        # noop
 
-    def set_reward_signal(self, context: Context, reward: float) -> None:
+    def set_reward_signal(self, state: State, package_tuple: Tuple[str, str, str], reward: float) -> None:
         """Signalize the reward.
 
-        @param context: resolver context
+        @param state: (child) state for which the reward signal is triggered
+        @param package_tuple: Python package that was added to the state causing the reward
         @param reward: set to nan if the given state was not accepted a special value
                        of inf notifies about a new final state
         """
+        # noop
+
+    def finalize_state(self, state_id: int) -> None:
+        """Finalizer called when the given state is about to be destructed by garbage collector.
+
+        Method suitable if predictor keeps internal state for states. Note that this method is not
+        called for remaining states if the resolver terminates.
+
+        @param state_id: id of state that is about to be finalized
+        """
+        # noop
 
     def plot(self) -> matplotlib.figure.Figure:
         """Plot information about predictor."""

@@ -55,7 +55,7 @@ import thoth.adviser.predictors as predictors
 
 init_logging()
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger("thoth.adviser")
 
 
 @attr.s(slots=True)
@@ -118,7 +118,7 @@ def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationTy
         return getattr(predictors, predictor)
 
     if recommendation_type == RecommendationType.LATEST:
-        return predictors.HillClimbing
+        return predictors.ApproximatingLatest
     elif recommendation_type == RecommendationType.STABLE or recommendation_type == RecommendationType.TESTING:
         return predictors.AdaptiveSimulatedAnnealing
 
@@ -435,6 +435,7 @@ def advise(
         beam_width=beam_width,
         limit_latest_versions=limit_latest_versions,
         pipeline_config=pipeline_config,
+        cli_parameters=parameters,
     )
 
     print_func = _PrintFunc(
@@ -569,7 +570,7 @@ def advise(
 @click.option(
     "--predictor",
     envvar="THOTH_ADVISER_PREDICTOR",
-    default="AdaptiveSimulatedAnnealing",
+    default="RandomWalk",
     type=click.Choice(predictors.__all__),
     help="Predictor to be used with the resolver.",
 )
@@ -645,12 +646,13 @@ def dependency_monkey(
         limit_latest_versions=limit_latest_versions,
         decision_type=decision_type,
         pipeline_config=pipeline_config,
+        cli_parameters=parameters,
     )
 
     dependency_monkey_runner = DependencyMonkey(
         resolver=resolver,
         stack_output=stack_output,
-        context=context,
+        context=json.loads(context) if context else {},
         dry_run=dry_run,
         decision_type=decision_type,
     )

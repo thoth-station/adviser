@@ -23,6 +23,7 @@ toml = "*"
 thoth-solver = "*"
 matplotlib = "*"
 pyyaml = "*"
+packaging = "*"
 
 [requires]
 python_version = "3.6"

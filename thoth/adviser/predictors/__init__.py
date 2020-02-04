@@ -19,12 +19,14 @@
 
 from .annealing import AdaptiveSimulatedAnnealing
 from .hill_climbing import HillClimbing
+from .latest import ApproximatingLatest
 from .random_walk import RandomWalk
 from .sampling import Sampling
 
 
 __all__ = [
     "AdaptiveSimulatedAnnealing",
+    "ApproximatingLatest",
     "HillClimbing",
     "RandomWalk",
     "Sampling",

@@ -36,6 +36,7 @@ import attr
 
 from .exceptions import NoHistoryKept
 from .state import State
+from .utils import should_keep_history
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,6 +65,13 @@ class Beam:
     """
 
     width = attr.ib(default=None, type=Optional[int])
+    keep_history = attr.ib(
+        type=bool,
+        kw_only=True,
+        default=None,
+        converter=should_keep_history
+    )
+
     _states = attr.ib(
         default=attr.Factory(list), type=List[Tuple[Tuple[float, int], State]]
     )
@@ -71,7 +79,7 @@ class Beam:
     # subsequent O(log(N)) state removal from the beam.
     _states_idx = attr.ib(default=attr.Factory(dict), type=Dict[int, int])
     _last_added = attr.ib(default=None, type=Optional[State])
-    _top_idx = attr.ib(default=None, type=Optional[int])
+    _top = attr.ib(default=None, type=Optional[State])
     _beam_history = attr.ib(
         type=List[Tuple[int, Optional[float]]], default=attr.Factory(list), kw_only=True
     )
@@ -99,7 +107,7 @@ class Beam:
 
         Used to keep track of beam history and to keep track of states added.
         """
-        if bool(int(os.getenv("THOTH_ADVISER_NO_HISTORY", 0))):
+        if not self.keep_history:
             return
 
         self._beam_history.append(
@@ -198,28 +206,21 @@ class Beam:
         if len(self._states) == 0:
             raise IndexError("Beam is empty")
 
-        idx = self.get_top_idx()
-        return self._states[idx][1]
+        if self._top is None:
+            # Perform the operation in O(N/2) ~ O(N) time. This code should not be executed as the logic
+            # behind add_state and remove guarantees top handling - except for top removal when
+            # the heapq has to be scanned for top again.
+            top_idx = len(self._states) // 2
+            for idx, _ in enumerate(self._states[top_idx + 1:], start=top_idx + 1):
+                if self._states[top_idx][0] < self._states[idx][0]:
+                    top_idx = idx
 
-    def get_top_idx(self) -> int:
-        """Get index of the highest rated state kept in the beam.
+            self._top = self._states[top_idx][1]
 
-        This operation is done in O(N) time if top is not pre-cached, O(1) otherwise.
-        """
-        if self.size == 0:
-            raise KeyError("Beam is empty")
-
-        if self._top_idx is None:
-            # Perform the operation in O(N/2) ~ O(N) time.
-            self._top_idx = len(self._states) // 2
-            for idx, _ in enumerate(self._states[self._top_idx + 1:], start=self._top_idx + 1):
-                if self._states[self._top_idx][0] < self._states[idx][0]:
-                    self._top_idx = idx
-
-        return self._top_idx
+        return self._top
 
     def _heappushpop(
-        self, item: Tuple[Tuple[float, int], State]
+        self, item: Tuple[object, State]
     ) -> Tuple[Tuple[float, int], State]:
         """Fast version of a heappush followed by a heappop."""
         if self._states and self._states[0] < item:
@@ -236,7 +237,7 @@ class Beam:
         for i in reversed(range(n // 2)):
             self._siftup(i)
 
-    def _heappush(self, item: Tuple[Tuple[float, int], State]) -> None:
+    def _heappush(self, item: Tuple[object, State]) -> None:
         """Push item onto heap, maintaining the heap invariant."""
         self._states_idx[id(item[1])] = len(self._states)
         self._states.append(item)
@@ -286,20 +287,9 @@ class Beam:
         self._states[pos] = newitem
         self._states_idx[id(self._states[pos][1])] = pos
 
-    def add_state(self, state: State) -> None:
+    def add_state(self, key: object, state: State) -> None:
         """Add state to the internal state listing (do it in O(log(N)) time."""
-        # Multi-key ordering to guarantee comparision between states (based on sort):
-        #  * highest state first
-        #  * state with the most recent versions of libraries (latest version offset)
-        #  * iterations done by resolver to populate the most recent resolutions first
-        item = (
-            (
-                state.score,
-                state.iteration,
-            ),
-            state,
-        )
-
+        item = (key, state)
         self._last_added = None
         if self.width is not None and len(self._states) >= self.width:
             popped = self._heappushpop(item)
@@ -309,7 +299,8 @@ class Beam:
             self._heappush(item)
             self._last_added = state
 
-        self._top_idx = None
+        if self._top:
+            self._top = self._top if self._top.score >= state.score else state
 
     def get(self, idx: int) -> State:
         """Get i-th element from the beam (constant time), keep it in the beam.
@@ -330,13 +321,20 @@ class Beam:
         idx = random.randint(0, self.size - 1) if self.size > 1 else 0
         return self.get(idx)
 
+    def get_by_id(self, state_id: int) -> State:
+        """Get a state by its id."""
+        return self._states[self._states_idx[state_id]][1]
+
     def remove(self, state: State) -> None:
         """Remove the given state from beam."""
         idx = self._states_idx.get(id(state))
         if idx is None:
             raise KeyError("The state requested for removal was not found in the beam")
 
-        self.pop(idx)
+        to_remove = self.pop(idx)
+
+        if to_remove is self._top:
+            self._top = None
 
     def pop(self, idx: Optional[int] = None) -> State:
         """Pop i-th element from the beam and remove it from the beam (this is actually toppop).
@@ -346,7 +344,7 @@ class Beam:
         If top_state is pre-cached or idx is explicitly set, this operation is done in O(log(N)), O(N) otherwise.
         """
         if idx is None:
-            idx = self.get_top_idx()
+            idx = self._states_idx[id(self.top())]
 
         # Do this operation in O(log(N)) on top of the internal heap queue:
         #   https://stackoverflow.com/questions/10162679/python-delete-element-from-heap
@@ -357,7 +355,10 @@ class Beam:
             self._siftup(idx)
             self._siftdown(0, idx)
 
-        self._top_idx = None
-        if self._last_added == to_return[1]:
+        if self._last_added is to_return[1]:
             self._last_added = None
+
+        if self._top and to_return[1] is self._top:
+            self._top = None
+
         return to_return[1]

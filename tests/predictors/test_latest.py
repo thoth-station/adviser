@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019 Fridolin Pokorny
+# Copyright(C) 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,56 +15,38 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Test implementation of random walk in the dependency graph."""
+"""Test implementation of predictor approximating latest resolution."""
 
 import flexmock
 from hypothesis import given
 from hypothesis.strategies import integers
 
-import random
-
 from thoth.adviser.beam import Beam
-from thoth.adviser.predictors import RandomWalk
+from thoth.adviser.predictors import ApproximatingLatest
 from thoth.adviser.state import State
 
 from ..base import AdviserTestCase
 
 
-class TestRandomWalk(AdviserTestCase):
-    """Tests related to random walk in the dependency graph."""
+class TestApproximatingLatest(AdviserTestCase):
+    """Test implementation of predictor approximating latest resolution."""
 
     @given(
         integers(min_value=1, max_value=256),
     )
     def test_run(self, state: State, state_count: int) -> None:
-        """Test running the random walk method."""
+        """Test running the approximating latest method."""
         beam = Beam()
         for _ in range(state_count):
             cloned_state = state.clone()
-            cloned_state.score = random.random()
             cloned_state.iteration = state.iteration + 1
             beam.add_state((cloned_state.score, cloned_state.iteration), cloned_state)
 
-        predictor = RandomWalk()
+        predictor = ApproximatingLatest()
         context = flexmock(accepted_final_states_count=33, beam=beam)
-
         with predictor.assigned_context(context):
             next_state, package_tuple = predictor.run()
+            assert next_state is not None
             assert next_state in beam.iter_states()
-            assert package_tuple is not None
             assert package_tuple[0] in next_state.unresolved_dependencies
             assert package_tuple in next_state.unresolved_dependencies[package_tuple[0]].values()
-
-    def test_pre_run(self) -> None:
-        """Test pre-run initialization."""
-        context = flexmock(limit=99)
-
-        predictor = RandomWalk()
-        assert predictor._history == []
-        predictor._history = [(0.99, 33), (0.42, 42)]
-
-        with predictor.assigned_context(context):
-            predictor.pre_run()
-            assert (
-                predictor._history == []
-            ), "Predictor's history not discarded"

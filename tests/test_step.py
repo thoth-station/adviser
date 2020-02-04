@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019, 2020 Fridolin Pokorny
+# Copyright(C) 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,12 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Wrap units implemented in adviser."""
+"""Test core step routines."""
 
-from typing import List
+from thoth.adviser.step import Step
+from .base import AdviserTestCase
 
 
-# Relative ordering of units is relevant, as the order specifies order
-# in which the asked to be registered - any dependencies between them
-# can be mentioned here.
-__all__: List[str] = []
+class TestStep(AdviserTestCase):
+    """Test core step routines."""
+
+    def test_boundaries(self) -> None:
+        """Test score boundaries of steps."""
+        assert Step.SCORE_MAX > 0.0 > Step.SCORE_MIN
+
+    def test_multi_package_resolution_default(self) -> None:
+        """Test default value of multi package resolution."""
+        assert Step.MULTI_PACKAGE_RESOLUTIONS is False

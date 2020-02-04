@@ -27,7 +27,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 
-from ..context import Context
 from ..predictor import Predictor
 from ..state import State
 from ..exceptions import NoHistoryKept
@@ -42,16 +41,16 @@ class HillClimbing(Predictor):
 
     _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
 
-    def run(self, context: Context) -> Tuple[State, Tuple[str, str, str]]:
+    def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Get top state from the beam for the next resolution round."""
-        state = context.beam.top()
+        state = self.context.beam.top()
 
         if self.keep_history:
-            self._history.append((state.score, context.accepted_final_states_count))
+            self._history.append((state.score, self.context.accepted_final_states_count))
 
         return state, state.get_first_unresolved_dependency()
 
-    def pre_run(self, context: Context) -> None:
+    def pre_run(self) -> None:
         """Initialization before the actual hill climbing run."""
         self._history = []
 
@@ -76,7 +75,7 @@ class HillClimbing(Predictor):
         host.spines["right"].set_visible(False)
         host.spines["top"].set_visible(False)
 
-        p1, = host.plot(x, y1, ",g", label="Highest rated state score")
+        p1, = host.plot(x, y1, ",g", label="Score of the expanded state")
         p2, = par1.plot(x, y2, ",y", label="Number of products conducted")
 
         host.set_xlabel("iteration")

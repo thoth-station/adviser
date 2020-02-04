@@ -1367,3 +1367,310 @@
 * Fix naming typo
 * Initial template for implementation
 * Initial project import
+
+## Release 0.7.1 (2020-01-13T09:33:26)
+* Set random walk as default predictor for Dependency Monkey
+* Inspection endpoint does not accept runtime environment
+* Fix submitting inspections
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.2 to 0.21.3
+* Add a boot that checks for fully specified environment
+* Add ability to block pipeline units during pipeline build
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.1 to 0.21.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.0 to 0.21.1
+* Bump template patch version
+* Fix decision type environment variable name
+* There is no option for DEPENDENDENCY_MONKEY_LIMIT
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.6 to 0.21.0
+* Yield from iterator to keep context
+* Add a note on requirements.txt
+* State pip/pip-compile support in integration section
+* Correct wrong key in template
+* Adjust testsuite accordingly
+* Sort direct dependencies for reproducible resolver runs
+* :pushpin: Automatic update of dependency thoth-python from 0.9.0 to 0.9.1
+* Do not prefer recent versions in random walk and sampling
+* Optimize arithmetics a bit
+* Be more explicit about the function call in docstring
+* Use r""" if any backslashes in a docstring
+* Introduce termial function to prefer more recent versions randomly
+* Extend resolver testsuite
+* :pushpin: Automatic update of dependency thoth-solver from 1.4.1 to 1.5.0
+* Adjust env variable name
+* :pushpin: Automatic update of dependency thoth-python from 0.8.0 to 0.9.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.5 to 0.20.6
+* Boots can raise not acceptable
+* Do not run adviser from bc in debug mode
+* Do not run adviser from bc in debug mode
+* Add testsuite for solved software environment pipeline unit
+* Register solved software environment boot
+* Sort reported environments
+* Introduce solved software environment boot
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.4 to 0.20.5
+* :pushpin: Automatic update of dependency thoth-python from 0.7.1 to 0.8.0
+* :pushpin: Automatic update of dependency pytest-timeout from 1.3.3 to 1.3.4
+* :pushpin: Automatic update of dependency pyyaml from 5.2 to 5.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.3 to 0.20.4
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.2 to 0.20.3
+* Beam is part of context, no need to pass it explictly
+* Fixed missing emptyDir in the Adviser Workflow
+* Limit number of software stacks to 1 on LATEST
+* Adjust testsuite to correctly propagate reward signal
+* Introduce beam.reset()
+* Introduce beam.get_random()
+* Reward signal now accepts resolver context
+* Remove environment serialization - it takes some time during runs
+* Random walk and initial configuration change
+* Fixed too many blank lines in Workflow template
+* Fixed adviser Workflow template
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.1 to 0.20.2
+* Happy new year!
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.0 to 0.20.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.30 to 0.20.0
+* :pushpin: Automatic update of dependency hypothesis-auto from 1.1.2 to 1.1.3
+* :pushpin: Automatic update of dependency hypothesis from 4.57.0 to 4.57.1
+* :pushpin: Automatic update of dependency hypothesis from 4.56.3 to 4.57.0
+* Adjust documentation for the new predictor run API
+* :pushpin: Automatic update of dependency hypothesis from 4.56.2 to 4.56.3
+* :pushpin: Automatic update of dependency hypothesis from 4.56.1 to 4.56.2
+* Predictors now return also packages that should be resolved from states
+* Fix docstring of boot
+* Add few more asserts
+* Add tests for leaf node expansion with marker set to False
+* Add a boot for mapping UBI to RHEL
+* Exclude reports from run error in Sentry
+* :pushpin: Automatic update of dependency hypothesis from 4.56.0 to 4.56.1
+* :pushpin: Automatic update of dependency hypothesis from 4.55.4 to 4.56.0
+* :pushpin: Automatic update of dependency hypothesis from 4.55.3 to 4.55.4
+* :pushpin: Automatic update of dependency hypothesis from 4.55.2 to 4.55.3
+* Add checks for special cases when environment markers apply to leaf nodes
+* Register CVE step only for STABLE and TESTING recommendation types
+* Automatically choose the most appropriate predictor based on CLI
+* :sparkles: added an Argo Workflow to run an advise
+* Adjust API and tests to the new change
+* :see_no_evil: ignoring the xml report coverage file
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.27 to 0.19.30
+* :pushpin: Automatic update of dependency hypothesis from 4.55.1 to 4.55.2
+* Format using black
+* Counter is no longer used
+* Improve multi-key sorting of states in the beam
+* Log warning about shared dependencies in the dependency graph
+* :pushpin: Automatic update of dependency hypothesis from 4.55.0 to 4.55.1
+* Do not retrieve markers during resolution
+* Fix logging format expansion
+* Log also beam size
+* :pushpin: Automatic update of dependency hypothesis from 4.54.2 to 4.55.0
+* Match only first part of tuple
+* Fix computing top state in the beam
+* Simplify creation of initial states
+* Adjust relative order for steps registration
+* :pushpin: Automatic update of dependency hypothesis from 4.54.1 to 4.54.2
+* :pushpin: Automatic update of dependency hypothesis from 4.54.0 to 4.54.1
+* Fix Coala complains
+* Keep track of dependencies added
+* Accepted final states can be 0
+* Revert "Add new iteration method for sieves and steps"
+* Make temperature function a function of iteration as well
+* :pushpin: Automatic update of dependency hypothesis from 4.53.3 to 4.54.0
+* :pushpin: Automatic update of dependency hypothesis from 4.53.2 to 4.53.3
+* :pushpin: Automatic update of dependency pytest from 5.3.1 to 5.3.2
+* Keep beam in context
+* Implement a dropout step
+* :pushpin: Automatic update of dependency hypothesis from 4.53.1 to 4.53.2
+* Bump version in templates
+* Fork only in the cluster
+* Fix coala complains
+* Document new iteration round methods
+* Add new iteration method for sieves and steps
+* Adjust docs for limit latest versions
+* Always bind context
+* Add tests for limit latest versions and semver sort
+* Adjust test suite
+* Adjust semantics of limit latest versions
+* Add a note on shared dependencies
+* Refactor plotting primitives
+* Do not keep history if not plotting in CLI
+* Rename and move history related bits in predictors
+* Remove debug print
+* Implement resolving stop when SIGINT is caught
+* Use SIGINT in liveness probe
+* Implement version clash boot
+* Tests for hill climbing and sampling, minor refactoring
+* Add locked sieve
+* Beam width is stated two times
+* Document OpenShift s2i build integration
+* Fix issue when there are no unresolved dependencies left in the state
+* Document beam width and how to plot it
+* Document build-watcher
+* Log correct file location for beam history plots
+* :pushpin: Automatic update of dependency hypothesis from 4.53.0 to 4.53.1
+* Document build-watcher
+* :pushpin: Automatic update of dependency hypothesis from 4.52.0 to 4.53.0
+* :pushpin: Automatic update of dependency hypothesis from 4.51.1 to 4.52.0
+* :pushpin: Automatic update of dependency hypothesis from 4.51.0 to 4.51.1
+* Add a link to Thamos documentation
+* Point to Thamos documentation instead of GitHub repo
+* Add a link to performance article published
+* Add architecture diagram
+* State also core repository
+* docs: Architecture overview section
+* :pushpin: Automatic update of dependency hypothesis from 4.50.8 to 4.51.0
+* Remove graph cache bits no longer used
+* Document pipeline configuration instrumentation
+* Point documentation to other libraries
+* Add developer's guide to documentation
+* Use RHEL instead of UBI
+* Update Thoth configuration file and Thoth's s2i configuration
+* Remove old comment
+* Add note to step docs - no adjustment in step or beam
+* No need to clone a state before running steps
+* Do not show not relevant logs to users
+* Point to source code documentation for described methods
+* Fix exit code propagation of the forked child
+* Add validation of count and limit resolver attributes
+* Produce more descriptive message if any of direct dependencies was not resolved
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.26 to 0.19.27
+* Adjust parameters for adviser and dependency-monkey
+* Propagate information about package that has CVE to justification in CVE step
+* :pushpin: Automatic update of dependency hypothesis from 4.50.7 to 4.50.8
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.25 to 0.19.26
+* :pushpin: Automatic update of dependency thoth-solver from 1.4.0 to 1.4.1
+* Add Google Analytics
+* Fix reference to sieve in docs
+* Fix references to the source code
+* Graph cache is not used anymore
+* Fix coala complains
+
+## Release 0.7.2 (2020-01-13T11:36:05)
+* Release of version 0.7.1
+* Set random walk as default predictor for Dependency Monkey
+* Inspection endpoint does not accept runtime environment
+* Fix submitting inspections
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.2 to 0.21.3
+* Add a boot that checks for fully specified environment
+* Add ability to block pipeline units during pipeline build
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.1 to 0.21.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.0 to 0.21.1
+* Bump template patch version
+* Fix decision type environment variable name
+* There is no option for DEPENDENDENCY_MONKEY_LIMIT
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.6 to 0.21.0
+* Yield from iterator to keep context
+* Add a note on requirements.txt
+* State pip/pip-compile support in integration section
+* Correct wrong key in template
+* Adjust testsuite accordingly
+* Sort direct dependencies for reproducible resolver runs
+* :pushpin: Automatic update of dependency thoth-python from 0.9.0 to 0.9.1
+* Do not prefer recent versions in random walk and sampling
+* Optimize arithmetics a bit
+* Be more explicit about the function call in docstring
+* Use r""" if any backslashes in a docstring
+* Introduce termial function to prefer more recent versions randomly
+* Extend resolver testsuite
+* :pushpin: Automatic update of dependency thoth-solver from 1.4.1 to 1.5.0
+* Adjust env variable name
+* :pushpin: Automatic update of dependency thoth-python from 0.8.0 to 0.9.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.5 to 0.20.6
+* Boots can raise not acceptable
+* Do not run adviser from bc in debug mode
+* Do not run adviser from bc in debug mode
+* Add testsuite for solved software environment pipeline unit
+* Register solved software environment boot
+* Sort reported environments
+* Introduce solved software environment boot
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.4 to 0.20.5
+* :pushpin: Automatic update of dependency thoth-python from 0.7.1 to 0.8.0
+* :pushpin: Automatic update of dependency pytest-timeout from 1.3.3 to 1.3.4
+* :pushpin: Automatic update of dependency pyyaml from 5.2 to 5.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.3 to 0.20.4
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.2 to 0.20.3
+* Beam is part of context, no need to pass it explictly
+* Fixed missing emptyDir in the Adviser Workflow
+* Limit number of software stacks to 1 on LATEST
+* Adjust testsuite to correctly propagate reward signal
+* Introduce beam.reset()
+* Introduce beam.get_random()
+* Reward signal now accepts resolver context
+* Remove environment serialization - it takes some time during runs
+* Random walk and initial configuration change
+* Fixed too many blank lines in Workflow template
+* Fixed adviser Workflow template
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.1 to 0.20.2
+* Happy new year!
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.0 to 0.20.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.30 to 0.20.0
+* :pushpin: Automatic update of dependency hypothesis-auto from 1.1.2 to 1.1.3
+* :pushpin: Automatic update of dependency hypothesis from 4.57.0 to 4.57.1
+* :pushpin: Automatic update of dependency hypothesis from 4.56.3 to 4.57.0
+* Adjust documentation for the new predictor run API
+* :pushpin: Automatic update of dependency hypothesis from 4.56.2 to 4.56.3
+* :pushpin: Automatic update of dependency hypothesis from 4.56.1 to 4.56.2
+* Predictors now return also packages that should be resolved from states
+* Fix docstring of boot
+* Add few more asserts
+* Add tests for leaf node expansion with marker set to False
+* Add a boot for mapping UBI to RHEL
+* Exclude reports from run error in Sentry
+* :pushpin: Automatic update of dependency hypothesis from 4.56.0 to 4.56.1
+* :pushpin: Automatic update of dependency hypothesis from 4.55.4 to 4.56.0
+* :pushpin: Automatic update of dependency hypothesis from 4.55.3 to 4.55.4
+* :pushpin: Automatic update of dependency hypothesis from 4.55.2 to 4.55.3
+* Add checks for special cases when environment markers apply to leaf nodes
+* Register CVE step only for STABLE and TESTING recommendation types
+* Automatically choose the most appropriate predictor based on CLI
+* :sparkles: added an Argo Workflow to run an advise
+* Adjust API and tests to the new change
+* :see_no_evil: ignoring the xml report coverage file
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.27 to 0.19.30
+* :pushpin: Automatic update of dependency hypothesis from 4.55.1 to 4.55.2
+* Format using black
+* Counter is no longer used
+* Improve multi-key sorting of states in the beam
+* Log warning about shared dependencies in the dependency graph
+* :pushpin: Automatic update of dependency hypothesis from 4.55.0 to 4.55.1
+* Do not retrieve markers during resolution
+* Fix logging format expansion
+* Log also beam size
+* :pushpin: Automatic update of dependency hypothesis from 4.54.2 to 4.55.0
+* Match only first part of tuple
+* Fix computing top state in the beam
+* Simplify creation of initial states
+* Adjust relative order for steps registration
+* :pushpin: Automatic update of dependency hypothesis from 4.54.1 to 4.54.2
+* :pushpin: Automatic update of dependency hypothesis from 4.54.0 to 4.54.1
+* Fix Coala complains
+* Keep track of dependencies added
+* Accepted final states can be 0
+* Revert "Add new iteration method for sieves and steps"
+* Make temperature function a function of iteration as well
+* :pushpin: Automatic update of dependency hypothesis from 4.53.3 to 4.54.0
+* :pushpin: Automatic update of dependency hypothesis from 4.53.2 to 4.53.3
+* :pushpin: Automatic update of dependency pytest from 5.3.1 to 5.3.2
+* Keep beam in context
+* Implement a dropout step
+* :pushpin: Automatic update of dependency hypothesis from 4.53.1 to 4.53.2
+* Bump version in templates
+* Fork only in the cluster
+
+## Release 0.7.3 (2020-01-14T20:20:14)
+* Raise an error if no direct dependencies were found
+* Report error on resolution failure
+* Create more descriptive message
+* Add tests for no dependencies cases during resolution
+* Rebase and simplify code
+* Fix log message reported
+* Log interesting checkpoints during resolution to user
+* Reward signal now propagates state for which the reward signal is computed
+* Introduce a method for getting a state by its id
+* Fix exception error messages produced
+* Fix beam method signatures
+* Remove unused import statement
+* Introduce approximating latest predictor
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.5 to 0.21.6
+* Re-add state with no unresolved dependencies back to beam on resolution
+* Remvoe accidentally committed print statement
+* Introduce finalizers for predictor's memory footprint optimization
+* Predictor should pick key to beam
+* Introduce assigned context to predictor
+* Extend docs with MDP
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.4 to 0.21.5

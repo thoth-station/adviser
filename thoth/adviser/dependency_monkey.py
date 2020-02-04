@@ -64,7 +64,12 @@ class DependencyMonkey:
 
     def resolve(self, *, with_devel: bool = True) -> DependencyMonkeyReport:
         """Perform simulated annealing and run dependency monkey on products."""
-        if self.stack_output == "-":
+        if self.dry_run:
+            _LOGGER.warning("Dry run of Dependency Monkey is set, stacks will be just computed")
+            output_func = partial(  # type: ignore
+                self._dm_dry_run, self.stack_output
+            )
+        elif self.stack_output == "-":
             _LOGGER.debug(
                 "Results of Dependency Monkey run will be printed to standard output"
             )
@@ -75,7 +80,7 @@ class DependencyMonkey:
                 self.stack_output,
             )
             output_func = partial(  # type: ignore
-                self._dm_amun_output, self.stack_output, self.context
+                self._dm_amun_output, self.stack_output, self.context or {}
             )
         else:
             _LOGGER.debug(
@@ -115,12 +120,26 @@ class DependencyMonkey:
         return report
 
     @staticmethod
+    def _dm_dry_run(
+        output: str, count: int, _: Project
+    ) -> None:
+        """A wrapper around dry-run flag."""
+        _LOGGER.info(
+            "Stack %d would be outputted to %r, but dry run flag was set, skipping...",
+            count,
+            output
+        )
+        return None
+
+    @staticmethod
     def _dm_amun_output(
         output: str, context: Dict[Any, Any], count: int, generated_project: Project
     ) -> str:
         """A wrapper around Amun inspection call."""
         context = dict(context)
         context["python"] = generated_project.to_dict()
+        # No need to supply runtime environment information.
+        context["python"].pop("runtime_environment", None)
         response = amun.inspect(output, **context)
         _LOGGER.info(
             "Submitted Amun inspection #%d: %r", count, response["inspection_id"]

@@ -41,6 +41,9 @@ class Step(Unit):
 
     MULTI_PACKAGE_RESOLUTIONS = False
 
+    SCORE_MAX = 1.0
+    SCORE_MIN = -1.0
+
     @abc.abstractmethod
     def run(
         self, state: State, package_version: PackageVersion

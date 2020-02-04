@@ -200,10 +200,24 @@ class PipelineBuilder:
         # As pipeline steps can have dependencies on each other, iterate over them until we have any change done
         # to the pipeline configuration.
         _LOGGER.info("Creating pipeline configuration")
+
+        blocked_units = (
+            set(os.environ["THOTH_ADVISER_BLOCKED_UNITS"].split(","))
+            if "THOTH_ADVISER_BLOCKED_UNITS" in os.environ
+            else set()
+        )
+
         change = True
         while change:
             change = False
             for unit_class in cls._iter_units():
+                if unit_class.__name__ in blocked_units:
+                    _LOGGER.debug(
+                        "Avoiding adding pipeline unit %r based on blocked units configuration",
+                        unit_class.__name__,
+                    )
+                    continue
+
                 unit_configuration = unit_class.should_include(ctx)  # type: ignore
                 if unit_configuration is None:
                     _LOGGER.debug(

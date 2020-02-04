@@ -68,12 +68,150 @@ to expand dependency graphs (lazily), instead of directly implementing
 as in case of other resolvers. See :ref:`resolver <resolver>` documentation
 for more info.
 
+Prediction-based resolution using reinforcement learning
+========================================================
+
+As stated above, Thoth's adviser does not implement `3SAT problem
+<https://en.wikipedia.org/wiki/Boolean_satisfiability_problem>`_ as many
+resolvers do. Instead, the whole resolution is seen as a `Markov Decision
+Process (MDP) <https://en.wikipedia.org/wiki/Markov_decision_process>`_.
+Intuitively, any (not necessary fully resolved) software stack can be
+seen as a state in an MDP and satisfies Markov property:
+
+  Any future resolution of resolver's state depends only upon the present
+  state, not on the sequence of events (resolution of dependencies) that
+  preceded it.
+
+A fully resolved software stack that satisfy all the requirements of all the
+dependencies present in the software stack then represents a terminal state in
+an MDP. Finding the best possible software stack (a terminal state with the
+highest score) then corresponds to solving the given MDP.
+
+The whole design of adviser's resolution can be seen as a framework for
+writing predictors for prediction based resolution.
+
+More formally:
+
+* let *S* be a finite set of states in which the resolution can be in -
+  partially but also fully resolved software stacks
+
+* let *A* be a finite set of actions, *A*\ :sub:`s`\  be a finite state of
+  actions from a state *s*
+
+* let *R*\ :sub:`a`\ *(s, s')* be expected immediate reward received after
+  transitioning from state *s* to state *s'* by taking action *a* following
+  some policy π.
+
+.. note::
+
+  The state space as described and shown in the previous section corresponds to
+  the score in a terminal state (cumulative score) - when both libraries
+  ``simplelib`` and ``anotherlib`` are resolved and present in fully pinned
+  down software stacks and there are no more unresolved dependencies (no more
+  requirements introduced by resolving these two libraries).
+
+  In otherwords, the function plotted corresponds to `Bellman equation
+  <https://en.wikipedia.org/wiki/Bellman_equation>`_ for all terminal states
+  following a policy during resolution.
+
+Each entry in the state transition function in the MDP corresponds to a
+step that is performed by resolver, by taking an unresolved dependency
+and resolving it.
+
+Pipeline units called :ref:`steps <steps>` then act like a critic that scores
+the given action taken (compute immediate reward signal).
+
+For a more illustrative example, let's suppose that the resolver is taking an
+action in some state s\ :sub:`n`\. Let this state be described by unresolved,
+resolved dependencies and its current score (based on Bellman equation).
+
+*Resolved dependencies:*
+
+* ``flask==1.1.1``
+
+*Unresolved dependencies:*
+
+* ``click==6.7``
+* ``click==7.0``
+* ``itsdangerous==1.1.0``
+* ``jinja2==2.10.2``
+* ``jinja2==2.10.3``
+* ``werkzeug==0.15.1``
+
+*Score:* 0.5
+
+.. image:: _static/mdp.png
+   :target: _static/mdp.png
+   :alt: An illustrative MDP described in the text.
+   :align: center
+
+We resolve an unresolved dependency - let's say we take action s\ :sub:`n` a\
+:sub:`2` and resolve ``itsdangerous==1.1.0``, we retrieve an immediate reward
+0.33 and we end up in state s\ :sub:`n + 3`\. This action is scored by all
+pipeline units of type :ref:`step <steps>` - a sum of their scores - note that
+this transition can be also invalidated by any of the step pipeline unit present
+in the current pipeline configuration.
+
+The new state created is described as follows:
+
+*Resolved dependencies:*
+
+* ``flask==1.1.1``
+* ``itsdangerous==1.1.0``
+
+*Unresolved dependencies:*
+
+* ``click==6.7``
+* ``click==7.0``
+* ``jinja2==2.10.2``
+* ``jinja2==2.10.3``
+* ``werkzeug==0.15.1``
+* \+ all the direct dependencies of ``itsdangerous==1.1.0`` respecting
+  their version range specification.
+
+*Score:* 0.83
+
+Direct dependencies of ``itsdangerous==1.1.0`` added to unresolved dependencies
+are filtered based on :ref:`sieve pipeline units <sieves>` present in the current
+pipeline configuration. Note that sieves can make the given transition invalid if
+they remove all versions for a specific package. As an example, let's say
+``itsdangerous==1.1.0`` depends on ``daiquiri`` in versions ``1.0``, ``2.0`` or
+``3.0``. If pipeline sieves remove all the versions of ``daiquiri``, dependency
+sub-graph of ``itsdangerous==1.1.0`` cannot be satisfied - hence the action
+s\ :sub:`n` a\ :sub:`2` is invalid.
+
+.. note::
+
+  If there would be any other version of ``itsdangerous`` in the unresolved
+  dependencies listing, it would be removed (as well as its whole dependency
+  sub-graph) as package of type ``itsdangerous`` is already present in the
+  current state respecting requirements.
+
+As can be seen, the main role of sieves is to filter out invalid future actions in
+the upcoming resolver rounds, without considering any possible state the resolver
+could end up with (state independent filtering).
+
+.. note::
+
+  If the given action from a state leads to invalid transition, the predictor
+  instance receives reward signal equal to ``math.nan``.
+
+If a valid transition leads to a state that has no unresolved dependencies,
+the given state is final (terminal state in case of MDP terminology) and it
+represents a fully pinned down software stack.
+
+.. note::
+
+  If the given action from a state leads to a final state (*terminal state*), the
+  predictor instance receives a reward signal equal to ``math.inf``.
+
 Nomenclature
 ============
 
 In adviser docs but also in other Thoth repositories, one can find the following
 terms:
 
+* Boolean satisfiability problem - `3SAT problem <https://en.wikipedia.org/wiki/Boolean_satisfiability_problem>`_
 * initial state - state of resolution in resolver that is made out of resolved direct dependencies into a concrete version coming from a Python package index
 * state - generally speaking any resolver state
 * final state - a state that has no more packages left for resolution (resolved packages form fully resolved software stack) and can become a pipeline product
@@ -91,6 +229,9 @@ terms:
 * pipeline - in Thoth's context, a stack resolution pipeline is used to generate and score Python software stacks for certain quality - see :ref:`pipeline for more info <pipeline>`
 * pipeline units - boot, sieve, step, stride, wrap
 * dependency monkey - one of Thoth's components - Dependency Monkey can generate all the combinations of a software stacks and, optionally, submit them to Amun for additional verification, testing and observation aggregation
+* Bellman equation - see `Bellman equation <https://en.wikipedia.org/wiki/Bellman_equation>`_
+* Markov decision process - `Markov decision process <https://en.wikipedia.org/wiki/Markov_decision_process>`_
+* Markov property - `Markov property <https://en.wikipedia.org/wiki/Markov_property>`_
 * Thoth - one of the ancient Egyptian deities
 * Thoth-Station - see `Thoth Station <https://expanse.fandom.com/wiki/Thoth_Station>`_
 * Amun - an executor used in Thoth to verify, install and run applications - see `Amun repository for more info <https://github.com/thoth-station/amun-api>`_

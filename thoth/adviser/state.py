@@ -55,6 +55,8 @@ class State:
     )
     _parent = attr.ib(default=None, type=weakref)
 
+    _EPSILON = 0.1
+
     @property
     def parent(self) -> Optional["State"]:
         """Retrieve parent to this state.
@@ -171,6 +173,19 @@ class State:
                 f"No unresolved dependency found in state: {self!r}"
             ) from exc
 
+    def get_random_first_unresolved_dependency(self) -> Tuple[str, str, str]:
+        """Get a very first unresolved dependency tuple."""
+        unresolved_dependency_name = random.choice(list(self.unresolved_dependencies))
+        try:
+            unresolved_dependency_id = next(
+                iter(self.unresolved_dependencies[unresolved_dependency_name])
+            )
+            return self.unresolved_dependencies[unresolved_dependency_name][unresolved_dependency_id]
+        except StopIteration as exc:
+            raise ValueError(
+                f"No unresolved dependency found in state: {self!r}"
+            ) from exc
+
     @staticmethod
     def _termial_function(n: int) -> int:
         r"""Compute termial function, with red hats off to Donald Knuth.
@@ -254,7 +269,13 @@ class State:
 
         choices = list(self.unresolved_dependencies[unresolved_dependency_name])
         if prefer_recent:
-            unresolved_dependency_id = choices[self._random_termial(len(choices))]
+            # perform multi-armed bandit - epsilon-greedy strategy
+            unresolved_dependency_id = None
+            if len(choices) > 1 and self._EPSILON >= random.random():
+                unresolved_dependency_id = choices[self._random_termial(len(choices))]
+
+            if unresolved_dependency_id is None:
+                unresolved_dependency_id = choices[0]
         else:
             unresolved_dependency_id = random.choice(choices)
 

@@ -89,6 +89,7 @@ class Context:
     )
     sources = attr.ib(type=Dict[str, Source], kw_only=True, default=attr.Factory(dict))
     iteration = attr.ib(type=int, default=0, kw_only=True)
+    cli_parameters = attr.ib(type=Dict[str, Any], kw_only=True, default=attr.Factory(dict))
     stack_info = attr.ib(
         type=Optional[List[Dict[str, Any]]], kw_only=True, default=attr.Factory(list)
     )

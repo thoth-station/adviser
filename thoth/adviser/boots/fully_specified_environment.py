@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019, 2020 Fridolin Pokorny
+# Copyright(C) 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,21 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Filter out states randomly."""
+"""A boot to check for fully specified environment."""
 
 import logging
-import random
-from typing import Any
-from typing import Dict
 from typing import Optional
+from typing import Dict
+from typing import Any
 from typing import TYPE_CHECKING
 
 import attr
 
-from ..state import State
-from ..stride import Stride
+from ..boot import Boot
 from ..exceptions import NotAcceptable
-from ..enums import DecisionType
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
@@ -38,19 +35,28 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class RandomDecisionStride(Stride):
-    """Filter out states randomly."""
+class FullySpecifiedEnvironment(Boot):
+    """A boot to check for fully specified environment."""
 
     @classmethod
     def should_include(
         cls, builder_context: "PipelineBuilderContext"
     ) -> Optional[Dict[str, Any]]:
-        """Allow inclusion only per user request."""
+        """Register self, always."""
+        if not builder_context.is_adviser_pipeline():
+            return None
+
+        if not builder_context.is_included(cls):
+            return {}
+
         return None
 
-    def run(self, state: State) -> None:
-        """Flip a coin and decide - tails are not acceptable."""
-        if bool(random.getrandbits(1)):
+    def run(self) -> None:
+        """Check for version clash in packages."""
+        if not self.context.project.runtime_environment.is_fully_specified():
             raise NotAcceptable(
-                f"State with score {state.score!r} was randomly discarded by flipping a coin"
+                f"Software environment supplied is not fully specified, OS name "
+                f"is {self.context.project.runtime_environment.operating_system.name!r} "
+                f"in version {self.context.project.runtime_environment.operating_system.version!r} "
+                f"using Python {self.context.project.runtime_environment.python_version!r}"
             )

@@ -98,16 +98,16 @@ class AdaptiveSimulatedAnnealing(Predictor):
         )
         return acceptance_probability
 
-    def run(self, context: Context) -> Tuple[State, Tuple[str, str, str]]:
+    def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Run adaptive simulated annealing on top of beam."""
-        self._temperature = self._exp(self._temperature, context)
+        self._temperature = self._exp(self._temperature, self.context)
 
         # Expand highest promising by default.
-        state = context.beam.top()
+        state = self.context.beam.top()
 
         # Pick a random state to be expanded if accepted.
-        probable_state_idx = random.randrange(1, context.beam.size) if context.beam.size > 1 else 0
-        probable_state = context.beam.get(probable_state_idx)
+        probable_state_idx = random.randrange(1, self.context.beam.size) if self.context.beam.size > 1 else 0
+        probable_state = self.context.beam.get(probable_state_idx)
         acceptance_probability = self._compute_acceptance_probability(
             state.score, probable_state.score, self._temperature
         )
@@ -122,29 +122,29 @@ class AdaptiveSimulatedAnnealing(Predictor):
             )
             # state_expansion_idx = probable_state_idx
             state = probable_state
-            unresolved_dependency_tuple = state.get_random_unresolved_dependency()
+            unresolved_dependency_tuple = state.get_random_unresolved_dependency(prefer_recent=False)
         else:
             _LOGGER.debug(
                 "Expanding TOP rated state with score %g", state.score
             )
-            unresolved_dependency_tuple = state.get_first_unresolved_dependency()
+            unresolved_dependency_tuple = state.get_random_unresolved_dependency(prefer_recent=True)
 
         if self.keep_history:
             self._temperature_history.append(
                 (
                     self._temperature,
-                    state is context.beam.top(),
+                    state is self.context.beam.top(),
                     acceptance_probability,
-                    context.accepted_final_states_count,
+                    self.context.accepted_final_states_count,
                 )
             )
 
         return state, unresolved_dependency_tuple
 
-    def pre_run(self, context: Context) -> None:
+    def pre_run(self) -> None:
         """Initialization before the actual annealing run."""
         self._temperature_history = []
-        self._temperature = context.limit
+        self._temperature = self.context.limit
 
     @staticmethod
     def _make_patch_spines_invisible(ax: Any) -> None:

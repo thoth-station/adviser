@@ -39,16 +39,19 @@ class TestSampling(AdviserTestCase):
         beam = Beam()
         for _ in range(state_count):
             cloned_state = state.clone()
-            beam.add_state(cloned_state)
+            cloned_state.iteration = state.iteration + 1
+            beam.add_state((cloned_state.score, cloned_state.iteration), cloned_state)
 
         predictor = Sampling()
         context = flexmock(accepted_final_states_count=10, beam=beam)
-        next_state, package_tuple = predictor.run(context)
-        assert next_state is not None
-        assert next_state in beam.iter_states()
-        assert package_tuple is not None
-        assert package_tuple[0] in next_state.unresolved_dependencies
-        assert package_tuple in next_state.unresolved_dependencies[package_tuple[0]].values()
+
+        with predictor.assigned_context(context):
+            next_state, package_tuple = predictor.run()
+            assert next_state is not None
+            assert next_state in beam.iter_states()
+            assert package_tuple is not None
+            assert package_tuple[0] in next_state.unresolved_dependencies
+            assert package_tuple in next_state.unresolved_dependencies[package_tuple[0]].values()
 
     def test_pre_run(self) -> None:
         """Test pre-run initialization."""
@@ -58,7 +61,8 @@ class TestSampling(AdviserTestCase):
         assert predictor._history == []
         predictor._history = [(0.66, 33)]
 
-        predictor.pre_run(context)
-        assert (
-            predictor._history == []
-        ), "Predictor's history not discarded"
+        with predictor.assigned_context(context):
+            predictor.pre_run()
+            assert (
+                predictor._history == []
+            ), "Predictor's history not discarded"
