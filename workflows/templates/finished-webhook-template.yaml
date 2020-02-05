@@ -39,7 +39,7 @@ spec:
               "action": "finished",
               "check_run_id": int(metadata["github_check_run_id"]),
               "installation": installation_id,
-              "repo_url": metadata["origin"],
+              "base_repo_url": metadata["github_base_repo_url"],
               "payload": payload
           }
 
