@@ -43,7 +43,7 @@ spec:
             archive:
               none: {}
             s3:
-              key: "argo/adviser/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+              key: "data/thoth/thoth-psi-stage/adviser/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
               endpoint: "s3.upshift.redhat.com"
               bucket: "thoth"
               insecure: true
