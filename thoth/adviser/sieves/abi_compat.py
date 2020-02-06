@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Filter out stacks which have buildtime errors."""
+"""Filter out stacks which have require non-existent ABI symbols."""
 
 import logging
 from typing import Any
