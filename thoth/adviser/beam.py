@@ -355,7 +355,7 @@ class Beam:
             self._siftup(idx)
             self._siftdown(0, idx)
 
-        if self._last_added == to_return[1]:
+        if self._last_added is to_return[1]:
             self._last_added = None
 
         if self._top and to_return[1] is self._top:
