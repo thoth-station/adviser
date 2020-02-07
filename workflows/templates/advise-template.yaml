@@ -43,7 +43,7 @@ spec:
             archive:
               none: {}
             s3:
-              key: "argo/adviser/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+              key: "data/thoth/thoth-psi-stage/adviser/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
               endpoint: "s3.upshift.redhat.com"
               bucket: "thoth"
               insecure: true
@@ -95,6 +95,8 @@ spec:
             value: "{{inputs.parameters.THOTH_ADVISER_LIMIT_LATEST_VERSIONS}}"
           - name: THOTH_ADVISER_LIBRARY_USAGE
             value: "{{inputs.parameters.THOTH_ADVISER_LIBRARY_USAGE}}"
+          - name: THOTH_ADVISER_PREDICTOR
+            value: "ApproximatingLatest"
           - name: ISIS_API_URL
             valueFrom:
               configMapKeyRef:
