@@ -95,6 +95,8 @@ spec:
             value: "{{inputs.parameters.THOTH_ADVISER_LIMIT_LATEST_VERSIONS}}"
           - name: THOTH_ADVISER_LIBRARY_USAGE
             value: "{{inputs.parameters.THOTH_ADVISER_LIBRARY_USAGE}}"
+          - name: THOTH_ADVISER_PREDICTOR
+            value: "ApproximatingLatest"
           - name: ISIS_API_URL
             valueFrom:
               configMapKeyRef:
