@@ -158,6 +158,8 @@ objects:
                 templateRef:
                   name: "advise"
                   template: "advise"
+                continueOn:
+                  failed: true
                 arguments:
                   parameters:
                     - name: THOTH_ADVISER_JOB_ID
