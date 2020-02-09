@@ -20,7 +20,7 @@ spec:
         command:
           - python3
         name: trigger-finished-webhook
-        image: "quay.io/thoth-station/thamos:v0.8.0-dev"
+        image: "quay.io/pacospace/thamos:v0.8.1-dev"
         source: |
           import hmac
           import json
