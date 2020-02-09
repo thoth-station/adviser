@@ -53,32 +53,37 @@ class SolvedSoftwareEnvironmentBoot(Boot):
 
     def run(self) -> None:
         """Check for version clash in packages."""
-        if not self.context.graph.solved_software_environment_exists(
+        if self.context.graph.solved_software_environment_exists(
             os_name=self.context.project.runtime_environment.operating_system.name,
             os_version=self.context.project.runtime_environment.operating_system.version,
             python_version=self.context.project.runtime_environment.python_version,
         ):
-            _LOGGER.warning(
-                "No observations found for %r in version %r using Python %r, available configurations:",
-                self.context.project.runtime_environment.operating_system.name,
-                self.context.project.runtime_environment.operating_system.version,
-                self.context.project.runtime_environment.python_version,
-            )
+            return
 
-            configurations = (
-                self.context.graph.get_solved_python_package_versions_software_environment_all()
-            )
+        runtime_environment = self.context.project.runtime_environment
+        msg = (
+            f"No observations found for {runtime_environment.operating_system.name!r} in "
+            f"version {runtime_environment.operating_system.version!r} using "
+            f"Python {runtime_environment.python_version!r}"
+        )
+
+        _LOGGER.warning(msg)
+        _LOGGER.warning("Available configurations:")
+
+        configurations = (
+            self.context.graph.get_solved_python_package_versions_software_environment_all()
+        )
+        _LOGGER.warning(
+            "{:<16} {:<16} {:<8}".format("OS name", "OS version", "Python version")
+        )
+        for conf in sorted(
+            configurations,
+            key=lambda i: (i["os_name"], i["os_version"], i["python_version"]),
+        ):
             _LOGGER.warning(
-                "{:<16} {:<16} {:<8}".format("OS name", "OS version", "Python version")
-            )
-            for conf in sorted(
-                configurations,
-                key=lambda i: (i["os_name"], i["os_version"], i["python_version"]),
-            ):
-                _LOGGER.warning(
-                    "{:<16} {:<16} {:<8}".format(
-                        conf["os_name"], conf["os_version"], conf["python_version"]
-                    )
+                "{:<16} {:<16} {:<8}".format(
+                    conf["os_name"], conf["os_version"], conf["python_version"]
                 )
+            )
 
-            raise NotAcceptable
+        raise NotAcceptable(msg)
