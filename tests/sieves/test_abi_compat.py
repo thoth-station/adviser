@@ -45,8 +45,8 @@ class TestAbiCompatSieve(AdviserTestCase):
             name="tensorflow", version="==1.9.0", index=source, develop=False
         )
         flexmock(GraphDatabase)
-        GraphDatabase.should_call("get_analyzed_image_symbols_all").and_return(system_symbols).once()
-        GraphDatabase.should_call("get_python_package_required_symbols").and_return(required_symbols_b).once()
+        GraphDatabase.should_receive("get_analyzed_image_symbols_all").and_return(system_symbols).once()
+        GraphDatabase.should_receive("get_python_package_required_symbols").and_return(required_symbols_b).once()
 
         context = flexmock(graph=GraphDatabase())
         with AbiCompatabilitySieve.assigned_context(context):
@@ -59,8 +59,8 @@ class TestAbiCompatSieve(AdviserTestCase):
             name="tensorflow", version="==1.9.0", index=source, develop=False
         )
         flexmock(GraphDatabase)
-        GraphDatabase.should_call("get_analyzed_image_symbols_all").and_return(system_symbols).once()
-        GraphDatabase.should_call("get_python_package_required_symbols").and_return(required_symbols_a).once()
+        GraphDatabase.should_receive("get_analyzed_image_symbols_all").and_return(system_symbols).once()
+        GraphDatabase.should_receive("get_python_package_required_symbols").and_return(required_symbols_a).once()
 
         context = flexmock(graph=GraphDatabase())
         with AbiCompatabilitySieve.assigned_context(context):
