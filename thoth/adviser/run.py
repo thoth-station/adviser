@@ -36,6 +36,7 @@ import time
 from thoth.common import init_logging
 
 from .exceptions import AdviserRunException
+from .exceptions import UnresolvedDependencies
 from .dependency_monkey import DependencyMonkey
 from .dm_report import DependencyMonkeyReport
 from .report import Report
@@ -103,6 +104,12 @@ def subprocess_run(
                 dict(error=False, error_msg=None, report=report.to_dict())
             )
         except AdviserRunException as exc:
+            if isinstance(exc, UnresolvedDependencies):
+                _LOGGER.error(
+                    "Resolver failed due to unsolved dependencies for packages %s; these dependencies will be "
+                    "automatically marked for solving by the system for future resolutions",
+                    ", ".join(exc.unresolved)
+                )
             _LOGGER.error("Resolver run failed: %s", str(exc))
             result_dict.update(dict(error=True, error_msg=str(exc), report=exc.to_dict()))
         except Exception as exc:
