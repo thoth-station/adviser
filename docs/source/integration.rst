@@ -119,6 +119,11 @@ instructions on how to use Thoth in the OpenShift's s2i process. The container
 images are hosted at `quay.io/organization/thoth-station
 <https://quay.io/organization/thoth-station>`_.
 
+.. note::
+
+  You can use a tool called `thoth-s2i <https://github.com/thoth-station/s2i`_
+  that can automatically migrate your existing s2i application to use Thoth.
+
 Thoth's s2i container images can be configured using environment variables
 supplied to the build config:
 
