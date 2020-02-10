@@ -22,6 +22,7 @@ from .locked import CutLockedSieve
 from .prereleases import CutPreReleasesSieve
 from .solved import SolvedSieve
 from .version_constraint import VersionConstraintSieve
+from .abi_compat import AbiCompatabilitySieve
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -33,4 +34,5 @@ __all__ = [
     "PackageIndexSieve",
     "SolvedSieve",
     "VersionConstraintSieve",
+    "AbiCompatabilitySieve",
 ]
