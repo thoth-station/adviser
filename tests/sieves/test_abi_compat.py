@@ -48,9 +48,17 @@ class TestAbiCompatSieve(AdviserTestCase):
         GraphDatabase.should_receive("get_analyzed_image_symbols_all").and_return(system_symbols).once()
         GraphDatabase.should_receive("get_python_package_required_symbols").and_return(required_symbols_b).once()
 
-        context = flexmock(graph=GraphDatabase())
+        context = flexmock(
+            graph=GraphDatabase(),
+            project=flexmock(runtime_environment=flexmock(
+                operating_system=flexmock(name="rhel", version="8.0"),
+                cuda_version="4.6",
+                python_version="3.6",
+            ))
+        )
         with AbiCompatabilitySieve.assigned_context(context):
             sieve = AbiCompatabilitySieve()
+            sieve.pre_run()
             assert list(sieve.run((p for p in [package_version]))) == [package_version]
 
     def test_abi_compat_symbols_not_present(self) -> None:
@@ -62,7 +70,15 @@ class TestAbiCompatSieve(AdviserTestCase):
         GraphDatabase.should_receive("get_analyzed_image_symbols_all").and_return(system_symbols).once()
         GraphDatabase.should_receive("get_python_package_required_symbols").and_return(required_symbols_a).once()
 
-        context = flexmock(graph=GraphDatabase())
+        context = flexmock(
+            graph=GraphDatabase(),
+            project=flexmock(runtime_environment=flexmock(
+                operating_system=flexmock(name="rhel", version="8.0"),
+                cuda_version="4.6",
+                python_version="3.6",
+            ))
+        )
         with AbiCompatabilitySieve.assigned_context(context):
             sieve = AbiCompatabilitySieve()
+            sieve.pre_run()
             assert list(sieve.run((p for p in [package_version]))) == []
