@@ -41,7 +41,6 @@ class TestAbiCompatSieve(AdviserTestCase):
         package_version = PackageVersion(
             name="tensorflow", version="==1.9.0", index=source, develop=False
         )
-        flexmock(GraphDatabase)
         GraphDatabase.should_receive("get_analyzed_image_symbols_all").and_return(_SYSTEM_SYMBOLS).once()
         GraphDatabase.should_receive("get_python_package_required_symbols").and_return(_REQUIRED_SYMBOLS_B).once()
 
@@ -63,7 +62,6 @@ class TestAbiCompatSieve(AdviserTestCase):
         package_version = PackageVersion(
             name="tensorflow", version="==1.9.0", index=source, develop=False
         )
-        flexmock(GraphDatabase)
         GraphDatabase.should_receive("get_analyzed_image_symbols_all").and_return(_SYSTEM_SYMBOLS).once()
         GraphDatabase.should_receive("get_python_package_required_symbols").and_return(_REQUIRED_SYMBOLS_A).once()
 
