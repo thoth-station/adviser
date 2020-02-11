@@ -10,3 +10,19 @@ runtime_environments:
     python_version: "3.6"
     recommendation_type: latest
     limit_latest_versions: 5
+
+managers:
+  - name: pipfile-requirements
+  - name: update
+    configuration:
+      labels: [bot]
+  - name: info
+  - name: version
+    configuration:
+      maintainers:
+        - goern
+        - fridex
+      assignees:
+        - sesheta
+      labels: [bot]
+      changelog_file: true
