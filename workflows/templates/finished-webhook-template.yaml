@@ -28,6 +28,10 @@ spec:
           import requests
           import uuid
 
+          from thoth.common import init_logging
+
+          init_logging()
+
           metadata = {{inputs.parameters.THOTH_ADVISER_METADATA}}
           payload = {}
           payload["analysis_id"] = "{{inputs.parameters.THOTH_DOCUMENT_ID}}"

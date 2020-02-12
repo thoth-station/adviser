@@ -17,6 +17,7 @@ spec:
           - name: THOTH_DOCUMENT_ID
           - name: THOTH_ADVISER_REQUIREMENTS
           - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
+            default: ""
           - name: THOTH_ADVISER_LIBRARY_USAGE
           - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
           - name: THOTH_ADVISER_RECOMMENDATION_TYPE
@@ -151,8 +152,8 @@ spec:
             mountPath: /mnt/workdir
         resources:
           limits:
-            cpu: 250m
-            memory: 256Mi
+            cpu: 500m
+            memory: 512Mi
           requests:
-            cpu: 250m
-            memory: 256Mi
+            cpu: 500m
+            memory: 512Mi
