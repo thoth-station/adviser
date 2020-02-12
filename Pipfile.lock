@@ -105,17 +105,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:629ce3be236b6e0aed52358146eea9ffa7679d6cd1cc9b3e12332226270d6499",
-                "sha256:b1351e62136fae29be8fcbb1c4890f1d72017d57e33051d435a8bf9f71212fde"
+                "sha256:0b9dc594e16a96ed7c6f37e1563ab3f113f130b3cc79efe8eea43097bf87fccb",
+                "sha256:e48ff93a3b6424c65675e1cbe08f7f3245b0128d1c27115cdcf51d432e9767d6"
             ],
-            "version": "==1.11.14"
+            "version": "==1.11.15"
         },
         "botocore": {
             "hashes": [
-                "sha256:34ad4d73e6bef5c8ad956c66354611628cdebd431fe2927261ed9c068b9cfb7a",
-                "sha256:6570f2ba046956d5b548ab2346d32f713ecf8b8cb098a839d73fcf832ccfa223"
+                "sha256:2538065f9f5023eae3607e78fc5d8c595c9173ec02bc92410652078617c44ac1",
+                "sha256:554231b1690c8521e05a41e50184e43d62941fdf9351e658aea894649b879985"
             ],
-            "version": "==1.14.14"
+            "version": "==1.14.15"
         },
         "cachetools": {
             "hashes": [
@@ -181,6 +181,12 @@
                 "sha256:d79d9a39e459fe33497c858470ca0d2e93cb96621751de06d631856adfd9c390"
             ],
             "version": "==0.8.1"
+        },
+        "distlib": {
+            "hashes": [
+                "sha256:2e166e231a26b36d6dfe35a48c4464346620f8645ed0ace01ee31822b288de21"
+            ],
+            "version": "==0.3.0"
         },
         "distro": {
             "hashes": [
@@ -657,10 +663,10 @@
         },
         "ruamel.yaml": {
             "hashes": [
-                "sha256:9d59fa89985c55155d35c886663e357813404ae8f94638cb673135b8c8c1a7c7",
-                "sha256:dba517a7e330b6caf476b757022d21efa13c32694bfba1e057ce59a374f18f0a"
+                "sha256:0962fd7999e064c4865f96fb1e23079075f4a2a14849bcdc5cdba53a24f9759b",
+                "sha256:099c644a778bf72ffa00524f78dd0b6476bca94a1da344130f4bf3381ce5b954"
             ],
-            "version": "==0.16.7"
+            "version": "==0.16.10"
         },
         "ruamel.yaml.clib": {
             "hashes": [
@@ -684,7 +690,7 @@
                 "sha256:ed5b3698a2bb241b7f5cbbe277eaa7fe48b07a58784fba4f75224fd066d253ad",
                 "sha256:f9dcc1ae73f36e8059589b601e8e4776b9976effd76c21ad6a855a74318efd6e"
             ],
-            "markers": "platform_python_implementation == 'CPython' and python_version < '3.8'",
+            "markers": "platform_python_implementation == 'CPython' and python_version < '3.9'",
             "version": "==0.2.0"
         },
         "s3transfer": {
@@ -742,10 +748,10 @@
         },
         "thoth-common": {
             "hashes": [
-                "sha256:49163c97835ad80a0784e920c251f7f4d9261499e37ad1f4d08b34034588696e",
-                "sha256:cddb95c830a036ed9da9ff2fdd12a04fa7bad83775ab46da43bc215e88689fbb"
+                "sha256:415066a72e928bc060a4751f58ec7cabb8ed18fe853ff644bf29d97cdd9af8f8",
+                "sha256:ae9853682a442bdaea7b0613891141d5fe50d955340bef039269528f22996cbc"
             ],
-            "version": "==0.10.5"
+            "version": "==0.10.6"
         },
         "thoth-python": {
             "hashes": [
@@ -765,11 +771,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:6c9e9bed3afa33b00e324660d75be2bb8d64322b72f3de90d5056e860d0cebfe",
-                "sha256:7d83e4a78023a376d9117751d3f906d1534533840a050026c9b9436babd5dd57"
+                "sha256:25cae9d84b9b345e0e559102644ee639ace65cdf5d1f4ad065781d89ed4768e8",
+                "sha256:3bc094de91972523ee320989c96328056d188212f7febc107cac1a0f6e817927"
             ],
             "index": "pypi",
-            "version": "==0.22.0"
+            "version": "==0.22.1"
         },
         "timestamp": {
             "hashes": [
@@ -812,10 +818,10 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:09740201a02918564a84eea071708c46ac26f3bd9b688b48fc6a86f331c536b7",
-                "sha256:ef3fd938ef165956e51bba0d0623508de920ca9f3ccd30c6e9f74381677e0cbb"
+                "sha256:526484e29a9a12f0680d251331e7841b36f1e2b918935377f173f764b1b8be89",
+                "sha256:ec376274f5abb6da25e0ef81d082d2884cda8fd924e1ff73b4c2bb5416d48c87"
             ],
-            "version": "==20.0.1"
+            "version": "==20.0.3"
         },
         "voluptuous": {
             "hashes": [
