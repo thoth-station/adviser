@@ -98,7 +98,7 @@ objects:
     metadata:
       name: "${THOTH_ADVISER_JOB_ID}"
       annotations:
-        thoth-station.ninja/template-version: 0.5.0
+        thoth-station.ninja/template-version: 0.6.0
       labels:
         app: thoth
         component: adviser

@@ -4,7 +4,7 @@ kind: WorkflowTemplate
 metadata:
   name: advise
   annotations:
-    thoth-station.ninja/template-version: 0.1.0-dev
+    thoth-station.ninja/template-version: 0.6.0
   labels:
     app: thoth
     component: advise
@@ -17,7 +17,7 @@ spec:
           - name: THOTH_DOCUMENT_ID
           - name: THOTH_ADVISER_REQUIREMENTS
           - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
-            default: ""
+            value: ""
           - name: THOTH_ADVISER_LIBRARY_USAGE
           - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
           - name: THOTH_ADVISER_RECOMMENDATION_TYPE
@@ -34,7 +34,7 @@ spec:
           - name: THOTH_ADVISER_COUNT
             value: "1"
           - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
-            default: "5"
+            value: "5"
           - name: THOTH_ADVISER_TIMEOUT_SECONDS
             value: "3600"
       outputs:
