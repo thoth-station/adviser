@@ -152,8 +152,8 @@ spec:
             mountPath: /mnt/workdir
         resources:
           limits:
-            cpu: 500m
-            memory: 512Mi
+            cpu: 250m
+            memory: 256Mi
           requests:
-            cpu: 500m
-            memory: 512Mi
+            cpu: 250m
+            memory: 256Mi
