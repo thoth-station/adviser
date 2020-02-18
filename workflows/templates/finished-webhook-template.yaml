@@ -32,43 +32,67 @@ spec:
 
           init_logging()
 
-          metadata = {{inputs.parameters.THOTH_ADVISER_METADATA}}
-          payload = {}
-          payload["analysis_id"] = "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+          metadata = json.loads('{{inputs.parameters.THOTH_ADVISER_METADATA}}')
 
-          installation_id = {}
-          installation_id["id"] = int(metadata["github_installation_id"])
+          GITHUB_PARAMETERS = [
+            "github_event_type",
+            "github_check_run_id",
+            "github_installation_id",
+            "github_base_repo_url",
+            "origin"
+          ]
 
-          data = {
-              "action": "finished",
-              "check_run_id": int(metadata["github_check_run_id"]),
-              "installation": installation_id,
-              "base_repo_url": metadata["github_base_repo_url"],
-              "payload": payload
-          }
+          if all(p in GITHUB_PARAMETERS for p in metadata):
+            github_webhook_params = (
+                metadata["github_event_type"] is not None,
+                metadata["github_check_run_id"] is not None,
+                metadata["github_installation_id"] is not None,
+                metadata["github_base_repo_url"] is not None,
+                metadata["origin"] is not None,
+            )
+            github_webhook_params_present = sum(github_webhook_params)
+            if github_webhook_params_present != 0 and github_webhook_params_present == len(github_webhook_params):
+              payload = {}
+              payload["analysis_id"] = "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
 
-          key=os.environ["WEBHOOK_SECRET"]
-          msg = json.dumps(data).encode("UTF-8")
+              installation_id = {}
+              installation_id["id"] = int(metadata["github_installation_id"])
 
-          secret = key.encode("UTF-8")
-          signature = hmac.new(secret, msg, digestmod="sha1")
+              data = {
+                  "action": "finished",
+                  "check_run_id": int(metadata["github_check_run_id"]),
+                  "installation": installation_id,
+                  "base_repo_url": metadata["github_base_repo_url"],
+                  "payload": payload
+              }
 
-          headers = {
-              "Accept": "application/vnd.github.antiope-preview+json",
-              "Content-Type": "application/json",
-              "User-Agent": "Workflow/{{inputs.parameters.WORKFLOW_NAME}}",
-              "X-GitHub-Delivery": str(uuid.uuid4()),
-              "X-GitHub-Event": metadata["github_event_type"],
-              "X-Hub-Signature": f"sha1={signature.hexdigest()}",
-          }
+              key=os.environ["WEBHOOK_SECRET"]
+              msg = json.dumps(data).encode("UTF-8")
 
-          print("Headers:\n", headers)
-          print("Data:\n", data)
+              secret = key.encode("UTF-8")
+              signature = hmac.new(secret, msg, digestmod="sha1")
 
-          WEBHOOK_CALLBACK_URL = os.environ["WEBHOOK_CALLBACK_URL"]
+              headers = {
+                  "Accept": "application/vnd.github.antiope-preview+json",
+                  "Content-Type": "application/json",
+                  "User-Agent": "Workflow/{{inputs.parameters.WORKFLOW_NAME}}",
+                  "X-GitHub-Delivery": str(uuid.uuid4()),
+                  "X-GitHub-Event": metadata["github_event_type"],
+                  "X-Hub-Signature": f"sha1={signature.hexdigest()}",
+              }
 
-          response = requests.post(WEBHOOK_CALLBACK_URL, data=json.dumps(data), headers=headers)
-          response.raise_for_status()
+              print("Headers:\n", headers)
+              print("Data:\n", data)
+
+              WEBHOOK_CALLBACK_URL = os.environ["WEBHOOK_CALLBACK_URL"]
+
+              response = requests.post(WEBHOOK_CALLBACK_URL, data=json.dumps(data), headers=headers)
+              response.raise_for_status()
+            else:
+              print("There are missing values for GitHub App", metadata)
+          else:
+              print("There are missing keys for GitHub App", metadata)
+              print("Thamos has run through CLI")
         env:
           - name: "WEBHOOK_CALLBACK_URL"
             value: "http://qeb-hwt-aicoe-prod-bots.cloud.paas.psi.redhat.com"
