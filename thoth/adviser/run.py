@@ -143,7 +143,7 @@ def subprocess_run(
 
             _LOGGER.error(err_msg)
 
-            if _FORK and exit_code == 1:
+            if _FORK and exit_code == 256:
                 # Do not overwrite results computed in the forked process.
                 return exit_code
 
