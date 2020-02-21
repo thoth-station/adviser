@@ -62,6 +62,7 @@ def subprocess_run(
         pid = os.fork()
 
     if pid == 0:  # Child or no-fork mode.
+        return_code = 0
         # We need to re-init logging for the sub-process.
         init_logging()
         _LOGGER.debug("Created a child process to compute report")
@@ -110,8 +111,12 @@ def subprocess_run(
                     "automatically marked for solving by the system for future resolutions",
                     ", ".join(exc.unresolved)
                 )
-            _LOGGER.error("Resolver run failed: %s", str(exc))
-            result_dict.update(dict(error=True, error_msg=str(exc), report=exc.to_dict()))
+                return_code = 2
+            else:
+                _LOGGER.error("Resolver run failed: %s", str(exc))
+                result_dict.update(dict(error=True, error_msg=str(exc), report=exc.to_dict()))
+                return_code = 1
+
         except Exception as exc:
             _LOGGER.exception("Adviser raised exception: %s", str(exc))
             result_dict.update(dict(
@@ -119,14 +124,17 @@ def subprocess_run(
                 error_msg=str(exc),
                 report=dict(ERROR="An error occurred, see logs for more info")
             ))
+            return_code = 2
 
         # Always submit results, even on error.
         print_func(time.monotonic() - start_time, result_dict)
 
         if _FORK:
-            os._exit(int(result_dict["error"]))
+            # 1 - error based on user input
+            # 2 - error based on system not capable giving recommendations (not enough data) or internal error.
+            os._exit(return_code)
 
-        return int(result_dict["error"])
+        return return_code
     else:  # Parent waits for its child to terminate.
         _LOGGER.debug("Waiting for child process %r", pid)
         _, exit_code = os.waitpid(pid, 0)
@@ -143,7 +151,7 @@ def subprocess_run(
 
             _LOGGER.error(err_msg)
 
-            if _FORK and exit_code == 256:
+            if _FORK and exit_code in (256, 255):
                 # Do not overwrite results computed in the forked process.
                 return exit_code
 
