@@ -82,6 +82,8 @@ setup(
         "thoth.adviser.strides",
         "thoth.adviser.wraps",
     ],
+    url="https://github.com/thoth-station/adviser",
+    download_url="https://pypi.org/project/thoth-adviser",
     package_data={"thoth.adviser": ["py.typed"]},
     entry_points={"console_scripts": ["thoth-adviser=thoth.adviser.cli:cli"]},
     zip_safe=False,

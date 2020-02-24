@@ -48,7 +48,6 @@ parameters:
     required: false
     description: Metadata carried with the adviser request
     displayName: Adviser metadata
-    value: "null"
   - name: THOTH_ADVISER_SEED
     required: true
     description: Random seed to run adviser with.
@@ -98,7 +97,7 @@ objects:
     metadata:
       name: "${THOTH_ADVISER_JOB_ID}"
       annotations:
-        thoth-station.ninja/template-version: 0.5.0
+        thoth-station.ninja/template-version: 0.6.0
       labels:
         app: thoth
         component: adviser
