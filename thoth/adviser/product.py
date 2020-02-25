@@ -111,6 +111,7 @@ class Product:
         advised_project = Project.from_package_versions(
             packages=list(context.project.iter_dependencies(with_devel=True)),
             packages_locked=package_versions_locked,
+            meta=context.project.pipfile.meta,
         )
 
         return cls(
