@@ -5,16 +5,16 @@ metadata:
   annotations:
     description: "Thoth: Dependency Monkey"
     openshift.io/display-name: "Thoth: Dependency Monkey"
-    version: 0.4.5
+    version: 0.4.6
     tags: thoth,ai-stacks,dependency-monkey
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
       This template defines resources needed to run recommendation logic of Thoth to OpenShift.
     template.openshift.io/provider-display-name: Red Hat, Inc.
-    thoth-station.ninja/template-version: 0.4.5
+    thoth-station.ninja/template-version: 0.4.6
   labels:
     app: thoth
-    template: dependency-monkey
+    template: dependency-monkey-workload-operator
     component: dependency-monkey
 
 parameters:
@@ -111,7 +111,7 @@ objects:
     metadata:
       name: ${THOTH_DEPENDENCY_MONKEY_JOB_ID}
       annotations:
-        thoth-station.ninja/template-version: 0.4.5
+        thoth-station.ninja/template-version: 0.4.6
       labels:
         app: thoth
         component: dependency-monkey
@@ -177,6 +177,8 @@ objects:
                   value: "${THOTH_AMUN_CONTEXT}"
                 - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
                   value: "${THOTH_ADVISER_LIMIT_LATEST_VERSIONS}"
+                - name: THOTH_SENTRY_IGNORE_LOGGER
+                  value: "thoth.adviser.run"
                 - name: PROMETHEUS_PUSHGATEWAY_HOST
                   valueFrom:
                     configMapKeyRef:
