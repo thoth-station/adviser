@@ -14,7 +14,7 @@ metadata:
     thoth-station.ninja/template-version: 0.4.6
   labels:
     app: thoth
-    template: dependency-monkey
+    template: dependency-monkey-workload-operator
     component: dependency-monkey
 
 parameters:
