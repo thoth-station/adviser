@@ -26,6 +26,7 @@ from thoth.adviser.state import State
 from thoth.adviser.context import Context
 from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
+from thoth.python import Pipfile
 from thoth.python import Source
 
 from .base import AdviserTestCase
@@ -33,6 +34,21 @@ from .base import AdviserTestCase
 
 class TestProduct(AdviserTestCase):
     """Test manipulation with product."""
+    
+    _PIPFILE = """
+[[source]]
+name = "pypi-org"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+tensorflow = "*"
+
+[requires]
+python_version = "3.7"
+"""
 
     def test_from_final_state(self, context: Context) -> None:
         """Test instantiating product from a final state."""
@@ -92,7 +108,7 @@ class TestProduct(AdviserTestCase):
             name="tensorflow", version=">=2.0.0", index=pypi, develop=False
         )
 
-        project = flexmock()
+        project = flexmock(pipfile=Pipfile.from_string(self._PIPFILE))
         project.should_receive("iter_dependencies").with_args(
             with_devel=True
         ).and_return([pv_daiquiri, pv_tensorflow]).once()
@@ -146,6 +162,7 @@ class TestProduct(AdviserTestCase):
                     "tensorflow": {"index": "pypi-org", "version": ">=2.0.0"},
                 },
                 "dev-packages": {},
+                "requires": {"python_version": "3.7"},
                 "source": [
                     {
                         "url": "https://pypi.org/simple",
@@ -163,9 +180,9 @@ class TestProduct(AdviserTestCase):
                             "name": "pypi-org",
                         }
                     ],
-                    "requires": {},
+                    "requires": {"python_version": "3.7"},
                     "hash": {
-                        "sha256": "c3a2f42932b6e5cd30f5664b11eda605f5fbd672f1b88729561d0d3edd10b5d9"
+                        "sha256": "f08689732b596fd705a45bbf9ec44c3995b17a1aa6392c46500aeb736c4d4e88"
                     },
                     "pipfile-spec": 6,
                 },
