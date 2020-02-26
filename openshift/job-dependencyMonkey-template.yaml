@@ -177,6 +177,8 @@ objects:
                   value: "${THOTH_AMUN_CONTEXT}"
                 - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
                   value: "${THOTH_ADVISER_LIMIT_LATEST_VERSIONS}"
+                - name: THOTH_SENTRY_IGNORE_LOGGER
+                  value: "thoth.adviser.run"
                 - name: PROMETHEUS_PUSHGATEWAY_HOST
                   valueFrom:
                     configMapKeyRef:
