@@ -535,8 +535,8 @@ def advise(
     type=str,
     envvar="THOTH_AMUN_CONTEXT",
     metavar="AMUN_JSON",
-    help="The context into which computed stacks should be placed; if omitteed, "
-    "raw software stacks will be created. This option cannot be set when generating "
+    help="The context into which computed stacks should be placed (either a file or"
+    "a JSON); if omitted, raw software stacks will be created. This option cannot be set when generating "
     "software stacks onto filesystem.",
 )
 @click.option(
@@ -648,10 +648,15 @@ def dependency_monkey(
         cli_parameters=parameters,
     )
 
+    context_content = {}
+    if context is not None and os.path.isfile(context):
+        with open(context) as f:
+            context_content = json.load(f)
+
     dependency_monkey_runner = DependencyMonkey(
         resolver=resolver,
         stack_output=stack_output,
-        context=json.loads(context) if context else {},
+        context=context_content,
         dry_run=dry_run,
         decision_type=decision_type,
     )
