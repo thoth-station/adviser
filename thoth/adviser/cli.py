@@ -535,7 +535,7 @@ def advise(
     type=str,
     envvar="THOTH_AMUN_CONTEXT",
     metavar="AMUN_JSON",
-    help="The context into which computed stacks should be placed (eigher a file or"
+    help="The context into which computed stacks should be placed (either a file or"
     "a JSON); if omitted, raw software stacks will be created. This option cannot be set when generating "
     "software stacks onto filesystem.",
 )
