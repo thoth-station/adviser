@@ -108,7 +108,10 @@ python_version = "3.7"
             name="tensorflow", version=">=2.0.0", index=pypi, develop=False
         )
 
-        project = flexmock(pipfile=Pipfile.from_string(self._PIPFILE))
+        project = flexmock(
+            pipfile=Pipfile.from_string(self._PIPFILE),
+            runtime_environment=RuntimeEnvironment.from_dict({"operating_system": {"name": "rhel"}})
+        )
         project.should_receive("iter_dependencies").with_args(
             with_devel=True
         ).and_return([pv_daiquiri, pv_tensorflow]).once()
@@ -208,7 +211,7 @@ python_version = "3.7"
             },
             "runtime_environment": {
                 "hardware": {"cpu_family": None, "cpu_model": None},
-                "operating_system": {"name": None, "version": None},
+                "operating_system": {"name": "rhel", "version": None},
                 "python_version": None,
                 "cuda_version": None,
                 "name": None,
