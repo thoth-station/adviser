@@ -42,7 +42,7 @@ spec:
             "origin"
           ]
 
-          if all(p in GITHUB_PARAMETERS for p in metadata):
+          if all(p in metadata for p in GITHUB_PARAMETERS):
             github_webhook_params = (
                 metadata["github_event_type"] is not None,
                 metadata["github_check_run_id"] is not None,
