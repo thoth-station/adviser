@@ -28,9 +28,9 @@ from .version_clash import VersionClashBoot
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
 __all__ = [
-    "SolvedSoftwareEnvironmentBoot",
     "RHELVersionBoot",
     "FullySpecifiedEnvironment",
     "UbiBoot",
+    "SolvedSoftwareEnvironmentBoot",
     "VersionClashBoot",
 ]
