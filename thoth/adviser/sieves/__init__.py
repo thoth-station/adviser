@@ -17,12 +17,13 @@
 
 """Implementation of sieves used in adviser pipeline."""
 
+from .abi_compat import AbiCompatabilitySieve
 from .index_enabled import PackageIndexSieve
 from .locked import CutLockedSieve
+from .filter_index import FilterIndexSieve
 from .prereleases import CutPreReleasesSieve
 from .solved import SolvedSieve
 from .version_constraint import VersionConstraintSieve
-from .abi_compat import AbiCompatabilitySieve
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -35,4 +36,5 @@ __all__ = [
     "SolvedSieve",
     "VersionConstraintSieve",
     "AbiCompatabilitySieve",
+    "FilterIndexSieve",
 ]

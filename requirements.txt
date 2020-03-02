@@ -7,3 +7,4 @@ thoth-solver
 thoth-storages
 toml
 pyyaml
+voluptuous
