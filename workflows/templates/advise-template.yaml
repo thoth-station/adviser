@@ -37,6 +37,10 @@ spec:
             value: "5"
           - name: THOTH_ADVISER_TIMEOUT_SECONDS
             value: "3600"
+          - name: "THOTH_S3_ENDPOINT_URL"
+          - name: "THOTH_CEPH_BUCKET_NAME"
+          - name: "THOTH_CEPH_BUCKET_PREFIX"
+          - name: "THOTH_DEPLOYMENT_NAME"
       outputs:
         artifacts:
           - name: outputdocument
@@ -44,9 +48,9 @@ spec:
             archive:
               none: {}
             s3:
-              key: "data/thoth/thoth-psi-stage/adviser/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
-              endpoint: "s3.upshift.redhat.com"
-              bucket: "thoth"
+              key: "{{inputs.parameters.THOTH_CEPH_BUCKET_PREFIX}}/{{inputs.parameters.THOTH_DEPLOYMENT_NAME}}/adviser/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+              endpoint: "{{inputs.parameters.THOTH_S3_ENDPOINT_URL}}"
+              bucket: "{{inputs.parameters.THOTH_CEPH_BUCKET_NAME}}"
               insecure: true
               accessKeySecret:
                 name: argo-artifact-repository
