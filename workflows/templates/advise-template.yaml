@@ -17,7 +17,6 @@ spec:
           - name: THOTH_DOCUMENT_ID
           - name: THOTH_ADVISER_REQUIREMENTS
           - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
-            value: ""
           - name: THOTH_ADVISER_LIBRARY_USAGE
           - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
           - name: THOTH_ADVISER_RECOMMENDATION_TYPE
@@ -28,7 +27,6 @@ spec:
           - name: THOTH_ADVISER_BEAM_WIDTH
             value: "1000"
           - name: THOTH_LOG_ADVISER
-            value: "DEBUG"
           - name: THOTH_ADVISER_LIMIT
             value: "1000"
           - name: THOTH_ADVISER_COUNT
