@@ -38,6 +38,7 @@ from thoth.common import RuntimeEnvironment
 from thoth.python import Pipfile
 from thoth.python import PipfileLock
 from thoth.python import Project
+from thoth.python.exceptions import UnsupportedConfiguration
 
 from thoth.adviser.dependency_monkey import DependencyMonkey
 from thoth.adviser.digests_fetcher import GraphDigestsFetcher
@@ -227,7 +228,7 @@ def provenance(
             whitelisted_sources=whitelisted_sources,
             digests_fetcher=GraphDigestsFetcher(),
         )
-    except AdviserException as exc:
+    except (AdviserException,UnsupportedConfiguration) as exc:
         if isinstance(exc, InternalError):
             # Re-raise internal exceptions that shouldn't occur here.
             raise
