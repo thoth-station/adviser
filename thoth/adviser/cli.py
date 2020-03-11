@@ -83,18 +83,19 @@ def _instantiate_project(
     runtime_environment: RuntimeEnvironment = None,
 ):
     """Create Project instance based on arguments passed to CLI."""
-    if os.path.isfile(requirements):
+    try:
         with open(requirements, "r") as requirements_file:
             requirements = requirements_file.read()
-
-        if requirements_locked:
-            with open(requirements_locked, "r") as requirements_file:
-                requirements_locked = requirements_file.read()
-            del requirements_file
-    else:
+    except (OSError, FileNotFoundError):
         # We we gather values from env vars, un-escape new lines.
         requirements = requirements.replace("\\n", "\n")
-        if requirements_locked:
+
+    if requirements_locked:
+        try:
+            with open(requirements_locked, "r") as requirements_file:
+                requirements_locked = requirements_file.read()
+        except (OSError, FileNotFoundError):
+            # We we gather values from env vars, un-escape new lines.
             requirements_locked = requirements_locked.replace("\\n", "\n")
 
     pipfile = Pipfile.from_string(requirements)
