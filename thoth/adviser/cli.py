@@ -228,7 +228,7 @@ def provenance(
             whitelisted_sources=whitelisted_sources,
             digests_fetcher=GraphDigestsFetcher(),
         )
-    except (AdviserException,UnsupportedConfiguration) as exc:
+    except (AdviserException, UnsupportedConfiguration) as exc:
         if isinstance(exc, InternalError):
             # Re-raise internal exceptions that shouldn't occur here.
             raise
