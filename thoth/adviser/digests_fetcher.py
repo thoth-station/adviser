@@ -54,7 +54,7 @@ class GraphDigestsFetcher(DigestsFetcherBase):  # type: ignore
 
         result = {}
         for index_url in self.graph.get_python_package_index_urls_all(enabled=True):
-            query_result = self.graph.get_python_package_version_hashes_sha256_all(
+            query_result = self.graph.get_python_package_hashes_sha256(
                 package_name, package_version, index_url, distinct=True
             )
             result[index_url] = [{"sha256": digest} for digest in query_result]
