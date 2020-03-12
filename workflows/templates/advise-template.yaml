@@ -35,6 +35,9 @@ spec:
             value: "5"
           - name: THOTH_ADVISER_TIMEOUT_SECONDS
             value: "3600"
+          - name: "IMAGE_STREAM_REGISTRY"
+          - name: "IMAGE_STREAM_NAMESPACE"
+          - name: "IMAGE_STREAM_TAG"
           - name: "THOTH_S3_ENDPOINT_URL"
           - name: "THOTH_CEPH_BUCKET_NAME"
           - name: "THOTH_CEPH_BUCKET_PREFIX"
@@ -46,7 +49,10 @@ spec:
             archive:
               none: {}
             s3:
-              key: "{{inputs.parameters.THOTH_CEPH_BUCKET_PREFIX}}/{{inputs.parameters.THOTH_DEPLOYMENT_NAME}}/adviser/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+              key: >
+                "inputs.parameters.THOTH_CEPH_BUCKET_PREFIX}}/
+                {{inputs.parameters.THOTH_DEPLOYMENT_NAME}}/
+                adviser/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
               endpoint: "{{inputs.parameters.THOTH_S3_ENDPOINT_URL}}"
               bucket: "{{inputs.parameters.THOTH_CEPH_BUCKET_NAME}}"
               insecure: true
@@ -58,7 +64,10 @@ spec:
                 key: secretKey
       container:
         name: advise
-        image: "quay.io/thoth-station/adviser:v0.6.0-dev"
+        image: >
+          "{{inputs.parameters.IMAGE_STREAM_REGISTRY}}/
+          {{inputs.parameters.IMAGE_STREAM_NAMESPACE}}/
+          adviser:{{inputs.parameters.IMAGE_STREAM_TAG}}"
         env:
           - name: THOTH_DOCUMENT_ID
             value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
