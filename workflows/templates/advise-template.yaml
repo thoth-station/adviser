@@ -17,7 +17,6 @@ spec:
           - name: THOTH_DOCUMENT_ID
           - name: THOTH_ADVISER_REQUIREMENTS
           - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
-            value: ""
           - name: THOTH_ADVISER_LIBRARY_USAGE
           - name: THOTH_ADVISER_REQUIREMENTS_FORMAT
           - name: THOTH_ADVISER_RECOMMENDATION_TYPE
@@ -28,7 +27,6 @@ spec:
           - name: THOTH_ADVISER_BEAM_WIDTH
             value: "1000"
           - name: THOTH_LOG_ADVISER
-            value: "DEBUG"
           - name: THOTH_ADVISER_LIMIT
             value: "1000"
           - name: THOTH_ADVISER_COUNT
@@ -37,6 +35,13 @@ spec:
             value: "5"
           - name: THOTH_ADVISER_TIMEOUT_SECONDS
             value: "3600"
+          - name: "IMAGE_STREAM_REGISTRY"
+          - name: "IMAGE_STREAM_NAMESPACE"
+          - name: "IMAGE_STREAM_TAG"
+          - name: "THOTH_S3_ENDPOINT_URL"
+          - name: "THOTH_CEPH_BUCKET_NAME"
+          - name: "THOTH_CEPH_BUCKET_PREFIX"
+          - name: "THOTH_DEPLOYMENT_NAME"
       outputs:
         artifacts:
           - name: outputdocument
@@ -44,9 +49,11 @@ spec:
             archive:
               none: {}
             s3:
-              key: "data/thoth/thoth-psi-stage/adviser/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
-              endpoint: "s3.upshift.redhat.com"
-              bucket: "thoth"
+              key: "inputs.parameters.THOTH_CEPH_BUCKET_PREFIX}}/\
+              {{inputs.parameters.THOTH_DEPLOYMENT_NAME}}/\
+              adviser/{{inputs.parameters.THOTH_SOLVER_DOCUMENT_ID}}"
+              endpoint: "{{inputs.parameters.THOTH_S3_ENDPOINT_URL}}"
+              bucket: "{{inputs.parameters.THOTH_CEPH_BUCKET_NAME}}"
               insecure: true
               accessKeySecret:
                 name: argo-artifact-repository
@@ -56,7 +63,9 @@ spec:
                 key: secretKey
       container:
         name: advise
-        image: "quay.io/thoth-station/adviser:v0.6.0-dev"
+        image: "{{inputs.parameters.IMAGE_STREAM_REGISTRY}}/\
+        {{inputs.parameters.IMAGE_STREAM_NAMESPACE}}/\
+        adviser:{{inputs.parameters.IMAGE_STREAM_TAG}}"
         env:
           - name: THOTH_DOCUMENT_ID
             value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
