@@ -91,6 +91,22 @@ parameters:
     required: true
     value: "0"
 
+  - name: IMAGE_STREAM_REGISTRY
+    description: Registry the ImageStream to be use lives in
+    displayName: ImageStream Registry
+    required: true
+    value: "docker-registry.default.svc:5000"
+  - name: IMAGE_STREAM_NAMESPACE
+    description: Namespace the ImageStream to be use lives in
+    displayName: ImageStream Project
+    required: true
+    value: "thoth-infra-stage"
+  - name: IMAGE_STREAM_TAG
+    description: Tag of the ImageStream to be use
+    displayName: ImageStream Tag
+    required: true
+    value: "latest"
+
 objects:
   - apiVersion: argoproj.io/v1alpha1
     kind: Workflow
@@ -142,6 +158,17 @@ objects:
             value: "${THOTH_ADVISER_LIMIT_LATEST_VERSIONS}"
           - name: THOTH_FORCE_SYNC
             value: "${THOTH_FORCE_SYNC}"
+          - name: IMAGE_STREAM_REGISTRY
+            value: "${IMAGE_STREAM_REGISTRY}"
+          - name: IMAGE_STREAM_NAMESPACE
+            value: "${IMAGE_STREAM_NAMESPACE}"
+          - name: IMAGE_STREAM_TAG
+            value: "${IMAGE_STREAM_TAG}"
+          - name: ceph_bucket_prefix
+          - name: ceph_bucket_name
+          - name: ceph_host
+          - name: deployment_name
+
       volumes:
         - name: workdir
           emptyDir: {}
@@ -193,6 +220,12 @@ objects:
                       value: "{{workflow.parameters.THOTH_ADVISER_LIMIT_LATEST_VERSIONS}}"
                     - name: THOTH_ADVISER_TIMEOUT_SECONDS
                       value: "{{workflow.parameters.THOTH_ADVISER_TIMEOUT_SECONDS}}"
+                    - name: IMAGE_STREAM_REGISTRY
+                      value: "{{workflow.parameters.IMAGE_STREAM_REGISTRY}}"
+                    - name: IMAGE_STREAM_NAMESPACE
+                      value: "{{workflow.parameters.IMAGE_STREAM_NAMESPACE}}"
+                    - name: IMAGE_STREAM_TAG
+                      value: "{{workflow.parameters.IMAGE_STREAM_TAG}}"
 
               - name: "graph-sync-advise"
                 dependencies:
@@ -209,6 +242,12 @@ objects:
                       value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
                     - name: "THOTH_FORCE_SYNC"
                       value: "{{workflow.parameters.THOTH_FORCE_SYNC}}"
+                    - name: "IMAGE_STREAM_REGISTRY"
+                      value: "{{workflow.parameters.IMAGE_STREAM_REGISTRY}}"
+                    - name: "IMAGE_STREAM_NAMESPACE"
+                      value: "{{workflow.parameters.IMAGE_STREAM_NAMESPACE}}"
+                    - name: "IMAGE_STREAM_TAG"
+                      value: "{{workflow.parameters.IMAGE_STREAM_TAG}}"
 
               - name: "trigger-finished-webhook"
                 dependencies:

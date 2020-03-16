@@ -6,3 +6,5 @@ thoth_adviser.egg-info/
 __pycache__
 build/
 coverage.xml
+.vscode
+.idea

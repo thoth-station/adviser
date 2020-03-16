@@ -38,6 +38,7 @@ from thoth.common import RuntimeEnvironment
 from thoth.python import Pipfile
 from thoth.python import PipfileLock
 from thoth.python import Project
+from thoth.python.exceptions import UnsupportedConfiguration
 
 from thoth.adviser.dependency_monkey import DependencyMonkey
 from thoth.adviser.digests_fetcher import GraphDigestsFetcher
@@ -83,18 +84,19 @@ def _instantiate_project(
     runtime_environment: RuntimeEnvironment = None,
 ):
     """Create Project instance based on arguments passed to CLI."""
-    if os.path.isfile(requirements):
+    try:
         with open(requirements, "r") as requirements_file:
             requirements = requirements_file.read()
-
-        if requirements_locked:
-            with open(requirements_locked, "r") as requirements_file:
-                requirements_locked = requirements_file.read()
-            del requirements_file
-    else:
+    except (OSError, FileNotFoundError):
         # We we gather values from env vars, un-escape new lines.
         requirements = requirements.replace("\\n", "\n")
-        if requirements_locked:
+
+    if requirements_locked:
+        try:
+            with open(requirements_locked, "r") as requirements_file:
+                requirements_locked = requirements_file.read()
+        except (OSError, FileNotFoundError):
+            # We we gather values from env vars, un-escape new lines.
             requirements_locked = requirements_locked.replace("\\n", "\n")
 
     pipfile = Pipfile.from_string(requirements)
@@ -227,7 +229,7 @@ def provenance(
             whitelisted_sources=whitelisted_sources,
             digests_fetcher=GraphDigestsFetcher(),
         )
-    except AdviserException as exc:
+    except (AdviserException, UnsupportedConfiguration) as exc:
         if isinstance(exc, InternalError):
             # Re-raise internal exceptions that shouldn't occur here.
             raise
