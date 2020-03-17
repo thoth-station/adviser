@@ -297,7 +297,7 @@ def provenance(
     "--recommendation-type",
     "-t",
     envvar="THOTH_ADVISER_RECOMMENDATION_TYPE",
-    default="STABLE",
+    default="stable",
     required=True,
     type=click.Choice([e.name.lower() for e in RecommendationType]),
     help="Type of recommendation generated based on knowledge base.",
@@ -520,7 +520,7 @@ def advise(
     "--decision-type",
     required=False,
     envvar="THOTH_DEPENDENCY_MONKEY_DECISION_TYPE",
-    default="ALL",
+    default="all",
     type=click.Choice([e.name.lower() for e in DecisionType]),
     help="A decision type that should be used for generating software stack samples; "
     "if omitted, all software stacks will be created.",
