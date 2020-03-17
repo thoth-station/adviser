@@ -1713,10 +1713,6 @@ class TestResolver(AdviserTestCase):
         resolver.count = 5
         resolver.limit = 3
 
-        resolver.project.runtime_environment.should_receive(
-            "is_fully_specified"
-        ).with_args().and_return(False).ordered()
-
         resolver.predictor.should_call("pre_run").ordered()
 
         for unit in resolver.pipeline.iter_units():
@@ -1753,10 +1749,6 @@ class TestResolver(AdviserTestCase):
 
     def test_resolve_products_eager_stop(self, resolver: Resolver) -> None:
         """Test resolving products with eager stopping."""
-        resolver.project.runtime_environment.should_receive(
-            "is_fully_specified"
-        ).with_args().and_return(True).ordered()
-
         final_state1 = State(score=0.3)
         product1 = flexmock()
 
