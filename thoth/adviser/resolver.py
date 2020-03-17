@@ -742,9 +742,16 @@ class Resolver:
     def _do_resolve_states(
         self, *, with_devel: bool = True
     ) -> Generator[State, None, None]:
-        """Actually perform adaptive simulated annealing."""
+        """Actually perform states resolution."""
         self._log_once_init()
         self._run_boots()
+
+        if not self.project.runtime_environment.is_fully_specified():
+            _LOGGER.warning(
+                "Environment is not fully specified, pre-computed environment markers will not be "
+                "taken into account"
+            )
+
         self._prepare_initial_state(with_devel=with_devel)
 
         _LOGGER.info(
@@ -813,12 +820,6 @@ class Resolver:
                 self.limit,
             )
             self.count = self.limit
-
-        if not self.project.runtime_environment.is_fully_specified():
-            _LOGGER.warning(
-                "Environment is not fully specified, pre-computed environment markers will not be "
-                "taken into account"
-            )
 
         self.predictor.pre_run()
         self.pipeline.call_pre_run()
