@@ -20,11 +20,16 @@
 import logging
 import random
 import math
-
-import attr
+import os
 from typing import Tuple
 from typing import Optional
 from typing import Dict
+from typing import List
+from typing import Union
+from functools import partial
+
+import attr
+from fext import ExtDict
 
 from ..state import State
 from .td import TemporalDifference
@@ -37,6 +42,8 @@ _LOGGER = logging.getLogger(__name__)
 class MCTS(TemporalDifference):
     """Implementation of Monte-Carlo Tree Search (MCTS) based predictor with adaptive simulated annealing schedule."""
 
+    _POLICY_SIZE = int(os.getenv("THOTH_ADVISER_MCTS_POLICY_SIZE", 1000))
+    _policy = attr.ib(type=Dict[str, List[Union[float, int]]], factory=partial(ExtDict, size=_POLICY_SIZE))
     _next_state = attr.ib(type=Optional[State], default=None)
 
     def pre_run(self) -> None:
@@ -55,14 +62,11 @@ class MCTS(TemporalDifference):
             return None
 
         # We have reached a final/terminal state - mark down policy we used and accumulated reward.
-        total_reward = state.score
         for package_tuple in state.iter_resolved_dependencies():
-            package_tuple_hash = hash(package_tuple)
-            old = self._actions.get(package_tuple_hash)
-            if old is None:
-                old = (0.0, 0)
-
-            self._actions[package_tuple_hash] = (old[0] + total_reward, old[1] + 1)
+            policy = self._policy.get(package_tuple) or [0.0, 0]
+            policy[0] += reward
+            policy[1] += 1
+            self._policy[package_tuple] = policy
 
         # We have reached a new final - get another next time.
         self._next_state = None
@@ -75,7 +79,7 @@ class MCTS(TemporalDifference):
         self._temperature = self._temperature_function(self._temperature, self.context)
 
         # Expand highest promising by default.
-        state = self.context.beam.top()
+        state = self.context.beam.max()
 
         # Pick a random state to be expanded if accepted.
         probable_state_idx = random.randrange(1, self.context.beam.size) if self.context.beam.size > 1 else 0
@@ -93,7 +97,7 @@ class MCTS(TemporalDifference):
             self._temperature_history.append(
                 (
                     self._temperature,
-                    state is self.context.beam.top(),
+                    state is self.context.beam.max(),
                     acceptance_probability,
                     self.context.accepted_final_states_count,
                 )

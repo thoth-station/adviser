@@ -20,12 +20,15 @@
 import logging
 import random
 import math
+import os
 
+from fext import ExtDict
 import attr
 from typing import Dict
 from typing import List
 from typing import Tuple
 from typing import Union
+from functools import partial
 
 from ..state import State
 from ..context import Context
@@ -39,9 +42,8 @@ _LOGGER = logging.getLogger(__name__)
 class TemporalDifference(AdaptiveSimulatedAnnealing):
     """Implementation of Temporal Difference (TD) based predictor with adaptive simulated annealing schedule."""
 
-    _actions = attr.ib(
-        type=Dict[str, Dict[str, List[Union[float, int]]]], default=attr.Factory(dict)
-    )
+    _POLICY_SIZE = int(os.getenv("THOTH_ADVISER_TD_POLICY_SIZE", 1000))
+    _policy = attr.ib(type=Dict[str, List[Union[float, int]]], factory=partial(ExtDict, size=_POLICY_SIZE))
     _a = attr.ib(type=float, default=0.0)
 
     def _temperature_function(self, t0: float, context: Context) -> float:
@@ -62,21 +64,19 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
             return
 
         for package_tuple in state.iter_resolved_dependencies():
-            if package_tuple[0] not in self._actions:
-                self._actions[package_tuple[0]] = {}
+            if package_tuple not in self._policy:
+                self._policy[package_tuple] = [0.0, 0]
 
-            if package_tuple not in self._actions[package_tuple[0]]:
-                self._actions[package_tuple[0]][package_tuple] = [0.0, 0]
-
-            self._actions[package_tuple[0]][package_tuple][0] += reward
-            self._actions[package_tuple[0]][package_tuple][1] += 1
+            # TODO set default?!
+            self._policy[package_tuple][0] += reward
+            self._policy[package_tuple][1] += 1
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Run Temporal Difference (TD) with adaptive simulated annealing schedule."""
         self._temperature = self._temperature_function(self._temperature, self.context)
 
         # Expand highest promising by default.
-        state = self.context.beam.top()
+        state = self.context.beam.max()
 
         # Pick a random state to be expanded if accepted.
         probable_state_idx = random.randrange(1, self.context.beam.size) if self.context.beam.size > 1 else 0
@@ -94,7 +94,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
             self._temperature_history.append(
                 (
                     self._temperature,
-                    state is self.context.beam.top(),
+                    state is self.context.beam.max(),
                     acceptance_probability,
                     self.context.accepted_final_states_count,
                 )
@@ -104,12 +104,12 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
 
     def _do_exploitation(self) -> Tuple[State, Tuple[str, str, str]]:
         """Perform expansion of a highest rated stack with action that should yield highest reward."""
-        state = self.context.beam.top()
+        state = self.context.beam.max()
 
         to_resolve_average = None
         to_resolve_package_tuple = None
         for package_tuple in state.iter_unresolved_dependencies():
-            reward_records = self._actions.get(package_tuple[0], {}).get(package_tuple)
+            reward_records = self._policy.get(package_tuple)
             if reward_records is None:
                 continue
 

@@ -24,7 +24,6 @@ from typing import Tuple
 from typing import Generator
 from typing import Optional
 import logging
-import operator
 
 from fext import ExtHeapQueue
 import matplotlib
