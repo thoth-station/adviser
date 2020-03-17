@@ -43,7 +43,7 @@ class HillClimbing(Predictor):
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Get top state from the beam for the next resolution round."""
-        state = self.context.beam.top()
+        state = self.context.beam.max()
 
         if self.keep_history:
             self._history.append((state.score, self.context.accepted_final_states_count))
