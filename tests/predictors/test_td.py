@@ -23,16 +23,13 @@ from hypothesis import given
 from hypothesis.strategies import integers
 from hypothesis.strategies import floats
 
-from thoth.adviser.beam import Beam
 from thoth.adviser.predictors import TemporalDifference
-from thoth.adviser.predictors import AdaptiveSimulatedAnnealing
-from thoth.adviser.state import State
 
 from ..base import AdviserTestCase
 
 
 class TestTemporalDifference(AdviserTestCase):
-    """Tests related to Adaptive Simulated Annealing (ASA)."""
+    """Test implementation of Temporal Difference (TD) based predictor with annealing schedule."""
 
     @given(
         floats(allow_nan=False, allow_infinity=False),
@@ -40,7 +37,7 @@ class TestTemporalDifference(AdviserTestCase):
         floats(min_value=0.0, allow_nan=False, allow_infinity=False),
     )
     def test_acceptance_probability(
-            self, top_score: float, neighbour_score: float, temperature: float
+        self, top_score: float, neighbour_score: float, temperature: float
     ) -> None:
         """Test acceptance probability is always between 0 and 1."""
         acceptance_probability = TemporalDifference._compute_acceptance_probability(
@@ -49,7 +46,7 @@ class TestTemporalDifference(AdviserTestCase):
             temperature=temperature,
         )
         assert (
-                0.0 <= acceptance_probability <= 1.0
+            0.0 <= acceptance_probability <= 1.0
         ), "Acceptance probability not within 0 and 1"
 
     @given(
@@ -60,12 +57,12 @@ class TestTemporalDifference(AdviserTestCase):
         integers(min_value=0),
     )
     def test_temperature_function(
-            self,
-            t0: float,
-            accepted_final_states_count: int,
-            limit: int,
-            iteration: int,
-            count: int,
+        self,
+        t0: float,
+        accepted_final_states_count: int,
+        limit: int,
+        iteration: int,
+        count: int,
     ) -> None:
         """Test the temperature function never drops bellow 0."""
         context = flexmock(
@@ -78,8 +75,14 @@ class TestTemporalDifference(AdviserTestCase):
 
         predictor = TemporalDifference()
         assert (
-                predictor._temperature_function(t0=t0, context=context) >= 0.0
+            predictor._temperature_function(t0=t0, context=context) >= 0.0
         ), "Temperature dropped bellow 0 or is NaN"
+
+    def test_pre_run(self) -> None:
+        """Test initialization done before running."""
+
+    def test_set_reward_signal(self) -> None:
+        """Test keeping the reward signal."""
 
     def test_do_exploitation(self) -> None:
         """Tests on exploitation."""
