@@ -1674,3 +1674,99 @@
 * Introduce assigned context to predictor
 * Extend docs with MDP
 * :pushpin: Automatic update of dependency thoth-storages from 0.21.4 to 0.21.5
+
+## Release 0.7.4 (2020-02-24T10:12:50)
+* Update dependencies
+* Child exists with status code 256
+* Do not overwrite results computed in the forked process
+* Adviser workflow when using Thamos CLI
+* Add URLs to GitHub and PyPI
+* :pushpin: Automatic update of dependency hypothesis from 5.5.3 to 5.5.4
+* :pushpin: Automatic update of dependency hypothesis from 5.5.2 to 5.5.3
+* No deafult value null for metadata
+* :pushpin: Automatic update of dependency hypothesis from 5.5.1 to 5.5.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.1 to 0.22.2
+* Adjust version and use correct keys
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.0 to 0.22.1
+* Add default value when user does not provided Pipfile.lock
+* Add template for releases
+* Revert to flexmock(GraphDatabase)
+* GraphDatabase->graph
+* follow python standards
+* add more flex
+* back to should receive after storages update
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.11 to 0.22.0
+* Update .thoth.yaml
+* change to should call
+* initialize graph
+* abi-compat-sieve tests
+* :pushpin: Automatic update of dependency hypothesis from 5.4.2 to 5.5.1
+* Run workflow even if adviser fails
+* add env variable
+* Use correct storage to store results
+* State thoth-s2i in integration
+* Propagate information about missing configuration in report
+* Add a wrap for adding info about no observations
+* Update docstring
+* :pushpin: Automatic update of dependency hypothesis from 5.4.1 to 5.4.2
+* Make decision type and recommendation type lowercase
+* Modify parameters for GitHub App
+* remove metadata
+* Move cache to storage level
+* cache query results
+* shortcut if package requires no symbols
+* self.image_symbols is now a set
+* Create abi sieve
+* Adjust script in finished webhook
+* adjust script in finished webhook template
+* remove service account argo
+* Adjust inner workflow for GitHub App
+* :pushpin: Automatic update of dependency hypothesis from 4.57.1 to 5.4.1
+* :pushpin: Automatic update of dependency hypothesis-auto from 1.1.3 to 1.1.4
+* :pushpin: Automatic update of dependency matplotlib from 3.1.2 to 3.1.3
+* :pushpin: Automatic update of dependency pytest from 5.3.4 to 5.3.5
+* Do identity check instead of equality check
+* Capture CLI parameters in resolver's context
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.10 to 0.21.11
+* Log information about future solver runs of unsolved dependencies
+* Fix Coala complains
+* Introduce normalization of score returned by step units
+* Introduce RHEL version boot for RHEL major releases
+* :pushpin: Automatic update of dependency packaging from 20.0 to 20.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.9 to 0.21.10
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.8 to 0.21.9
+* :pushpin: Automatic update of dependency pytest from 5.3.3 to 5.3.4
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.7 to 0.21.8
+* Try its best to always come up with a latest stack
+* Rename template for workflow-operator
+* Disable dry run for Thoth's recommendations
+* Fix a bug when env is not fully specified and env marker filters out deps
+* :pushpin: Automatic update of dependency pytest from 5.3.2 to 5.3.3
+* Do not show information about results being submitted to result API
+* Use WARNING log level in thoth.common
+* Ask for thoth.adviser log to have clean logs and respect log configuration
+* Use epsilon greedy strategy for picking the latest version
+* Adjust limit latest versions and beam width
+* Introduce version constrain sieve pipeline unit
+* Assign correct default value
+* Do not keep history in adviser runs
+* Fix default value key
+* Add missing metadata to adviser job template
+* Fix handling of --dry-run parameter
+* Show version of direct dependencies explictly
+* Include random decision stride only explictly
+* Introduce stride for getting one version in a stack
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.6 to 0.21.7
+* Move log_once to utils function
+* Optimize state removal out of beam
+* Terminal output is slow, log only after N stacks generated
+* Optimize handling of the top score kept in beam
+* Prevent annealing from being stuck
+* Fix bug shown when sieves or steps filtered out dependecies
+* Log stack counter in a more human readable form
+* Propagate also expanded package tuple to reward signal
+* Mention behavior for the default value
+* Refactor keep history into an utility function for reusability
+* Log pipeline speed
+* did not save merge before merging
+* add metadata
