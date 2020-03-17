@@ -103,7 +103,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
         self._temperature = self._exp(self._temperature, self.context)
 
         # Expand highest promising by default.
-        state = self.context.beam.top()
+        state = self.context.beam.max()
 
         # Pick a random state to be expanded if accepted.
         probable_state_idx = random.randrange(1, self.context.beam.size) if self.context.beam.size > 1 else 0
@@ -133,7 +133,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
             self._temperature_history.append(
                 (
                     self._temperature,
-                    state is self.context.beam.top(),
+                    state is self.context.beam.max(),
                     acceptance_probability,
                     self.context.accepted_final_states_count,
                 )

@@ -24,6 +24,7 @@ matplotlib = "*"
 pyyaml = "*"
 packaging = "*"
 voluptuous = "*"
+fext = "*"
 
 [requires]
 python_version = "3.6"

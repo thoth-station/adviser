@@ -17,17 +17,16 @@
 
 """Implementation of Beam for beam searching part of adviser."""
 
-import os
 import random
 from typing import Any
 from typing import List
 from typing import Tuple
 from typing import Generator
-from typing import Dict
 from typing import Optional
-import operator
 import logging
+import operator
 
+from fext import ExtHeapQueue
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
@@ -35,6 +34,7 @@ from matplotlib.font_manager import FontProperties
 import attr
 
 from .exceptions import NoHistoryKept
+from .exceptions import InternalError
 from .state import State
 from .utils import should_keep_history
 
@@ -72,14 +72,8 @@ class Beam:
         converter=should_keep_history
     )
 
-    _states = attr.ib(
-        default=attr.Factory(list), type=List[Tuple[Tuple[float, int], State]]
-    )
-    # Mapping id(state) -> index in the heap to guarantee O(1) state index lookup and
-    # subsequent O(log(N)) state removal from the beam.
-    _states_idx = attr.ib(default=attr.Factory(dict), type=Dict[int, int])
-    _last_added = attr.ib(default=None, type=Optional[State])
-    _top = attr.ib(default=None, type=Optional[State])
+    _heap = attr.ib(type=ExtHeapQueue)
+
     _beam_history = attr.ib(
         type=List[Tuple[int, Optional[float]]], default=attr.Factory(list), kw_only=True
     )
@@ -102,6 +96,14 @@ class Beam:
 
         raise ValueError(self._WIDTH_VALIDATOR_ERR_MSG.format(value))
 
+    @_heap.default
+    def _heap_default(self):
+        """Initialize the extended heap queue."""
+        if self.width is not None:
+            return ExtHeapQueue(size=self.width)
+
+        return ExtHeapQueue()
+
     def new_iteration(self) -> None:
         """Called once a new iteration is done in resolver.
 
@@ -111,7 +113,7 @@ class Beam:
             return
 
         self._beam_history.append(
-            (self.size, self.top().score if self.size > 0 else None)
+            (self.size, self.max().score if self.size > 0 else None)
         )
 
     @staticmethod
@@ -175,132 +177,30 @@ class Beam:
     @property
     def size(self) -> int:
         """Get the current size of beam."""
-        return len(self._states)
+        return len(self._heap)
 
     def wipe(self) -> None:
         """Remove all states from beam."""
-        self._states = []
+        self._heap.clear()
 
-    def reset(self) -> None:
-        """Recompute internal state of the beam if any changes to the score of states were made."""
-        self._heapify()
-
-    def iter_states(self) -> Generator[State, None, None]:
+    def iter_states(self) -> List[State]:
         """Iterate over states, do not respect their score in order of iteration."""
-        return (item[1] for item in self._states)
+        return self._heap.items()
 
     def iter_states_sorted(self, reverse: bool = True) -> Generator[State, None, None]:
         """Iterate over sorted states."""
-        return (
-            item[1]
-            for item in sorted(
-                self._states, key=operator.itemgetter(0), reverse=reverse
-            )
-        )
+        return (item for item in sorted(self._heap.items(), reverse=reverse))
 
-    def top(self) -> State:
-        """Return the highest rated state as kept in the beam.
+    def max(self) -> State:
+        """Return the highest rated state as kept in the beam."""
+        return self._heap.get_max()
 
-        This operation is done in O(N) if top is not pre-cached, O(1) otherwise.
-        """
-        if len(self._states) == 0:
-            raise IndexError("Beam is empty")
-
-        if self._top is None:
-            # Perform the operation in O(N/2) ~ O(N) time. This code should not be executed as the logic
-            # behind add_state and remove guarantees top handling - except for top removal when
-            # the heapq has to be scanned for top again.
-            top_idx = len(self._states) // 2
-            for idx, _ in enumerate(self._states[top_idx + 1:], start=top_idx + 1):
-                if self._states[top_idx][0] < self._states[idx][0]:
-                    top_idx = idx
-
-            self._top = self._states[top_idx][1]
-
-        return self._top
-
-    def _heappushpop(
-        self, item: Tuple[object, State]
-    ) -> Tuple[Tuple[float, int], State]:
-        """Fast version of a heappush followed by a heappop."""
-        if self._states and self._states[0] < item:
-            item, self._states[0] = self._states[0], item
-            self._states_idx[id(self._states[0][1])] = 0
-            self._states_idx.pop(id(item[1]))
-            self._siftup(0)
-
-        return item
-
-    def _heapify(self) -> None:
-        """Transform list into a heap, in-place, in O(N) time."""
-        n = len(self._states)
-        for i in reversed(range(n // 2)):
-            self._siftup(i)
-
-    def _heappush(self, item: Tuple[object, State]) -> None:
-        """Push item onto heap, maintaining the heap invariant."""
-        self._states_idx[id(item[1])] = len(self._states)
-        self._states.append(item)
-        self._siftdown(0, len(self._states) - 1)
-
-    def _siftup(self, pos: int) -> None:
-        """Perform sift up operation on the states heap."""
-        endpos = len(self._states)
-        startpos = pos
-        newitem = self._states[pos]
-        # Bubble up the smaller child until hitting a leaf.
-        childpos = 2 * pos + 1  # leftmost child position
-        while childpos < endpos:
-            # Set childpos to index of smaller child.
-            rightpos = childpos + 1
-            if (
-                rightpos < endpos
-                and not self._states[childpos] < self._states[rightpos]
-            ):
-                childpos = rightpos
-            # Move the smaller child up.
-            self._states[pos] = self._states[childpos]
-            self._states_idx[(id(self._states[pos][1]))] = pos
-            pos = childpos
-            childpos = 2 * pos + 1
-        # The leaf at pos is empty now.  Put newitem there, and bubble it up
-        # to its final resting place (by sifting its parents down).
-        self._states[pos] = newitem
-        self._states_idx[id(newitem[1])] = pos
-        self._siftdown(startpos, pos)
-
-    def _siftdown(self, startpos: int, pos: int) -> None:
-        """Perform sift-down operation on the states heap."""
-        newitem = self._states[pos]
-        # Follow the path to the root, moving parents down until finding a place
-        # newitem fits.
-        while pos > startpos:
-            parentpos = (pos - 1) >> 1
-            parent = self._states[parentpos]
-            if newitem < parent:
-                self._states[pos] = parent
-                self._states_idx[id(parent[1])] = pos
-                pos = parentpos
-                continue
-            break
-
-        self._states[pos] = newitem
-        self._states_idx[id(self._states[pos][1])] = pos
-
-    def add_state(self, key: object, state: State) -> None:
+    def add_state(self, state: State) -> None:
         """Add state to the internal state listing (do it in O(log(N)) time."""
-        item = (key, state)
-        self._last_added = None
-        if self.width is not None and len(self._states) >= self.width:
-            popped = self._heappushpop(item)
-            if popped is not item:
-                self._last_added = state
-        else:
-            self._heappush(item)
-            self._last_added = state
+        if state.beam_key is None:
+            raise InternalError("Trying to add a state to beam without binding its key")
 
-        if self._top:
-            self._top = self._top if self._top.score >= state.score else state
+        self._heap.push(state)
 
     def get(self, idx: int) -> State:
         """Get i-th element from the beam (constant time), keep it in the beam.
@@ -310,55 +210,30 @@ class Beam:
         assigned - beam under the hood uses min-heapq (as of now), but the index used is not guaranteed to
         point to a heap-like data structure.
         """
-        return self._states[idx][1]
+        return self._heap.get(idx)
 
     def get_last(self) -> Optional[State]:
         """Get state that was added in the previous resolution round."""
-        return self._last_added
+        return self._heap.get_last()
 
     def get_random(self) -> State:
         """Get a random state from beam."""
         idx = random.randint(0, self.size - 1) if self.size > 1 else 0
         return self.get(idx)
 
-    def get_by_id(self, state_id: int) -> State:
-        """Get a state by its id."""
-        return self._states[self._states_idx[state_id]][1]
-
     def remove(self, state: State) -> None:
         """Remove the given state from beam."""
-        idx = self._states_idx.get(id(state))
-        if idx is None:
-            raise KeyError("The state requested for removal was not found in the beam")
-
-        to_remove = self.pop(idx)
-
-        if to_remove is self._top:
-            self._top = None
+        self._heap.remove(state)
 
     def pop(self, idx: Optional[int] = None) -> State:
         """Pop i-th element from the beam and remove it from the beam (this is actually toppop).
 
-        If index is not provided, pop one of the largest elements kept in the beam.
-
-        If top_state is pre-cached or idx is explicitly set, this operation is done in O(log(N)), O(N) otherwise.
+        If index is not provided, pop the largest item kept in the beam.
         """
         if idx is None:
-            idx = self._states_idx[id(self.top())]
+            to_pop_state = self._heap.get_max()
+        else:
+            to_pop_state = self._heap.get(idx)
 
-        # Do this operation in O(log(N)) on top of the internal heap queue:
-        #   https://stackoverflow.com/questions/10162679/python-delete-element-from-heap
-        to_return = self._states[idx]
-        self._states[idx] = self._states[-1]
-        self._states.pop()
-        if idx < len(self._states):
-            self._siftup(idx)
-            self._siftdown(0, idx)
-
-        if self._last_added is to_return[1]:
-            self._last_added = None
-
-        if self._top and to_return[1] is self._top:
-            self._top = None
-
-        return to_return[1]
+        self._heap.remove(to_pop_state)
+        return to_pop_state

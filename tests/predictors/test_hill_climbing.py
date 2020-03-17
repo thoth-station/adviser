@@ -40,14 +40,15 @@ class TestHillClimbing(AdviserTestCase):
         for _ in range(state_count):
             cloned_state = state.clone()
             cloned_state.iteration = state.iteration + 1
-            beam.add_state((cloned_state.score, cloned_state.iteration), cloned_state)
+            cloned_state.beam_key = (cloned_state.score, cloned_state.iteration)
+            beam.add_state(cloned_state)
 
         predictor = HillClimbing()
         context = flexmock(accepted_final_states_count=33, beam=beam)
         with predictor.assigned_context(context):
             next_state, package_tuple = predictor.run()
             assert next_state is not None
-            assert next_state is beam.top()
+            assert next_state is beam.max()
             assert package_tuple[0] in next_state.unresolved_dependencies
             assert package_tuple in next_state.unresolved_dependencies[package_tuple[0]].values()
 

@@ -402,7 +402,8 @@ class Resolver:
         cloned_state.add_justification(justification_addition)
         cloned_state.score += score_addition
         self.predictor.set_reward_signal(cloned_state, package_version_tuple, score_addition)
-        self.beam.add_state(self.predictor.get_beam_key(cloned_state), cloned_state)
+        self.predictor.set_beam_key(cloned_state)
+        self.beam.add_state(cloned_state)
 
     def _run_strides(self, state: State) -> bool:
         """Run strides and check if the given state should be accepted."""
@@ -519,7 +520,8 @@ class Resolver:
         self.beam.wipe()
         state = State.from_direct_dependencies(direct_dependencies)
         weakref.finalize(state, self.predictor.finalize_state, id(state)).atexit = False
-        self.beam.add_state(self.predictor.get_beam_key(state), state)
+        self.predictor.set_beam_key(state)
+        self.beam.add_state(state)
 
     def _expand_state(
         self, state: State, package_tuple: Tuple[str, str, str]
@@ -581,7 +583,8 @@ class Resolver:
                 return cloned_state
 
             weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state)).atexit = False
-            self.beam.add_state(self.predictor.get_beam_key(cloned_state), cloned_state)
+            self.predictor.set_beam_key(cloned_state)
+            self.beam.add_state(cloned_state)
             self.predictor.set_reward_signal(state, package_tuple, 0.0)
             return None
 
