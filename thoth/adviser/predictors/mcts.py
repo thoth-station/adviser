@@ -18,19 +18,22 @@
 """Implementation of Temporal Difference (TD) based predictor with adaptive simulated annealing schedule."""
 
 import logging
-import random
 import math
+import os
+import random
+import operator
 
 import attr
 from typing import Tuple
 from typing import Optional
-from typing import Dict
 
 from ..state import State
 from .td import TemporalDifference
 
 
 _LOGGER = logging.getLogger(__name__)
+# 0 means unlimited memory for policy learning.
+_MCTS_POLICY_SIZE = int(os.getenv("THOTH_MCTS_POLICY_SIZE", 0))
 
 
 @attr.s(slots=True)
@@ -44,7 +47,9 @@ class MCTS(TemporalDifference):
         self._next_state = None
         super().pre_run()
 
-    def set_reward_signal(self, state: State, _: Tuple[str, str, str], reward: float) -> None:
+    def set_reward_signal(
+        self, state: State, _: Tuple[str, str, str], reward: float
+    ) -> None:
         """Note down reward signal of the last action performed."""
         if math.isnan(reward):
             # Invalid state reached, continue with another one next round.
@@ -57,29 +62,43 @@ class MCTS(TemporalDifference):
         # We have reached a final/terminal state - mark down policy we used and accumulated reward.
         total_reward = state.score
         for package_tuple in state.iter_resolved_dependencies():
-            package_tuple_hash = hash(package_tuple)
-            old = self._actions.get(package_tuple_hash)
-            if old is None:
-                old = (0.0, 0)
-
-            self._actions[package_tuple_hash] = (old[0] + total_reward, old[1] + 1)
+            record = self._policy.setdefault(package_tuple, [0.0, 0])
+            record[0] += total_reward
+            record[1] += 1
 
         # We have reached a new final - get another next time.
         self._next_state = None
 
+        # We limit number of records stored from time to time. Using sorting in O(N*log(N)) from
+        # time to time appears to be much faster than keeping a min-heap queue with O(log(N)) overhead.
+        if _MCTS_POLICY_SIZE and self.context.iteration % 1024 == 0:
+            _LOGGER.warning("Shrinking learnt policy to %d entries", _MCTS_POLICY_SIZE)
+            self._policy = dict(
+                sorted(self._policy.items(), key=operator.itemgetter(1), reverse=True)[
+                    :_MCTS_POLICY_SIZE
+                ]
+            )
+
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Run MCTS with adaptive simulated annealing schedule."""
         if self._next_state is not None:
-            return self._next_state, self._next_state.get_random_unresolved_dependency(prefer_recent=True)
+            return (
+                self._next_state,
+                self._next_state.get_random_unresolved_dependency(prefer_recent=True),
+            )
 
         self._temperature = self._temperature_function(self._temperature, self.context)
 
         # Expand highest promising by default.
-        state = self.context.beam.top()
+        state = self.context.beam.max()
 
         # Pick a random state to be expanded if accepted.
-        probable_state_idx = random.randrange(1, self.context.beam.size) if self.context.beam.size > 1 else 0
-        probable_state = self.context.beam.get(probable_state_idx)
+        probable_state_idx = (
+            random.randrange(1, self.context.beam.size)
+            if self.context.beam.size > 1
+            else 0
+        )
+        probable_state = self.context.beam.get_random(probable_state_idx)
         acceptance_probability = self._compute_acceptance_probability(
             state.score, probable_state.score, self._temperature
         )
@@ -93,7 +112,7 @@ class MCTS(TemporalDifference):
             self._temperature_history.append(
                 (
                     self._temperature,
-                    state is self.context.beam.top(),
+                    state is self.context.beam.max(),
                     acceptance_probability,
                     self.context.accepted_final_states_count,
                 )
