@@ -34,7 +34,7 @@ from .base import AdviserTestCase
 
 class TestProduct(AdviserTestCase):
     """Test manipulation with product."""
-    
+
     _PIPFILE = """
 [[source]]
 name = "pypi-org"
@@ -110,7 +110,9 @@ python_version = "3.7"
 
         project = flexmock(
             pipfile=Pipfile.from_string(self._PIPFILE),
-            runtime_environment=RuntimeEnvironment.from_dict({"operating_system": {"name": "rhel"}})
+            runtime_environment=RuntimeEnvironment.from_dict(
+                {"operating_system": {"name": "rhel"}}
+            ),
         )
         project.should_receive("iter_dependencies").with_args(
             with_devel=True
@@ -118,12 +120,8 @@ python_version = "3.7"
 
         context.project = project
         context.dependencies = {
-            "daiquiri": {
-                ("daiquiri", "1.6.0", "https://pypi.org/simple"): set(),
-            },
-            "numpy": {
-                ("numpy", "1.17.4", "https://pypi.org/simple"): set()
-            },
+            "daiquiri": {("daiquiri", "1.6.0", "https://pypi.org/simple"): set(),},
+            "numpy": {("numpy", "1.17.4", "https://pypi.org/simple"): set()},
             "tensorflow": {
                 ("tensorflow", "2.0.0", "https://pypi.org/simple"): {
                     ("numpy", "1.17.4", "https://pypi.org/simple")
@@ -131,17 +129,18 @@ python_version = "3.7"
             },
         }
         context.dependents = {
-            "daiquiri": {
-                ("daiquiri", "1.6.0", "https://pypi.org/simple"): set(),
-            },
+            "daiquiri": {("daiquiri", "1.6.0", "https://pypi.org/simple"): set(),},
             "numpy": {
                 ("numpy", "1.17.4", "https://pypi.org/simple"): {
-                    (("tensorflow", "2.0.0", "https://pypi.org/simple"), "fedora", "31", "3.7")
+                    (
+                        ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                        "fedora",
+                        "31",
+                        "3.7",
+                    )
                 }
             },
-            "tensorflow": {
-                ("tensorflow", "2.0.0", "https://pypi.org/simple"): set()
-            },
+            "tensorflow": {("tensorflow", "2.0.0", "https://pypi.org/simple"): set()},
         }
         context.graph.should_receive("get_python_environment_marker").with_args(
             "tensorflow",
@@ -241,3 +240,144 @@ python_version = "3.7"
             "justification": [{"foo": "bar"}],
             "advised_runtime_environment": {"hello": "thoth"},
         }
+
+    def test_environment_markers(self, context: Context) -> None:
+        """Test handling of environment markers across multiple runs."""
+        state = State(
+            score=0.0,
+            resolved_dependencies=OrderedDict(
+                {
+                    "numpy": ("numpy", "1.0.0", "https://pypi.org/simple"),
+                    "tensorflow": ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                }
+            ),
+            unresolved_dependencies=OrderedDict(),
+        )
+
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            "numpy", "1.0.0", "https://pypi.org/simple"
+        ).and_return(["000"]).once()
+
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            "tensorflow", "2.0.0", "https://pypi.org/simple"
+        ).and_return(["111"]).once()
+
+        pypi = Source("https://pypi.org/simple")
+        pv_numpy_locked = PackageVersion(
+            name="numpy", version="==1.0.0", index=pypi, develop=False
+        )
+        pv_tensorflow_locked = PackageVersion(
+            name="tensorflow", version="==2.0.0", index=pypi, develop=False
+        )
+
+        context.should_receive("get_package_version").with_args(
+            ("numpy", "1.0.0", "https://pypi.org/simple"), graceful=False
+        ).and_return(pv_numpy_locked).twice()
+
+        context.should_receive("get_package_version").with_args(
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"), graceful=False
+        ).and_return(pv_tensorflow_locked).twice()
+
+        context.dependents = {
+            "numpy": {
+                ("numpy", "1.0.0", "https://pypi.org/simple"): {
+                    (
+                        ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                        "fedora",
+                        "31",
+                        "3.7",
+                    )
+                }
+            },
+            "tensorflow": {("tensorflow", "2.0.0", "https://pypi.org/simple"): set()},
+        }
+
+        context.graph.should_receive("get_python_environment_marker").with_args(
+            "tensorflow",
+            "2.0.0",
+            "https://pypi.org/simple",
+            dependency_name="numpy",
+            dependency_version="1.0.0",
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7",
+        ).and_return("python_version >= '3.7'").and_return(
+            "python_version >= '3' or 1"
+        ).twice()
+
+        product = Product.from_final_state(context=context, state=state)
+        expected = {
+            "advised_runtime_environment": None,
+            "justification": [],
+            "project": {
+                "requirements": {
+                    "dev-packages": {},
+                    "packages": {"flask": "*", "tensorflow": "==1.9.0"},
+                    "requires": {"python_version": "3.6"},
+                    "source": [
+                        {
+                            "name": "pypi",
+                            "url": "https://pypi.org/simple",
+                            "verify_ssl": True,
+                        },
+                        {
+                            "name": "pypi-org",
+                            "url": "https://pypi.org/simple",
+                            "verify_ssl": True,
+                        },
+                    ],
+                },
+                "requirements_locked": {
+                    "_meta": {
+                        "hash": {
+                            "sha256": "e55b6bbaba9467f1629c34e7a4180a6a2d82df37e02e762866e7aac27ced0f99"
+                        },
+                        "pipfile-spec": 6,
+                        "requires": {"python_version": "3.6"},
+                        "sources": [
+                            {
+                                "name": "pypi",
+                                "url": "https://pypi.org/simple",
+                                "verify_ssl": True,
+                            },
+                            {
+                                "name": "pypi-org",
+                                "url": "https://pypi.org/simple",
+                                "verify_ssl": True,
+                            },
+                        ],
+                    },
+                    "default": {
+                        "numpy": {
+                            "hashes": ["sha256:000"],
+                            "index": "pypi-org",
+                            "markers": "python_version >= '3.7'",
+                            "version": "==1.0.0",
+                        },
+                        "tensorflow": {
+                            "hashes": ["sha256:111"],
+                            "index": "pypi-org",
+                            "version": "==2.0.0",
+                        },
+                    },
+                    "develop": {},
+                },
+                "runtime_environment": {
+                    "cuda_version": None,
+                    "hardware": {"cpu_family": None, "cpu_model": None},
+                    "name": None,
+                    "operating_system": {"name": None, "version": None},
+                    "python_version": None,
+                },
+            },
+            "score": 0.0,
+        }
+
+        assert product.to_dict() == expected
+
+        # Markers should not intersect.
+        product = Product.from_final_state(context=context, state=state)
+        expected["project"]["requirements_locked"]["default"]["numpy"][
+            "markers"
+        ] = "python_version >= '3' or 1"
+        assert product.to_dict() == expected
