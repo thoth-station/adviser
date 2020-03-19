@@ -51,7 +51,7 @@ spec:
             s3:
               key: "inputs.parameters.THOTH_CEPH_BUCKET_PREFIX}}/\
               {{inputs.parameters.THOTH_DEPLOYMENT_NAME}}/\
-              adviser/{{inputs.parameters.THOTH_SOLVER_DOCUMENT_ID}}"
+              adviser/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
               endpoint: "{{inputs.parameters.THOTH_S3_ENDPOINT_URL}}"
               bucket: "{{inputs.parameters.THOTH_CEPH_BUCKET_NAME}}"
               insecure: true
