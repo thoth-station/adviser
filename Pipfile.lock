@@ -249,11 +249,11 @@
         },
         "importlib-resources": {
             "hashes": [
-                "sha256:1dff36d42d94bd523eeb847c25c7dd327cb56686d74a26dfcc8d67c504922d59",
-                "sha256:7f0e1b2b5f3981e39c52da0f99b2955353c5a139c314994d1126c2551ace9bdf"
+                "sha256:4019b6a9082d8ada9def02bece4a76b131518866790d58fdda0b5f8c603b36c2",
+                "sha256:dd98ceeef3f5ad2ef4cc287b8586da4ebad15877f351e9688987ad663a0a29b8"
             ],
             "markers": "python_version < '3.7'",
-            "version": "==1.3.1"
+            "version": "==1.4.0"
         },
         "jinja2": {
             "hashes": [
@@ -952,11 +952,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:0bfe0dd17ec4c660d88caca48f6bbef36e225ac29bc0c546c8219a0a3cee7229",
-                "sha256:356d76d1c5963f1cc34b5eb20f7d54fc80bb332a4b0200ac46dc2e00443b7d49"
+                "sha256:73bb07b1d6d0097a77e35b69763fe87097f7b5605becf7f4adbb14451aba2e95",
+                "sha256:827f85d92dd383ad3ce495bda4a49745e86c8a64d4be8acbeac1198edc18cd01"
             ],
             "index": "pypi",
-            "version": "==5.6.1"
+            "version": "==5.7.0"
         },
         "hypothesis-auto": {
             "hashes": [
