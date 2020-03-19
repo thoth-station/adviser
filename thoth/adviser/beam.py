@@ -24,9 +24,8 @@ from typing import Tuple
 from typing import Generator
 from typing import Optional
 import logging
-import operator
+import heapq
 
-from fext import ExtHeapQueue
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
@@ -72,11 +71,10 @@ class Beam:
         converter=should_keep_history
     )
 
-    _heap = attr.ib(type=ExtHeapQueue)
-
-    _beam_history = attr.ib(
-        type=List[Tuple[int, Optional[float]]], default=attr.Factory(list), kw_only=True
-    )
+    _heapq = attr.ib(type=List[State], factory=list)
+    _beam_history = attr.ib(type=List[Tuple[int, Optional[float]]], factory=list, kw_only=True)
+    _last = attr.ib(type=Optional[State], default=None)
+    _max = attr.ib(type=Optional[Tuple[State, int]], default=None)
 
     _WIDTH_VALIDATOR_ERR_MSG = "Beam width has to be None or positive integer, got {!r}"
 
@@ -95,14 +93,6 @@ class Beam:
             return
 
         raise ValueError(self._WIDTH_VALIDATOR_ERR_MSG.format(value))
-
-    @_heap.default
-    def _heap_default(self):
-        """Initialize the extended heap queue."""
-        if self.width is not None:
-            return ExtHeapQueue(size=self.width)
-
-        return ExtHeapQueue()
 
     def new_iteration(self) -> None:
         """Called once a new iteration is done in resolver.
@@ -177,30 +167,54 @@ class Beam:
     @property
     def size(self) -> int:
         """Get the current size of beam."""
-        return len(self._heap)
+        return len(self._heapq)
 
     def wipe(self) -> None:
         """Remove all states from beam."""
-        self._heap.clear()
+        self._heapq.clear()
 
     def iter_states(self) -> List[State]:
         """Iterate over states, do not respect their score in order of iteration."""
-        return self._heap.items()
+        return self._heapq
 
     def iter_states_sorted(self, reverse: bool = True) -> Generator[State, None, None]:
         """Iterate over sorted states."""
-        return (item for item in sorted(self._heap.items(), reverse=reverse))
+        return (item for item in sorted(self._heapq, reverse=reverse))
 
     def max(self) -> State:
         """Return the highest rated state as kept in the beam."""
-        return self._heap.get_max()
+        if not self._max:
+            idx = len(self._heapq) // 2
+            self._max = (self._heapq[idx], idx)
+
+            for idx, item in enumerate(self._heapq[idx + 1:], start=idx + 1):
+                if self._max[0] < self._heapq[idx]:
+                    self._max = (self._heapq[idx], idx)
+
+        return self._max[0]
 
     def add_state(self, state: State) -> None:
         """Add state to the internal state listing (do it in O(log(N)) time."""
         if state.beam_key is None:
             raise InternalError("Trying to add a state to beam without binding its key")
 
-        self._heap.push(state)
+        if self.width is not None and len(self._heapq) >= self.width:
+            popped = heapq.heappushpop(self._heapq, state)
+            if popped is not state:
+                self._last = state
+
+            # Always invalidate max as the internal structure might change.
+            self._max = None
+        else:
+            heapq.heappush(self._heapq, state)
+            self._last = state
+
+            if len(self._heapq) == 1:
+                self._max = (state, 0)
+            elif self._max is not None and self._max[0] < state:
+                # We know it will be kept as the rightmost item in the heap.
+                assert self._heapq[len(self._heapq) - 1] == state
+                self._max = (state, len(self._heapq) - 1)
 
     def get(self, idx: int) -> State:
         """Get i-th element from the beam (constant time), keep it in the beam.
@@ -210,11 +224,11 @@ class Beam:
         assigned - beam under the hood uses min-heapq (as of now), but the index used is not guaranteed to
         point to a heap-like data structure.
         """
-        return self._heap.get(idx)
+        return self._heapq[idx]
 
     def get_last(self) -> Optional[State]:
         """Get state that was added in the previous resolution round."""
-        return self._heap.get_last()
+        return self._last
 
     def get_random(self) -> State:
         """Get a random state from beam."""
@@ -223,7 +237,17 @@ class Beam:
 
     def remove(self, state: State) -> None:
         """Remove the given state from beam."""
-        self._heap.remove(state)
+        if self._max is not None and self._max[0] is state:
+            # Fast path - removing the max.
+            self.pop(self._max[1])
+            return
+
+        for idx, item in enumerate(self._heapq):
+            if item is state:
+                self.pop(idx)
+                return
+
+        raise ValueError("The given state was not found in the beam")
 
     def pop(self, idx: Optional[int] = None) -> State:
         """Pop i-th element from the beam and remove it from the beam (this is actually toppop).
@@ -231,9 +255,11 @@ class Beam:
         If index is not provided, pop the largest item kept in the beam.
         """
         if idx is None:
-            to_pop_state = self._heap.get_max()
-        else:
-            to_pop_state = self._heap.get(idx)
+            idx = self._max[1]
 
-        self._heap.remove(to_pop_state)
-        return to_pop_state
+        removed = self._heapq.pop(idx)
+        self._max = None  # Internal state has changed.
+        if removed is self._last:
+            self._last = None
+
+        return removed
