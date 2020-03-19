@@ -845,7 +845,7 @@ class Resolver:
                             self.context.limit,
                             self.context.iteration,
                             self.context.accepted_final_states_count / (time.monotonic() - start_time),
-                            self.beam.top().score,
+                            self.beam.max().score,
                         )
                     else:
                         _LOGGER.info(

@@ -279,8 +279,11 @@ class TestBeam(AdviserTestCase):
         with pytest.raises(ValueError):
             beam.remove(state1)
 
+        assert beam.max() is state3
+
         beam.remove(state2)
 
+        assert beam.max() is state3
         assert state2 not in beam.iter_states()
         assert state3 in beam.iter_states()
         assert beam.size == 1
