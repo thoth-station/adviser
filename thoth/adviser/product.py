@@ -76,35 +76,42 @@ class Product:
                 if not package_version.hashes:
                     log_once(_LOGGER, cls._LOG_HASHES, package_tuple, "No hashes found for package %r", package_tuple)
 
-                # Fill environment markers by checking dependencies that introduced this dependency.
-                # We do it only if we have no hashes - if hashes are present, the environment marker was
-                # already picked (can be set to None if no marker is present).
-                # For direct dependencies, dependents can return an empty set (if dependency is not
-                # shared with other dependencies) and marker is propagated from PackageVersion registered in
-                # Context.register_package_version.
-                dependents_tuples = context.dependents[package_tuple[0]][package_tuple]
-                for dependent_tuple in dependents_tuples:
-                    try:
-                        environment_marker = context.graph.get_python_environment_marker(
-                            *dependent_tuple[0],
-                            dependency_name=package_tuple[0],
-                            dependency_version=package_tuple[1],
-                            os_name=dependent_tuple[1],
-                            os_version=dependent_tuple[2],
-                            python_version=dependent_tuple[3],
-                        )
-                    except NotFoundError:
-                        # This can happen if we do resolution that is agnostic to runtime
-                        # environment. In that case a dependency introduced in one runtime
-                        # environment does not need to co-exist in another runtime environment considering
-                        # marker evaluation result.
-                        continue
+            # Fill environment markers by checking dependencies that introduced this dependency.
+            # We do it only if we have no hashes - if hashes are present, the environment marker was
+            # already picked (can be set to None if no marker is present).
+            # For direct dependencies, dependents can return an empty set (if dependency is not
+            # shared with other dependencies) and marker is propagated from PackageVersion registered in
+            # Context.register_package_version.
+            dependents_tuples = context.dependents[package_tuple[0]][package_tuple]
 
-                    if package_version.markers and environment_marker:
-                        # Install dependency if any of dependents need it.
-                        package_version.markers = f"({package_version.markers}) or ({environment_marker})"
-                    elif not package_version.markers and environment_marker:
-                        package_version.markers = environment_marker
+            # Marker depends based on the stack that was resolved. Do not change package_version directly,
+            # rather clone it and used a cloned version not to clash with environment markers.
+            environment_marker = None
+            for dependent_tuple in dependents_tuples:
+                try:
+                    marker = context.graph.get_python_environment_marker(
+                        *dependent_tuple[0],
+                        dependency_name=package_tuple[0],
+                        dependency_version=package_tuple[1],
+                        os_name=dependent_tuple[1],
+                        os_version=dependent_tuple[2],
+                        python_version=dependent_tuple[3],
+                    )
+                except NotFoundError:
+                    # This can happen if we do resolution that is agnostic to runtime
+                    # environment. In that case a dependency introduced in one runtime
+                    # environment does not need to co-exist in another runtime environment considering
+                    # marker evaluation result.
+                    continue
+
+                if marker and environment_marker:
+                    # Multiple markers based on dependency that introduced it.
+                    environment_marker = f"({environment_marker}) or ({marker})"
+                elif marker and not environment_marker:
+                    environment_marker = marker
+
+            if environment_marker:
+                package_version = attr.evolve(package_version, markers=environment_marker)
 
             package_versions_locked.append(package_version)
 
