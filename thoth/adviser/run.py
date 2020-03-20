@@ -114,8 +114,9 @@ def subprocess_run(
                 return_code = 2
             else:
                 _LOGGER.error("Resolver run failed: %s", str(exc))
-                result_dict.update(dict(error=True, error_msg=str(exc), report=exc.to_dict()))
                 return_code = 1
+
+            result_dict.update(dict(error=True, error_msg=str(exc), report=exc.to_dict()))
 
         except Exception as exc:
             _LOGGER.exception("Adviser raised exception: %s", str(exc))
