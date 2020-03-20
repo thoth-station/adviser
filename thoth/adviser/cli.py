@@ -114,14 +114,19 @@ def _instantiate_project(
     return project
 
 
-def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationType) -> type:
+def _get_adviser_predictor(
+    predictor: str, recommendation_type: RecommendationType
+) -> type:
     """Get adviser predictor based on command line option."""
     if predictor != "AUTO":
         return getattr(predictors, predictor)
 
     if recommendation_type == RecommendationType.LATEST:
         return predictors.ApproximatingLatest
-    elif recommendation_type == RecommendationType.STABLE or recommendation_type == RecommendationType.TESTING:
+    elif (
+        recommendation_type == RecommendationType.STABLE
+        or recommendation_type == RecommendationType.TESTING
+    ):
         return predictors.AdaptiveSimulatedAnnealing
 
     raise ValueError(f"Unknown recommendation type: {recommendation_type!r}")
@@ -370,6 +375,16 @@ def provenance(
     metavar="PIPELINE",
     help="Pipeline configuration supplied in a form of JSON/YAML or a path to a file.",
 )
+@click.option(
+    "--user-stack-scoring/--no-user-stack-scoring",
+    envvar="THOTH_ADVISER_USER_STACK_SCORING",
+    is_flag=True,
+    default=True,
+    show_default=True,
+    help="Turn off or on user stack scoring - the lock file supplied, if any, will be used "
+         "as a base for relative stack quality comparision. Adviser will score the supplied "
+         "lock file and will try to find a better stack.",
+)
 def advise(
     click_ctx: click.Context,
     *,
@@ -389,6 +404,7 @@ def advise(
     runtime_environment: Optional[str] = None,
     seed: Optional[int] = None,
     pipeline: Optional[str] = None,
+    user_stack_scoring: bool = True,
 ):
     """Advise package and package versions in the given stack or on solely package only."""
     parameters = locals()
@@ -451,7 +467,12 @@ def advise(
     )
 
     exit_code = subprocess_run(
-        resolver, print_func, plot=plot, result_dict={"parameters": parameters}
+        resolver,
+        print_func,
+        plot=plot,
+        result_dict={"parameters": parameters},
+        with_devel=True,
+        user_stack_scoring=user_stack_scoring,
     )
 
     click_ctx.exit(int(exit_code != 0))
@@ -679,6 +700,8 @@ def dependency_monkey(
         print_func,
         result_dict={"parameters": parameters},
         plot=plot,
+        with_devel=True,
+        user_stack_scoring=False,
     )
 
     click_ctx.exit(int(exit_code != 0))
