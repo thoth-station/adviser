@@ -133,7 +133,6 @@ def _library_usage(value: Any) -> Dict[str, Any]:
 @contextlib.contextmanager
 def _sigint_handler(resolver: "Resolver") -> None:
     """Register signal handler for resolver handling."""
-
     def handler(sig_num: int, _) -> None:
         resolver.stop_resolving = True
 
