@@ -20,6 +20,7 @@
 import abc
 import logging
 from contextlib import contextmanager
+import sys
 
 import attr
 from typing import Any
@@ -68,7 +69,7 @@ class Predictor:
 
         return self._CONTEXT
 
-    def set_beam_key(self, state: State) -> object:
+    def set_beam_key(self, state: State, *, is_user_stack: bool = False) -> object:
         """Set the key that will be used to keep states in the beam.
 
         The key returned should always uniquely sort two states, that is, there should not exist
@@ -85,7 +86,15 @@ class Predictor:
         This method should not be treated as staticmethod or as classmethod - a predictor
         can construct key based on its own internal state.
         """
-        state.beam_key = state.score, state.iteration
+        if is_user_stack:
+            # Prefer user stack if we produce stacks with the same score - set
+            # the secondary key to the highest value possible.
+            state.beam_key = state.score, sys.maxsize
+            return
+
+        # Keep iteration negative - if stacks have same score, prefer stacks
+        # that were found sooner in the adviser output.
+        state.beam_key = state.score, -state.iteration
 
     def pre_run(self) -> None:
         """Pre-initialize the predictor.

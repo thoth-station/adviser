@@ -53,6 +53,7 @@ from .exceptions import StrideError
 from .exceptions import UnresolvedDependencies
 from .exceptions import WrapError
 from .exceptions import PipelineConfigurationError
+from .exceptions import UserLockFileError
 from .pipeline_builder import PipelineBuilder
 from .pipeline_config import PipelineConfig
 from .predictor import Predictor
@@ -132,6 +133,7 @@ def _library_usage(value: Any) -> Dict[str, Any]:
 @contextlib.contextmanager
 def _sigint_handler(resolver: "Resolver") -> None:
     """Register signal handler for resolver handling."""
+
     def handler(sig_num: int, _) -> None:
         resolver.stop_resolving = True
 
@@ -179,11 +181,15 @@ class Resolver:
     stop_resolving = attr.ib(type=bool, default=False)
     log_final_state_count = attr.ib(
         type=int,
-        default=os.getenv("THOTH_ADVISER_LOG_FINAL_STATE_COUNT", DEFAULT_LOG_FINAL_STATE_COUNT)
+        default=os.getenv(
+            "THOTH_ADVISER_LOG_FINAL_STATE_COUNT", DEFAULT_LOG_FINAL_STATE_COUNT
+        ),
     )
     log_final_state_top = attr.ib(
         type=bool,
-        default=os.getenv("THOTH_ADVISER_LOG_FINAL_STATE_TOP", DEFAULT_LOG_FINAL_STATE_TOP)
+        default=os.getenv(
+            "THOTH_ADVISER_LOG_FINAL_STATE_TOP", DEFAULT_LOG_FINAL_STATE_TOP
+        ),
     )
 
     _beam = attr.ib(type=Optional[Beam], kw_only=True, default=None)
@@ -192,11 +198,17 @@ class Resolver:
     )
     _context = attr.ib(type=Optional[Context], default=None, kw_only=True)
 
-    _log_unresolved = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
+    _log_unresolved = attr.ib(
+        type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True
+    )
     _log_unsolved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
     _log_sieved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
-    _log_step_not_acceptable = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
-    _log_no_intersected = attr.ib(type=Tuple[Tuple[str, str, str], str], default=attr.Factory(set), kw_only=True)
+    _log_step_not_acceptable = attr.ib(
+        type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True
+    )
+    _log_no_intersected = attr.ib(
+        type=Tuple[Tuple[str, str, str], str], default=attr.Factory(set), kw_only=True
+    )
 
     @limit.validator
     @count.validator
@@ -269,14 +281,16 @@ class Resolver:
             try:
                 boot.run()
             except NotAcceptable as exc:
-                raise CannotProduceStack(f"Boot pipeline unit {boot.__class__.__name__} failed: {str(exc)!r}")
+                raise CannotProduceStack(
+                    f"Boot pipeline unit {boot.__class__.__name__} failed: {str(exc)!r}"
+                )
             except Exception as exc:
                 raise BootError(
                     f"Failed to run pipeline boot {boot.__class__.__name__!r}: {str(exc)}"
                 ) from exc
 
     def _run_sieves(
-        self, package_versions: List[PackageVersion]
+        self, package_versions: List[PackageVersion], *, log_level: int = logging.DEBUG
     ) -> Generator[PackageVersion, None, None]:
         """Run sieves on each package tuple."""
         result = (pv for pv in package_versions)
@@ -285,7 +299,8 @@ class Resolver:
             try:
                 result = sieve.run(result)
             except NotAcceptable as exc:
-                _LOGGER.debug(
+                _LOGGER.log(
+                    log_level,
                     "Sieve %r removed packages %r: %s",
                     sieve.__class__.__name__,
                     str(exc),
@@ -304,13 +319,20 @@ class Resolver:
         self,
         state: State,
         package_version: PackageVersion,
-        unresolved_dependencies: Dict[str, List[Tuple[str, str, str]]],
-    ) -> None:
+        unresolved_dependencies: Optional[Dict[str, List[Tuple[str, str, str]]]] = None,
+        *,
+        user_stack_scoring: bool = False,
+        log_level: int = logging.DEBUG,
+    ) -> bool:
         """Run steps and generate a new state."""
         package_version_tuple = package_version.to_tuple()
 
         multi_package_resolution = False
         if package_version.name in state.resolved_dependencies:
+            if user_stack_scoring:
+                _LOGGER.error(
+                    "Multi package resolution cannot occur when scoring user stacks, this assert is not fatal"
+                )
             # We already have this dependency in stack, run steps that are
             # required to be run in such cases. The resolver logic called before guarantees there is
             # no version or package source clash.
@@ -343,9 +365,13 @@ class Resolver:
                     step.__class__.__name__,
                     package_version_tuple,
                     str(exc),
+                    level=log_level,
                 )
-                self.predictor.set_reward_signal(state, package_version_tuple, math.nan)
-                return
+                if not user_stack_scoring:
+                    self.predictor.set_reward_signal(
+                        state, package_version_tuple, math.nan
+                    )
+                return False
             except Exception as exc:
                 raise StepError(
                     f"Failed to run step {step.__class__.__name__!r} for Python package "
@@ -390,20 +416,30 @@ class Resolver:
 
         if state.unresolved_dependencies:
             cloned_state = state.clone()
-            weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state)).atexit = False
+            weakref.finalize(
+                cloned_state, self.predictor.finalize_state, id(cloned_state)
+            ).atexit = False
         else:
             # Optimization - reuse the old one as it would be discarded anyway.
             cloned_state = state
 
-        cloned_state.set_unresolved_dependencies(unresolved_dependencies)
+        if unresolved_dependencies:
+            cloned_state.set_unresolved_dependencies(unresolved_dependencies)
+
         cloned_state.remove_unresolved_dependency_subtree(package_version_tuple[0])
         cloned_state.add_resolved_dependency(package_version_tuple)
         cloned_state.iteration = self.context.iteration
         cloned_state.add_justification(justification_addition)
         cloned_state.score += score_addition
-        self.predictor.set_reward_signal(cloned_state, package_version_tuple, score_addition)
-        self.predictor.set_beam_key(cloned_state)
-        self.beam.add_state(cloned_state)
+
+        if not user_stack_scoring:
+            self.predictor.set_reward_signal(
+                cloned_state, package_version_tuple, score_addition
+            )
+            self.predictor.set_beam_key(cloned_state)
+            self.beam.add_state(cloned_state)
+
+        return True
 
     def _run_strides(self, state: State) -> bool:
         """Run strides and check if the given state should be accepted."""
@@ -437,6 +473,109 @@ class Resolver:
                     f"Failed to run wrap {wrap.__class__.__name__!r} on a final step: {str(exc)}"
                 ) from exc
 
+    def _prepare_user_lock_file(self, *, with_devel: bool = True) -> None:
+        """Perform operations on the user's lock file required before running the pipeline.
+
+        One of the preparation steps is to assign index for each and every
+        package present in the lock file so we know from where these packages
+        were installed. Pipfile.lock does not need to state the python index
+        used when installing dependencies.
+        """
+        sources = list(self.project.pipfile_lock.meta.sources.values())
+        source_urls = {source.url for source in sources}
+
+        enabled_indexes = set(
+            self.graph.get_python_package_index_urls_all(enabled=True)
+        )
+        if not source_urls.issubset(enabled_indexes):
+            raise UserLockFileError(
+                "User's lock file uses one or more indexes that are "
+                f"not enabled: {', '.join(source_urls - enabled_indexes)}"
+            )
+
+        for package_version in self.project.iter_dependencies_locked(
+            with_devel=with_devel
+        ):
+            if package_version.index is not None:
+                continue
+
+            if len(sources) == 1:
+                # Only one source configured, we can use it directly.
+                package_version.index = sources[0]
+            else:
+                package_version_hashes = {
+                    h[len("sha256:"):] for h in package_version.hashes
+                }
+
+                # Assign index based on sources.
+                for source in sources:
+                    known_hashes = set(
+                        self.graph.get_python_package_hashes_sha256(
+                            package_version.name,
+                            package_version.locked_version,
+                            source.url,
+                        )
+                    )
+
+                    if not known_hashes:
+                        continue
+
+                    if known_hashes & package_version_hashes:
+                        _LOGGER.debug(
+                            "Assigning index %r for package %r in version %r based on "
+                            "the provenance database as index was not assigned in the lock file entry",
+                            source.url,
+                            package_version.name,
+                            package_version.locked_version,
+                        )
+                        package_version.index = source
+                        break
+                else:
+                    raise UserLockFileError(
+                        f"Could not determine provenance of package {package_version.name!r} "
+                        f"in version {package_version.locked_version!r}"
+                    )
+
+    def _maybe_score_user_lock_file(self, *, with_devel: bool = True) -> None:
+        """Score user's lock file submitted.
+
+        As adviser is stochastic, it can explore different parts of the state
+        space across different runs. To avoid this, we usually run adviser with
+        a fixed random seed in deployments which preserves parts of the state
+        space explored. However, if other parts of the Thoth change (e.g.
+        database of observations, new package releases) we can, again, be
+        exploring different parts of the state space. This function scores
+        user's lockfile submitted first and then, in the adviser run itself, we
+        try to find a better stack than the one user is using.
+        """
+        if not self.project.pipfile_lock:
+            _LOGGER.info("Cannot score user's stack - no user's stack provided")
+            return
+
+        self._prepare_user_lock_file(with_devel=True)
+
+        _LOGGER.info("Scoring user's stack based on the lock file submitted")
+        for package_version in self.project.iter_dependencies_locked(
+            with_devel=with_devel
+        ):
+            package_version = list(self._run_sieves([package_version]))
+            if not package_version:
+                _LOGGER.info("User's stack was removed based on sieves")
+                return
+
+        state = State()
+        for package_version in self.project.iter_dependencies_locked(
+            with_devel=with_devel
+        ):
+            if not self._run_steps(state, package_version, user_stack_scoring=True):
+                _LOGGER.info("User's stack was removed based on steps")
+                return
+
+        self._run_wraps(state)
+        self.predictor.set_beam_key(state, is_user_stack=True)
+        self.beam.add_state(state)
+        _LOGGER.info("User's software stack has a score of %g", state.score)
+
     def _resolve_direct_dependencies(
         self, *, with_devel: bool
     ) -> Dict[str, List[PackageVersion]]:
@@ -447,8 +586,11 @@ class Resolver:
         resolved_direct_dependencies: Dict[
             str, List[PackageVersion]
         ] = self.solver.solve(
-            sorted(self.project.iter_dependencies(with_devel=with_devel), key=lambda p: p.name),
-            graceful=True
+            sorted(
+                self.project.iter_dependencies(with_devel=with_devel),
+                key=lambda p: p.name,
+            ),
+            graceful=True,
         )
 
         unresolved = []
@@ -477,7 +619,7 @@ class Resolver:
             _LOGGER.info(
                 "Found direct dependency %r with version specification %r",
                 package_version.name,
-                package_version.version
+                package_version.version,
             )
 
         if unresolved:
@@ -511,7 +653,9 @@ class Resolver:
                 )
 
             if self.limit_latest_versions:
-                direct_dependencies[direct_dependency_name] = package_versions[:self.limit_latest_versions]
+                direct_dependencies[direct_dependency_name] = package_versions[
+                    : self.limit_latest_versions
+                ]
             else:
                 direct_dependencies[direct_dependency_name] = package_versions
 
@@ -557,7 +701,7 @@ class Resolver:
                 self._log_unresolved,
                 package_tuple,
                 "Dependency %r is not yet resolved, trying different resolution path...",
-                package_tuple
+                package_tuple,
             )
             if not state.unresolved_dependencies:
                 self.beam.remove(state)
@@ -582,7 +726,9 @@ class Resolver:
                 self.predictor.set_reward_signal(cloned_state, package_tuple, math.inf)
                 return cloned_state
 
-            weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state)).atexit = False
+            weakref.finalize(
+                cloned_state, self.predictor.finalize_state, id(cloned_state)
+            ).atexit = False
             self.predictor.set_beam_key(cloned_state)
             self.beam.add_state(cloned_state)
             self.predictor.set_reward_signal(state, package_tuple, 0.0)
@@ -673,7 +819,7 @@ class Resolver:
                     "No solved releases found for %r which would satisfy version requirements of %r, "
                     "trying different resolution path...",
                     unsolved_item,
-                    package_tuple
+                    package_tuple,
                 )
             self.predictor.set_reward_signal(state, package_tuple, math.nan)
             return None
@@ -721,7 +867,7 @@ class Resolver:
                     dependency_name,
                     "All dependencies of type %r were discarded by resolver pipeline sieves, "
                     "trying different resolution path...",
-                    dependency_name
+                    dependency_name,
                 )
                 self.predictor.set_reward_signal(state, package_tuple, math.nan)
                 return None
@@ -729,7 +875,7 @@ class Resolver:
             if self.limit_latest_versions:
                 all_dependencies[dependency_name] = [
                     pv.to_tuple()
-                    for pv in package_versions[:self.limit_latest_versions]
+                    for pv in package_versions[: self.limit_latest_versions]
                 ]
             else:
                 all_dependencies[dependency_name] = [
@@ -740,7 +886,7 @@ class Resolver:
         return None
 
     def _do_resolve_states(
-        self, *, with_devel: bool = True
+        self, *, with_devel: bool = True, user_stack_scoring: bool = True,
     ) -> Generator[State, None, None]:
         """Actually perform states resolution."""
         self._log_once_init()
@@ -751,6 +897,16 @@ class Resolver:
                 "Environment is not fully specified, pre-computed environment markers will not be "
                 "taken into account"
             )
+
+        if user_stack_scoring:
+            try:
+                self._maybe_score_user_lock_file(with_devel=with_devel)
+            except UserLockFileError as exc:
+                _LOGGER.warning("Failed to score user's lock file: %s", str(exc))
+            except Exception:
+                _LOGGER.exception(
+                    "Failed to score supplied user stack, the error is not fatal"
+                )
 
         self._prepare_initial_state(with_devel=with_devel)
 
@@ -780,7 +936,7 @@ class Resolver:
                 if self.beam.size == 0:
                     _LOGGER.warning(
                         "No more possible paths found for resolution, terminating resolver in iteration %d",
-                        self.context.iteration
+                        self.context.iteration,
                     )
                     break
 
@@ -809,7 +965,7 @@ class Resolver:
             _LOGGER.warning("Resolving stopped based on SIGINT")
 
     def _do_resolve_products(
-        self, *, with_devel: bool = True
+        self, *, with_devel: bool = True, user_stack_scoring: bool = True,
     ) -> Generator[Product, None, None]:
         """Resolve raw products as produced by this resolver pipeline."""
         if self.count > self.limit:
@@ -826,7 +982,9 @@ class Resolver:
 
         start_time = time.monotonic()
         try:
-            for final_state in self._do_resolve_states(with_devel=with_devel):
+            for final_state in self._do_resolve_states(
+                with_devel=with_devel, user_stack_scoring=user_stack_scoring
+            ):
                 _LOGGER.debug(
                     "Pipeline reached a new final state, yielding pipeline product "
                     "with a score of %g - %d/%d",
@@ -835,7 +993,9 @@ class Resolver:
                     self.context.limit,
                 )
 
-                if (self.context.accepted_final_states_count - 1) % self.log_final_state_count == 0:
+                if (
+                    self.context.accepted_final_states_count - 1
+                ) % self.log_final_state_count == 0:
                     if self.log_final_state_top:
                         # As logging top can give additional overhead, print top only if the user requested so.
                         _LOGGER.info(
@@ -844,7 +1004,8 @@ class Resolver:
                             self.context.accepted_final_states_count,
                             self.context.limit,
                             self.context.iteration,
-                            self.context.accepted_final_states_count / (time.monotonic() - start_time),
+                            self.context.accepted_final_states_count
+                            / (time.monotonic() - start_time),
                             self.beam.max().score,
                         )
                     else:
@@ -854,7 +1015,8 @@ class Resolver:
                             self.context.accepted_final_states_count,
                             self.context.limit,
                             self.context.iteration,
-                            self.context.accepted_final_states_count / (time.monotonic() - start_time),
+                            self.context.accepted_final_states_count
+                            / (time.monotonic() - start_time),
                         )
 
                 product = Product.from_final_state(
@@ -881,20 +1043,30 @@ class Resolver:
         self.pipeline.call_post_run()
 
     def resolve_products(
-        self, *, with_devel: bool = True
+        self, *, with_devel: bool = True, user_stack_scoring: bool = True
     ) -> Generator[Product, None, None]:
         """Resolve raw products as produced by this resolver pipeline."""
         self._init_context()
-        with Unit.assigned_context(self.context), self.predictor.assigned_context(self.context):
-            yield from self._do_resolve_products(with_devel=with_devel)
+        with Unit.assigned_context(self.context), self.predictor.assigned_context(
+            self.context
+        ):
+            yield from self._do_resolve_products(
+                with_devel=with_devel, user_stack_scoring=user_stack_scoring
+            )
 
-    def resolve(self, *, with_devel: bool = True) -> Report:
+    def resolve(
+        self, *, with_devel: bool = True, user_stack_scoring: bool = True
+    ) -> Report:
         """Resolve software stacks and return resolver report."""
         report = Report(count=self.count, pipeline=self.pipeline)
 
         self._init_context()
-        with Unit.assigned_context(self.context), self.predictor.assigned_context(self.context):
-            for product in self._do_resolve_products(with_devel=with_devel):
+        with Unit.assigned_context(self.context), self.predictor.assigned_context(
+            self.context
+        ):
+            for product in self._do_resolve_products(
+                with_devel=with_devel, user_stack_scoring=user_stack_scoring
+            ):
                 report.add_product(product)
 
             if report.product_count() == 0:

@@ -139,3 +139,7 @@ class CannotProduceStack(AdviserRunException):
     def to_dict(self) -> Optional[Dict[str, str]]:
         """Convert exception to a dict representation for a user."""
         return {"ERROR": "No results were resolved, see logs for more info"}
+
+
+class UserLockFileError(AdviserRunException):
+    """An exception raised when the supplied user stack has issues."""

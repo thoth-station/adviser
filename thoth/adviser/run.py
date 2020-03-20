@@ -53,6 +53,9 @@ def subprocess_run(
     print_func: Callable[[float, Union[Dict[str, Any], List[Any]]], None],
     result_dict: Dict[str, Any],
     plot: Optional[str] = None,
+    *,
+    with_devel: bool = True,
+    user_stack_scoring: bool = True,
 ) -> int:
     """Run the given function (partial annealing method) in a subprocess and output the produced report."""
     start_time = time.monotonic()
@@ -67,7 +70,10 @@ def subprocess_run(
         init_logging()
         _LOGGER.debug("Created a child process to compute report")
         try:
-            report: Union[DependencyMonkeyReport, Report] = resolver.resolve(with_devel=True)
+            report: Union[DependencyMonkeyReport, Report] = resolver.resolve(
+                with_devel=with_devel,
+                user_stack_scoring=user_stack_scoring
+            )
             if plot:
                 parts = plot.rsplit(".", maxsplit=1)
                 file_name = parts[0]

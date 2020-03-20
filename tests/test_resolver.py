@@ -40,6 +40,7 @@ from thoth.adviser.enums import DecisionType
 from thoth.adviser.step import Step
 from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
+from thoth.python import PipfileLock
 from thoth.python import Source
 from thoth.python import Project
 from thoth.storages import GraphDatabase
@@ -54,6 +55,7 @@ from thoth.adviser.exceptions import StrideError
 from thoth.adviser.exceptions import UnresolvedDependencies
 from thoth.adviser.exceptions import WrapError
 from thoth.adviser.exceptions import EagerStopPipeline
+from thoth.adviser.exceptions import UserLockFileError
 from thoth.adviser.exceptions import PipelineUnitError
 
 import tests.units.boots as boots
@@ -279,7 +281,7 @@ class TestResolver(AdviserTestCase):
             resolver._run_steps(
                 state1, package_version, {"numpy": [("numpy", "1.18.0")]}
             )
-            is None
+            is False
         )
         assert resolver.beam.size == 0
 
@@ -304,7 +306,7 @@ class TestResolver(AdviserTestCase):
         resolver.pipeline.steps = [steps.Step1()]
 
         with pytest.raises(StepError):
-            assert resolver._run_steps(
+            resolver._run_steps(
                 state,
                 package_version,
                 {"flask": [("flask", "0.12", "https://pypi.org/simple")]},
@@ -340,7 +342,7 @@ class TestResolver(AdviserTestCase):
         dependency_tuple = ("flask", "0.12", "https://pypi.org/simple")
         assert (
             resolver._run_steps(state, package_version, {"flask": [dependency_tuple]})
-            is None
+            is True
         )
         assert resolver.beam.size == 1
         assert resolver.beam.max() is not state
@@ -375,13 +377,10 @@ class TestResolver(AdviserTestCase):
         resolver.pipeline.steps = [steps.Step1()]
 
         with pytest.raises(StepError):
-            assert (
-                resolver._run_steps(
-                    state,
-                    package_version,
-                    {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
-                )
-                is None
+            resolver._run_steps(
+                state,
+                package_version,
+                {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
             )
 
         assert original_state == state, "State is not untouched"
@@ -409,13 +408,10 @@ class TestResolver(AdviserTestCase):
         resolver.pipeline.steps = [steps.Step1()]
 
         with pytest.raises(StepError):
-            assert (
-                resolver._run_steps(
-                    state,
-                    package_version,
-                    {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
-                )
-                is None
+            resolver._run_steps(
+                state,
+                package_version,
+                {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
             )
 
         assert original_state == state, "State is not untouched"
@@ -1595,7 +1591,7 @@ class TestResolver(AdviserTestCase):
             state1, to_expand_package_tuple1
         ).and_return(final_state).once()
 
-        states = list(resolver._do_resolve_states(with_devel=True))
+        states = list(resolver._do_resolve_states(with_devel=True, user_stack_scoring=True))
         assert states == [final_state]
         assert resolver.context.iteration == 2
         assert resolver.context.accepted_final_states_count == 1
@@ -1716,7 +1712,7 @@ class TestResolver(AdviserTestCase):
             with_devel=True
         ).and_return(None).once()
 
-        states = list(resolver._do_resolve_states(with_devel=True))
+        states = list(resolver._do_resolve_states(with_devel=True, user_stack_scoring=True))
         assert states == []
         assert resolver.context.iteration == 0
         assert resolver.context.accepted_final_states_count == 0
@@ -1742,7 +1738,7 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
 
         resolver.should_receive("_do_resolve_states").with_args(
-            with_devel=True
+            with_devel=True, user_stack_scoring=True,
         ).and_yield(final_state1, final_state2).once()
 
         flexmock(Product)
@@ -1771,7 +1767,7 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
 
         resolver.should_receive("_do_resolve_states").with_args(
-            with_devel=True
+            with_devel=True, user_stack_scoring=True
         ).and_yield(final_state1).and_raise(EagerStopPipeline).once()
 
         flexmock(Product)
@@ -1797,7 +1793,7 @@ class TestResolver(AdviserTestCase):
             assert resolver.context, "Context is already bound to resolver"
 
         resolver.should_receive("_do_resolve_products").with_args(
-            with_devel=False
+            with_devel=False, user_stack_scoring=True
         ).and_return([]).once()
 
         with pytest.raises(CannotProduceStack, match="No stack was produced"):
@@ -1807,7 +1803,7 @@ class TestResolver(AdviserTestCase):
         """Test report creation during resolution."""
         product = flexmock(score=1.0)
         resolver.should_receive("_do_resolve_products").with_args(
-            with_devel=True
+            with_devel=True, user_stack_scoring=True
         ).and_return([product]).once()
         resolver.pipeline.should_receive("call_post_run_report").once()
         resolver.predictor.should_receive("post_run_report").once()
@@ -2076,13 +2072,253 @@ class TestResolver(AdviserTestCase):
 
         resolver._init_context()
         with steps.Step1.assigned_context(resolver.context):
-            assert (
-                resolver._run_steps(
-                    state,
-                    package_version,
-                    {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
-                )
-                is None
+            resolver._run_steps(
+                state,
+                package_version,
+                {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
             )
+
         state = resolver.beam.max()
         assert state.score == score_expected
+
+    def test_maybe_score_user_lock_file_no_lock_file(self, resolver: Resolver) -> None:
+        """Test scoring user stack lock file if no lock file is provided."""
+        resolver._init_context()
+        resolver.project.pipfile_lock = None
+
+        assert resolver.context.project.pipfile_lock is None
+        assert resolver.beam.size == 0
+
+        resolver.should_receive("_prepare_user_lock_file").and_return(None).times(0)
+        resolver._maybe_score_user_lock_file()
+
+        assert resolver.beam.size == 0
+
+    def test_maybe_score_user_lock_file_sieves_removal(
+        self, resolver: Resolver
+    ) -> None:
+        """Test scoring user stack lock file when sieves removed a package."""
+        resolver._init_context()
+        resolver.pipeline.sieves[0].should_receive("run").with_args(object).and_raise(
+            NotAcceptable
+        ).once()
+        assert resolver.beam.size == 0
+
+        resolver.should_receive("_prepare_user_lock_file").and_return(None).once()
+        resolver._maybe_score_user_lock_file()
+
+        assert resolver.beam.size == 0
+
+    def test_maybe_score_user_lock_file_steps_removal(self, resolver: Resolver) -> None:
+        """Test scoring user stack lock file when steps discarded a state creation."""
+        resolver._init_context()
+        package_version = list(
+            resolver.project.iter_dependencies_locked(with_devel=True)
+        )[0]
+        resolver.pipeline.steps[0].should_receive("run").with_args(
+            object, package_version
+        ).and_raise(NotAcceptable).once()
+        assert resolver.beam.size == 0
+
+        resolver.should_receive("_prepare_user_lock_file").and_return(None).once()
+        resolver._maybe_score_user_lock_file()
+
+        assert resolver.beam.size == 0
+
+    def test_maybe_score_user_lock_file(self, resolver: Resolver) -> None:
+        """Test scoring user stack lock file when sieves removed a package."""
+        resolver._init_context()
+
+        resolver.should_receive("_prepare_user_lock_file").and_return(None).once()
+
+        assert resolver.beam.size == 0
+        resolver._maybe_score_user_lock_file()
+        assert resolver.beam.size == 1
+
+        state = resolver.beam.get(0)
+
+        assert state.resolved_dependencies
+        assert set(state.resolved_dependencies.values()) == set(
+            d.to_tuple() for d in resolver.project.iter_dependencies_locked()
+        ), "Not all dependencies captured in the state made out of the user's stack"
+
+    def test_maybe_score_user_lock_file_error(self, resolver: Resolver) -> None:
+        """Test scoring user stack lock file when sieves removed a package."""
+        resolver._init_context()
+
+        resolver.should_receive("_prepare_user_lock_file").and_raise(
+            UserLockFileError
+        ).once()
+
+        with pytest.raises(UserLockFileError):
+            resolver._maybe_score_user_lock_file()
+
+    def test_prepare_user_lock_file_index_not_enabled(self, resolver: Resolver) -> None:
+        """Test preparing and validating user's lock file submitted if not enabled package index is used."""
+        resolver._init_context()
+
+        package_version = PackageVersion(
+            name="tensorflow",
+            version="==2.0.0",
+            index=Source("https://foo.bar/simple"),
+            develop=False,
+        )
+
+        # We do not care about the linkage to not relevant Pipfile here.
+        pipfile_lock = PipfileLock.from_package_versions(
+            pipfile=resolver.project.pipfile,
+            packages=[package_version],
+            meta=resolver.project.pipfile.meta,
+        )
+        resolver.project.pipfile_lock = pipfile_lock
+        resolver.project.pipfile_lock.meta.sources = {
+            "foo": package_version.index,
+            "another": Source("https://another.sk/simple"),
+        }
+        assert resolver.context.project.pipfile_lock is pipfile_lock
+
+        resolver.graph.should_receive("get_python_package_index_urls_all").with_args(
+            enabled=True
+        ).and_return(
+            ["https://pypi.org/simple", "https://thoth-station.ninja/simple"]
+        ).once()
+
+        with pytest.raises(
+            UserLockFileError,
+            match=r"User's lock file uses one or more indexes that are not enabled: .*",
+        ):
+            resolver._prepare_user_lock_file()
+
+    def test_prepare_user_lock_file_provenance_unknown(
+        self, resolver: Resolver
+    ) -> None:
+        """Test preparing and validating user's lock file submitted when provenance of a package is not known."""
+        resolver._init_context()
+
+        package_version = PackageVersion(
+            name="tensorflow",
+            version="==2.0.0",
+            index=None,
+            develop=False,
+            hashes=["sha256:foo", "sha256:bar"],
+        )
+
+        thoth_station_source = Source("https://thoth-station.ninja/simple")
+        pypi_source = Source("https://pypi.org/simple")
+
+        # We do not care about the linkage to not relevant Pipfile here.
+        pipfile_lock = PipfileLock.from_package_versions(
+            pipfile=resolver.project.pipfile,
+            packages=[package_version],
+            meta=resolver.project.pipfile.meta,
+        )
+        resolver.project.pipfile_lock = pipfile_lock
+        resolver.project.pipfile_lock.meta.sources = {
+            "thoth-station": thoth_station_source,
+            "pypi": pypi_source,
+        }
+        assert resolver.context.project.pipfile_lock is pipfile_lock
+
+        resolver.graph.should_receive("get_python_package_index_urls_all").with_args(
+            enabled=True
+        ).and_return([pypi_source.url, thoth_station_source.url]).once()
+
+        resolver.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            package_version.name,
+            package_version.locked_version,
+            thoth_station_source.url,
+        ).and_return(["unknown"]).once()
+
+        resolver.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            package_version.name, package_version.locked_version, pypi_source.url
+        ).and_return(["just-another-unknown", "foo-unknown"]).once()
+
+        with pytest.raises(
+            UserLockFileError,
+            match="Could not determine provenance of package 'tensorflow' in version '2.0.0'",
+        ):
+            resolver._prepare_user_lock_file()
+
+    def test_prepare_user_lock_file_one_source(self, resolver: Resolver) -> None:
+        """Test preparing and validating user's lock file submitted if one Python package source index is used."""
+        resolver._init_context()
+
+        package_version = PackageVersion(
+            name="tensorflow",
+            version="==2.0.0",
+            index=None,
+            develop=False,
+            hashes=["sha256:foo", "sha256:bar"],
+        )
+
+        thoth_station_source = Source("https://thoth-station.ninja/simple")
+
+        # We do not care about the linkage to not relevant Pipfile here.
+        pipfile_lock = PipfileLock.from_package_versions(
+            pipfile=resolver.project.pipfile,
+            packages=[package_version],
+            meta=resolver.project.pipfile.meta,
+        )
+        resolver.project.pipfile_lock = pipfile_lock
+        resolver.project.pipfile_lock.meta.sources = {
+            "thoth-station": thoth_station_source,
+        }
+        assert resolver.context.project.pipfile_lock is pipfile_lock
+
+        resolver.graph.should_receive("get_python_package_index_urls_all").with_args(
+            enabled=True
+        ).and_return([thoth_station_source.url]).once()
+
+        resolver.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            package_version.name,
+            package_version.locked_version,
+            thoth_station_source.url,
+        ).and_return(["unknown"]).times(0)
+
+        resolver._prepare_user_lock_file()
+        assert package_version.index == thoth_station_source
+
+    def test_prepare_user_lock_file_multiple_sources(self, resolver: Resolver) -> None:
+        """Test preparing and validating user's lock file submitted when multiple Python package sources used."""
+        resolver._init_context()
+
+        package_version = PackageVersion(
+            name="tensorflow",
+            version="==2.0.0",
+            index=None,
+            develop=False,
+            hashes=["sha256:foo", "sha256:bar"],
+        )
+
+        thoth_station_source = Source("https://thoth-station.ninja/simple")
+        pypi_source = Source("https://pypi.org/simple")
+
+        # We do not care about the linkage to not relevant Pipfile here.
+        pipfile_lock = PipfileLock.from_package_versions(
+            pipfile=resolver.project.pipfile,
+            packages=[package_version],
+            meta=resolver.project.pipfile.meta,
+        )
+        resolver.project.pipfile_lock = pipfile_lock
+        resolver.project.pipfile_lock.meta.sources = {
+            "thoth-station": thoth_station_source,
+            "pypi": pypi_source,
+        }
+        assert resolver.context.project.pipfile_lock is pipfile_lock
+
+        resolver.graph.should_receive("get_python_package_index_urls_all").with_args(
+            enabled=True
+        ).and_return([pypi_source.url, thoth_station_source.url]).once()
+
+        # We use sets so there is no counting on these two methods - their evaluation is hash dependent.
+        resolver.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            package_version.name,
+            package_version.locked_version,
+            thoth_station_source.url,
+        ).and_return(["foo"])
+        resolver.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            package_version.name, package_version.locked_version, pypi_source.url
+        ).and_return(["just-another-unknown", "foo-unknown"])
+
+        resolver._prepare_user_lock_file()
+        assert package_version.index == thoth_station_source
