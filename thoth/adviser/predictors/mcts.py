@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of Temporal Difference (TD) based predictor with adaptive simulated annealing schedule."""
+"""Implementation of Monte-Carlo Tree Search (MCTS) based predictor with adaptive simulated annealing schedule."""
 
 import logging
 import math
