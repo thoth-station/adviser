@@ -17,15 +17,14 @@
 
 """Implementation of Monte-Carlo Tree Search (MCTS) based predictor with adaptive simulated annealing schedule."""
 
+import attr
+
+from typing import Optional
+from typing import Tuple
 import logging
 import math
-import os
-import random
 import operator
-
-import attr
-from typing import Tuple
-from typing import Optional
+import os
 
 from ..state import State
 from .td import TemporalDifference
@@ -34,6 +33,7 @@ from .td import TemporalDifference
 _LOGGER = logging.getLogger(__name__)
 # 0 means unlimited memory for policy learning.
 _MCTS_POLICY_SIZE = int(os.getenv("THOTH_MCTS_POLICY_SIZE", 0))
+_MCTS_POLICY_SIZE_CHECK_ITERATION = 1024
 
 
 @attr.s(slots=True)
@@ -52,12 +52,13 @@ class MCTS(TemporalDifference):
     ) -> None:
         """Note down reward signal of the last action performed."""
         if math.isnan(reward):
-            # Invalid state reached, continue with another one next round.
+            # Invalid state reached, continue with another one in the next round.
             self._next_state = None
+            return
         elif not math.isinf(reward):
             # The state for which we obtained reward is next state, continue with it in the next round.
             self._next_state = state
-            return None
+            return
 
         # We have reached a final/terminal state - mark down policy we used and accumulated reward.
         total_reward = state.score
@@ -71,7 +72,7 @@ class MCTS(TemporalDifference):
 
         # We limit number of records stored from time to time. Using sorting in O(N*log(N)) from
         # time to time appears to be much faster than keeping a min-heap queue with O(log(N)) overhead.
-        if _MCTS_POLICY_SIZE and self.context.iteration % 1024 == 0:
+        if _MCTS_POLICY_SIZE and self.context.iteration % _MCTS_POLICY_SIZE_CHECK_ITERATION == 0:
             _LOGGER.warning("Shrinking learnt policy to %d entries", _MCTS_POLICY_SIZE)
             self._policy = dict(
                 sorted(self._policy.items(), key=operator.itemgetter(1), reverse=True)[
@@ -87,35 +88,4 @@ class MCTS(TemporalDifference):
                 self._next_state.get_random_unresolved_dependency(prefer_recent=True),
             )
 
-        self._temperature = self._temperature_function(self._temperature, self.context)
-
-        # Expand highest promising by default.
-        state = self.context.beam.max()
-
-        # Pick a random state to be expanded if accepted.
-        probable_state_idx = (
-            random.randrange(1, self.context.beam.size)
-            if self.context.beam.size > 1
-            else 0
-        )
-        probable_state = self.context.beam.get(probable_state_idx)
-        acceptance_probability = self._compute_acceptance_probability(
-            state.score, probable_state.score, self._temperature
-        )
-
-        if probable_state_idx != 0 and acceptance_probability >= random.random():
-            state, unresolved_dependency_tuple = self._do_exploration()
-        else:
-            state, unresolved_dependency_tuple = self._do_exploitation()
-
-        if self.keep_history:
-            self._temperature_history.append(
-                (
-                    self._temperature,
-                    state is self.context.beam.max(),
-                    acceptance_probability,
-                    self.context.accepted_final_states_count,
-                )
-            )
-
-        return state, unresolved_dependency_tuple
+        return super().run()

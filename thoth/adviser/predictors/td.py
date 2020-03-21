@@ -17,38 +17,44 @@
 
 """Implementation of Temporal Difference (TD) based predictor with adaptive simulated annealing schedule."""
 
-import logging
-import math
-import os
-import random
-import operator
-
-import attr
 from typing import Dict
 from typing import List
 from typing import Tuple
 from typing import Union
+import logging
+import math
+import operator
+import os
+import random
 
-from ..state import State
-from ..context import Context
+import attr
+
 from .annealing import AdaptiveSimulatedAnnealing
+from ..context import Context
+from ..state import State
 
 
 _LOGGER = logging.getLogger(__name__)
 # 0 means unlimited memory for policy learning.
 _TD_POLICY_SIZE = int(os.getenv("THOTH_TD_POLICY_SIZE", 0))
+# How often the policy should be checked for shrinking.
+_TD_POLICY_SIZE_CHECK_ITERATION = 1024
 
 
 @attr.s(slots=True)
 class TemporalDifference(AdaptiveSimulatedAnnealing):
     """Implementation of Temporal Difference (TD) based predictor with adaptive simulated annealing schedule."""
 
+    _DEFAULT_A = 1.0  # Any number, this gets overwritten anyway.
+
     _policy = attr.ib(type=Dict[str, List[Union[float, int]]], factory=dict)
-    _a = attr.ib(type=float, default=1.0)
+    _a = attr.ib(type=float, default=_DEFAULT_A)
 
     def pre_run(self) -> None:
         """Initialize pre-running of this predictor."""
         super().pre_run()
+        self._policy.clear()
+        self._a = self._DEFAULT_A
 
     def _temperature_function(self, t0: float, context: Context) -> float:
         """Temperature function used to compute new temperature."""
@@ -81,11 +87,11 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
 
         # We limit number of records stored from time to time. Using sorting in O(N*log(N)) from
         # time to time appears to be much faster than keeping a min-heap queue with O(log(N)) overhead.
-        if _TD_POLICY_SIZE and self.context.iteration % 1024 == 0:
+        if _TD_POLICY_SIZE and self.context.iteration % _TD_POLICY_SIZE_CHECK_ITERATION == 0:
             _LOGGER.debug("Shrinking learnt policy to %d entries", _TD_POLICY_SIZE)
             self._policy = dict(
                 sorted(self._policy.items(), key=operator.itemgetter(1), reverse=True)[
-                    :_TD_POLICY_SIZE
+                    : _TD_POLICY_SIZE
                 ]
             )
 
@@ -94,7 +100,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
         self._temperature = self._temperature_function(self._temperature, self.context)
 
         # Expand highest promising by default.
-        state = self.context.beam.max()
+        max_state = self.context.beam.max()
 
         # Pick a random state to be expanded if accepted.
         probable_state_idx = (
@@ -104,13 +110,16 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
         )
         probable_state = self.context.beam.get(probable_state_idx)
         acceptance_probability = self._compute_acceptance_probability(
-            state.score, probable_state.score, self._temperature
+            max_state.score, probable_state.score, self._temperature
         )
 
-        if probable_state_idx != 0 and acceptance_probability >= random.random():
-            state, unresolved_dependency_tuple = self._do_exploration()
+        if acceptance_probability >= random.random():
+            # Perform exploration.
+            state = probable_state
+            unresolved_dependency_tuple = state.get_random_unresolved_dependency(prefer_recent=True)
         else:
-            state, unresolved_dependency_tuple = self._do_exploitation()
+            state = max_state
+            unresolved_dependency_tuple = self._do_exploitation(max_state)
 
         if self.keep_history:
             self._temperature_history.append(
@@ -124,14 +133,12 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
 
         return state, unresolved_dependency_tuple
 
-    def _do_exploitation(self) -> Tuple[State, Tuple[str, str, str]]:
+    def _do_exploitation(self, state: State) -> Tuple[str, str, str]:
         """Perform expansion of a highest rated stack with action that should yield highest reward."""
-        state = self.context.beam.max()
-
         to_resolve_average = None
         to_resolve_package_tuple = None
         for package_tuple in state.iter_unresolved_dependencies():
-            reward_records = self._policy.get(package_tuple[0], {}).get(package_tuple)
+            reward_records = self._policy.get(package_tuple)
             if reward_records is None:
                 continue
 
@@ -143,13 +150,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
                 to_resolve_package_tuple = package_tuple
 
         # Make sure we found a candidate based on rewards marked. If not, pick a random one.
-        to_resolve_package_tuple = (
+        return (
             to_resolve_package_tuple
             or state.get_random_unresolved_dependency(prefer_recent=True)
         )
-        return state, to_resolve_package_tuple
-
-    def _do_exploration(self) -> Tuple[State, Tuple[str, str, str]]:
-        """Explore state space and try to learn policy."""
-        state = self.context.beam.get_random()
-        return state, state.get_random_unresolved_dependency(prefer_recent=True)

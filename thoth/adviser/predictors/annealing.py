@@ -44,7 +44,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
 
     _temperature_history = attr.ib(
         type=List[Tuple[float, bool, float, int]],
-        default=attr.Factory(list),
+        factory=list,
         kw_only=True,
     )
     _temperature = attr.ib(type=float, kw_only=True, default=0.0)
@@ -141,8 +141,8 @@ class AdaptiveSimulatedAnnealing(Predictor):
 
     def pre_run(self) -> None:
         """Initialization before the actual annealing run."""
-        self._temperature_history = []
-        self._temperature = self.context.limit
+        self._temperature_history.clear()
+        self._temperature = float(self.context.limit)
 
     @staticmethod
     def _make_patch_spines_invisible(ax: Any) -> None:
