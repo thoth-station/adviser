@@ -414,6 +414,8 @@ class Resolver:
                     justification_addition.extend(step_justification_addition)
 
         if state.unresolved_dependencies:
+            # The state has more unresolved dependencies, we kept this state in the beam - we
+            # need to clone it in order to propagate the package_version into it.
             cloned_state = state.clone()
             weakref.finalize(
                 cloned_state, self.predictor.finalize_state, id(cloned_state)
@@ -680,8 +682,8 @@ class Resolver:
 
         state.remove_unresolved_dependency(package_tuple)
 
-        extras = package_version.extras or []
-        extras.append(None)
+        if not state.unresolved_dependencies:
+            self.beam.remove(state)
 
         try:
             dependencies = self.graph.get_depends_on(
@@ -689,7 +691,7 @@ class Resolver:
                 os_name=self.project.runtime_environment.operating_system.name,
                 os_version=self.project.runtime_environment.operating_system.version,
                 python_version=self.project.runtime_environment.python_version,
-                extras=frozenset(extras),
+                extras=frozenset((package_version.extras + [None])) if package_version.extras else frozenset([None]),
                 marker_evaluation_result=True
                 if self.project.runtime_environment.is_fully_specified()
                 else None,
@@ -702,39 +704,8 @@ class Resolver:
                 "Dependency %r is not yet resolved, trying different resolution path...",
                 package_tuple,
             )
-            if not state.unresolved_dependencies:
-                self.beam.remove(state)
-
             self.predictor.set_reward_signal(state, package_tuple, math.nan)
             return None
-
-        if not dependencies:
-            if not state.unresolved_dependencies:
-                # The given package has no dependencies and nothing to resolve more, mark it as resolved.
-                self.beam.remove(state)
-                self.predictor.set_reward_signal(state, package_tuple, math.inf)
-                return state
-
-            cloned_state = state.clone()
-            # Mark dependency resolved in the newly created state and add it to beam.
-            cloned_state.remove_unresolved_dependency_subtree(package_tuple[0])
-            cloned_state.add_resolved_dependency(package_tuple)
-            cloned_state.iteration = self.context.iteration
-
-            if not cloned_state.unresolved_dependencies:
-                self.predictor.set_reward_signal(cloned_state, package_tuple, math.inf)
-                return cloned_state
-
-            weakref.finalize(
-                cloned_state, self.predictor.finalize_state, id(cloned_state)
-            ).atexit = False
-            self.predictor.set_beam_key(cloned_state)
-            self.beam.add_state(cloned_state)
-            self.predictor.set_reward_signal(state, package_tuple, 0.0)
-            return None
-
-        if not state.unresolved_dependencies:
-            self.beam.remove(state)
 
         return self._expand_state_add_dependencies(
             state=state,
@@ -767,8 +738,7 @@ class Resolver:
 
             # We could use a set here that would optimize a bit, but it will create randomness - it
             # will not work well with preserving seed across resolver runs.
-            if dependency_name not in all_dependencies:
-                all_dependencies[dependency_name] = []
+            all_dependencies.setdefault(dependency_name, [])
 
             resolved_dependency_tuple = state.resolved_dependencies.get(dependency_name)
             if (

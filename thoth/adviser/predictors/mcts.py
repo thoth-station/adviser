@@ -60,15 +60,15 @@ class MCTS(TemporalDifference):
             self._next_state = state
             return
 
+        # We have reached a new final - get another next time.
+        self._next_state = None
+
         # We have reached a final/terminal state - mark down policy we used and accumulated reward.
         total_reward = state.score
         for package_tuple in state.iter_resolved_dependencies():
             record = self._policy.setdefault(package_tuple, [0.0, 0])
             record[0] += total_reward
             record[1] += 1
-
-        # We have reached a new final - get another next time.
-        self._next_state = None
 
         # We limit number of records stored from time to time. Using sorting in O(N*log(N)) from
         # time to time appears to be much faster than keeping a min-heap queue with O(log(N)) overhead.

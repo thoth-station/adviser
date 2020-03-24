@@ -825,6 +825,7 @@ class TestResolver(AdviserTestCase):
 
         original_resolved_count = len(state.resolved_dependencies)
         original_unresolved_count = len(state.unresolved_dependencies)
+        resolver.should_receive("_run_steps").with_args(state, to_expand_package_tuple, []).once()
 
         assert (
             resolver._expand_state(state, to_expand_package_tuple) is state
