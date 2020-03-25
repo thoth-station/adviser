@@ -261,6 +261,12 @@
             ],
             "version": "==0.9.5"
         },
+        "jsonformatter": {
+            "hashes": [
+                "sha256:e4bbbb1a79013d2f4b1d249fbed755ade679fd03af9a40de8e45148cde3d21af"
+            ],
+            "version": "==0.1.4"
+        },
         "kiwisolver": {
             "hashes": [
                 "sha256:05b5b061e09f60f56244adc885c4a7867da25ca387376b02c1efc29cc16bcd0f",
@@ -750,10 +756,10 @@
         },
         "thoth-common": {
             "hashes": [
-                "sha256:c8662d82007f2dbb58c968ac173c6970d08fcf736d7b54c114b6769784cbb9fe",
-                "sha256:e28e430da178cbe90758fab720cde9efe330d405aec3a310decd7dd77d5c5369"
+                "sha256:61a7662dba3cb96badb7aab98661bc9edbb7078129701d521daf43eebf57cc26",
+                "sha256:e5f14670177884508d246b12fd4f5dd08a989fbf02a1f4e4de5c2ada6030749e"
             ],
-            "version": "==0.10.12"
+            "version": "==0.12.1"
         },
         "thoth-python": {
             "hashes": [
@@ -819,10 +825,10 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:87831f1070534b636fea2241dd66f3afe37ac9041bcca6d0af3215cdcfbf7d82",
-                "sha256:f3128d882383c503003130389bf892856341c1da12c881ae24d6358c82561b55"
+                "sha256:6f4c2882a943d20714076679f8dcc5675e953d6c29bfea3bc5d08bb6cdea5d36",
+                "sha256:cb1dab893f9e39b3e68d9118c555dcd86526d531c128c3f72e1551939723b72f"
             ],
-            "version": "==20.0.13"
+            "version": "==20.0.14"
         },
         "voluptuous": {
             "hashes": [
@@ -944,11 +950,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:621105843936ee791a6c63d07ec59e4cae4fa5b186dbee526fdceb4ed39ee21b",
-                "sha256:acee2e025c79715836e1f28751c4d2b6420f5154bbe3969bf336de9d45902556"
+                "sha256:6023d9112ac23502abcb20ca3f336096fe97abab86e589cd9bf9b4bfcaa335d7",
+                "sha256:84671369a278088f1d48f7ed2aca7975550344fa744783fe6cb84ad5f3f55ff2"
             ],
             "index": "pypi",
-            "version": "==5.7.2"
+            "version": "==5.8.0"
         },
         "hypothesis-auto": {
             "hashes": [
