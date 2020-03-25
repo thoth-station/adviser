@@ -62,8 +62,10 @@ class DependencyMonkey:
         """Get beam instance used in the resolver."""
         return self.resolver.beam
 
-    def resolve(self, *, with_devel: bool = True) -> DependencyMonkeyReport:
+    def resolve(self, *, with_devel: bool = True, user_stack_scoring: bool = False) -> DependencyMonkeyReport:
         """Perform simulated annealing and run dependency monkey on products."""
+        if user_stack_scoring:
+            _LOGGER.warning("Ignoring user_stack_scoring flag in dependency monkey runs")
         if self.dry_run:
             _LOGGER.warning("Dry run of Dependency Monkey is set, stacks will be just computed")
             output_func = partial(  # type: ignore

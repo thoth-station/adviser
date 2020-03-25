@@ -672,9 +672,12 @@ def dependency_monkey(
     )
 
     context_content = {}
-    if context is not None and os.path.isfile(context):
+    try:
         with open(context) as f:
             context_content = json.load(f)
+    except (FileNotFoundError, IOError):
+        # IOError raised if context is too large to be handled with open.
+        context_content = json.loads(context)
 
     dependency_monkey_runner = DependencyMonkey(
         resolver=resolver,
