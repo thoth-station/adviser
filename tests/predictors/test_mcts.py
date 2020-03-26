@@ -107,7 +107,7 @@ class TestMCTS(AdviserTestCase):
             ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [3.1, 1],
         }
 
-    def test_run_next_state(self) -> None:
+    def test_run_next_state(self, context: Context) -> None:
         """Test running the predictor when the next state is scheduled."""
         state = flexmock()
         unresolved_dependency = ("tensorflow", "2.0.0", "https://pypi.org/simple")
@@ -117,7 +117,26 @@ class TestMCTS(AdviserTestCase):
 
         predictor = MCTS()
         predictor._next_state = state
-        assert predictor.run() == (state, unresolved_dependency)
+        context.beam.should_receive("get_last").and_return(state).once()
+        with predictor.assigned_context(context):
+            assert predictor.run() == (state, unresolved_dependency)
+
+    def test_run_next_state_no_last(self, context: Context) -> None:
+        """Test running the predictor when the next state is not last state added to beam."""
+        state = flexmock()
+        unresolved_dependency = ("tensorflow", "2.0.0", "https://pypi.org/simple")
+
+        predictor = MCTS()
+        predictor._next_state = flexmock()
+        context.beam.should_receive("get_last").and_return(flexmock()).once()
+
+        flexmock(TemporalDifference)
+        TemporalDifference.should_receive("run").with_args().and_return(
+            state, unresolved_dependency
+        ).once()
+
+        with predictor.assigned_context(context):
+            assert predictor.run() == (state, unresolved_dependency)
 
     def test_run_no_next_state(self) -> None:
         """Test running the predictor when no next state is scheduled."""

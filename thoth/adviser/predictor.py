@@ -69,33 +69,6 @@ class Predictor:
 
         return self._CONTEXT
 
-    def set_beam_key(self, state: State, *, is_user_stack: bool = False) -> object:
-        """Set the key that will be used to keep states in the beam.
-
-        The key returned should always uniquely sort two states, that is, there should not exist
-        >>> state1 = State(score=1.0)  # any score value
-        >>> predictor.set_beam_key(state1)
-        such as there exist state2 for which
-        >>> state2 = State(score=1.0)  # any score value
-        >>> state1.beam_key == state2.beam_key
-
-        The simplest way how to differentiate keys of two states is to use resolver's iteration, that is always
-        unique for any state, and prioritizes states that have more resolved dependencies over the ones that
-        have less resolved dependencies but the same score.
-
-        This method should not be treated as staticmethod or as classmethod - a predictor
-        can construct key based on its own internal state.
-        """
-        if is_user_stack:
-            # Prefer user stack if we produce stacks with the same score - set
-            # the secondary key to the highest value possible.
-            state.beam_key = state.score, sys.maxsize
-            return
-
-        # Keep iteration negative - if stacks have same score, prefer stacks
-        # that were found sooner in the adviser output.
-        state.beam_key = state.score, -state.iteration
-
     def pre_run(self) -> None:
         """Pre-initialize the predictor.
 

@@ -288,9 +288,7 @@ class TestTemporalDifference(AdviserTestCase):
 
         flexmock(State)
         max_state = State(score=3.0)
-        max_state.beam_key = (3.0, 100)
         probable_state = State(score=2.0)
-        probable_state.beam_key = (2.0, 99)
 
         context.beam.add_state(max_state)
         context.beam.add_state(probable_state)
@@ -328,9 +326,7 @@ class TestTemporalDifference(AdviserTestCase):
         flexmock(AdaptiveSimulatedAnnealing)
 
         max_state = State(score=3.0)
-        max_state.beam_key = (3.0, 100)
         probable_state = State(score=2.0)
-        probable_state.beam_key = (2.0, 99)
 
         context.beam.add_state(max_state)
         context.beam.add_state(probable_state)

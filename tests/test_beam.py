@@ -49,11 +49,9 @@ class TestBeam(AdviserTestCase):
         beam = Beam()
 
         state1 = State(score=1.0)
-        state1.beam_key = state1.score
         beam.add_state(state1)
 
         state2 = State(score=0.0)
-        state2.beam_key = state2.score
         beam.add_state(state2)
 
         assert list(beam.iter_states_sorted()) == [state1, state2]
@@ -77,21 +75,18 @@ class TestBeam(AdviserTestCase):
         assert beam.width == 2
 
         state1 = State(score=1.0)
-        state1.beam_key = state1.score
         beam.add_state(state1)
         assert beam.width == 2
         assert len(list(beam.iter_states())) == 1
         assert state1 in list(beam.iter_states())
 
         state2 = State(score=2.0)
-        state2.beam_key = state2.score
         beam.add_state(state2)
         assert beam.width == 2
         assert len(list(beam.iter_states())) == 2
         assert state2 in list(beam.iter_states())
 
         state3 = State(score=3.0)
-        state3.beam_key = state3.score
         beam.add_state(state3)
         assert beam.width == 2
         assert len(list(beam.iter_states())) == 2
@@ -100,7 +95,6 @@ class TestBeam(AdviserTestCase):
         assert state1 not in list(beam.iter_states())
 
         state0 = State(score=0.0)
-        state0.beam_key = state0.score
         beam.add_state(state0)
         assert beam.width == 2
         assert len(list(beam.iter_states())) == 2
@@ -117,12 +111,10 @@ class TestBeam(AdviserTestCase):
             beam.get_random()
 
         state1 = State(score=1.0)
-        state1.beam_key = state1.score
         beam.add_state(state1)
         assert beam.get_random() is state1
 
         state2 = State(score=1.0)
-        state2.beam_key = state2.score
         beam.add_state(state2)
 
         random_state = random.getstate()
@@ -140,16 +132,12 @@ class TestBeam(AdviserTestCase):
         assert beam.width == 4
 
         state1 = State(score=1.0)
-        state1.beam_key = state1.score
         beam.add_state(state1)
         state3 = State(score=3.0)
-        state3.beam_key = state3.score
         beam.add_state(state3)
         state0 = State(score=0.0)
-        state0.beam_key = state0.score
         beam.add_state(state0)
         state2 = State(score=2.0)
-        state2.beam_key = state2.score
         beam.add_state(state2)
 
         assert list(beam.iter_states_sorted()) == [state3, state2, state1, state0]
@@ -160,17 +148,14 @@ class TestBeam(AdviserTestCase):
         assert beam.width == 2
 
         state1 = State(score=1.0)
-        state1.beam_key = state1.score
         beam.add_state(state1)
         assert beam.max() is state1
 
         state2 = State(score=2.0)
-        state2.beam_key = state2.score
         beam.add_state(state2)
         assert beam.max() is state2
 
         state3 = State(score=0.5)
-        state3.beam_key = state3.score
         beam.add_state(state3)
         assert beam.max() is state2
 
@@ -178,24 +163,21 @@ class TestBeam(AdviserTestCase):
         """Test adding states to beam and order during addition when score is same."""
         beam = Beam(width=2)
 
-        state01 = State(score=0.0, iteration=0)
+        state01 = State(score=0.0)
         state01.add_justification([{"state": "01"}])
-        state01.beam_key = state01.score, state01.iteration
         beam.add_state(state01)
 
-        state02 = State(score=0.0, iteration=1)
+        state02 = State(score=0.0)
         state02.add_justification([{"state": "02"}])
-        state02.beam_key = state02.score, state02.iteration
         beam.add_state(state02)
 
-        state03 = State(score=0.0, iteration=2)
+        state03 = State(score=0.0)
         state03.add_justification([{"state": "03"}])
-        state03.beam_key = state03.score, state03.iteration
         beam.add_state(state03)
 
-        assert list(beam.iter_states_sorted()) == [state03, state02]
-        assert list(beam.iter_states_sorted(reverse=True)) == [state03, state02]
-        assert list(beam.iter_states_sorted(reverse=False)) == [state02, state03]
+        assert list(beam.iter_states_sorted()) == [state01, state02]
+        assert list(beam.iter_states_sorted(reverse=True)) == [state01, state02]
+        assert list(beam.iter_states_sorted(reverse=False)) == [state01, state02]
 
     def test_add_state_order_single(self) -> None:
         """Test adding states to beam and order during addition when score is same - iteration is relevant."""
@@ -206,7 +188,6 @@ class TestBeam(AdviserTestCase):
             iteration=1,
         )
         state01.add_justification([{"state": "01"}])
-        state01.beam_key = state01.score, state01.iteration
         beam.add_state(state01)
 
         state02 = State(
@@ -214,7 +195,6 @@ class TestBeam(AdviserTestCase):
             iteration=0,
         )
         state02.add_justification([{"state": "02"}])
-        state02.beam_key = state02.score, state02.iteration
         beam.add_state(state02)
 
         assert list(beam.iter_states()) == [state01]
@@ -252,17 +232,14 @@ class TestBeam(AdviserTestCase):
         beam = Beam(width=2)
 
         state1 = State(score=0.0)
-        state1.beam_key = state1.score
         beam.add_state(state1)
         beam.remove(state1)
 
         state2 = State(score=1.0)
-        state2.beam_key = state2.score
         beam.add_state(state2)
         beam.remove(state2)
 
         state3 = State(score=2.0)
-        state3.beam_key = state3.score
         beam.add_state(state3)
         beam.remove(state3)
 

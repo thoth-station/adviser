@@ -53,7 +53,6 @@ class State:
     justification = attr.ib(
         type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True
     )
-    beam_key = attr.ib(type=object, default=None)
     _parent = attr.ib(default=None, type=weakref)
 
     _EPSILON = 0.1
@@ -89,7 +88,7 @@ class State:
 
     def __lt__(self, other) -> bool:
         """Compare two objects, comparision protocol used in the beam."""
-        return self.beam_key < other.beam_key
+        return self.score < other.score
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert state to a dict representation."""

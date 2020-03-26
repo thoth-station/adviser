@@ -67,6 +67,7 @@ from .utils import log_once
 import attr
 
 _LOGGER = logging.getLogger(__name__)
+_NO_EXTRAS = frozenset([None])
 
 
 class _NoStateAdd(Exception):
@@ -322,15 +323,21 @@ class Resolver:
         *,
         user_stack_scoring: bool = False,
         log_level: int = logging.DEBUG,
-    ) -> bool:
+    ) -> Optional[State]:
         """Run steps and generate a new state."""
         package_version_tuple = package_version.to_tuple()
 
         multi_package_resolution = False
         if package_version.name in state.resolved_dependencies:
+            if package_version_tuple != state.resolved_dependencies[package_version.name]:
+                _LOGGER.error(
+                    "Different package versions treated in the resolved dependencies, this assert "
+                    "is not fatal but can lead to a wrong stack resolved (programming error)"
+                )
             if user_stack_scoring:
                 _LOGGER.error(
-                    "Multi package resolution cannot occur when scoring user stacks, this assert is not fatal"
+                    "Multi package resolution cannot occur when scoring user stacks, this assert "
+                    "is not fatal but can lead to a wrong stack resolved (programming error)"
                 )
             # We already have this dependency in stack, run steps that are
             # required to be run in such cases. The resolver logic called before guarantees there is
@@ -367,10 +374,13 @@ class Resolver:
                     level=log_level,
                 )
                 if not user_stack_scoring:
+                    if package_version_tuple[0] not in state.unresolved_dependencies:
+                        self.beam.remove(state)
+
                     self.predictor.set_reward_signal(
                         state, package_version_tuple, math.nan
                     )
-                return False
+                return None
             except Exception as exc:
                 raise StepError(
                     f"Failed to run step {step.__class__.__name__!r} for Python package "
@@ -421,6 +431,8 @@ class Resolver:
         else:
             # Optimization - reuse the old one as it would be discarded anyway.
             cloned_state = state
+            if not user_stack_scoring and (score_addition != 0.0 or not unresolved_dependencies):
+                self.beam.remove(cloned_state)
 
         if unresolved_dependencies:
             cloned_state.set_unresolved_dependencies(unresolved_dependencies)
@@ -432,13 +444,18 @@ class Resolver:
         cloned_state.score += score_addition
 
         if not user_stack_scoring:
-            self.predictor.set_reward_signal(
-                cloned_state, package_version_tuple, score_addition
-            )
-            self.predictor.set_beam_key(cloned_state)
-            self.beam.add_state(cloned_state)
+            if cloned_state.unresolved_dependencies:
+                self.predictor.set_reward_signal(
+                    cloned_state, package_version_tuple, score_addition
+                )
+                if state is not cloned_state or score_addition != 0.0:
+                    self.beam.add_state(cloned_state)
+            else:
+                self.predictor.set_reward_signal(
+                    cloned_state, package_version_tuple, math.inf
+                )
 
-        return True
+        return cloned_state
 
     def _run_strides(self, state: State) -> bool:
         """Run strides and check if the given state should be accepted."""
@@ -571,7 +588,6 @@ class Resolver:
                 return
 
         self._run_wraps(state)
-        self.predictor.set_beam_key(state, is_user_stack=True)
         self.beam.add_state(state)
         _LOGGER.info("User's software stack has a score of %g", state.score)
 
@@ -663,13 +679,28 @@ class Resolver:
         self.beam.wipe()
         state = State.from_direct_dependencies(direct_dependencies)
         weakref.finalize(state, self.predictor.finalize_state, id(state)).atexit = False
-        self.predictor.set_beam_key(state)
         self.beam.add_state(state)
 
     def _expand_state(
         self, state: State, package_tuple: Tuple[str, str, str]
     ) -> Optional[State]:
-        """Expand the given state, generate new states respecting the pipeline configuration."""
+        """Expand the given state, generate new states respecting the pipeline configuration.
+
+        This function retrieves dependencies of the expanded state. The decision tree:
+
+          - is package_tuple resolved?
+            |
+            -> yes -> proceed to self._expand_state_add_dependencies (regardless there are any dependencies)
+            |
+            -> no -> are there any other dependencies of the same type which could be resolved?
+                  |
+                  -> yes -> keep the state in beam
+                  |
+                  -> no -> state needs to be removed as dependencies cannot be satisfied.
+
+        Returns None if package_tuple was not resolved, otherwise the newly created state out of state (can be
+        same object allocated based on memory optimizations in self._expand_state_add_dependencies.
+        """
         _LOGGER.debug("Expanding state by resolving %r", package_tuple)
         # Obtain extras for the given package. Extras are non-empty only for direct dependencies. If indirect
         # dependencies use extras, they don't need to be explicitly stated as solvers mark "hard" dependency on
@@ -680,8 +711,9 @@ class Resolver:
 
         state.remove_unresolved_dependency(package_tuple)
 
-        extras = package_version.extras or []
-        extras.append(None)
+        extras = _NO_EXTRAS
+        if package_version.extras:
+            extras = frozenset(list(package_version.extras) + [None])
 
         try:
             dependencies = self.graph.get_depends_on(
@@ -689,7 +721,7 @@ class Resolver:
                 os_name=self.project.runtime_environment.operating_system.name,
                 os_version=self.project.runtime_environment.operating_system.version,
                 python_version=self.project.runtime_environment.python_version,
-                extras=frozenset(extras),
+                extras=extras,
                 marker_evaluation_result=True
                 if self.project.runtime_environment.is_fully_specified()
                 else None,
@@ -702,39 +734,13 @@ class Resolver:
                 "Dependency %r is not yet resolved, trying different resolution path...",
                 package_tuple,
             )
-            if not state.unresolved_dependencies:
+
+            if package_tuple[0] not in state.unresolved_dependencies:
+                # There are no dependencies of the same type, remove the state from the beam.
                 self.beam.remove(state)
 
             self.predictor.set_reward_signal(state, package_tuple, math.nan)
             return None
-
-        if not dependencies:
-            if not state.unresolved_dependencies:
-                # The given package has no dependencies and nothing to resolve more, mark it as resolved.
-                self.beam.remove(state)
-                self.predictor.set_reward_signal(state, package_tuple, math.inf)
-                return state
-
-            cloned_state = state.clone()
-            # Mark dependency resolved in the newly created state and add it to beam.
-            cloned_state.remove_unresolved_dependency_subtree(package_tuple[0])
-            cloned_state.add_resolved_dependency(package_tuple)
-            cloned_state.iteration = self.context.iteration
-
-            if not cloned_state.unresolved_dependencies:
-                self.predictor.set_reward_signal(cloned_state, package_tuple, math.inf)
-                return cloned_state
-
-            weakref.finalize(
-                cloned_state, self.predictor.finalize_state, id(cloned_state)
-            ).atexit = False
-            self.predictor.set_beam_key(cloned_state)
-            self.beam.add_state(cloned_state)
-            self.predictor.set_reward_signal(state, package_tuple, 0.0)
-            return None
-
-        if not state.unresolved_dependencies:
-            self.beam.remove(state)
 
         return self._expand_state_add_dependencies(
             state=state,
@@ -748,7 +754,51 @@ class Resolver:
         package_version: PackageVersion,
         dependencies: List[Tuple[str, str]],
     ) -> Optional[State]:
-        """Create new state out of existing ones based on dependencies."""
+        """Create new state out of existing ones based on dependencies if necessary.
+
+        This function ensures there are run steps on the newly added dependency. Prior that,
+        there are obtained dependencies solved for the given runtime environment.
+
+          - are all dependencies of a type were solved in the given runtime environment
+            |
+            -> no - the transition is not accepted, predictor receives NaN reward signal
+                  |
+                   -> is there any dependency of the same type as package_version?
+                       |
+                       -> yes - keep state in the beam
+                       |
+                       -> no - remove state from the beam as we cannot satisfy all the dependencies
+            -> yes - are these dependencies already shared with dependencies marked as resolved in the state?
+                   |
+                   -> no - sort dependencies and run sieves
+                          |
+                           -> sieves removed all dependencies?
+                              |
+                              -> yes - is there any dependency of the same type as package_version?
+                                     |
+                                     -> yes - keep state in the beam
+                                     |
+                                     -> no - remove state from the beam as we cannot satisfy all the dependencies
+                              -> no - run steps
+                   -> yes - computed intersection is empty?
+                          |
+                          -> yes - is there any dependency of the same type as package_version?
+                                 |
+                                 -> yes - keep state in the beam
+                                 |
+                                 -> no - remove state from the beam as we cannot satisfy all the dependencies
+                          -> no - sort dependencies and run sieves
+                                 |
+                                  -> sieves removed all dependencies?
+                                     |
+                                     -> yes - is there any dependency of the same type as package_version?
+                                            |
+                                            -> yes - keep state in the beam
+                                            |
+                                            -> no - remove state from the beam as we cannot satisfy all the dependencies
+                                     -> no - run steps
+
+        """
         _LOGGER.debug(
             "Expanding state with dependencies based on packages solved in software environments"
         )
@@ -767,16 +817,15 @@ class Resolver:
 
             # We could use a set here that would optimize a bit, but it will create randomness - it
             # will not work well with preserving seed across resolver runs.
-            if dependency_name not in all_dependencies:
-                all_dependencies[dependency_name] = []
-
+            all_dependencies.setdefault(dependency_name, [])
             resolved_dependency_tuple = state.resolved_dependencies.get(dependency_name)
             if (
                 resolved_dependency_tuple
                 and resolved_dependency_tuple[1] != dependency_version
             ):
                 _LOGGER.debug(
-                    "Skipping adding dependency %r in version %r as this dependency is already present in state: %r",
+                    "Skipping adding dependency %r in version %r as this dependency is already present "
+                    "in state in a different version: %r",
                     dependency_name,
                     dependency_version,
                     state.resolved_dependencies[dependency_name],
@@ -810,6 +859,7 @@ class Resolver:
             if not package_versions
         ]
         if unsolved:
+            # We don't have all dependencies of package_tuple solved for the given environment, give up here.
             for unsolved_item in unsolved:
                 log_once(
                     _LOGGER,
@@ -820,6 +870,12 @@ class Resolver:
                     unsolved_item,
                     package_tuple,
                 )
+
+            if package_tuple[0] not in state.unresolved_dependencies:
+                # There are no dependencies of the same type that could lead this state to a final state, remove
+                # the state from the beam.
+                self.beam.remove(state)
+
             self.predictor.set_reward_signal(state, package_tuple, math.nan)
             return None
 
@@ -844,6 +900,12 @@ class Resolver:
                         dependency_name,
                         package_tuple,
                     )
+
+                    if package_tuple[0] not in state.unresolved_dependencies:
+                        # No other candidate of same package type as package_tuple that would lead
+                        # to a final state from this state.
+                        self.beam.remove(state)
+
                     self.predictor.set_reward_signal(state, package_tuple, math.nan)
                     return None
 
@@ -868,6 +930,10 @@ class Resolver:
                     "trying different resolution path...",
                     dependency_name,
                 )
+
+                if package_tuple[0] not in state.unresolved_dependencies:
+                    self.beam.remove(state)
+
                 self.predictor.set_reward_signal(state, package_tuple, math.nan)
                 return None
 
@@ -881,8 +947,7 @@ class Resolver:
                     pv.to_tuple() for pv in package_versions
                 ]
 
-        self._run_steps(state, package_version, all_dependencies)
-        return None
+        return self._run_steps(state, package_version, all_dependencies)
 
     def _do_resolve_states(
         self, *, with_devel: bool = True, user_stack_scoring: bool = True,
@@ -950,13 +1015,14 @@ class Resolver:
                     state.score,
                     state,
                 )
-                final_state = self._expand_state(state, unresolved_package_tuple)
-                if final_state:
-                    if self._run_strides(final_state):
-                        self._run_wraps(final_state)
+                state_returned = self._expand_state(state, unresolved_package_tuple)
+                if state_returned is not None and not state_returned.unresolved_dependencies:
+                    # A final state produced by the pipeline.
+                    if self._run_strides(state_returned):
+                        self._run_wraps(state_returned)
                         self.context.accepted_final_states_count += 1
-                        self.context.register_accepted_final_state(final_state)
-                        yield final_state
+                        self.context.register_accepted_final_state(state_returned)
+                        yield state_returned
                     else:
                         self.context.discarded_final_states_count += 1
 

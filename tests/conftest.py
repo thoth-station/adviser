@@ -139,6 +139,7 @@ def resolver(
     """Create a resolver instance for tests."""
     flexmock(Resolver)
     flexmock(GraphDatabase)
+    flexmock(Beam)
 
     return Resolver(
         pipeline=pipeline_config,
