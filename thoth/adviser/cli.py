@@ -385,6 +385,14 @@ def provenance(
          "as a base for relative stack quality comparision. Adviser will score the supplied "
          "lock file and will try to find a better stack.",
 )
+@click.option(
+    "--dev/--no-dev",
+    envvar="THOTH_ADVISER_DEV",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Consider or do not consider development dependencies during resolution.",
+)
 def advise(
     click_ctx: click.Context,
     *,
@@ -405,6 +413,7 @@ def advise(
     seed: Optional[int] = None,
     pipeline: Optional[str] = None,
     user_stack_scoring: bool = True,
+    dev: bool = False,
 ):
     """Advise package and package versions in the given stack or on solely package only."""
     parameters = locals()
@@ -471,7 +480,7 @@ def advise(
         print_func,
         plot=plot,
         result_dict={"parameters": parameters},
-        with_devel=True,
+        with_devel=dev,
         user_stack_scoring=user_stack_scoring,
     )
 
@@ -604,6 +613,14 @@ def advise(
     metavar="PIPELINE",
     help="Pipeline configuration supplied in a form of JSON/YAML or a path to a file.",
 )
+@click.option(
+    "--dev/--no-dev",
+    envvar="THOTH_ADVISER_DEV",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Consider or do not consider development dependencies during resolution.",
+)
 def dependency_monkey(
     click_ctx: click.Context,
     *,
@@ -624,6 +641,7 @@ def dependency_monkey(
     runtime_environment: str = None,
     seed: Optional[int] = None,
     pipeline: Optional[str] = None,
+    dev: bool = False,
 ):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
     parameters = locals()
@@ -703,7 +721,7 @@ def dependency_monkey(
         print_func,
         result_dict={"parameters": parameters},
         plot=plot,
-        with_devel=True,
+        with_devel=dev,
         user_stack_scoring=False,
     )
 

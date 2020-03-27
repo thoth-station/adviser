@@ -4,7 +4,7 @@ kind: WorkflowTemplate
 metadata:
   name: advise
   annotations:
-    thoth-station.ninja/template-version: 0.6.0
+    thoth-station.ninja/template-version: 0.6.1
   labels:
     app: thoth
     component: advise
@@ -24,6 +24,8 @@ spec:
           - name: THOTH_ADVISER_METADATA
           - name: THOTH_ADVISER_SEED
             value: "42"
+          - name: THOTH_ADVISER_DEV
+            value: "0"
           - name: THOTH_ADVISER_BEAM_WIDTH
             value: "1000"
           - name: THOTH_LOG_ADVISER
@@ -97,6 +99,8 @@ spec:
             value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
           - name: THOTH_ADVISER_SEED
             value: "{{inputs.parameters.THOTH_ADVISER_SEED}}"
+          - name: THOTH_ADVISER_DEV
+            value: "{{inputs.parameters.THOTH_ADVISER_DEV}}"
           - name: THOTH_ADVISER_BEAM_WIDTH
             value: "{{inputs.parameters.THOTH_ADVISER_BEAM_WIDTH}}"
           - name: THOTH_ADVISER_SUBCOMMAND

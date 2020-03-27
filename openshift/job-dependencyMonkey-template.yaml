@@ -5,13 +5,13 @@ metadata:
   annotations:
     description: "Thoth: Dependency Monkey"
     openshift.io/display-name: "Thoth: Dependency Monkey"
-    version: 0.4.6
+    version: 0.4.7
     tags: thoth,ai-stacks,dependency-monkey
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
       This template defines resources needed to run recommendation logic of Thoth to OpenShift.
     template.openshift.io/provider-display-name: Red Hat, Inc.
-    thoth-station.ninja/template-version: 0.4.6
+    thoth-station.ninja/template-version: 0.4.7
   labels:
     app: thoth
     template: dependency-monkey-workload-operator
@@ -79,6 +79,10 @@ parameters:
     # Keep seed constant across adviser runs so that two runs with same knowledge base report same results to user.
     # Not to answer with a different stack each time a request is made.
     value: "42"
+  - name: THOTH_ADVISER_DEV
+    required: false
+    description: Consider also development dependencies.
+    value: "0"
   - name: THOTH_DEPENDENCY_MONKEY_DECISION_TYPE
     required: false
     description:
@@ -111,7 +115,7 @@ objects:
     metadata:
       name: ${THOTH_DEPENDENCY_MONKEY_JOB_ID}
       annotations:
-        thoth-station.ninja/template-version: 0.4.6
+        thoth-station.ninja/template-version: 0.4.7
       labels:
         app: thoth
         component: dependency-monkey
@@ -167,6 +171,8 @@ objects:
                   value: "${THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT}"
                 - name: THOTH_DEPENDENCY_MONKEY_SEED
                   value: "${THOTH_DEPENDENCY_MONKEY_SEED}"
+                - name: THOTH_ADVISER_DEV
+                  value: "${THOTH_ADVISER_DEV}"
                 - name: THOTH_DEPENDENCY_MONKEY_DECISION_TYPE
                   value: "${THOTH_DEPENDENCY_MONKEY_DECISION_TYPE}"
                 - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
