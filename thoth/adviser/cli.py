@@ -127,7 +127,7 @@ def _get_adviser_predictor(
         recommendation_type == RecommendationType.STABLE
         or recommendation_type == RecommendationType.TESTING
     ):
-        return predictors.AdaptiveSimulatedAnnealing
+        return predictors.MCTS
 
     raise ValueError(f"Unknown recommendation type: {recommendation_type!r}")
 
