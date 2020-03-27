@@ -33,8 +33,6 @@ import logging
 import os
 import time
 
-from thoth.common import init_logging
-
 from .exceptions import AdviserRunException
 from .exceptions import UnresolvedDependencies
 from .dependency_monkey import DependencyMonkey
@@ -70,7 +68,6 @@ def subprocess_run(
     if pid == 0:  # Child or no-fork mode.
         return_code = 0
         # We need to re-init logging for the sub-process.
-        init_logging()
         _LOGGER.debug("Created a child process to compute report")
         try:
             report: Union[DependencyMonkeyReport, Report] = resolver.resolve(

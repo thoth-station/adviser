@@ -199,12 +199,12 @@ class State:
 
           \sum_{k=0}^n k
 
-        Let's use the solution using binomial coefficient - (n + 1) over 2.
+        Let's use arithmetic progression to get termial of n.
         """
         if n < 0:
             raise ValueError("Termial function used with negative number")
 
-        return ((n**2) + n) >> 1
+        return int((1 + n) * (n / 2))
 
     @staticmethod
     def _termial_function_solution(x: int) -> int:
