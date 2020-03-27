@@ -547,7 +547,7 @@ class Resolver:
                         f"in version {package_version.locked_version!r}"
                     )
 
-    def _maybe_score_user_lock_file(self, *, with_devel: bool = True) -> None:
+    def _maybe_score_user_lock_file(self, *, with_devel: bool = True) -> Optional[State]:
         """Score user's lock file submitted.
 
         As adviser is stochastic, it can explore different parts of the state
@@ -561,7 +561,7 @@ class Resolver:
         """
         if not self.project.pipfile_lock:
             _LOGGER.info("Cannot score user's stack - no user's stack provided")
-            return
+            return None
 
         self._prepare_user_lock_file(with_devel=True)
 
@@ -569,22 +569,29 @@ class Resolver:
         for package_version in self.project.iter_dependencies_locked(
             with_devel=with_devel
         ):
-            package_version = list(self._run_sieves([package_version]))
+            # First time seen, register this package for pipeline units.
+            self.context.register_package_version(package_version)
+            package_version = list(self._run_sieves([package_version], log_level=logging.INFO))
             if not package_version:
                 _LOGGER.info("User's stack was removed based on sieves")
-                return
+                return None
 
         state = State()
         for package_version in self.project.iter_dependencies_locked(
             with_devel=with_devel
         ):
-            if not self._run_steps(state, package_version, user_stack_scoring=True):
+            if not self._run_steps(state, package_version, user_stack_scoring=True, log_level=logging.INFO):
                 _LOGGER.info("User's stack was removed based on steps")
-                return
+                return None
 
+        state.add_justification([{
+            "type": "INFO",
+            "message": "Score of the supplied lock file, note there is no guarantee it has been resolved correctly",
+        }])
         self._run_wraps(state)
         self.beam.add_state(state)
         _LOGGER.info("User's software stack has a score of %g", state.score)
+        return state
 
     def _resolve_direct_dependencies(
         self, *, with_devel: bool
@@ -959,13 +966,16 @@ class Resolver:
 
         if user_stack_scoring:
             try:
-                self._maybe_score_user_lock_file(with_devel=with_devel)
+                user_stack = self._maybe_score_user_lock_file(with_devel=with_devel)
             except UserLockFileError as exc:
                 _LOGGER.warning("Failed to score user's lock file: %s", str(exc))
             except Exception:
                 _LOGGER.exception(
                     "Failed to score supplied user stack, the error is not fatal"
                 )
+            else:
+                if user_stack:
+                    yield user_stack
 
         self._prepare_initial_state(with_devel=with_devel)
 
