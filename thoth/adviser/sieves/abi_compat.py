@@ -22,11 +22,11 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Generator
+from typing import Set
 from typing import TYPE_CHECKING
 
 import attr
 from thoth.python import PackageVersion
-from thoth.storages.exceptions import NotFoundError
 
 from ..sieve import Sieve
 
@@ -36,8 +36,11 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-class AbiCompatabilitySieve(Sieve):
+@attr.s(slots=True)
+class AbiCompatibilitySieve(Sieve):
     """Remove packages if the image being used doesn't have necessary ABI."""
+
+    image_symbols = attr.ib(type=Set, factory=set)
 
     @classmethod
     def should_include(
