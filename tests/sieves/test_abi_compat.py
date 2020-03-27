@@ -17,11 +17,9 @@
 
 """Test filtering out Python Packages based on required and available ABI symbols."""
 
-import pytest
 import flexmock
 
-from thoth.adviser.sieves import AbiCompatabilitySieve
-from thoth.adviser.context import Context
+from thoth.adviser.sieves import AbiCompatibilitySieve
 from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages import GraphDatabase
@@ -53,8 +51,8 @@ class TestAbiCompatSieve(AdviserTestCase):
                 python_version="3.6",
             ))
         )
-        with AbiCompatabilitySieve.assigned_context(context):
-            sieve = AbiCompatabilitySieve()
+        with AbiCompatibilitySieve.assigned_context(context):
+            sieve = AbiCompatibilitySieve()
             sieve.pre_run()
             assert list(sieve.run((p for p in [package_version]))) == [package_version]
 
@@ -75,7 +73,7 @@ class TestAbiCompatSieve(AdviserTestCase):
                 python_version="3.6",
             ))
         )
-        with AbiCompatabilitySieve.assigned_context(context):
-            sieve = AbiCompatabilitySieve()
+        with AbiCompatibilitySieve.assigned_context(context):
+            sieve = AbiCompatibilitySieve()
             sieve.pre_run()
             assert list(sieve.run((p for p in [package_version]))) == []
