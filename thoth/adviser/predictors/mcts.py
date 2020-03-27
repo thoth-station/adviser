@@ -82,7 +82,11 @@ class MCTS(TemporalDifference):
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Run MCTS with adaptive simulated annealing schedule."""
-        if self._next_state is not None:
+        # As beam can be limited to width, it can happen that the last stack is pushed away (based on the score)
+        # from the beam. To avoid expanding state that is not present in the beam, check that the last added state
+        # in the beam is the one we keep as next expanded. If they do not match, the last added is not the next state
+        # we wanted to expand - this is based on the MCTS logic.
+        if self._next_state is not None and self._next_state is self.context.beam.get_last():
             return (
                 self._next_state,
                 self._next_state.get_random_unresolved_dependency(prefer_recent=True),

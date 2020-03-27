@@ -33,7 +33,6 @@ from matplotlib.font_manager import FontProperties
 import attr
 
 from .exceptions import NoHistoryKept
-from .exceptions import InternalError
 from .state import State
 from .utils import should_keep_history
 
@@ -195,9 +194,6 @@ class Beam:
 
     def add_state(self, state: State) -> None:
         """Add state to the internal state listing (do it in O(log(N)) time."""
-        if state.beam_key is None:
-            raise InternalError("Trying to add a state to beam without binding its key")
-
         if self.width is not None and len(self._heapq) >= self.width:
             popped = heapq.heappushpop(self._heapq, state)
             if popped is not state:
