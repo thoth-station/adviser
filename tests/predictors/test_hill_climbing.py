@@ -40,7 +40,6 @@ class TestHillClimbing(AdviserTestCase):
         for _ in range(state_count):
             cloned_state = state.clone()
             cloned_state.iteration = state.iteration + 1
-            cloned_state.beam_key = (cloned_state.score, cloned_state.iteration)
             beam.add_state(cloned_state)
 
         predictor = HillClimbing()
