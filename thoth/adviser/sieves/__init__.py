@@ -17,7 +17,7 @@
 
 """Implementation of sieves used in adviser pipeline."""
 
-from .abi_compat import AbiCompatabilitySieve
+from .abi_compat import AbiCompatibilitySieve
 from .index_enabled import PackageIndexSieve
 from .locked import CutLockedSieve
 from .filter_index import FilterIndexSieve
@@ -35,6 +35,6 @@ __all__ = [
     "PackageIndexSieve",
     "SolvedSieve",
     "VersionConstraintSieve",
-    "AbiCompatabilitySieve",
+    "AbiCompatibilitySieve",
     "FilterIndexSieve",
 ]
