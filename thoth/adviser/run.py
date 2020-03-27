@@ -58,6 +58,9 @@ def subprocess_run(
     user_stack_scoring: bool = True,
 ) -> int:
     """Run the given function (partial annealing method) in a subprocess and output the produced report."""
+    if not with_devel:
+        _LOGGER.warning("Development dependencies will not be taken into account")
+
     start_time = time.monotonic()
 
     pid = 0

@@ -5,13 +5,13 @@ metadata:
   annotations:
     description: "Thoth: Adviser"
     openshift.io/display-name: "Thoth: Adviser"
-    version: 0.4.6
+    version: 0.4.7
     tags: thoth,ai-stacks,adviser
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
       This template defines resources needed to run recommendation logic of Thoth to OpenShift.
     template.openshift.io/provider-display-name: "Red Hat, Inc."
-    thoth-station.ninja/template-version: 0.4.6
+    thoth-station.ninja/template-version: 0.4.7
   labels:
     app: thoth
     template: adviser-workload-operator
@@ -74,6 +74,11 @@ parameters:
     # Keep seed constant across adviser runs so that two runs with same knowledge base report same results to user.
     # Not to answer with a different stack each time a request is made.
     value: "42"
+  - name: THOTH_ADVISER_DEV
+    required: true
+    description: Consider also development dependencies.
+    displayName: Dev dependencies
+    value: "0"
   - name: THOTH_ADVISER_BEAM_WIDTH
     required: true
     description: Adviser's beam width to restrict memory requirements with states generated.
@@ -116,7 +121,7 @@ objects:
     metadata:
       name: ${THOTH_ADVISER_JOB_ID}
       annotations:
-        thoth-station.ninja/template-version: 0.4.6
+        thoth-station.ninja/template-version: 0.4.7
       labels:
         app: thoth
         component: adviser-workload-operator
@@ -184,6 +189,8 @@ objects:
                   value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
                 - name: THOTH_ADVISER_SEED
                   value: "${THOTH_ADVISER_SEED}"
+                - name: THOTH_ADVISER_DEV
+                  value: "${THOTH_ADVISER_DEV}"
                 - name: THOTH_ADVISER_BEAM_WIDTH
                   value: "${THOTH_ADVISER_BEAM_WIDTH}"
                 - name: THOTH_ADVISER_SUBCOMMAND
