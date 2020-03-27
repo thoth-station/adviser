@@ -178,18 +178,7 @@ class Resolver:
     )
     cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict))
     stop_resolving = attr.ib(type=bool, default=False)
-    log_final_state_count = attr.ib(
-        type=int,
-        default=os.getenv(
-            "THOTH_ADVISER_LOG_FINAL_STATE_COUNT", DEFAULT_LOG_FINAL_STATE_COUNT
-        ),
-    )
-    log_final_state_top = attr.ib(
-        type=bool,
-        default=os.getenv(
-            "THOTH_ADVISER_LOG_FINAL_STATE_TOP", DEFAULT_LOG_FINAL_STATE_TOP
-        ),
-    )
+    log_final_state_count = attr.ib(type=int)
 
     _beam = attr.ib(type=Optional[Beam], kw_only=True, default=None)
     _solver = attr.ib(
@@ -222,6 +211,12 @@ class Resolver:
             raise ValueError(
                 f"Value for attribute {attribute!r} should be a positive integer, got {value} instead"
             )
+
+    @log_final_state_count.default
+    def _log_final_state_count_default(self) -> int:
+        """Determine how often the pipeline should log about its progress."""
+        # Log each 10% by default.
+        return int(os.getenv("THOTH_ADVISER_LOG_FINAL_STATE_COUNT", self.limit // 10)) or 1
 
     @property
     def context(self) -> Context:
@@ -995,28 +990,16 @@ class Resolver:
                 if (
                     self.context.accepted_final_states_count - 1
                 ) % self.log_final_state_count == 0:
-                    if self.log_final_state_top:
-                        # As logging top can give additional overhead, print top only if the user requested so.
-                        _LOGGER.info(
-                            "Pipeline reached %d final states out of %d requested in iteration %d "
-                            "(pipeline pace %.02f stacks/second), top rated software stack has a score of %g",
-                            self.context.accepted_final_states_count,
-                            self.context.limit,
-                            self.context.iteration,
-                            self.context.accepted_final_states_count
-                            / (time.monotonic() - start_time),
-                            self.beam.max().score,
-                        )
-                    else:
-                        _LOGGER.info(
-                            "Pipeline reached %d final states out of %d requested in "
-                            "iteration %d (pipeline pace %.02f stacks/second)",
-                            self.context.accepted_final_states_count,
-                            self.context.limit,
-                            self.context.iteration,
-                            self.context.accepted_final_states_count
-                            / (time.monotonic() - start_time),
-                        )
+                    _LOGGER.info(
+                        "Pipeline reached %d final states out of %d requested in iteration %d "
+                        "(pipeline pace %.02f stacks/second), top rated software stack has a score of %g",
+                        self.context.accepted_final_states_count,
+                        self.context.limit,
+                        self.context.iteration,
+                        self.context.accepted_final_states_count
+                        / (time.monotonic() - start_time),
+                        self.beam.max().score,
+                    )
 
                 product = Product.from_final_state(
                     context=self.context, state=final_state
