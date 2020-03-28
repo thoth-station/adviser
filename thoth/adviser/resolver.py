@@ -243,7 +243,7 @@ class Resolver:
     def beam(self) -> Beam:
         """Get beam for storing states."""
         if not self._beam:
-            self._beam = Beam(self.beam_width)
+            self._beam = Beam(self.beam_width, keep_history=self.predictor.keep_history)
 
         return self._beam
 
