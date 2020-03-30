@@ -105,17 +105,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:7f6d41d6e5b763914e867ece72b049476b75093bcb801afeae2aebd20d7f61c8",
-                "sha256:b464586003bdfb9ee92463013650f5b62935a7870ed3e8a32aa9111aa142c3f7"
+                "sha256:8bf7e3611d46e8214bf225169ac55de762d9d341514f81ebae885dd601138fcf",
+                "sha256:913fc7bbb9df147ed6fa0bd2b391469652ee8cad3e26ca2355e6ff774d9516fb"
             ],
-            "version": "==1.12.30"
+            "version": "==1.12.31"
         },
         "botocore": {
             "hashes": [
-                "sha256:38eef2271ab908979ad7ec7a5cdf334c2a5a0b5e8fe37937c8a76e3ed9c18940",
-                "sha256:d71f22e81bb17d92a6c3aad9ff04ca79af5f053ac35f6d6f16e1f002aa0655af"
+                "sha256:3d4684f61ff07aa1b4cd30d13a6b8e6416142be5a2a55aedcc1d7974b9415bb1",
+                "sha256:86e3f25c9a94e9e85915ef3dcb13b496d25873a40b81f4e23a7a0250248d1be9"
             ],
-            "version": "==1.15.30"
+            "version": "==1.15.31"
         },
         "cachetools": {
             "hashes": [
@@ -412,12 +412,6 @@
             ],
             "index": "pypi",
             "version": "==3.2.1"
-        },
-        "methodtools": {
-            "hashes": [
-                "sha256:03e05f69150cb2a931f71dc542ee80856e91ae00e179c1df384285078b0dc118"
-            ],
-            "version": "==0.1.2"
         },
         "mock": {
             "hashes": [
@@ -779,11 +773,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:105f0da5b2f910119f517e8d16ec3d5916380402005548a49cc8b885bc85e9a9",
-                "sha256:8765cee0c9395eb1ae224e67b02a3ebc23c5c79a00e1251477f3268a0218cdc1"
+                "sha256:2ac898df1f613e04afed22b9eb614fb411ab14f4be16deea409302c1b8195c61",
+                "sha256:37bffb90ea1d4fe36fdb35d690efb9e997d3279f1e5b6c3d0fdd2f1dea698f94"
             ],
             "index": "pypi",
-            "version": "==0.22.6"
+            "version": "==0.22.7"
         },
         "timestamp": {
             "hashes": [
@@ -843,12 +837,6 @@
                 "sha256:d735b91d6d1692a6a181f2a8c9e0238e5f6373356f561bb9dc4c7af36f452010"
             ],
             "version": "==0.57.0"
-        },
-        "wirerope": {
-            "hashes": [
-                "sha256:0ca7c9af15b04b7c21e254d910d658eef908646ae74beb86cc4981b281df2a91"
-            ],
-            "version": "==0.3.1"
         },
         "yarl": {
             "hashes": [
