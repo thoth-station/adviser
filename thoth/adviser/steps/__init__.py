@@ -17,6 +17,7 @@
 
 """Implementation of steps used during simulated annealing."""
 
+from .aicoe import AICoEReleasesStep
 from .cve import CvePenalizationStep
 from .dropout import DropoutStep
 
@@ -25,6 +26,7 @@ from .dropout import DropoutStep
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
 __all__ = [
-    "DropoutStep",
+    "AICoEReleasesStep",
     "CvePenalizationStep",
+    "DropoutStep",
 ]
