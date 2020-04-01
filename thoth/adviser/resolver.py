@@ -1068,13 +1068,13 @@ class Resolver:
                 ) % self.log_final_state_count == 0:
                     _LOGGER.info(
                         "Pipeline reached %d final states out of %d requested in iteration %d "
-                        "(pipeline pace %.02f stacks/second), top rated software stack has a score of %g",
+                        "(pipeline pace %.02f stacks/second), top rated software stack has a score of %s",
                         self.context.accepted_final_states_count,
                         self.context.limit,
                         self.context.iteration,
                         self.context.accepted_final_states_count
                         / (time.monotonic() - start_time),
-                        self.beam.max().score,
+                        self.beam.max().score if self.beam.size > 0 else "N/A",
                     )
 
                 product = Product.from_final_state(
