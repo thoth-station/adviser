@@ -1808,3 +1808,57 @@
 * Log pipeline speed
 * did not save merge before merging
 * add metadata
+
+## Release 0.9.0 (2020-04-01T15:50:18)
+* Fix info message causing issues when the beam is empty
+* Add fext to application requirements
+* Remove unusued parameter
+* Re-enable fext for beam's internal state handling
+* consistency in openshift templates to run provenance
+* :pushpin: Automatic update of dependency pyyaml from 3.13 to 5.3.1
+* Introduce heat up part of MCTS
+* Prioritize releases by AICoE
+* :pushpin: Automatic update of dependency thoth-solver from 1.5.0 to 1.5.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.6 to 0.22.7
+* Do not keep beam history if not necessary
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.5 to 0.22.6
+* Add option consider/do not consider dev dependencies
+* Increase timeout for running tests
+* Increase timeout for running tests
+* No need to initialize logging multiple times
+* Minor fixes in api_compat
+* Use MCTS predictor for stable and testing recommendations
+* Optimize termial of n computation
+* Fix scoring of the user stack
+* Optimize termial of n computation
+* Address issues spotted in resolution when MCTS is used
+* Document provenance checks
+* :pushpin: Automatic update of dependency pyyaml from 5.3.1 to 3.13
+* Fix context handling when passing in as raw JSON
+* Fix dependency monkey invocation flag
+* :pushpin: Automatic update of dependency hypothesis from 5.7.2 to 5.8.0
+* :pushpin: Automatic update of dependency hypothesis from 5.7.1 to 5.7.2
+* :pushpin: Automatic update of dependency pyyaml from 3.13 to 5.3.1
+* Log resolver progress each 10%
+* :pushpin: Automatic update of dependency hypothesis from 5.7.0 to 5.7.1
+* Missing parenthesis prevent sync on Ceph
+* Test suite and duplicate code refactoring
+* Fix docstring
+* Updates to the new beam API
+* Reduce memory footprint
+* Implement MCTS predictor
+* Additional changes for TD
+* Fix annealing testsuite
+* Introduce Temporal Difference based predictor using annealing based scheduling
+* Fix coala complains
+* Introduce user stack scoring as a base for comparision
+* Make sure the error report for adviser exceptions is always present
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.4 to 0.22.5
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.3 to 0.22.4
+* Rewrite beam so that it does not use fext
+* Wrong variable name
+* :pushpin: Automatic update of dependency hypothesis from 5.6.1 to 5.7.0
+* :pushpin: Automatic update of dependency hypothesis from 5.6.0 to 5.6.1
+* :pushpin: Automatic update of dependency matplotlib from 3.2.0 to 3.2.1
+* Correct space for exception
+* Fix handling of environment markers when multiple packages use marker
