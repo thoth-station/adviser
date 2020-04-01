@@ -1862,3 +1862,6 @@
 * :pushpin: Automatic update of dependency matplotlib from 3.2.0 to 3.2.1
 * Correct space for exception
 * Fix handling of environment markers when multiple packages use marker
+
+## Release 0.9.1 (2020-04-01T19:57:10)
+* Fix bug causing adviser halt for shared resolved packages
