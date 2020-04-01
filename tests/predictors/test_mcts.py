@@ -20,6 +20,7 @@
 import math
 
 import flexmock
+import pytest
 
 from thoth.adviser.context import Context
 from thoth.adviser.predictors import MCTS
@@ -107,6 +108,24 @@ class TestMCTS(AdviserTestCase):
             ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [3.1, 1],
         }
 
+    @pytest.mark.parametrize("next_state", [None, flexmock()])
+    def test_run_heat_up(self, context: Context, next_state) -> None:
+        """Test running the predictor in the "heat-up" phase regardless next state being set."""
+        state = flexmock()
+        unresolved_dependency = ("tensorflow", "2.0.0", "https://pypi.org/simple")
+
+        predictor = MCTS()
+        predictor._next_state = None
+
+        flexmock(TemporalDifference)
+        TemporalDifference.should_receive("run").with_args().and_return(
+            state, unresolved_dependency
+        ).once()
+
+        context.iteration = 1  # Some small number to hit the heat-up part.
+        with predictor.assigned_context(context):
+            assert predictor.run() == (state, unresolved_dependency)
+
     def test_run_next_state(self, context: Context) -> None:
         """Test running the predictor when the next state is scheduled."""
         state = flexmock()
@@ -118,6 +137,7 @@ class TestMCTS(AdviserTestCase):
         predictor = MCTS()
         predictor._next_state = state
         context.beam.should_receive("get_last").and_return(state).once()
+        context.iteration = 1000000  # Some big number not to hit the heat-up part.
         with predictor.assigned_context(context):
             assert predictor.run() == (state, unresolved_dependency)
 
@@ -135,10 +155,11 @@ class TestMCTS(AdviserTestCase):
             state, unresolved_dependency
         ).once()
 
+        context.iteration = 1000000  # Some big number not to hit the heat-up part.
         with predictor.assigned_context(context):
             assert predictor.run() == (state, unresolved_dependency)
 
-    def test_run_no_next_state(self) -> None:
+    def test_run_no_next_state(self, context: Context) -> None:
         """Test running the predictor when no next state is scheduled."""
         predictor = MCTS()
         assert predictor._next_state is None
@@ -150,7 +171,9 @@ class TestMCTS(AdviserTestCase):
         TemporalDifference.should_receive("run").with_args().and_return(
             state, unresolved_dependency
         ).once()
-        assert predictor.run() == (state, unresolved_dependency)
+        context.iteration = 1000000  # Some big number not to hit the heat-up part.
+        with predictor.assigned_context(context):
+            assert predictor.run() == (state, unresolved_dependency)
 
     def test_policy_size_no_shrink(self, context: Context) -> None:
         """Test limiting policy size over runs."""

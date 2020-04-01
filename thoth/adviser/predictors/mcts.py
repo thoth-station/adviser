@@ -33,6 +33,8 @@ from .td import TemporalDifference
 _LOGGER = logging.getLogger(__name__)
 # 0 means unlimited memory for policy learning.
 _MCTS_POLICY_SIZE = int(os.getenv("THOTH_MCTS_POLICY_SIZE", 0))
+# Percentage relative to `limit` for the heat-up part.
+_MCTS_HEAT_UP = int(os.getenv("THOTH_MCTS_HEAT_UP", 10))
 _MCTS_POLICY_SIZE_CHECK_ITERATION = 1024
 
 
@@ -82,6 +84,11 @@ class MCTS(TemporalDifference):
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Run MCTS with adaptive simulated annealing schedule."""
+        # In a heat up part, we run TD-like learning on the first candidates, not to get stuck in one state
+        # that generates its children.
+        if self.context.iteration < self.context.limit // _MCTS_HEAT_UP:
+            return super().run()
+
         # As beam can be limited to width, it can happen that the last stack is pushed away (based on the score)
         # from the beam. To avoid expanding state that is not present in the beam, check that the last added state
         # in the beam is the one we keep as next expanded. If they do not match, the last added is not the next state
