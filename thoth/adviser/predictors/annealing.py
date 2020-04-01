@@ -21,8 +21,8 @@ from typing import Any
 from typing import Tuple
 from typing import List
 import logging
-from math import exp
 import random
+import math
 
 import attr
 import matplotlib
@@ -49,20 +49,12 @@ class AdaptiveSimulatedAnnealing(Predictor):
     )
     _temperature = attr.ib(type=float, kw_only=True, default=0.0)
 
-    @staticmethod
-    def _temperature_function(t0: float, context: Context) -> float:
-        """Exponential temperature function.
-
-        The exponential function was additionally adjusted to respect number of rounds (iterations)
-        done in the main resolution time to also consider "time" spent in resolver for too large stacks.
-
-        See also:
-             https://www.mathworks.com/help/gads/how-simulated-annealing-works.html
-        """
+    def _temperature_function(self, t0: float, context: Context) -> float:
+        """Temperature function used to compute new temperature."""
         k = (
-            context.accepted_final_states_count * context.limit + context.iteration
-        ) / (context.limit << 1)
-        temperature = t0 * (0.95 ** k)
+                    context.accepted_final_states_count + math.log(context.iteration + 1)
+            ) / context.limit
+        temperature = t0 * 0.97**k
         _LOGGER.debug(
             "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, beam size= %d, k=%f) = %g",
             context.iteration,
@@ -88,7 +80,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
         if neighbour_score > top_score:
             return 1.0
 
-        acceptance_probability = exp((neighbour_score - top_score) / temperature)
+        acceptance_probability = math.exp((neighbour_score - top_score) / temperature)
         _LOGGER.debug(
             "Acceptance probability for (top_score=%g, neighbour_score=%g, temperature=%g) = %g",
             top_score,

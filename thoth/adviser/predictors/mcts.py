@@ -26,6 +26,7 @@ import math
 import operator
 import os
 
+from ..context import Context
 from ..state import State
 from .td import TemporalDifference
 
@@ -48,6 +49,24 @@ class MCTS(TemporalDifference):
         """Initialize pre-running of this predictor."""
         self._next_state = None
         super().pre_run()
+
+    def _temperature_function(self, t0: float, context: Context) -> float:
+        """Temperature function used to compute new temperature."""
+        # This function, in comparision to TD/SA, does not need to take into account iteration as it
+        # works on accepted states.
+        k = context.accepted_final_states_count / context.limit
+        temperature = t0 * 0.99**k
+        _LOGGER.debug(
+            "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, beam size= %d, k=%f) = %g",
+            context.iteration,
+            t0,
+            context.accepted_final_states_count,
+            context.limit,
+            context.beam.size,
+            k,
+            temperature,
+        )
+        return max(temperature, .0)
 
     def set_reward_signal(
         self, state: State, _: Tuple[str, str, str], reward: float

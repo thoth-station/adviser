@@ -89,7 +89,6 @@ class TestTemporalDifference(AdviserTestCase):
         """Test instantiation."""
         predictor = TemporalDifference()
         assert predictor._policy == {}
-        assert predictor._a == 1.0
         assert predictor._temperature_history == []
         assert predictor._temperature == 0.0
 
@@ -100,7 +99,6 @@ class TestTemporalDifference(AdviserTestCase):
         predictor._policy = {
             ("tensorflow", "2.0.0", "https://pypi.org/simple"): [1.0, 2]
         }
-        predictor._a = 9.876543210
         predictor._temperature_history = [(0.212, True, 0.23, 100)]
         predictor._temperature = 12.3
 
@@ -109,7 +107,6 @@ class TestTemporalDifference(AdviserTestCase):
             predictor.pre_run()
 
         assert predictor._policy == {}
-        assert predictor._a == 1.0
         assert predictor._temperature_history == []
         assert isinstance(predictor._temperature, float)
         assert predictor._temperature == float(context.limit)

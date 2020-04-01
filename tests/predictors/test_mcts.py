@@ -37,7 +37,6 @@ class TestMCTS(AdviserTestCase):
         """Test the initialization part."""
         predictor = MCTS()
         assert predictor._policy == {}
-        assert predictor._a == 1.0
         assert predictor._temperature_history == []
         assert predictor._temperature == 0.0
         assert predictor._next_state is None

@@ -45,32 +45,13 @@ _TD_POLICY_SIZE_CHECK_ITERATION = 1024
 class TemporalDifference(AdaptiveSimulatedAnnealing):
     """Implementation of Temporal Difference (TD) based predictor with adaptive simulated annealing schedule."""
 
-    _DEFAULT_A = 1.0  # Any number, this gets overwritten anyway.
-
     _policy = attr.ib(type=Dict[str, List[Union[float, int]]], factory=dict)
-    _a = attr.ib(type=float, default=_DEFAULT_A)
 
     def pre_run(self) -> None:
         """Initialize pre-running of this predictor."""
         super().pre_run()
         self._policy.clear()
-        self._a = self._DEFAULT_A
-
-    def _temperature_function(self, t0: float, context: Context) -> float:
-        """Temperature function used to compute new temperature."""
-        if context.accepted_final_states_count == 0:
-            return 0.0
-        elif t0 == 0.0 and context.accepted_final_states_count == 1:
-            self._a = (
-                0.5
-                * context.iteration
-                / context.accepted_final_states_count
-                * context.limit
-            )
-            return context.limit
-
-        temperature = (-context.limit / self._a) * context.iteration + context.limit
-        return max(temperature, 0.0)
+        self._temperature = float(self.context.limit)
 
     def set_reward_signal(
         self, state: State, _: Tuple[str, str, str], reward: float
