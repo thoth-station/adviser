@@ -4,7 +4,7 @@ kind: WorkflowTemplate
 metadata:
   name: advise
   annotations:
-    thoth-station.ninja/template-version: 0.6.1
+    thoth-station.ninja/template-version: 0.6.2
   labels:
     app: thoth
     component: advise
@@ -109,8 +109,6 @@ spec:
             value: "{{inputs.parameters.THOTH_ADVISER_LIMIT_LATEST_VERSIONS}}"
           - name: THOTH_ADVISER_LIBRARY_USAGE
             value: "{{inputs.parameters.THOTH_ADVISER_LIBRARY_USAGE}}"
-          - name: THOTH_ADVISER_PREDICTOR
-            value: "ApproximatingLatest"
           - name: ISIS_API_URL
             valueFrom:
               configMapKeyRef:
