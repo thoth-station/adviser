@@ -886,10 +886,8 @@ class Resolver:
                 # We have shared dependencies - let's compute intersection and use intersected dependencies if
                 # we can satisfy them. No need to run sieves as they were run in previous iterations on the
                 # intersected dependencies.
-                dependency_tuples = list(
-                    set(dependency_tuples).intersection(
-                        state.unresolved_dependencies[dependency_name].values()
-                    )
+                dependency_tuples = set(dependency_tuples).intersection(
+                    state.unresolved_dependencies[dependency_name].values()
                 )
 
                 if not dependency_tuples:
@@ -911,11 +909,38 @@ class Resolver:
                     self.predictor.set_reward_signal(state, package_tuple, math.nan)
                     return None
 
-                dependency_tuples.sort(
+                # Check intersection with the already resolved ones.
+                resolved_dependency = state.resolved_dependencies.get(dependency_name)
+                if resolved_dependency is not None:
+                    if resolved_dependency not in dependency_tuples:
+                        if package_tuple[0] not in state.unresolved_dependencies:
+                            self.beam.remove(state)
+
+                        self.predictor.set_reward_signal(state, package_tuple, math.nan)
+                        return None
+
+                    all_dependencies[dependency_name] = [resolved_dependency]
+                    continue
+
+                all_dependencies[dependency_name] = sorted(
+                    dependency_tuples,
                     key=lambda d: self.context.get_package_version(d).semantic_version,
                     reverse=True,
                 )
-                all_dependencies[dependency_name] = dependency_tuples
+                continue
+
+            # Check intersection with the already resolved ones.
+            resolved_dependency = state.resolved_dependencies.get(dependency_name)
+            if resolved_dependency is not None:
+                if resolved_dependency not in dependency_tuples:
+                    if package_tuple[0] not in state.unresolved_dependencies:
+                        self.beam.remove(state)
+
+                    self.predictor.set_reward_signal(state, package_tuple, math.nan)
+                    return None
+
+                # We have already run sieves for this one.
+                all_dependencies[dependency_name] = [resolved_dependency]
                 continue
 
             package_versions = [
