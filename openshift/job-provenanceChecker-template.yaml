@@ -5,17 +5,17 @@ metadata:
   annotations:
     description: "Thoth: Provenance Checker"
     openshift.io/display-name: "Thoth: Provenance Checker"
-    version: 0.4.2
+    version: 0.4.3
     tags: thoth,ai-stacks,provenance-checker
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
       This template defines resources needed to run recommendation logic of Thoth to OpenShift.
     template.openshift.io/provider-display-name: Red Hat, Inc.
-    thoth-station.ninja/template-version: 0.4.2
+    thoth-station.ninja/template-version: 0.4.3
   labels:
     app: thoth
-    template: provenance-checker
-    component: provenance-checker
+    template: provenance-checker-workload-operator
+    component: provenance-checker-workload-operator
 
 parameters:
   - description: Registry the ImageStream to be use lives in
@@ -70,10 +70,10 @@ objects:
     metadata:
       name: ${THOTH_PROVENANCE_CHECKER_JOB_ID}
       annotations:
-        thoth-station.ninja/template-version: 0.4.2
+        thoth-station.ninja/template-version: 0.4.3
       labels:
         app: thoth
-        component: provenance-checker
+        component: provenance-checker-workload-operator
         mark: cleanup
         operator: graph-sync
         task: package-extract
@@ -83,7 +83,7 @@ objects:
         metadata:
           labels:
             app: thoth
-            component: provenance-checker
+            component: provenance-checker-workload-operator
             mark: cleanup
         spec:
           restartPolicy: Never
