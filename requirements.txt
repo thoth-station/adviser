@@ -1,6 +1,7 @@
 attrs
 click
 contoml==0.30
+fext>=0.2.0
 matplotlib
 thoth-python
 thoth-solver
