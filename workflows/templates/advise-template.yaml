@@ -4,7 +4,7 @@ kind: WorkflowTemplate
 metadata:
   name: advise
   annotations:
-    thoth-station.ninja/template-version: 0.6.2
+    thoth-station.ninja/template-version: 0.6.3
   labels:
     app: thoth
     component: advise
@@ -27,16 +27,16 @@ spec:
           - name: THOTH_ADVISER_DEV
             value: "0"
           - name: THOTH_ADVISER_BEAM_WIDTH
-            value: "1000"
+            value: "1000000"
           - name: THOTH_LOG_ADVISER
           - name: THOTH_ADVISER_LIMIT
-            value: "1000"
+            value: "100000"
           - name: THOTH_ADVISER_COUNT
             value: "1"
           - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
-            value: "5"
+            value: "9999999"
           - name: THOTH_ADVISER_TIMEOUT_SECONDS
-            value: "3600"
+            value: "1500"
           - name: "IMAGE_STREAM_REGISTRY"
           - name: "IMAGE_STREAM_NAMESPACE"
           - name: "IMAGE_STREAM_TAG"
@@ -163,8 +163,8 @@ spec:
             mountPath: /mnt/workdir
         resources:
           limits:
-            cpu: 250m
-            memory: 256Mi
+            cpu: 1.1
+            memory: 8Gi
           requests:
-            cpu: 250m
-            memory: 256Mi
+            cpu: 1.1
+            memory: 8Gi
