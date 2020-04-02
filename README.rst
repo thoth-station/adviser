@@ -1,16 +1,16 @@
 Thoth Adviser
 -------------
 
-A recommendation engine and software stack generation for project `Thoth <https://github.com/thoth-station/>`_.
+A recommendation engine and software stack generation for project `Thoth <https://github.com/thoth-station/>`__.
 
 There are the following main goals of thoth-adviser (as of now):
 
-1. Provide a tool that can compute recommendations in project `Thoth <https://thoth-station.ninja>`_.
+1. Provide a tool that can compute recommendations in project `Thoth <https://thoth-station.ninja>`__.
 2. Check provenance of installed packages (which package source indexes are used - this is not guaranteed by pip nor Pipenv).
 3. A tool called "Dependency Monkey" that generates all the possible software stacks for a project respecting dependency resolution.
 
 To interact with a deployed Thoth, you can use the
-`Thamos CLI <https://github.com/thoth-station/thamos>`_.
+`Thamos CLI <https://github.com/thoth-station/thamos>`__.
 
 
 Dependency Monkey
@@ -25,7 +25,7 @@ dependencies in your application stack.
 
 The primary use-case for Dependnecy Monkey is to generate software stacks that
 are subsequently validated and scored in the `Amun
-<https://github.com/thoth-station/amun-api>`_ service. Simply when generating
+<https://github.com/thoth-station/amun-api>`__ service. Simply when generating
 all the possible software stacks, we can find the best software stack for an
 application by validating it in a CI (or Amun in case of Thoth), running the
 application in the specific runtime environment (e.g. Fedora 28 with installed
@@ -37,7 +37,9 @@ taken as representatives. These representatives are scored and aggregated data
 are used for predicting the best application stack (again, generated and run
 through CI/Amun to make predictions more accurate by learning over time).
 
-See :ref:`dependency_monkey` for more info.
+See `Dependency Monkey
+<https://thoth-station.ninja/docs/developers/adviser/dependency_monkey.html>`_
+for more info.
 
 Advises and Recommendations
 ===========================
@@ -57,7 +59,7 @@ Provenance Checks
 =================
 
 As Thoth aggregates information about packages available, it can verify
-a user's stack against its knowledge base. See :ref:`provenance_checks`
+a user's stack against its knowledge base. See provenance_checks
 for more info.
 
 Package source configuration
@@ -68,7 +70,7 @@ to only trusted package source indexes, you can disable untrusted package
 source indexes by setting ``THOTH_WHITELISTED_SOURCES`` environment variable.
 This variable holds a comma separated list of URLs pointing to whitelisted
 package source indexes respecting
-`PEP-0503 <https://www.python.org/dev/peps/pep-0503/>`_ standard (the URL
+`PEP-0503 <https://www.python.org/dev/peps/pep-0503/>`__ standard (the URL
 is with the ``/simple`` suffix).
 
 This environment variable is automatically fed from Thoth's graph database
@@ -80,10 +82,10 @@ Installation and deployment
 
 Adviser is built using OpenShift Source-to-Image and deployed
 automatically with Thoth's deployment playbooks available in the `core
-repository <https://github.com/thoth-station/core>`_.
+repository <https://github.com/thoth-station/core>`__.
 
 In a Thoth deployment, adviser is run based on requests comming to the
-`user API <https://github.com/thoth-station/user-api>`_ - each deployed adviser
+`user API <https://github.com/thoth-station/user-api>`__ - each deployed adviser
 is run per a user request. You can run adviser locally as well by installing it
 and using its command line interface:
 
@@ -97,9 +99,9 @@ and using its command line interface:
 When thoth-adviser is scheduled in a deployment, it is actually executed as a
 CLI with arguments passed via environment variables.
 
-See `thoth-storages repository <https://github.com/thoth-station/storages>`_
+See `thoth-storages repository <https://github.com/thoth-station/storages>`__
 repository on how to run Thoth's knowledge graph locally and
-example `notebooks <https://github.com/thoth-station/notebooks>`_ for experiments.
+example `notebooks <https://github.com/thoth-station/notebooks>`__ for experiments.
 
 Adviser also considers environment variable ``THOTH_ADVISER_BLOCKED_UNITS`` that
 states a comma separated list of pipeline units that should not be added to
@@ -120,8 +122,8 @@ in implementation. You can do so easily by running:
 
 This command will run adviser locally - adviser will try to connect to a local
 PostgreSQL instance and compute recommendations. `Browse docs here
-<https://github.com/thoth-station/thoth-storages>`_ to see how to setup a local
+<https://github.com/thoth-station/thoth-storages>`__ to see how to setup a local
 PostgreSQL instance. Also, follow the developer's guide to get `more
 information about developer's setup
-<https://github.com/thoth-station/thoth/blob/master/docs/developers_guide.rst>`_.
+<https://github.com/thoth-station/thoth/blob/master/docs/developers_guide.rst>`__.
 
