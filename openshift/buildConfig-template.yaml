@@ -14,7 +14,7 @@ metadata:
       This is Thoth Adviser BuildConfig, this template is meant to be
       used by Bots, but could also be used by humans...
     template.openshift.io/provider-display-name: "Red Hat, Inc."
-    thoth-station.ninja/template-version: 0.4.2
+    thoth-station.ninja/template-version: 0.4.3
   labels:
     template: adviser-buildconfig
     app: thoth
@@ -88,6 +88,8 @@ objects:
               value: "0"
             - name: "THOTH_ADVISE"
               value: ${THOTH_ADVISE}
+            - name: "THOTH_PROVENANCE_CHECK"
+              value: "0"
             - name: "THAMOS_VERBOSE"
               value: "1"
             - name: "THAMOS_DEBUG"
