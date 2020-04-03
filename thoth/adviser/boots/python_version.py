@@ -68,7 +68,7 @@ class PythonVersionBoot(Boot):
             self.context.stack_info.append({"type": "WARNING", "Message": msg})
         elif python_version is not None and pipfile_python_version is None:
             msg = (
-                f"No version of Python specified in Pipfile, assigning the one found in "
+                f"No version of Python specified explicitly, assigning the one found in "
                 f"Thoth's configuration: {python_version!r}"
             )
             _LOGGER.warning(msg)

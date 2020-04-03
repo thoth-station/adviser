@@ -92,7 +92,7 @@ python_version = "3.6"
         assert context.project.runtime_environment.python_version == "3.6"
         assert context.stack_info == [
             {
-                "Message": "No version of Python specified in Pipfile, assigning the one "
+                "Message": "No version of Python specified explicitly, assigning the one "
                 "found in Thoth's configuration: '3.6'",
                 "type": "WARNING",
             }
