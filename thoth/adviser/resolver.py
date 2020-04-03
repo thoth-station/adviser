@@ -1057,7 +1057,7 @@ class Resolver:
                         self.context.discarded_final_states_count += 1
 
         if self.stop_resolving:
-            _LOGGER.warning("Resolving stopped based on SIGINT")
+            _LOGGER.warning("Resolving stopped as the allocated CPU time was exhausted")
 
     def _do_resolve_products(
         self, *, with_devel: bool = True, user_stack_scoring: bool = True,
