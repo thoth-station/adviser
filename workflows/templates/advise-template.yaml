@@ -4,7 +4,7 @@ kind: WorkflowTemplate
 metadata:
   name: advise
   annotations:
-    thoth-station.ninja/template-version: 0.6.3
+    thoth-station.ninja/template-version: 0.6.4
   labels:
     app: thoth
     component: advise
@@ -27,7 +27,7 @@ spec:
           - name: THOTH_ADVISER_DEV
             value: "0"
           - name: THOTH_ADVISER_BEAM_WIDTH
-            value: "1000000"
+            value: "100000"
           - name: THOTH_LOG_ADVISER
           - name: THOTH_ADVISER_LIMIT
             value: "100000"
