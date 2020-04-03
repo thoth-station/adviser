@@ -13,7 +13,7 @@ case $THOTH_ADVISER_SUBCOMMAND in
 		;;
 	'advise')
 		# No need to compute all the stacks, the first one found is sufficient to return.
-		[ "${THOTH_ADVISER_RECOMMENDATION_TYPE}" = "LATEST" ] && THOTH_ADVISER_LIMIT=1
+		[ "${THOTH_ADVISER_RECOMMENDATION_TYPE}" = "latest" ] && THOTH_ADVISER_LIMIT=1
 		exec /opt/app-root/bin/python3 thoth-adviser advise
 		;;
 	*)

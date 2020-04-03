@@ -1865,3 +1865,8 @@
 
 ## Release 0.9.1 (2020-04-01T19:57:10)
 * Fix bug causing adviser halt for shared resolved packages
+
+## Release 0.9.2 (2020-04-02T23:08:59)
+* Fixes needed to make this package available on PyPI
+* Tweak temperature function for ASA, TD and MCTS
+* Adjust parameters in deployment
