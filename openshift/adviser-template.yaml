@@ -5,7 +5,7 @@ metadata:
   annotations:
     description: "Thoth: Adviser"
     openshift.io/display-name: "Thoth: Adviser"
-    version: 0.6.2
+    version: 0.6.3
     tags: thoth,ai-stacks,adviser
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
@@ -113,14 +113,15 @@ objects:
     metadata:
       name: "${THOTH_ADVISER_JOB_ID}"
       annotations:
-        thoth-station.ninja/template-version: 0.6.2
+        thoth-station.ninja/template-version: 0.6.3
       labels:
         app: thoth
         component: adviser
     spec:
       serviceAccountName: argo
-      podGC:
-        strategy: OnWorkflowSuccess
+      ttlStrategy:
+        secondsAfterSuccess: 3600  # Keep adviser 1h to let users browse the logs.
+        # secondsAfterFailure kept unset to keep failed advisers
       entrypoint: adviser
       arguments:
         parameters:
