@@ -2938,3 +2938,6 @@
 * Fix naming typo
 * Initial template for implementation
 * Initial project import
+
+## Release 0.9.4 (2020-04-06T14:48:43)
+* Empty commit to trigger the new release
