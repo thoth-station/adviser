@@ -4,7 +4,7 @@ kind: WorkflowTemplate
 metadata:
   name: advise
   annotations:
-    thoth-station.ninja/template-version: 0.6.4
+    thoth-station.ninja/template-version: 0.6.5
   labels:
     app: thoth
     component: advise
@@ -168,3 +168,13 @@ spec:
           requests:
             cpu: 1.1
             memory: 8Gi
+        livenessProbe:
+          # Give adviser some seconds to compute results
+          exec:
+            command:
+              - python3
+              - liveness.py
+          failureThreshold: 1
+          initialDelaySeconds: "{{inputs.parameters.THOTH_ADVISER_TIMEOUT_SECONDS}}"
+          # Give main process some time to finish scoring and submit results.
+          timeoutSeconds: 600
