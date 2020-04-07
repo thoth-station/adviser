@@ -35,8 +35,6 @@ spec:
             value: "1"
           - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
             value: "9999999"
-          - name: THOTH_ADVISER_TIMEOUT_SECONDS
-            value: "1500"
           - name: "IMAGE_STREAM_REGISTRY"
           - name: "IMAGE_STREAM_NAMESPACE"
           - name: "IMAGE_STREAM_TAG"
@@ -175,6 +173,6 @@ spec:
               - python3
               - liveness.py
           failureThreshold: 1
-          initialDelaySeconds: "{{inputs.parameters.THOTH_ADVISER_TIMEOUT_SECONDS}}"
+          initialDelaySeconds: 1500
           # Give main process some time to finish scoring and submit results.
           timeoutSeconds: 600
