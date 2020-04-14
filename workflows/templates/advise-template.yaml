@@ -56,10 +56,10 @@ spec:
               bucket: "{{inputs.parameters.THOTH_CEPH_BUCKET_NAME}}"
               insecure: true
               accessKeySecret:
-                name: argo-artifact-repository
+                name: argo-artifact-repository-secrets
                 key: accessKey
               secretKeySecret:
-                name: argo-artifact-repository
+                name: argo-artifact-repository-secrets
                 key: secretKey
       container:
         name: advise
