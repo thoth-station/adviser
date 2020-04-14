@@ -125,5 +125,5 @@ PostgreSQL instance and compute recommendations. `Browse docs here
 <https://github.com/thoth-station/thoth-storages>`__ to see how to setup a local
 PostgreSQL instance. Also, follow the developer's guide to get `more
 information about developer's setup
-<https://github.com/thoth-station/thoth/blob/master/docs/developers_guide.rst>`__.
+<https://thoth-station.ninja/docs/developers/adviser/developers_guide.html>`__.
 
