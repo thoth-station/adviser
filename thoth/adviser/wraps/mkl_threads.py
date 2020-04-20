@@ -39,8 +39,8 @@ class MKLThreadsWrap(Wrap):
         {
             "type": "WARNING",
             "message": "Consider adjusting OMP_NUM_THREADS environment variable for containerized deployments, "
-                       "one or more libraries use Intel's MKL that does not detect correctly "
-                       "resource allocation in the cluster",
+            "one or more libraries use Intel's MKL that does not detect correctly "
+            "resource allocation in the cluster",
         }
     ]
 
@@ -57,5 +57,9 @@ class MKLThreadsWrap(Wrap):
 
     def run(self, state: State) -> None:
         """Check for libraries using PyTorch."""
-        if "torch" in state.resolved_dependencies or "pytorch" in state.resolved_dependencies:
+        if (
+            "torch" in state.resolved_dependencies
+            or "pytorch" in state.resolved_dependencies
+            or "intel-tensorflow" in state.resolved_dependencies
+        ):
             state.add_justification(self._JUSTIFICATION)
