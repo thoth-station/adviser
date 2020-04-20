@@ -47,10 +47,7 @@ class MKLThreadsWrap(Wrap):
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext"):
         """Include this wrap in adviser, once."""
-        if (
-            not builder_context.is_included(cls)
-            and builder_context.is_adviser_pipeline()
-        ):
+        if not builder_context.is_included(cls):
             return {}
 
         return None
