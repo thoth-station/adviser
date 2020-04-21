@@ -214,6 +214,7 @@ python_version = "3.7"
                 "python_version": None,
                 "cuda_version": None,
                 "name": None,
+                "platform": None,
             },
         }
 
@@ -368,6 +369,7 @@ python_version = "3.7"
                     "name": None,
                     "operating_system": {"name": None, "version": None},
                     "python_version": None,
+                    "platform": None,
                 },
             },
             "score": 0.0,

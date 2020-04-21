@@ -630,6 +630,11 @@ class Resolver:
                         f" for Python in version {runtime_environment.python_version!r}"
                     )
 
+                if runtime_environment.platform:
+                    error_msg += (
+                        f" using platform {runtime_environment.platform!r}"
+                    )
+
                 _LOGGER.warning(error_msg)
                 continue
 

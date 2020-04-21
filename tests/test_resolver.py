@@ -1072,6 +1072,7 @@ class TestResolver(AdviserTestCase):
         resolver.project.runtime_environment.operating_system.name = "fedora"
         resolver.project.runtime_environment.operating_system.version = "31"
         resolver.project.runtime_environment.python_version = "3.7"
+        resolver.project.runtime_environment.platform = "linux-x86_64"
 
         resolver.graph.should_receive("get_depends_on").with_args(
             *to_expand_package_tuple,
@@ -1150,6 +1151,7 @@ class TestResolver(AdviserTestCase):
         resolver.project.runtime_environment.operating_system.name = "fedora"
         resolver.project.runtime_environment.operating_system.version = "31"
         resolver.project.runtime_environment.python_version = "3.7"
+        resolver.project.runtime_environment.platform = "linux-x86_64"
 
         resolver.graph.should_receive("get_depends_on").with_args(
             *to_expand_package_tuple,
@@ -1209,6 +1211,7 @@ class TestResolver(AdviserTestCase):
         resolver.project.runtime_environment.operating_system.name = "rhel"
         resolver.project.runtime_environment.operating_system.version = "9"
         resolver.project.runtime_environment.python_version = "3.7"
+        resolver.project.runtime_environment.platform = "linux-x86_64"
 
         resolver.graph.should_receive("get_depends_on").with_args(
             *to_expand_package_tuple,

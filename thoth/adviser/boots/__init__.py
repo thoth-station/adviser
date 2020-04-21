@@ -18,6 +18,7 @@
 """Boot units implemented in adviser."""
 
 from .fully_specified_environment import FullySpecifiedEnvironment
+from .platform import PlatformBoot
 from .python_version import PythonVersionBoot
 from .rhel_version import RHELVersionBoot
 from .solved_software_environment import SolvedSoftwareEnvironmentBoot
@@ -33,6 +34,7 @@ __all__ = [
     "PythonVersionBoot",
     "SolvedSoftwareEnvironmentBoot",
     "RHELVersionBoot",
+    "PlatformBoot",
     "FullySpecifiedEnvironment",
     "SolvedSoftwareEnvironmentBoot",
     "VersionClashBoot",
