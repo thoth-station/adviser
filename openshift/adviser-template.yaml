@@ -55,6 +55,11 @@ parameters:
     # Keep seed constant across adviser runs so that two runs with same knowledge base report same results to user.
     # Not to answer with a different stack each time a request is made.
     value: "42"
+  - name: THOTH_ADVISER_DEV
+    required: true
+    description: Consider also development dependencies.
+    displayName: Dev dependencies
+    value: "0"
   - name: THOTH_ADVISER_BEAM_WIDTH
     required: true
     description: Adviser's beam width to restrict memory requirements with states generated.
@@ -148,6 +153,8 @@ objects:
             value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
           - name: THOTH_ADVISER_METADATA
             value: "${THOTH_ADVISER_METADATA}"
+          - name: THOTH_ADVISER_DEV
+            value: "${THOTH_ADVISER_DEV}"
           - name: THOTH_ADVISER_SEED
             value: "${THOTH_ADVISER_SEED}"
           - name: THOTH_ADVISER_BEAM_WIDTH
