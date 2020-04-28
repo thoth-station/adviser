@@ -147,7 +147,7 @@ def subprocess_run(
         _, exit_code = os.waitpid(pid, 0)
         if exit_code != 0:
             _LOGGER.error("Child exited with exit code %r", exit_code)
-            if exit_code == 137:
+            if exit_code == 9 or exit_code == 137:
                 err_msg = (
                     "Adviser was killed as allocated memory has been exceeded (OOM)"
                 )
@@ -158,7 +158,7 @@ def subprocess_run(
 
             _LOGGER.error(err_msg)
 
-            if _FORK and exit_code in (256, 255):
+            if _FORK and exit_code in (256, 255, 1, 2):
                 # Do not overwrite results computed in the forked process.
                 return exit_code
 
