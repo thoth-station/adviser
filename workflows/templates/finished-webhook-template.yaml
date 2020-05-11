@@ -16,11 +16,16 @@ spec:
           - name: "WORKFLOW_NAME"
           - name: "THOTH_DOCUMENT_ID"
           - name: "THOTH_ADVISER_METADATA"
+          - name: "IMAGE_STREAM_REGISTRY"
+          - name: "IMAGE_STREAM_NAMESPACE"
+          - name: "IMAGE_STREAM_TAG"
       script:
         command:
           - python3
         name: trigger-finished-webhook
-        image: "quay.io/pacospace/thamos:v0.8.1-dev"
+        image: "{{inputs.parameters.IMAGE_STREAM_REGISTRY}}/\
+        {{inputs.parameters.IMAGE_STREAM_NAMESPACE}}/\
+        thamos:{{inputs.parameters.IMAGE_STREAM_TAG}}"
         source: |
           import hmac
           import json
