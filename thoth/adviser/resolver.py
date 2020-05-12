@@ -553,8 +553,8 @@ class Resolver:
         As adviser is stochastic, it can explore different parts of the state
         space across different runs. To avoid this, we usually run adviser with
         a fixed random seed in deployments which preserves parts of the state
-        space explored. However, if other parts of the Thoth change (e.g.
-        database of observations, new package releases) we can, again, be
+        space explored. However, if other parts of Thoth Knowledge graph changes (e.g.
+        new observations, new package releases) we can, again, be
         exploring different parts of the state space. This function scores
         user's lockfile submitted first and then, in the adviser run itself, we
         try to find a better stack than the one user is using.
@@ -586,7 +586,8 @@ class Resolver:
 
         state.add_justification([{
             "type": "INFO",
-            "message": "Score of the supplied lock file, note there is no guarantee it has been resolved correctly",
+            "message": "Score of the supplied lock file is the highest possible \
+                according to the current knowledge in Thoth and the parameters used to solve the stack.",
         }])
         self._run_wraps(state)
         self.beam.add_state(state)
