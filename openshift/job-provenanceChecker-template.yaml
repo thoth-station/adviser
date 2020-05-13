@@ -58,6 +58,10 @@ parameters:
     required: false
     description: Fully pinned down stack.
     displayName: Locked requirements
+  - name: THOTH_ADVISER_METADATA
+    required: false
+    description: Metadata carried with the adviser request
+    displayName: Adviser metadata
   - name: THOTH_LOG_ADVISER
     required: false
     description: Log adviser actions.
@@ -76,7 +80,7 @@ objects:
         component: provenance-checker-workload-operator
         mark: cleanup
         operator: graph-sync
-        task: package-extract
+        task: provenance-checker
     spec:
       backoffLimit: 0
       template:
@@ -112,6 +116,8 @@ objects:
                   value: "alembic.runtime.migration:WARNING"
                 - name: THOTH_ADVISER_OUTPUT
                   value: "${THOTH_ADVISER_OUTPUT}"
+                - name: THOTH_ADVISER_METADATA
+                  value: "${THOTH_ADVISER_METADATA}"
                 - name: THOTH_ADVISER_REQUIREMENTS
                   value: "${THOTH_ADVISER_REQUIREMENTS}"
                 - name: THOTH_ADVISER_REQUIREMENTS_LOCKED
