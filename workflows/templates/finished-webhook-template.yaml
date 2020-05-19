@@ -25,7 +25,7 @@ spec:
         name: trigger-finished-webhook
         image: "{{inputs.parameters.IMAGE_STREAM_REGISTRY}}/\
         {{inputs.parameters.IMAGE_STREAM_NAMESPACE}}/\
-        thamos:{{inputs.parameters.IMAGE_STREAM_TAG}}"
+        thoth-toolbox:{{inputs.parameters.IMAGE_STREAM_TAG}}"
         source: |
           import hmac
           import json
