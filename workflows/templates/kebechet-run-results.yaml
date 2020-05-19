@@ -1,0 +1,179 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: kebechet-run-results
+  annotations:
+    thoth-station.ninja/template-version: 0.6.1
+  labels:
+    app: thoth
+    component: kebechet-run-results
+spec:
+  entrypoint: kebechet-run-results
+  templates:
+    - name: kebechet-run-results
+      inputs:
+        parameters:
+          - name: "WORKFLOW_NAME"
+          - name: "THOTH_DOCUMENT_ID"
+          - name: "THOTH_ADVISER_METADATA"
+          - name: "IMAGE_STREAM_REGISTRY"
+          - name: "IMAGE_STREAM_NAMESPACE"
+          - name: "IMAGE_STREAM_TAG"
+      steps:
+        - - name: extract-metadata
+            template: extract-metadata
+            arguments:
+              parameters:
+                - name: "WORKFLOW_NAME"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "THOTH_DOCUMENT_ID"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "THOTH_ADVISER_METADATA"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "IMAGE_STREAM_REGISTRY"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "IMAGE_STREAM_NAMESPACE"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "IMAGE_STREAM_TAG"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+        - - name: schedule-kebechet
+            template: schedule-kebechet
+            arguments:
+              parameters:
+                - name: "WORKFLOW_NAME"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "THOTH_DOCUMENT_ID"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "THOTH_ADVISER_METADATA"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "IMAGE_STREAM_REGISTRY"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "IMAGE_STREAM_NAMESPACE"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "IMAGE_STREAM_TAG"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "origin"
+                  value: "{{steps.extract-metadata.outputs.parameters.origin}}"
+                - name: "source_type"
+                  value: "{{steps.extract-metadata.outputs.parameters.source_type}}"
+            when: "{{steps.extract-metadata.outputs.parameters.source_type}} == kebechet"
+    - name: extract-metadata
+      inputs:
+        parameters:
+          - name: "WORKFLOW_NAME"
+          - name: "THOTH_DOCUMENT_ID"
+          - name: "THOTH_ADVISER_METADATA"
+          - name: "IMAGE_STREAM_REGISTRY"
+          - name: "IMAGE_STREAM_NAMESPACE"
+          - name: "IMAGE_STREAM_TAG"
+      script:
+        command:
+          - python3
+        name: trigger-finished-webhook
+        image: "{{inputs.parameters.IMAGE_STREAM_REGISTRY}}/\
+        {{inputs.parameters.IMAGE_STREAM_NAMESPACE}}/\
+        thoth-toolbox:{{inputs.parameters.IMAGE_STREAM_TAG}}"
+        source: |
+          import hmac
+          import json
+          import os
+          import requests
+          import uuid
+
+          from thoth.common import init_logging
+
+          init_logging()
+
+          metadata = json.loads('{{inputs.parameters.THOTH_ADVISER_METADATA}}')
+
+          with open('/tmp/source_type', 'w') as f:
+            if metadata['source_type'] is not None:
+              f.write(metadata['source_type'])
+
+          with open('/tmp/origin', 'w') as f:
+            if metadata['origin'] is not None:
+              f.write(metadata['origin'])
+        resources:
+          limits:
+            cpu: 250m
+            memory: 256Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+      outputs:
+        parameters:
+          - name: origin
+            valueFrom:
+              default: ''
+              path: /tmp/origin
+          - name: source_type
+            valueFrom:
+              default: ''
+              path: /tmp/source_type
+    - name: schedule-kebechet
+      inputs:
+        parameters:
+          - name: "WORKFLOW_NAME"
+          - name: "THOTH_DOCUMENT_ID"
+          - name: "THOTH_ADVISER_METADATA"
+          - name: "IMAGE_STREAM_REGISTRY"
+          - name: "IMAGE_STREAM_NAMESPACE"
+          - name: "IMAGE_STREAM_TAG"
+          - name: "origin"
+          - name: "source_type"
+      container:
+        image: "{{inputs.parameters.IMAGE_STREAM_REGISTRY}}/\
+        {{inputs.parameters.IMAGE_STREAM_NAMESPACE}}/\
+        kebechet-job:{{inputs.parameters.IMAGE_STREAM_TAG}}"
+        volumeMounts:
+          - name: ssh-config
+            mountPath: /home/user/.ssh
+            readOnly: true
+        env:
+          - name: PIPENV_NOSPIN
+            value: "1"
+          - name: PIPENV_COLORBLIND
+            value: "1"
+          - name: PIPENV_HIDE_EMOJIS
+            value: "1"
+          - name: KEBECHET_SUBCOMMAND
+            value: run-results
+          - name: KEBECHET_REPO_URL
+            value: "{{inputs.parameters.origin}}"
+          - name: KEBECHET_SERVICE_NAME
+            value: "github"  # TODO: temp
+          - name: KEBECHET_ANALYSIS_ID
+            value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+          - name: GITHUB_KEBECHET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: github-oauth-token
+                name: kebechet-secret
+          - name: GITLAB_KEBECHET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: gitlab-oauth-token
+                name: kebechet-secret
+          - name: PAGURE_KEBECHET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: pagure-oauth-token
+                name: kebechet-secret
+          - name: SENTRY_DSN
+            valueFrom:
+              secretKeyRef:
+                key: sentry-dsn
+                name: thoth
+          - name: THOTH_DEPLOYMENT_NAME
+            valueFrom:
+              configMapKeyRef:
+                key: storage-bucket-name
+                name: thoth
+        resources:
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+          requests:
+            cpu: "2"
+            memory: "2Gi"
