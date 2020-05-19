@@ -5,7 +5,7 @@ metadata:
   annotations:
     description: "Thoth: Adviser"
     openshift.io/display-name: "Thoth: Adviser"
-    version: 0.6.3
+    version: 0.6.4
     tags: thoth,ai-stacks,adviser
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
@@ -118,7 +118,7 @@ objects:
     metadata:
       name: "${THOTH_ADVISER_JOB_ID}"
       annotations:
-        thoth-station.ninja/template-version: 0.6.3
+        thoth-station.ninja/template-version: 0.6.4
       labels:
         app: thoth
         component: adviser
@@ -280,3 +280,9 @@ objects:
                       value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
                     - name: "THOTH_ADVISER_METADATA"
                       value: "{{workflow.parameters.THOTH_ADVISER_METADATA}}"
+                    - name: "IMAGE_STREAM_REGISTRY"
+                      value: "{{workflow.parameters.IMAGE_STREAM_REGISTRY}}"
+                    - name: "IMAGE_STREAM_NAMESPACE"
+                      value: "{{workflow.parameters.IMAGE_STREAM_NAMESPACE}}"
+                    - name: "IMAGE_STREAM_TAG"
+                      value: "{{workflow.parameters.IMAGE_STREAM_TAG}}"
