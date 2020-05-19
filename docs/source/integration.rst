@@ -115,6 +115,14 @@ where it can produce recommendations targeting your specific hardware
 configuration you use to run your application inside the cluster (e.g. specific
 GPU available in the cluster).
 
+.. note::
+
+  Check `thoth-station/s2i-example-migration
+  <https://github.com/thoth-station/s2i-example-migration>`_ with a
+  step-by-step tutorial (also with a pre-recorded screencast with a
+  voice-over) on how to port an already existing Python s2i application to
+  Thoth.
+
 You can find a list of base images which you can use with Thoth in `s2i-thoth
 repository <https://github.com/thoth-station/s2i-thoth>`_ with detailed
 instructions on how to use Thoth in the OpenShift's s2i process. The container

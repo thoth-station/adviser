@@ -4,7 +4,7 @@ kind: WorkflowTemplate
 metadata:
   name: finished-webhook
   annotations:
-    thoth-station.ninja/template-version: 0.6.0
+    thoth-station.ninja/template-version: 0.6.1
   labels:
     app: thoth
     component: finished-webhook
@@ -16,11 +16,16 @@ spec:
           - name: "WORKFLOW_NAME"
           - name: "THOTH_DOCUMENT_ID"
           - name: "THOTH_ADVISER_METADATA"
+          - name: "IMAGE_STREAM_REGISTRY"
+          - name: "IMAGE_STREAM_NAMESPACE"
+          - name: "IMAGE_STREAM_TAG"
       script:
         command:
           - python3
         name: trigger-finished-webhook
-        image: "quay.io/pacospace/thamos:v0.8.1-dev"
+        image: "{{inputs.parameters.IMAGE_STREAM_REGISTRY}}/\
+        {{inputs.parameters.IMAGE_STREAM_NAMESPACE}}/\
+        thoth-toolbox:{{inputs.parameters.IMAGE_STREAM_TAG}}"
         source: |
           import hmac
           import json
