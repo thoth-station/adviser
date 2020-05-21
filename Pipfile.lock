@@ -105,17 +105,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:bf1346365829525dfd8dbbafb5dbfd7383ad0872370301643d65c6190f7f5813",
-                "sha256:c46f31f085de660b95162c66057bae9ebb1658a245c9210162cee9671b0ff678"
+                "sha256:397b7abee7af6477798dcebe5a2c5abe2c61e5bf175248adee3156a627ec117c",
+                "sha256:d9958f08b54493d0fe63d56db202a9f1fff55b87c20e86443638890d7a5fd0e5"
             ],
-            "version": "==1.13.12"
+            "version": "==1.13.15"
         },
         "botocore": {
             "hashes": [
-                "sha256:446c9279105f596765ece99b61656f76c5d5003556cd8301dd506d4f70e18940",
-                "sha256:b75a5dc97f9ac795139ea2c651c07a8522e31dc280db17243e2b20e5c210547b"
+                "sha256:0ad0bf4f38948e8dcc9a615ce37e6b170f34992a50ae3d134e7a225fcbdc0cd4",
+                "sha256:97127ad663502ea519870a10688a0a809d7012a621ab0bbc2bc2052ff0a794ea"
             ],
-            "version": "==1.16.12"
+            "version": "==1.16.15"
         },
         "cachetools": {
             "hashes": [
@@ -703,10 +703,10 @@
         },
         "six": {
             "hashes": [
-                "sha256:236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a",
-                "sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c"
+                "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259",
+                "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"
             ],
-            "version": "==1.14.0"
+            "version": "==1.15.0"
         },
         "sqlalchemy": {
             "hashes": [
@@ -762,10 +762,10 @@
         },
         "thoth-common": {
             "hashes": [
-                "sha256:040a5d2d22cf541cdcebc7e1dac9ba3dfdca4c46f9e2f97a59ce496ee01d5327",
-                "sha256:35929f92dec879fc868b2206341775d78e4f874691e27e2ce092c884cd50ffcc"
+                "sha256:15b0996708dbc29a2ad688ce3e545a47b95db1f7058dc9de23184d3739921c12",
+                "sha256:cf166cfc5b8197090ba1d90fddf34e37e9216c0452b4700553b3c09b0629ff2f"
             ],
-            "version": "==0.13.3"
+            "version": "==0.13.4"
         },
         "thoth-python": {
             "hashes": [
@@ -831,10 +831,10 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:b4c14d4d73a0c23db267095383c4276ef60e161f94fde0427f2f21a0132dde74",
-                "sha256:fd0e54dec8ac96c1c7c87daba85f0a59a7c37fe38748e154306ca21c73244637"
+                "sha256:a116629d4e7f4d03433b8afa27f43deba09d48bc48f5ecefa4f015a178efb6cf",
+                "sha256:a730548b27366c5e6cbdf6f97406d861cccece2e22275e8e1a757aeff5e00c70"
             ],
-            "version": "==20.0.20"
+            "version": "==20.0.21"
         },
         "voluptuous": {
             "hashes": [
@@ -950,11 +950,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:91d062c37a74f247214b64a00363901554e9af3493f471de085d65dc6607b5ca",
-                "sha256:f1b2079a20c63b1d1dc905052f67fbc42eb33b71d33d5dc3e5007dc49b61c953"
+                "sha256:d44142b80572bb3392dd018a6b2e59f54b2ba77da50e2dd0cbddd815b7a84005",
+                "sha256:f523846f1e323e5d74694a437ef9f681ac1643e45404dc5c5bb7d1ee947c4a99"
             ],
             "index": "pypi",
-            "version": "==5.15.0"
+            "version": "==5.15.1"
         },
         "hypothesis-auto": {
             "hashes": [
@@ -1091,10 +1091,10 @@
         },
         "six": {
             "hashes": [
-                "sha256:236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a",
-                "sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c"
+                "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259",
+                "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"
             ],
-            "version": "==1.14.0"
+            "version": "==1.15.0"
         },
         "sortedcontainers": {
             "hashes": [
