@@ -183,6 +183,13 @@ objects:
           emptyDir: {}
         - name: output
           emptyDir: {}
+        - name: secrets
+          secret:
+            secretName: "kafka-secret"
+            items:
+              - key: kafka_ca.crt
+                path: kafka_ca.crt
+
       templates:
         - name: "adviser"
           archiveLocation:
@@ -243,6 +250,26 @@ objects:
                       value: "{{workflow.parameters.ceph_bucket_prefix}}"
                     - name: "THOTH_DEPLOYMENT_NAME"
                       value: "{{workflow.parameters.deployment_name}}"
+
+              - name: "unresolved-package-handler"
+                dependencies:
+                  - "advise"
+                templateRef:
+                  name: "unresolved-package-handler"
+                  template: "unresolved-package-handler"
+                arguments:
+                  artifacts:
+                    - name: outputdocument
+                      from: "{{tasks.advise.outputs.artifacts.outputdocument}}"
+                  parameters:
+                    - name: THOTH_DOCUMENT_ID
+                      value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
+                    - name: IMAGE_STREAM_REGISTRY
+                      value: "{{workflow.parameters.IMAGE_STREAM_REGISTRY}}"
+                    - name: IMAGE_STREAM_NAMESPACE
+                      value: "{{workflow.parameters.IMAGE_STREAM_NAMESPACE}}"
+                    - name: IMAGE_STREAM_TAG
+                      value: "{{workflow.parameters.IMAGE_STREAM_TAG}}"
 
               - name: "graph-sync-advise"
                 dependencies:
