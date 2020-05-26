@@ -5,7 +5,7 @@ metadata:
   annotations:
     description: "Thoth: Adviser"
     openshift.io/display-name: "Thoth: Adviser"
-    version: 0.6.3
+    version: 0.6.4
     tags: thoth,ai-stacks,adviser
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
@@ -118,7 +118,7 @@ objects:
     metadata:
       name: "${THOTH_ADVISER_JOB_ID}"
       annotations:
-        thoth-station.ninja/template-version: 0.6.3
+        thoth-station.ninja/template-version: 0.6.4
       labels:
         app: thoth
         component: adviser
@@ -183,6 +183,13 @@ objects:
           emptyDir: {}
         - name: output
           emptyDir: {}
+        - name: secrets
+          secret:
+            secretName: "kafka-secret"
+            items:
+              - key: kafka_ca.crt
+                path: kafka_ca.crt
+
       templates:
         - name: "adviser"
           archiveLocation:
@@ -244,6 +251,26 @@ objects:
                     - name: "THOTH_DEPLOYMENT_NAME"
                       value: "{{workflow.parameters.deployment_name}}"
 
+              - name: "unresolved-package-handler"
+                dependencies:
+                  - "advise"
+                templateRef:
+                  name: "unresolved-package-handler"
+                  template: "unresolved-package-handler"
+                arguments:
+                  artifacts:
+                    - name: outputdocument
+                      from: "{{tasks.advise.outputs.artifacts.outputdocument}}"
+                  parameters:
+                    - name: THOTH_DOCUMENT_ID
+                      value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
+                    - name: IMAGE_STREAM_REGISTRY
+                      value: "{{workflow.parameters.IMAGE_STREAM_REGISTRY}}"
+                    - name: IMAGE_STREAM_NAMESPACE
+                      value: "{{workflow.parameters.IMAGE_STREAM_NAMESPACE}}"
+                    - name: IMAGE_STREAM_TAG
+                      value: "{{workflow.parameters.IMAGE_STREAM_TAG}}"
+
               - name: "graph-sync-advise"
                 dependencies:
                   - "advise"
@@ -280,3 +307,9 @@ objects:
                       value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
                     - name: "THOTH_ADVISER_METADATA"
                       value: "{{workflow.parameters.THOTH_ADVISER_METADATA}}"
+                    - name: "IMAGE_STREAM_REGISTRY"
+                      value: "{{workflow.parameters.IMAGE_STREAM_REGISTRY}}"
+                    - name: "IMAGE_STREAM_NAMESPACE"
+                      value: "{{workflow.parameters.IMAGE_STREAM_NAMESPACE}}"
+                    - name: "IMAGE_STREAM_TAG"
+                      value: "{{workflow.parameters.IMAGE_STREAM_TAG}}"
