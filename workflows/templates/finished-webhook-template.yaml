@@ -13,7 +13,7 @@ spec:
     - name: finished-webhook
       inputs:
         parameters:
-          - name: "WORKFLOW_NAME"
+          - name: "THOTH_WORKFLOW_NAME"
           - name: "THOTH_DOCUMENT_ID"
           - name: "THOTH_ADVISER_METADATA"
           - name: "IMAGE_STREAM_REGISTRY"
@@ -25,9 +25,9 @@ spec:
         {{inputs.parameters.IMAGE_STREAM_NAMESPACE}}/\
         workflow-helpers:{{inputs.parameters.IMAGE_STREAM_TAG}}"
         env:
-          - name: WORKFLOW_TASK
+          - name: THOTH_WORKFLOW_TASK
             value: "trigger_integration"
-          - name: WORKFLOW_NAME
+          - name: THOTH_WORKFLOW_NAME
             value: "{{inputs.parameters.WORKFLOW_NAME}}"
           - name: THOTH_DOCUMENT_ID
             value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
