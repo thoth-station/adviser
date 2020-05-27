@@ -102,7 +102,9 @@ dependencies using:
   pipenv install --deploy --dev
 
 Please follow `Thamos documentation for more info
-<https://thoth-station.ninja/docs/developers/thamos>`_.
+<https://thoth-station.ninja/docs/developers/thamos>`_. Also check
+`thoth-station/cli-examples repository <https://github.com/thoth-station/cli-examples>`__
+that demonstrates an example application that using Thamos CLI.
 
 OpenShift Python s2i build process
 ==================================
@@ -112,6 +114,14 @@ Thoth can be used in `OpenShift's s2i process
 where it can produce recommendations targeting your specific hardware
 configuration you use to run your application inside the cluster (e.g. specific
 GPU available in the cluster).
+
+.. note::
+
+  Check `thoth-station/s2i-example-migration
+  <https://github.com/thoth-station/s2i-example-migration>`_ with a
+  step-by-step tutorial (also with a pre-recorded screencast with a
+  voice-over) on how to port an already existing Python s2i application to
+  Thoth.
 
 You can find a list of base images which you can use with Thoth in `s2i-thoth
 repository <https://github.com/thoth-station/s2i-thoth>`_ with detailed
@@ -152,7 +162,13 @@ See also configuration options for Thoth's client present in `Thamos
 documentation <https://thoth-station.ninja/docs/developers/thamos/>`_.
 
 An example of such application can be found on `GitHub  - s2i TensorFlow
-example <https://github.com/thoth-station/s2i-example-tensorflow>`_.
+example <https://github.com/thoth-station/s2i-example>`_.
+
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="https://www.youtube.com/embed/FtW1PAuI3nk" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
 
 Kebechet - GitHub application
 =============================
