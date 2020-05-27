@@ -732,6 +732,7 @@ class Resolver:
                 marker_evaluation_result=True
                 if self.project.runtime_environment.is_fully_specified()
                 else None,
+                is_missing=False,
             )
         except NotFoundError:
             log_once(
