@@ -16,14 +16,9 @@ spec:
           - name: "THOTH_WORKFLOW_NAME"
           - name: "THOTH_DOCUMENT_ID"
           - name: "THOTH_ADVISER_METADATA"
-          - name: "IMAGE_STREAM_REGISTRY"
-          - name: "IMAGE_STREAM_NAMESPACE"
-          - name: "IMAGE_STREAM_TAG"
       container:
         name: trigger-finished-webhook
-        image: "{{inputs.parameters.IMAGE_STREAM_REGISTRY}}/\
-        {{inputs.parameters.IMAGE_STREAM_NAMESPACE}}/\
-        workflow-helpers:{{inputs.parameters.IMAGE_STREAM_TAG}}"
+        image: workflow-helpers
         env:
           - name: THOTH_WORKFLOW_TASK
             value: "trigger_integration"
@@ -33,9 +28,9 @@ spec:
             value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
           - name: THOTH_ADVISER_METADATA
             value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
-          - name: "WEBHOOK_CALLBACK_URL"
+          - name: "THOTH_WEBHOOK_CALLBACK_URL"
             value: "http://qeb-hwt-aicoe-prod-bots.cloud.paas.psi.redhat.com"
-          - name: WEBHOOK_SECRET
+          - name: THOTH_WEBHOOK_SECRET
             valueFrom:
               secretKeyRef:
                 key: WEBHOOK_SECRET
