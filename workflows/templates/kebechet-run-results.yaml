@@ -17,22 +17,13 @@ spec:
           - name: "WORKFLOW_NAME"
           - name: "THOTH_DOCUMENT_ID"
           - name: "THOTH_ADVISER_METADATA"
-          - name: "IMAGE_STREAM_REGISTRY"
-          - name: "IMAGE_STREAM_NAMESPACE"
-          - name: "IMAGE_STREAM_TAG"
       steps:
         - - name: extract-metadata
             template: extract-metadata
             arguments:
               parameters:
                 - name: "THOTH_ADVISER_METADATA"
-                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
-                - name: "IMAGE_STREAM_REGISTRY"
-                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
-                - name: "IMAGE_STREAM_NAMESPACE"
-                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
-                - name: "IMAGE_STREAM_TAG"
-                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                  value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
         - - name: schedule-kebechet
             template: schedule-kebechet
             arguments:
@@ -40,15 +31,9 @@ spec:
                 - name: "WORKFLOW_NAME"
                   value: "{{inputs.parameters.WORKFLOW_NAME}}"
                 - name: "THOTH_DOCUMENT_ID"
-                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                  value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
                 - name: "THOTH_ADVISER_METADATA"
-                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
-                - name: "IMAGE_STREAM_REGISTRY"
-                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
-                - name: "IMAGE_STREAM_NAMESPACE"
-                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
-                - name: "IMAGE_STREAM_TAG"
-                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                  value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
                 - name: "origin"
                   value: "{{steps.extract-metadata.outputs.parameters.origin}}"
                 - name: "source_type"
@@ -58,16 +43,11 @@ spec:
       inputs:
         parameters:
           - name: "THOTH_ADVISER_METADATA"
-          - name: "IMAGE_STREAM_REGISTRY"
-          - name: "IMAGE_STREAM_NAMESPACE"
-          - name: "IMAGE_STREAM_TAG"
       script:
         command:
           - python3
         name: extract-metadata
-        image: "{{inputs.parameters.IMAGE_STREAM_REGISTRY}}/\
-        {{inputs.parameters.IMAGE_STREAM_NAMESPACE}}/\
-        thoth-toolbox:{{inputs.parameters.IMAGE_STREAM_TAG}}"
+        image: workflow-helpers
         source: |
           import json
 
@@ -94,28 +74,19 @@ spec:
       outputs:
         parameters:
           - name: origin
-            valueFrom:
-              default: ''
-              path: /tmp/origin
+            path: /tmp/origin
           - name: source_type
-            valueFrom:
-              default: ''
-              path: /tmp/source_type
+            path: /tmp/source_type
     - name: schedule-kebechet
       inputs:
         parameters:
           - name: "WORKFLOW_NAME"
           - name: "THOTH_DOCUMENT_ID"
           - name: "THOTH_ADVISER_METADATA"
-          - name: "IMAGE_STREAM_REGISTRY"
-          - name: "IMAGE_STREAM_NAMESPACE"
-          - name: "IMAGE_STREAM_TAG"
           - name: "origin"
           - name: "source_type"
       container:
-        image: "{{inputs.parameters.IMAGE_STREAM_REGISTRY}}/\
-        {{inputs.parameters.IMAGE_STREAM_NAMESPACE}}/\
-        kebechet-job:{{inputs.parameters.IMAGE_STREAM_TAG}}"
+        image: kebechet-job
         volumeMounts:
           - name: ssh-config
             mountPath: /home/user/.ssh
