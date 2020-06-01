@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: ftrigger-integration
+  name: trigger-integration
   annotations:
     thoth-station.ninja/template-version: 0.7.0
   labels:
