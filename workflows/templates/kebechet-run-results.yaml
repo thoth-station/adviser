@@ -14,22 +14,14 @@ spec:
       inputs:
         parameters:
           - name: "THOTH_ADVISER_METADATA"
-      script:
-        command:
-          - python3
+      container:
         name: extract-metadata
         image: workflow-helpers
-        source: |
-          import json
-          import sys
-          metadata = json.loads('{{inputs.parameters.THOTH_ADVISER_METADATA}}')
-          with open('/mnt/workdir/source_type', 'w') as f:
-            if metadata['source_type'] is not None:
-              f.write(metadata['source_type'])
-          with open('/mnt/workdir/origin', 'w') as f:
-            if metadata['origin'] is not None:
-              f.write(metadata['origin'])
-          print("metadata extracted")
+        env:
+          - name: APP_SCRIPT
+            value: "app.sh"
+          - name: THOTH_WORKFLOW_TASK
+            value: "trigger_integration"
         resources:
           limits:
             cpu: 250m
