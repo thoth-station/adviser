@@ -2,26 +2,28 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: finished-webhook
+  name: ftrigger-integration
   annotations:
     thoth-station.ninja/template-version: 0.7.0
   labels:
     app: thoth
-    component: finished-webhook
+    component: trigger-integration
 spec:
   templates:
-    - name: finished-webhook
+    - name: trigger-integration
       inputs:
         parameters:
           - name: "THOTH_WORKFLOW_NAME"
           - name: "THOTH_DOCUMENT_ID"
           - name: "THOTH_ADVISER_METADATA"
       container:
-        name: trigger-finished-webhook
+        name: trigger-integration
         image: workflow-helpers
         env:
           - name: THOTH_WORKFLOW_TASK
             value: "trigger_integration"
+          - name: APP_SCRIPT
+            value: "app.sh"
           - name: THOTH_WORKFLOW_NAME
             value: "{{inputs.parameters.WORKFLOW_NAME}}"
           - name: THOTH_DOCUMENT_ID
