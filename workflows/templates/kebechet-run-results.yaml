@@ -9,36 +9,7 @@ metadata:
     app: thoth
     component: kebechet-run-results
 spec:
-  entrypoint: kebechet-run-results
   templates:
-    - name: kebechet-run-results
-      inputs:
-        parameters:
-          - name: "WORKFLOW_NAME"
-          - name: "THOTH_DOCUMENT_ID"
-          - name: "THOTH_ADVISER_METADATA"
-      steps:
-        - - name: extract-metadata
-            template: extract-metadata
-            arguments:
-              parameters:
-                - name: "THOTH_ADVISER_METADATA"
-                  value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
-        - - name: schedule-kebechet
-            template: schedule-kebechet
-            arguments:
-              parameters:
-                - name: "WORKFLOW_NAME"
-                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
-                - name: "THOTH_DOCUMENT_ID"
-                  value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
-                - name: "THOTH_ADVISER_METADATA"
-                  value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
-                - name: "origin"
-                  value: "{{steps.extract-metadata.outputs.parameters.origin}}"
-                - name: "source_type"
-                  value: "{{steps.extract-metadata.outputs.parameters.source_type}}"
-            when: "{{steps.extract-metadata.outputs.parameters.source_type}} == kebechet"
     - name: extract-metadata
       inputs:
         parameters:
@@ -50,20 +21,15 @@ spec:
         image: workflow-helpers
         source: |
           import json
-
-          from thoth.common import init_logging
-
-          init_logging()
-
+          import sys
           metadata = json.loads('{{inputs.parameters.THOTH_ADVISER_METADATA}}')
-
-          with open('/tmp/source_type', 'w') as f:
+          with open('/mnt/workdir/source_type', 'w') as f:
             if metadata['source_type'] is not None:
               f.write(metadata['source_type'])
-
-          with open('/tmp/origin', 'w') as f:
+          with open('/mnt/workdir/origin', 'w') as f:
             if metadata['origin'] is not None:
               f.write(metadata['origin'])
+          print("metadata extracted")
         resources:
           limits:
             cpu: 250m
@@ -71,12 +37,17 @@ spec:
           requests:
             cpu: 250m
             memory: 256Mi
+        volumeMounts:
+        - name: workdir
+          mountPath: /mnt/workdir
       outputs:
         parameters:
           - name: origin
-            path: /tmp/origin
+            valueFrom:
+              path: /mnt/workdir/origin
           - name: source_type
-            path: /tmp/source_type
+            valueFrom:
+              path: /mnt/workdir/source_type
     - name: schedule-kebechet
       inputs:
         parameters:
@@ -138,3 +109,73 @@ spec:
           requests:
             cpu: "2"
             memory: "2Gi"
+    - name: print-source-type
+      inputs:
+        parameters:
+          - name: "source_type"
+      script:
+        command:
+          - python3
+        name: print-source-type
+        image: workflow-helpers
+        source: |
+          print("hello")
+          print('{{inputs.parameters.source_type}}')
+        resources:
+          limits:
+            cpu: 250m
+            memory: 256Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+    - name: dumb-step
+      script:
+        command:
+          - python3
+        name: dumb-step
+        image: workflow-helpers
+        source: |
+          print("dumb-step")
+        resources:
+          limits:
+            cpu: 250m
+            memory: 256Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi  
+    - name: run-results
+      inputs:
+        parameters:
+          - name: "WORKFLOW_NAME"
+          - name: "THOTH_DOCUMENT_ID"
+          - name: "THOTH_ADVISER_METADATA"
+      steps:
+        - - name: extract-metadata
+            template: extract-metadata
+            arguments:
+              parameters:
+                - name: "THOTH_ADVISER_METADATA"
+                  value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
+        - - name: dumb-step
+            template: dumb-step
+        - - name: print-source-type
+            template: print-source-type
+            arguments:
+              parameters:
+                - name: "source_type"
+                  value: "{{steps.extract-metadata.outputs.parameters.source_type}}"
+        - - name: schedule-kebechet
+            template: schedule-kebechet
+            arguments:
+              parameters:
+                - name: "WORKFLOW_NAME"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "THOTH_DOCUMENT_ID"
+                  value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+                - name: "THOTH_ADVISER_METADATA"
+                  value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
+                - name: "origin"
+                  value: "{{steps.extract-metadata.outputs.parameters.origin}}"
+                - name: "source_type"
+                  value: "{{steps.extract-metadata.outputs.parameters.source_type}}"
+            when: "{{steps.extract-metadata.outputs.parameters.source_type}} == kebechet"
