@@ -44,3 +44,14 @@ spec:
           requests:
             cpu: 250m
             memory: 256Mi
+        volumeMounts:
+          - name: workdir
+            mountPath: /mnt/workdir
+      outputs:
+        parameters:
+          - name: origin
+            valueFrom:
+              path: /mnt/workdir/origin
+          - name: source_type
+            valueFrom:
+              path: /mnt/workdir/source_type
