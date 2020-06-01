@@ -326,7 +326,7 @@ objects:
                   - "advise"
                 templateRef:
                   name: "kebechet-run-results"
-                  template: "kebechet-run-results"
+                  template: "run-results"
                 arguments:
                   parameters:
                     - name: "WORKFLOW_NAME"
@@ -335,9 +335,3 @@ objects:
                       value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
                     - name: "THOTH_ADVISER_METADATA"
                       value: "{{workflow.parameters.THOTH_ADVISER_METADATA}}"
-                    - name: "IMAGE_STREAM_REGISTRY"
-                      value: "{{workflow.parameters.IMAGE_STREAM_REGISTRY}}"
-                    - name: "IMAGE_STREAM_NAMESPACE"
-                      value: "{{workflow.parameters.IMAGE_STREAM_NAMESPACE}}"
-                    - name: "IMAGE_STREAM_TAG"
-                      value: "{{workflow.parameters.IMAGE_STREAM_TAG}}"
