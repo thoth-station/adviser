@@ -96,21 +96,6 @@ parameters:
     required: true
     value: "0"
 
-  - name: IMAGE_STREAM_REGISTRY
-    description: Registry the ImageStream to be use lives in
-    displayName: ImageStream Registry
-    required: true
-    value: "docker-registry.default.svc:5000"
-  - name: IMAGE_STREAM_NAMESPACE
-    description: Namespace the ImageStream to be use lives in
-    displayName: ImageStream Project
-    required: true
-    value: "thoth-infra-stage"
-  - name: IMAGE_STREAM_TAG
-    description: Tag of the ImageStream to be use
-    displayName: ImageStream Tag
-    required: true
-    value: "latest"
 
 objects:
   - apiVersion: argoproj.io/v1alpha1
@@ -167,12 +152,6 @@ objects:
             value: "${THOTH_ADVISER_LIMIT_LATEST_VERSIONS}"
           - name: THOTH_FORCE_SYNC
             value: "${THOTH_FORCE_SYNC}"
-          - name: IMAGE_STREAM_REGISTRY
-            value: "${IMAGE_STREAM_REGISTRY}"
-          - name: IMAGE_STREAM_NAMESPACE
-            value: "${IMAGE_STREAM_NAMESPACE}"
-          - name: IMAGE_STREAM_TAG
-            value: "${IMAGE_STREAM_TAG}"
           - name: ceph_bucket_prefix
           - name: ceph_bucket_name
           - name: ceph_host
@@ -243,12 +222,6 @@ objects:
                       value: "{{workflow.parameters.THOTH_ADVISER_LIMIT_LATEST_VERSIONS}}"
                     - name: THOTH_ADVISER_TIMEOUT_SECONDS
                       value: "{{workflow.parameters.THOTH_ADVISER_TIMEOUT_SECONDS}}"
-                    - name: IMAGE_STREAM_REGISTRY
-                      value: "{{workflow.parameters.IMAGE_STREAM_REGISTRY}}"
-                    - name: IMAGE_STREAM_NAMESPACE
-                      value: "{{workflow.parameters.IMAGE_STREAM_NAMESPACE}}"
-                    - name: IMAGE_STREAM_TAG
-                      value: "{{workflow.parameters.IMAGE_STREAM_TAG}}"
                     - name: "THOTH_S3_ENDPOINT_URL"
                       value: "{{workflow.parameters.ceph_host}}"
                     - name: "THOTH_CEPH_BUCKET_NAME"
@@ -271,12 +244,6 @@ objects:
                   parameters:
                     - name: THOTH_DOCUMENT_ID
                       value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
-                    - name: IMAGE_STREAM_REGISTRY
-                      value: "{{workflow.parameters.IMAGE_STREAM_REGISTRY}}"
-                    - name: IMAGE_STREAM_NAMESPACE
-                      value: "{{workflow.parameters.IMAGE_STREAM_NAMESPACE}}"
-                    - name: IMAGE_STREAM_TAG
-                      value: "{{workflow.parameters.IMAGE_STREAM_TAG}}"
 
               - name: "graph-sync-advise"
                 dependencies:
@@ -293,19 +260,13 @@ objects:
                       value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
                     - name: "THOTH_FORCE_SYNC"
                       value: "{{workflow.parameters.THOTH_FORCE_SYNC}}"
-                    - name: "IMAGE_STREAM_REGISTRY"
-                      value: "{{workflow.parameters.IMAGE_STREAM_REGISTRY}}"
-                    - name: "IMAGE_STREAM_NAMESPACE"
-                      value: "{{workflow.parameters.IMAGE_STREAM_NAMESPACE}}"
-                    - name: "IMAGE_STREAM_TAG"
-                      value: "{{workflow.parameters.IMAGE_STREAM_TAG}}"
 
-              - name: "trigger-finished-webhook"
+              - name: "trigger-integration"
                 dependencies:
                   - "advise"
                 templateRef:
-                  name: "finished-webhook"
-                  template: "finished-webhook"
+                  name: "trigger-integration"
+                  template: "trigger-integration"
                 arguments:
                   parameters:
                     - name: "WORKFLOW_NAME"
@@ -314,16 +275,9 @@ objects:
                       value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
                     - name: "THOTH_ADVISER_METADATA"
                       value: "{{workflow.parameters.THOTH_ADVISER_METADATA}}"
-                    - name: "IMAGE_STREAM_REGISTRY"
-                      value: "{{workflow.parameters.IMAGE_STREAM_REGISTRY}}"
-                    - name: "IMAGE_STREAM_NAMESPACE"
-                      value: "{{workflow.parameters.IMAGE_STREAM_NAMESPACE}}"
-                    - name: "IMAGE_STREAM_TAG"
-                      value: "{{workflow.parameters.IMAGE_STREAM_TAG}}"
-
               - name: "kebechet-run-results"
                 dependencies:
-                  - "advise"
+                  - "trigger-integration"
                 templateRef:
                   name: "kebechet-run-results"
                   template: "run-results"
