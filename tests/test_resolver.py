@@ -1167,6 +1167,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
             extras=frozenset({None}),
             marker_evaluation_result=True,
+            is_missing=False,
         ).and_return({None: [("absl-py", "0.8.0")]}).once()
 
         absl_py_080_records = [
