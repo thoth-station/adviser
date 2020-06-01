@@ -136,4 +136,4 @@ spec:
                   value: "{{steps.extract-metadata.outputs.parameters.origin}}"
                 - name: "source_type"
                   value: "{{steps.extract-metadata.outputs.parameters.source_type}}"
-            when: "{{steps.extract-metadata.outputs.parameters.source_type}} == kebechet"
+            when: "{{steps.extract-metadata.outputs.parameters.source_type}} == KEBECHET"
