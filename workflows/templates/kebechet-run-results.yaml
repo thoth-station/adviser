@@ -109,40 +109,6 @@ spec:
           requests:
             cpu: "2"
             memory: "2Gi"
-    - name: print-source-type
-      inputs:
-        parameters:
-          - name: "source_type"
-      script:
-        command:
-          - python3
-        name: print-source-type
-        image: workflow-helpers
-        source: |
-          print("hello")
-          print('{{inputs.parameters.source_type}}')
-        resources:
-          limits:
-            cpu: 250m
-            memory: 256Mi
-          requests:
-            cpu: 250m
-            memory: 256Mi
-    - name: dumb-step
-      script:
-        command:
-          - python3
-        name: dumb-step
-        image: workflow-helpers
-        source: |
-          print("dumb-step")
-        resources:
-          limits:
-            cpu: 250m
-            memory: 256Mi
-          requests:
-            cpu: 250m
-            memory: 256Mi  
     - name: run-results
       inputs:
         parameters:
