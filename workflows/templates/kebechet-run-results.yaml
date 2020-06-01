@@ -102,14 +102,6 @@ spec:
               configMapKeyRef:
                 key: storage-bucket-name
                 name: thoth
-        volumes:
-          - name: ssh-config
-            secret:
-              secretName: kebechet-secret
-              items:
-                - key: ssh-privatekey
-                  path: id_rsa
-                  mode: 0600
         resources:
           limits:
             cpu: "2"
