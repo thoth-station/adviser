@@ -736,6 +736,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.operating_system.version,
             extras=frozenset(["postgresql", None]),
             marker_evaluation_result=None,
+            is_missing=False,
         ).and_raise(NotFoundError).once()
         resolver.predictor.should_receive("set_reward_signal").with_args(
             state, to_expand_package_tuple, math.nan
@@ -781,6 +782,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.operating_system.version,
             extras=frozenset(["postgresql", None]),
             marker_evaluation_result=None,
+            is_missing=False,
         ).and_raise(NotFoundError).once()
         resolver.predictor.should_receive("set_reward_signal").with_args(
             state, to_expand_package_tuple, math.nan
@@ -812,6 +814,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.operating_system.version,
             extras=frozenset([None]),
             marker_evaluation_result=None,
+            is_missing=False,
         ).and_return({}).once()
 
         assert len(state.unresolved_dependencies) == 1, (
@@ -875,6 +878,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.operating_system.version,
             extras=frozenset([None]),
             marker_evaluation_result=None,
+            is_missing=False,
         ).and_return({}).once()
 
         assert len(state.unresolved_dependencies) == 2
@@ -943,6 +947,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.operating_system.version,
             extras=frozenset([None]),
             marker_evaluation_result=None,
+            is_missing=False,
         ).and_return({}).once()
 
         assert len(list(state.iter_unresolved_dependencies())) == 3
@@ -1024,6 +1029,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.operating_system.version,
             extras=frozenset([None]),
             marker_evaluation_result=None,
+            is_missing=False,
         ).and_return({}).once()
 
         assert len(list(state.iter_unresolved_dependencies())) == 2
@@ -1081,6 +1087,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
             extras=frozenset({None}),
             marker_evaluation_result=True,
+            is_missing=False,
         ).and_return({None: [("absl-py", "0.9.0"), ("absl-py", "0.8.0")]}).once()
 
         absl_py_090_records = [
@@ -1220,6 +1227,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
             extras=frozenset({None}),
             marker_evaluation_result=True,
+            is_missing=False,
         ).and_return({None: [("absl-py", "0.9.0"), ("absl-py", "0.8.0")]}).once()
 
         absl_py_090_records = [
@@ -1358,6 +1366,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.operating_system.version,
             extras=frozenset(["s3", "ui", None]),
             marker_evaluation_result=None,
+            is_missing=False,
         ).and_return({}).once()
 
         resolver.predictor.should_receive("set_reward_signal").with_args(
@@ -1417,6 +1426,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.operating_system.version,
             extras=frozenset([None]),
             marker_evaluation_result=None,
+            is_missing=False,
         ).and_return(
             {None: [(pv.name, pv.locked_version) for pv in dep_package_versions]}
         ).once()
@@ -1617,6 +1627,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
             extras=frozenset({None}),
             marker_evaluation_result=True,
+            is_missing=False,
         ).and_return({"enum34": [("enum34", "1.1.6")]}).once()
 
         enum34_records = [
@@ -1688,6 +1699,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
             extras=frozenset({None}),
             marker_evaluation_result=True,
+            is_missing=False,
         ).and_return({}).once()
 
         resolver.project.runtime_environment.should_receive(
@@ -2000,6 +2012,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
             extras=frozenset({None}),
             marker_evaluation_result=None,
+            is_missing=False,
         ).and_return({"click": [("click", "1.0.0")]}).once()
 
         click_records = [
