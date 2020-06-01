@@ -35,9 +35,6 @@ spec:
             value: "1"
           - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
             value: "9999999"
-          - name: "IMAGE_STREAM_REGISTRY"
-          - name: "IMAGE_STREAM_NAMESPACE"
-          - name: "IMAGE_STREAM_TAG"
           - name: "THOTH_S3_ENDPOINT_URL"
           - name: "THOTH_CEPH_BUCKET_NAME"
           - name: "THOTH_CEPH_BUCKET_PREFIX"
@@ -63,9 +60,7 @@ spec:
                 key: secretKey
       container:
         name: advise
-        image: "{{inputs.parameters.IMAGE_STREAM_REGISTRY}}/\
-        {{inputs.parameters.IMAGE_STREAM_NAMESPACE}}/\
-        adviser:{{inputs.parameters.IMAGE_STREAM_TAG}}"
+        image: adviser
         env:
           - name: THOTH_DOCUMENT_ID
             value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
