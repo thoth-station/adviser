@@ -102,6 +102,14 @@ spec:
               configMapKeyRef:
                 key: storage-bucket-name
                 name: thoth
+        volumes:
+          - name: ssh-config
+            secret:
+              secretName: kebechet-secret
+              items:
+                - key: ssh-privatekey
+                  path: id_rsa
+                  mode: 0600
         resources:
           limits:
             cpu: "2"
@@ -122,14 +130,6 @@ spec:
               parameters:
                 - name: "THOTH_ADVISER_METADATA"
                   value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
-        - - name: dumb-step
-            template: dumb-step
-        - - name: print-source-type
-            template: print-source-type
-            arguments:
-              parameters:
-                - name: "source_type"
-                  value: "{{steps.extract-metadata.outputs.parameters.source_type}}"
         - - name: schedule-kebechet
             template: schedule-kebechet
             arguments:
