@@ -189,6 +189,13 @@ objects:
             items:
               - key: kafka_ca.crt
                 path: kafka_ca.crt
+        - name: ssh-config
+          secret:
+            secretName: kebechet-secret
+            items:
+              - key: ssh-privatekey
+                path: id_rsa
+                mode: 0600
 
       templates:
         - name: "adviser"
