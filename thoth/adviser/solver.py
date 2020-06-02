@@ -74,6 +74,7 @@ class GraphReleasesFetcher(ReleasesFetcher):
                 start_offset=start_offset,
                 count=self.graph.DEFAULT_COUNT,
                 distinct=True,
+                is_missing=False,
             )
 
             start_offset += 1
