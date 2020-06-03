@@ -54,6 +54,7 @@ class MockedGraphDatabase:
         count: bool = DEFAULT_COUNT,
         start_offset: bool = 0,
         distinct: bool = True,
+        is_missing: bool = False,
     ) -> typing.List[tuple]:
         """Get all versions for the given Python package."""
         result = []
