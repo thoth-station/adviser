@@ -293,3 +293,4 @@ objects:
                       value: "{{tasks.trigger-integration.outputs.parameters.origin}}"
                     - name: source_type
                       value: "{{tasks.trigger-integration.outputs.parameters.source_type}}"
+                when: "{{tasks.trigger-integration.outputs.parameters.source_type}} == KEBECHET"
