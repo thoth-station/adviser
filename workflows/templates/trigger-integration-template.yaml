@@ -52,6 +52,8 @@ spec:
           - name: origin
             valueFrom:
               path: /mnt/workdir/origin
+              default: ""
           - name: source_type
             valueFrom:
               path: /mnt/workdir/source_type
+              default: ""
