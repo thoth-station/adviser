@@ -22,6 +22,8 @@ spec:
             value: "app.sh"
           - name: THOTH_WORKFLOW_TASK
             value: "trigger_integration"
+          - name: THOTH_ADVISER_METADATA
+            value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
         resources:
           limits:
             cpu: 250m
@@ -37,9 +39,11 @@ spec:
           - name: origin
             valueFrom:
               path: /mnt/workdir/origin
+              default: ""
           - name: source_type
             valueFrom:
               path: /mnt/workdir/source_type
+              default: ""
     - name: schedule-kebechet
       inputs:
         parameters:
