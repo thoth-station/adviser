@@ -30,8 +30,8 @@ spec:
             cpu: 250m
             memory: 256Mi
         volumeMounts:
-        - name: workdir
-          mountPath: /mnt/workdir
+          - name: workdir
+            mountPath: /mnt/workdir
       outputs:
         parameters:
           - name: origin
