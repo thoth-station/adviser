@@ -42,12 +42,7 @@ _LOGGER = logging.getLogger(__name__)
 class Predictor:
     """A base class for implementing a predictor for resolver."""
 
-    keep_history = attr.ib(
-        type=bool,
-        kw_only=True,
-        default=None,
-        converter=should_keep_history
-    )
+    keep_history = attr.ib(type=bool, kw_only=True, default=None, converter=should_keep_history)
 
     _CONTEXT: Optional[Context] = None
 
@@ -118,7 +113,7 @@ class Predictor:
         """Plot information about predictor."""
         _LOGGER.error(
             "Cannot plot predictor history as plotting is not implemented for predictor %r, error is not fatal",
-            self.__class__.__name__
+            self.__class__.__name__,
         )
 
     @staticmethod

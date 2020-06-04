@@ -92,12 +92,5 @@ class Sampling(Predictor):
 
         font_prop = FontProperties()
         font_prop.set_size("medium")
-        fig.legend(
-            loc="upper center",
-            bbox_to_anchor=(0.50, 1.00),
-            ncol=2,
-            fancybox=True,
-            shadow=True,
-            prop=font_prop,
-        )
+        fig.legend(loc="upper center", bbox_to_anchor=(0.50, 1.00), ncol=2, fancybox=True, shadow=True, prop=font_prop)
         return fig

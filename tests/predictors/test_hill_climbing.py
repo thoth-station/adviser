@@ -31,9 +31,7 @@ from ..base import AdviserTestCase
 class TestHillClimbing(AdviserTestCase):
     """Tests related to hill climbing in the state space."""
 
-    @given(
-        integers(min_value=1, max_value=256),
-    )
+    @given(integers(min_value=1, max_value=256))
     def test_run(self, state: State, state_count: int) -> None:
         """Test running the hill climbing method."""
         beam = Beam()
@@ -61,6 +59,4 @@ class TestHillClimbing(AdviserTestCase):
 
         with predictor.assigned_context(context):
             predictor.pre_run()
-            assert (
-                predictor._history == []
-            ), "Predictor's history not discarded"
+            assert predictor._history == [], "Predictor's history not discarded"

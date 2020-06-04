@@ -37,22 +37,13 @@ class TestPipelineConfig(AdviserTestCase):
             "strides": [
                 {
                     "name": "Stride1",
-                    "configuration": {
-                        "linus": {
-                            "residence": "oregon",
-                            "children": 3,
-                            "parents": ["nils", "anna"],
-                        }
-                    },
+                    "configuration": {"linus": {"residence": "oregon", "children": 3, "parents": ["nils", "anna"]}},
                 }
             ],
             "wraps": [
                 {
                     "name": "Wrap1",
-                    "configuration": {
-                        "thoth": [2018, 2019],
-                        "cities": ["Brno", "Bonn", "Boston", "Milan"],
-                    },
+                    "configuration": {"thoth": [2018, 2019], "cities": ["Brno", "Bonn", "Boston", "Milan"]},
                 }
             ],
         }
@@ -61,9 +52,7 @@ class TestPipelineConfig(AdviserTestCase):
         """Test iteration over all units present in the pipeline configuration."""
         visited = dict.fromkeys(("Boot1", "Sieve1", "Step1", "Stride1", "Wrap1"), 0)
         for unit in pipeline_config.iter_units():
-            assert (
-                unit.__class__.__name__ in visited
-            ), f"Unknown unit {unit.__class__.__name__!r}"
+            assert unit.__class__.__name__ in visited, f"Unknown unit {unit.__class__.__name__!r}"
             visited[unit.__class__.__name__] += 1
 
         assert len(visited) == 5
@@ -79,9 +68,7 @@ class TestPipelineConfig(AdviserTestCase):
     def test_call_post_run(self, pipeline_config: PipelineConfig) -> None:
         """Test calling post-run method on units."""
         for unit in pipeline_config.iter_units():
-            flexmock(unit).should_receive("post_run").with_args().and_return(
-                None
-            ).once()
+            flexmock(unit).should_receive("post_run").with_args().and_return(None).once()
 
         pipeline_config.call_post_run()
 
@@ -90,8 +77,6 @@ class TestPipelineConfig(AdviserTestCase):
         report = Report(count=2, pipeline=pipeline_config)
 
         for unit in pipeline_config.iter_units():
-            flexmock(unit).should_receive("post_run_report").with_args(
-                report=report
-            ).and_return(None).once()
+            flexmock(unit).should_receive("post_run_report").with_args(report=report).and_return(None).once()
 
         pipeline_config.call_post_run_report(report)

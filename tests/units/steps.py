@@ -38,9 +38,7 @@ class Step1(Step):
     CONFIGURATION_DEFAULT = {"guido_retirement": 2019}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
     def run(
@@ -55,9 +53,7 @@ class Step2(Step):
     CONFIGURATION_DEFAULT = {"lyrics": ".. drifting further everyday..."}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
     def run(

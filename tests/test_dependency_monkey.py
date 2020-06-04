@@ -43,32 +43,17 @@ class TestDependencyMonkey(AdviserTestCase):
 
     @staticmethod
     def _get_test_dm(
-        *,
-        stack_output: str,
-        with_devel: bool,
-        products: List[Product],
-        amun_context: Optional[Dict[str, Any]] = None
+        *, stack_output: str, with_devel: bool, products: List[Product], amun_context: Optional[Dict[str, Any]] = None
     ) -> DependencyMonkey:
         """Get instantiated dependency monkey ready to be tested."""
         flexmock(Resolver)
-        (
-            Resolver.should_receive("resolve_products")
-            .with_args(with_devel=with_devel)
-            .and_return(products)
-            .once()
-        )
+        (Resolver.should_receive("resolve_products").with_args(with_devel=with_devel).and_return(products).once())
 
         flexmock(PipelineConfig)
         (PipelineConfig.should_receive("call_post_run_report").and_return(None).once())
 
         dependency_monkey = DependencyMonkey(
-            resolver=Resolver(
-                pipeline=PipelineConfig(),
-                project=None,
-                library_usage=None,
-                graph=None,
-                predictor=None,
-            ),
+            resolver=Resolver(pipeline=PipelineConfig(), project=None, library_usage=None, graph=None, predictor=None),
             stack_output=stack_output,
             decision_type=DecisionType.ALL,
             context=amun_context or {},
@@ -84,11 +69,7 @@ class TestDependencyMonkey(AdviserTestCase):
         """Test obtaining predictor from Dependency Monkey instance."""
         resolver = flexmock(predictor="foo")
         dependency_monkey = DependencyMonkey(
-            resolver=resolver,
-            stack_output="-",
-            context={"bar": "baz"},
-            dry_run=True,
-            decision_type=DecisionType.RANDOM,
+            resolver=resolver, stack_output="-", context={"bar": "baz"}, dry_run=True, decision_type=DecisionType.RANDOM
         )
 
         assert dependency_monkey.stack_output == "-"
@@ -103,9 +84,7 @@ class TestDependencyMonkey(AdviserTestCase):
         """Test Amun API stack submissions."""
         project = flexmock()
         generated_project_dict = {"bar": 1}
-        project.should_receive("to_dict").with_args().and_return(
-            generated_project_dict
-        ).once()
+        project.should_receive("to_dict").with_args().and_return(generated_project_dict).once()
 
         product = flexmock(
             project=project,
@@ -123,10 +102,7 @@ class TestDependencyMonkey(AdviserTestCase):
         ).and_return({"inspection_id": "inspection-deadbeef"}).once()
 
         dependency_monkey = self._get_test_dm(
-            stack_output=amun_api,
-            with_devel=True,
-            products=[product],
-            amun_context=amun_context,
+            stack_output=amun_api, with_devel=True, products=[product], amun_context=amun_context
         )
 
         report: DependencyMonkeyReport = dependency_monkey.resolve(with_devel=True)
@@ -138,9 +114,9 @@ class TestDependencyMonkey(AdviserTestCase):
     def test_dir_output(self) -> None:
         """Test writing output to a directory."""
         project = flexmock()
-        project.should_receive("to_files").with_args(
-            "/tmp/1/Pipfile", "/tmp/1/Pipfile.lock"
-        ).and_return({"foo": "bar"}).once()
+        project.should_receive("to_files").with_args("/tmp/1/Pipfile", "/tmp/1/Pipfile.lock").and_return(
+            {"foo": "bar"}
+        ).once()
 
         product = flexmock(
             project=project,
@@ -151,23 +127,16 @@ class TestDependencyMonkey(AdviserTestCase):
         product_dict = {"baz": 2}
         product.should_receive("to_dict").with_args().and_return(product_dict).once()
 
-        dependency_monkey = self._get_test_dm(
-            stack_output="/tmp", with_devel=False, products=[product]
-        )
+        dependency_monkey = self._get_test_dm(stack_output="/tmp", with_devel=False, products=[product])
         report: DependencyMonkeyReport = dependency_monkey.resolve(with_devel=False)
 
-        assert report.to_dict() == {
-            "skipped": 0,
-            "responses": [{"response": "/tmp/1", "product": product_dict}],
-        }
+        assert report.to_dict() == {"skipped": 0, "responses": [{"response": "/tmp/1", "product": product_dict}]}
 
     def test_stdout_output(self) -> None:
         """Test writing output to standard output."""
         project = flexmock()
         generated_project_dict = {"bar": 1}
-        project.should_receive("to_dict").with_args().and_return(
-            generated_project_dict
-        ).once()
+        project.should_receive("to_dict").with_args().and_return(generated_project_dict).once()
 
         product = flexmock(
             project=project,
@@ -176,9 +145,7 @@ class TestDependencyMonkey(AdviserTestCase):
             advised_runtime_environment=flexmock(),
         )
 
-        dependency_monkey = self._get_test_dm(
-            stack_output="-", with_devel=True, products=[product]
-        )
+        dependency_monkey = self._get_test_dm(stack_output="-", with_devel=True, products=[product])
         flexmock(json).should_receive("dump").with_args(
             generated_project_dict, fp=sys.stdout, sort_keys=True, indent=2
         ).and_return(None).once()

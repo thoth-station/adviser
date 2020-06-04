@@ -38,13 +38,9 @@ class TestPackageIndexSieve(AdviserTestCase):
     def test_sieve_index_enabled(self) -> None:
         """Test no-op when the given Python package index used to obtain package is enabled."""
         source = Source("https://pypi.org/simple")
-        package_version = PackageVersion(
-            name="tensorflow", version="==1.9.0", index=source, develop=False
-        )
+        package_version = PackageVersion(name="tensorflow", version="==1.9.0", index=source, develop=False)
         flexmock(GraphDatabase)
-        GraphDatabase.should_receive("is_python_package_index_enabled").with_args(
-            source.url
-        ).and_return(True).once()
+        GraphDatabase.should_receive("is_python_package_index_enabled").with_args(source.url).and_return(True).once()
 
         context = flexmock(graph=GraphDatabase())
         with PackageIndexSieve.assigned_context(context):
@@ -53,16 +49,10 @@ class TestPackageIndexSieve(AdviserTestCase):
 
     def test_sieve_index_disabled(self) -> None:
         """Test removals of Python package if Python package index used is disabled."""
-        source = Source(
-            "https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/jemalloc/simple/"
-        )
-        package_version = PackageVersion(
-            name="tensorflow", version="==1.9.0", index=source, develop=False
-        )
+        source = Source("https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/jemalloc/simple/")
+        package_version = PackageVersion(name="tensorflow", version="==1.9.0", index=source, develop=False)
         flexmock(GraphDatabase)
-        GraphDatabase.should_receive("is_python_package_index_enabled").with_args(
-            source.url
-        ).and_return(False).once()
+        GraphDatabase.should_receive("is_python_package_index_enabled").with_args(source.url).and_return(False).once()
 
         context = flexmock(graph=GraphDatabase())
         with PackageIndexSieve.assigned_context(context):
@@ -71,16 +61,12 @@ class TestPackageIndexSieve(AdviserTestCase):
 
     def test_sieve_index_not_found(self) -> None:
         """Test removals of Python package if Python package index used is unknown."""
-        source = Source(
-            "https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/jemalloc/simple/"
-        )
-        package_version = PackageVersion(
-            name="tensorflow", version="==1.9.0", index=source, develop=False
-        )
+        source = Source("https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/jemalloc/simple/")
+        package_version = PackageVersion(name="tensorflow", version="==1.9.0", index=source, develop=False)
         flexmock(GraphDatabase)
-        GraphDatabase.should_receive("is_python_package_index_enabled").with_args(
-            source.url
-        ).and_raise(NotFoundError).once()
+        GraphDatabase.should_receive("is_python_package_index_enabled").with_args(source.url).and_raise(
+            NotFoundError
+        ).once()
 
         context = flexmock(graph=GraphDatabase())
         with PackageIndexSieve.assigned_context(context):

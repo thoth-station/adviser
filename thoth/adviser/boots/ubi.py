@@ -42,9 +42,7 @@ class UbiBoot(Boot):
     """
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, always."""
         if not builder_context.is_included(cls):
             return {}

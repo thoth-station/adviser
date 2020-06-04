@@ -56,14 +56,10 @@ class Unit(metaclass=abc.ABCMeta):
     CONFIGURATION_DEFAULT: Dict[str, Any] = {}
 
     _RE_CAMEL2SNAKE = re.compile("(?!^)([A-Z]+)")
-    _AICOE_PYTHON_PACKAGE_INDEX_URL = (
-        "https://tensorflow.pypi.thoth-station.ninja/index/"
-    )
+    _AICOE_PYTHON_PACKAGE_INDEX_URL = "https://tensorflow.pypi.thoth-station.ninja/index/"
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         raise NotImplemented(
             f"Please implement method to register pipeline unit {cls.__name__!r} to pipeline configuration"
@@ -80,9 +76,7 @@ class Unit(metaclass=abc.ABCMeta):
             cls._CONTEXT = None
 
     @classmethod
-    def compute_expanded_configuration(
-        cls, configuration_dict: Optional[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def compute_expanded_configuration(cls, configuration_dict: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         """Compute configuration as they would be computed based on unit configuration."""
         result = dict(cls.CONFIGURATION_DEFAULT)
 
@@ -125,11 +119,7 @@ class Unit(metaclass=abc.ABCMeta):
             try:
                 self.CONFIGURATION_SCHEMA(self.configuration)
             except Exception as exc:
-                _LOGGER.exception(
-                    "Failed to validate schema for pipeline unit %r: %s",
-                    self.name,
-                    str(exc),
-                )
+                _LOGGER.exception("Failed to validate schema for pipeline unit %r: %s", self.name, str(exc))
                 raise
 
     def to_dict(self) -> Dict[str, Any]:
@@ -139,21 +129,15 @@ class Unit(metaclass=abc.ABCMeta):
     @classmethod
     def is_aicoe_release(cls, package_version: PackageVersion) -> bool:
         """Check if the given package-version is AICoE release."""
-        return bool(
-            package_version.index.url.startswith(cls._AICOE_PYTHON_PACKAGE_INDEX_URL)
-        )
+        return bool(package_version.index.url.startswith(cls._AICOE_PYTHON_PACKAGE_INDEX_URL))
 
     @classmethod
-    def get_aicoe_configuration(
-        cls, package_version: PackageVersion
-    ) -> Optional[Dict[str, Any]]:
+    def get_aicoe_configuration(cls, package_version: PackageVersion) -> Optional[Dict[str, Any]]:
         """Get AICoE specific configuration encoded in the AICoE index URL."""
-        if not package_version.index.url.startswith(
-            cls._AICOE_PYTHON_PACKAGE_INDEX_URL
-        ):
+        if not package_version.index.url.startswith(cls._AICOE_PYTHON_PACKAGE_INDEX_URL):
             return None
 
-        index_url = package_version.index.url[len(cls._AICOE_PYTHON_PACKAGE_INDEX_URL):]
+        index_url = package_version.index.url[len(cls._AICOE_PYTHON_PACKAGE_INDEX_URL) :]
         conf_parts = index_url.strip("/").split("/")  # the last is always "simple"
 
         if len(conf_parts) == 3:
@@ -162,18 +146,11 @@ class Unit(metaclass=abc.ABCMeta):
                 _LOGGER.warning("Failed to parse a platform tag")
                 return None
 
-            return {
-                "os_name": None,
-                "os_version": None,
-                "configuration": conf_parts[1],
-                "platform_tag": conf_parts[0],
-            }
+            return {"os_name": None, "os_version": None, "configuration": conf_parts[1], "platform_tag": conf_parts[0]}
         elif len(conf_parts) == 5:
             # TODO: We have dropped OS-specific builds, so this can go away in future releases...
             if conf_parts[0] != "os":
-                _LOGGER.warning(
-                    "Failed to parse operating system specific URL of AICoE index"
-                )
+                _LOGGER.warning("Failed to parse operating system specific URL of AICoE index")
                 return None
 
             return {
@@ -184,8 +161,7 @@ class Unit(metaclass=abc.ABCMeta):
             }
 
         _LOGGER.warning(
-            "Failed to parse AICoE specific package source index configuration: %r",
-            package_version.index.url,
+            "Failed to parse AICoE specific package source index configuration: %r", package_version.index.url
         )
         return None
 

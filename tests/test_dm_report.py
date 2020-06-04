@@ -41,10 +41,7 @@ class TestDependencyMonkeyReport(AdviserTestCase):
         report.skipped += 1
         report.add_response(response, product)
 
-        assert report.to_dict() == {
-            "skipped": 1,
-            "responses": [{"response": response, "product": product_dict}],
-        }
+        assert report.to_dict() == {"skipped": 1, "responses": [{"response": response, "product": product_dict}]}
 
     def test_add_responses(self) -> None:
         """Test adding new responses to report."""

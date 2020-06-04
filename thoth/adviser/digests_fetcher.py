@@ -42,15 +42,9 @@ class GraphDigestsFetcher(DigestsFetcherBase):  # type: ignore
         graph.connect()
         return graph
 
-    def fetch_digests(
-        self, package_name: str, package_version: str
-    ) -> Dict[str, List[Dict[str, str]]]:
+    def fetch_digests(self, package_name: str, package_version: str) -> Dict[str, List[Dict[str, str]]]:
         """Fetch digests for the given package in specified version, consider only enabled indexes."""
-        _LOGGER.debug(
-            "Querying graph database for digests for package %r in version %r",
-            package_name,
-            package_version,
-        )
+        _LOGGER.debug("Querying graph database for digests for package %r in version %r", package_name, package_version)
 
         result = {}
         for index_url in self.graph.get_python_package_index_urls_all(enabled=True):

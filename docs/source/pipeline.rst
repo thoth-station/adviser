@@ -233,7 +233,7 @@ a TensorFlow application:
         if context.is_included(cls):
            # This pipeline unit is already included in the pipeline configuration, we don't
            # need to include this pipeline unit multiple times.
-           # 
+           #
            # The same method `is_included' can be used to inspect if pre-requisite pipeline
            # units are present in the pipeline configuration.
            return None
@@ -343,5 +343,3 @@ discovery). An example of hardware environment configuration can be GPU or CPU
 type. Any request done to Thoth backend automatically carries the hardware
 information that is detected if :ref:`Thoth's official integration tools were
 used <integration>`.
-
-

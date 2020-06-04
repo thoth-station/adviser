@@ -45,17 +45,12 @@ _LOGGER = logging.getLogger(__name__)
 class OneVersionStride(Stride):
     """Filter out software stacks allowing the pipeline to produce just one software stack with specific package."""
 
-    CONFIGURATION_DEFAULT = {
-        "package_name": None,
-        "only_once": True,
-    }
+    CONFIGURATION_DEFAULT = {"package_name": None, "only_once": True}
 
     version_seen = attr.ib(type=Optional[str], default=None)
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include this pipeline unit only if user asks for it explicitly."""
         return None
 

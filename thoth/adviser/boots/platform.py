@@ -40,14 +40,10 @@ class PlatformBoot(Boot):
     """A boot that checks for platform used and adjust to the default one if not provided explicitly."""
 
     CONFIGURATION_DEFAULT = {"default_platform": "linux-x86_64"}
-    CONFIGURATION_SCHEMA = Schema({
-        Required("default_platform"): str,
-    })
+    CONFIGURATION_SCHEMA = Schema({Required("default_platform"): str})
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, always."""
         if not builder_context.is_included(cls):
             return {}
@@ -59,6 +55,6 @@ class PlatformBoot(Boot):
         if self.context.project.runtime_environment.platform is None:
             _LOGGER.warning(
                 "No platform provided in the configuration, setting to %r implicitly",
-                self.configuration["default_platform"]
+                self.configuration["default_platform"],
             )
             self.context.project.runtime_environment.platform = self.configuration["default_platform"]

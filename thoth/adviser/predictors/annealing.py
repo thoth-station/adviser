@@ -42,19 +42,13 @@ _LOGGER = logging.getLogger(__name__)
 class AdaptiveSimulatedAnnealing(Predictor):
     """Implementation of adaptive simulated annealing looking for stacks based on the scoring function."""
 
-    _temperature_history = attr.ib(
-        type=List[Tuple[float, bool, float, int]],
-        factory=list,
-        kw_only=True,
-    )
+    _temperature_history = attr.ib(type=List[Tuple[float, bool, float, int]], factory=list, kw_only=True)
     _temperature = attr.ib(type=float, kw_only=True, default=0.0)
 
     def _temperature_function(self, t0: float, context: Context) -> float:
         """Temperature function used to compute new temperature."""
-        k = (
-                    context.accepted_final_states_count + math.log(context.iteration + 1)
-            ) / context.limit
-        temperature = t0 * 0.97**k
+        k = (context.accepted_final_states_count + math.log(context.iteration + 1)) / context.limit
+        temperature = t0 * 0.97 ** k
         _LOGGER.debug(
             "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, beam size= %d, k=%f) = %g",
             context.iteration,
@@ -65,12 +59,10 @@ class AdaptiveSimulatedAnnealing(Predictor):
             k,
             temperature,
         )
-        return max(temperature, .0)
+        return max(temperature, 0.0)
 
     @staticmethod
-    def _compute_acceptance_probability(
-        top_score: float, neighbour_score: float, temperature: float
-    ) -> float:
+    def _compute_acceptance_probability(top_score: float, neighbour_score: float, temperature: float) -> float:
         """Check the probability of acceptance the given solution to expansion."""
         if temperature == 0.0:
             # This can happen as we consider also iteration in the exp function - if we
@@ -106,17 +98,12 @@ class AdaptiveSimulatedAnnealing(Predictor):
 
         if probable_state_idx != 0 and acceptance_probability >= random.random():
             # Skip to probable state, do not use the top rated state.
-            _LOGGER.debug(
-                "Performing transition to a neighbour state with score %g",
-                probable_state.score,
-            )
+            _LOGGER.debug("Performing transition to a neighbour state with score %g", probable_state.score)
             # state_expansion_idx = probable_state_idx
             state = probable_state
             unresolved_dependency_tuple = state.get_random_unresolved_dependency(prefer_recent=False)
         else:
-            _LOGGER.debug(
-                "Expanding TOP rated state with score %g", state.score
-            )
+            _LOGGER.debug("Expanding TOP rated state with score %g", state.score)
             unresolved_dependency_tuple = state.get_random_unresolved_dependency(prefer_recent=True)
 
         if self.keep_history:
@@ -187,12 +174,8 @@ class AdaptiveSimulatedAnnealing(Predictor):
 
         host.plot(x, y1, ".g", label="Expansion of a highest rated candidate")
         host.plot(x, y2, ",r", label="Expansion of a neighbour candidate")
-        p3, = par1.plot(
-            x, y3, ",b", label="Acceptance probability for a neighbour candidate"
-        )
-        p4, = par2.plot(
-            x, y4, ",y", label="Number of products produced in the pipeline"
-        )
+        p3, = par1.plot(x, y3, ",b", label="Acceptance probability for a neighbour candidate")
+        p4, = par2.plot(x, y4, ",y", label="Number of products produced in the pipeline")
 
         host.set_xlabel("iteration")
         host.set_ylabel("temperature")
@@ -211,12 +194,5 @@ class AdaptiveSimulatedAnnealing(Predictor):
 
         font_prop = FontProperties()
         font_prop.set_size("small")
-        fig.legend(
-            loc="upper center",
-            bbox_to_anchor=(0.50, 1.00),
-            ncol=2,
-            fancybox=True,
-            shadow=True,
-            prop=font_prop,
-        )
+        fig.legend(loc="upper center", bbox_to_anchor=(0.50, 1.00), ncol=2, fancybox=True, shadow=True, prop=font_prop)
         return fig

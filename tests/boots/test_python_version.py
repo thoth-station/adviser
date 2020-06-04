@@ -53,9 +53,7 @@ python_version = "3.6"
 
     def test_no_python_config(self) -> None:
         """Test assigning Python version from Thoth's config file."""
-        context = flexmock(
-            project=Project.from_strings(self._CASE_PIPFILE_PYTHON), stack_info=[]
-        )
+        context = flexmock(project=Project.from_strings(self._CASE_PIPFILE_PYTHON), stack_info=[])
         context.project.runtime_environment.operating_system.name = "rhel"
         context.project.runtime_environment.operating_system.version = "8"
 
@@ -69,16 +67,16 @@ python_version = "3.6"
         assert context.project.runtime_environment.operating_system.version == "8"
         assert context.project.runtime_environment.python_version == "3.6"
         assert context.stack_info == [
-            {'Message': 'No version of Python specified in the configuration, using '
-            "Python version found in Pipfile: '3.6'",
-            'type': 'WARNING'},
+            {
+                "Message": "No version of Python specified in the configuration, using "
+                "Python version found in Pipfile: '3.6'",
+                "type": "WARNING",
+            }
         ]
 
     def test_no_python_pipfile(self) -> None:
         """Test assigning Python version from Pipfile."""
-        context = flexmock(
-            project=Project.from_strings(self._CASE_PIPFILE_NO_PYTHON), stack_info=[]
-        )
+        context = flexmock(project=Project.from_strings(self._CASE_PIPFILE_NO_PYTHON), stack_info=[])
         context.project.runtime_environment.operating_system.name = "rhel"
         context.project.runtime_environment.operating_system.version = "8"
         context.project.runtime_environment.python_version = "3.6"

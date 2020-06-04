@@ -52,9 +52,7 @@ class GraphReleasesFetcher(ReleasesFetcher):
 
     graph = attr.ib(type=GraphDatabase, kw_only=True)
     runtime_environment = attr.ib(
-        type=RuntimeEnvironment,
-        default=attr.Factory(RuntimeEnvironment.from_dict),
-        kw_only=True,
+        type=RuntimeEnvironment, default=attr.Factory(RuntimeEnvironment.from_dict), kw_only=True
     )
 
     def fetch_releases(self, package_name: str) -> Tuple[str, List[Tuple[str, str]]]:
@@ -97,9 +95,7 @@ class PackageVersionDependencyParser(DependencyParser):
         """Parse the given list of PackageVersion objects."""
         for package_version in dependencies:
             version = package_version.version if package_version.version != "*" else ""
-            dependency = PythonDependencyParser.parse_python(
-                package_version.name + version
-            )
+            dependency = PythonDependencyParser.parse_python(package_version.name + version)
             yield dependency
 
 
@@ -117,15 +113,11 @@ class PythonPackageGraphSolver:
 
     graph = attr.ib(type=GraphDatabase, kw_only=True)
     runtime_environment = attr.ib(
-        type=RuntimeEnvironment,
-        kw_only=True,
-        default=attr.Factory(RuntimeEnvironment.from_dict),
+        type=RuntimeEnvironment, kw_only=True, default=attr.Factory(RuntimeEnvironment.from_dict)
     )
     # Do not instantiate multiple objects for same python package tuple to optimize memory usage.
     _package_versions = attr.ib(
-        type=Dict[Tuple[str, str, str], PackageVersion],
-        default=attr.Factory(dict),
-        kw_only=True,
+        type=Dict[Tuple[str, str, str], PackageVersion], default=attr.Factory(dict), kw_only=True
     )
     # Have just one instance of Source object per python package source index url.
     _sources = attr.ib(type=Dict[str, Source], default=attr.Factory(dict), kw_only=True)
@@ -144,9 +136,7 @@ class PythonPackageGraphSolver:
 
         return self._solver
 
-    def solve(
-        self, dependencies: List[PackageVersion], graceful: bool = True
-    ) -> Dict[str, List[PackageVersion]]:
+    def solve(self, dependencies: List[PackageVersion], graceful: bool = True) -> Dict[str, List[PackageVersion]]:
         """Solve the given dependencies and return object representation of packages."""
         result = {}
         # First, construct the map for checking packages.

@@ -33,9 +33,7 @@ from ..base import AdviserTestCase
 class TestApproximatingLatest(AdviserTestCase):
     """Test implementation of predictor approximating latest resolution."""
 
-    @given(
-        integers(min_value=1, max_value=256),
-    )
+    @given(integers(min_value=1, max_value=256))
     def test_run(self, state: State, state_count: int) -> None:
         """Test running the approximating latest method."""
         beam = Beam()
@@ -68,21 +66,29 @@ class TestApproximatingLatest(AdviserTestCase):
         state = State(
             score=0.999,
             resolved_dependencies=OrderedDict(),
-            unresolved_dependencies=OrderedDict((
+            unresolved_dependencies=OrderedDict(
                 (
-                    "tensorflow", OrderedDict((
-                        (hash(dependency_tuple_1), dependency_tuple_1),
-                        (hash(dependency_tuple_2), dependency_tuple_2),
-                        (hash(dependency_tuple_3), dependency_tuple_3),
-                    ))
-                ),
-                (
-                    "flask", OrderedDict((
-                        (hash(dependency_tuple_4), dependency_tuple_4),
-                        (hash(dependency_tuple_5), dependency_tuple_5),
-                    ))
+                    (
+                        "tensorflow",
+                        OrderedDict(
+                            (
+                                (hash(dependency_tuple_1), dependency_tuple_1),
+                                (hash(dependency_tuple_2), dependency_tuple_2),
+                                (hash(dependency_tuple_3), dependency_tuple_3),
+                            )
+                        ),
+                    ),
+                    (
+                        "flask",
+                        OrderedDict(
+                            (
+                                (hash(dependency_tuple_4), dependency_tuple_4),
+                                (hash(dependency_tuple_5), dependency_tuple_5),
+                            )
+                        ),
+                    ),
                 )
-            )),
+            ),
         )
 
         beam.add_state(state)
@@ -120,21 +126,29 @@ class TestApproximatingLatest(AdviserTestCase):
         state = State(
             score=0.999,
             resolved_dependencies=OrderedDict(),
-            unresolved_dependencies=OrderedDict((
+            unresolved_dependencies=OrderedDict(
                 (
-                    "tensorflow", OrderedDict((
-                        (hash(dependency_tuple_1), dependency_tuple_1),
-                        (hash(dependency_tuple_2), dependency_tuple_2),
-                        (hash(dependency_tuple_3), dependency_tuple_3),
-                    ))
-                ),
-                (
-                    "flask", OrderedDict((
-                        (hash(dependency_tuple_4), dependency_tuple_4),
-                        (hash(dependency_tuple_5), dependency_tuple_5),
-                    ))
+                    (
+                        "tensorflow",
+                        OrderedDict(
+                            (
+                                (hash(dependency_tuple_1), dependency_tuple_1),
+                                (hash(dependency_tuple_2), dependency_tuple_2),
+                                (hash(dependency_tuple_3), dependency_tuple_3),
+                            )
+                        ),
+                    ),
+                    (
+                        "flask",
+                        OrderedDict(
+                            (
+                                (hash(dependency_tuple_4), dependency_tuple_4),
+                                (hash(dependency_tuple_5), dependency_tuple_5),
+                            )
+                        ),
+                    ),
                 )
-            )),
+            ),
         )
 
         beam.add_state(state)

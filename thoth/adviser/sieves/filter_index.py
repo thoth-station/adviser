@@ -53,21 +53,14 @@ class FilterIndexSieve(Sieve):
     """
 
     CONFIGURATION_DEFAULT = {"package_name": None, "index_url": None}
-    CONFIGURATION_SCHEMA = Schema({
-        Required("package_name"): str,
-        Required("index_url"): [str],
-    })
+    CONFIGURATION_SCHEMA = Schema({Required("package_name"): str, Required("index_url"): [str]})
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, never."""
         return None
 
-    def run(
-        self, package_versions: Generator[PackageVersion, None, None]
-    ) -> Generator[PackageVersion, None, None]:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages based on Python package index configured for the given package."""
         for package_version in package_versions:
             if package_version.name != self.configuration["package_name"]:

@@ -36,20 +36,18 @@ class TestAbiCompatSieve(AdviserTestCase):
 
     def test_abi_compat_symbols_present(self) -> None:
         source = Source("https://pypi.org/simple")
-        package_version = PackageVersion(
-            name="tensorflow", version="==1.9.0", index=source, develop=False
-        )
+        package_version = PackageVersion(name="tensorflow", version="==1.9.0", index=source, develop=False)
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("get_analyzed_image_symbols_all").and_return(_SYSTEM_SYMBOLS).once()
         GraphDatabase.should_receive("get_python_package_required_symbols").and_return(_REQUIRED_SYMBOLS_B).once()
 
         context = flexmock(
             graph=GraphDatabase(),
-            project=flexmock(runtime_environment=flexmock(
-                operating_system=flexmock(name="rhel", version="8.0"),
-                cuda_version="4.6",
-                python_version="3.6",
-            ))
+            project=flexmock(
+                runtime_environment=flexmock(
+                    operating_system=flexmock(name="rhel", version="8.0"), cuda_version="4.6", python_version="3.6"
+                )
+            ),
         )
         with AbiCompatibilitySieve.assigned_context(context):
             sieve = AbiCompatibilitySieve()
@@ -58,20 +56,18 @@ class TestAbiCompatSieve(AdviserTestCase):
 
     def test_abi_compat_symbols_not_present(self) -> None:
         source = Source("https://pypi.org/simple")
-        package_version = PackageVersion(
-            name="tensorflow", version="==1.9.0", index=source, develop=False
-        )
+        package_version = PackageVersion(name="tensorflow", version="==1.9.0", index=source, develop=False)
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("get_analyzed_image_symbols_all").and_return(_SYSTEM_SYMBOLS).once()
         GraphDatabase.should_receive("get_python_package_required_symbols").and_return(_REQUIRED_SYMBOLS_A).once()
 
         context = flexmock(
             graph=GraphDatabase,
-            project=flexmock(runtime_environment=flexmock(
-                operating_system=flexmock(name="rhel", version="8.0"),
-                cuda_version="4.6",
-                python_version="3.6",
-            ))
+            project=flexmock(
+                runtime_environment=flexmock(
+                    operating_system=flexmock(name="rhel", version="8.0"), cuda_version="4.6", python_version="3.6"
+                )
+            ),
         )
         with AbiCompatibilitySieve.assigned_context(context):
             sieve = AbiCompatibilitySieve()

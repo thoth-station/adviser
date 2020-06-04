@@ -49,22 +49,16 @@ class Product:
     project = attr.ib(type=Project)
     score = attr.ib(type=float)
     justification = attr.ib(type=List[Dict[str, str]])
-    advised_runtime_environment = attr.ib(
-        type=Optional[RuntimeEnvironment], default=None
-    )
+    advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], default=None)
 
     @classmethod
-    def from_final_state(
-        cls, *, context: Context, state: State
-    ) -> "Product":
+    def from_final_state(cls, *, context: Context, state: State) -> "Product":
         """Instantiate advised stack from final state produced by adviser's pipeline."""
         assert state.is_final(), "Instantiating product from a non-final state"
 
         package_versions_locked = []
         for package_tuple in state.resolved_dependencies.values():
-            package_version: PackageVersion = context.get_package_version(
-                package_tuple, graceful=False
-            )
+            package_version: PackageVersion = context.get_package_version(package_tuple, graceful=False)
 
             # Fill package hashes before instantiating the final product.
             if not package_version.hashes:

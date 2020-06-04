@@ -44,15 +44,9 @@ class State:
     unresolved_dependencies = attr.ib(
         default=attr.Factory(OrderedDict)
     )  # type: OrderedDict[str, OrderedDict[int, Tuple[str, str, str]]]
-    resolved_dependencies = attr.ib(
-        default=attr.Factory(OrderedDict)
-    )  # type: OrderedDict[str, Tuple[str, str, str]]
-    advised_runtime_environment = attr.ib(
-        type=Optional[RuntimeEnvironment], kw_only=True, default=None
-    )
-    justification = attr.ib(
-        type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True
-    )
+    resolved_dependencies = attr.ib(default=attr.Factory(OrderedDict))  # type: OrderedDict[str, Tuple[str, str, str]]
+    advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], kw_only=True, default=None)
+    justification = attr.ib(type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True)
     _parent = attr.ib(default=None, type=weakref)
 
     _EPSILON = 0.1
@@ -70,9 +64,7 @@ class State:
         return None
 
     @classmethod
-    def from_direct_dependencies(
-        cls, direct_dependencies: Dict[str, List[PackageVersion]]
-    ) -> "State":
+    def from_direct_dependencies(cls, direct_dependencies: Dict[str, List[PackageVersion]]) -> "State":
         """Create an initial state out of direct dependencies."""
         unresolved_dependencies = OrderedDict()
 
@@ -80,9 +72,7 @@ class State:
             unresolved_dependencies[dependency_name] = OrderedDict()
             for dependency_version in dependency_versions:
                 dependency_tuple = dependency_version.to_tuple()
-                unresolved_dependencies[dependency_name][
-                    hash(dependency_tuple)
-                ] = dependency_tuple
+                unresolved_dependencies[dependency_name][hash(dependency_tuple)] = dependency_tuple
 
         return cls(unresolved_dependencies=unresolved_dependencies)
 
@@ -119,18 +109,12 @@ class State:
         if package_tuple[0] not in self.unresolved_dependencies:
             self.unresolved_dependencies[package_tuple[0]] = OrderedDict()
 
-        self.unresolved_dependencies[package_tuple[0]][
-            hash(package_tuple)
-        ] = package_tuple
+        self.unresolved_dependencies[package_tuple[0]][hash(package_tuple)] = package_tuple
 
-    def set_unresolved_dependencies(
-        self, dependencies: Dict[str, List[Tuple[str, str, str]]]
-    ) -> None:
+    def set_unresolved_dependencies(self, dependencies: Dict[str, List[Tuple[str, str, str]]]) -> None:
         """Set unresolved dependencies - any unresolved dependencies will be overwritten."""
         for dependency_name, dependency_tuples in dependencies.items():
-            self.unresolved_dependencies[dependency_name] = OrderedDict(
-                [(hash(d), d) for d in dependency_tuples]
-            )
+            self.unresolved_dependencies[dependency_name] = OrderedDict([(hash(d), d) for d in dependency_tuples])
 
     def remove_unresolved_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
         """Remove the given unresolved dependency from state."""
@@ -166,29 +150,19 @@ class State:
         """Get a very first unresolved dependency tuple."""
         try:
             unresolved_dependency_name = next(iter(self.unresolved_dependencies))
-            unresolved_dependency_id = next(
-                iter(self.unresolved_dependencies[unresolved_dependency_name])
-            )
-            return self.unresolved_dependencies[unresolved_dependency_name][
-                unresolved_dependency_id
-            ]
+            unresolved_dependency_id = next(iter(self.unresolved_dependencies[unresolved_dependency_name]))
+            return self.unresolved_dependencies[unresolved_dependency_name][unresolved_dependency_id]
         except StopIteration as exc:
-            raise ValueError(
-                f"No unresolved dependency found in state: {self!r}"
-            ) from exc
+            raise ValueError(f"No unresolved dependency found in state: {self!r}") from exc
 
     def get_random_first_unresolved_dependency(self) -> Tuple[str, str, str]:
         """Get a very first unresolved dependency tuple."""
         unresolved_dependency_name = random.choice(list(self.unresolved_dependencies))
         try:
-            unresolved_dependency_id = next(
-                iter(self.unresolved_dependencies[unresolved_dependency_name])
-            )
+            unresolved_dependency_id = next(iter(self.unresolved_dependencies[unresolved_dependency_name]))
             return self.unresolved_dependencies[unresolved_dependency_name][unresolved_dependency_id]
         except StopIteration as exc:
-            raise ValueError(
-                f"No unresolved dependency found in state: {self!r}"
-            ) from exc
+            raise ValueError(f"No unresolved dependency found in state: {self!r}") from exc
 
     @staticmethod
     def _termial_function(n: int) -> int:
@@ -283,9 +257,7 @@ class State:
         else:
             unresolved_dependency_id = random.choice(choices)
 
-        return self.unresolved_dependencies[unresolved_dependency_name][
-            unresolved_dependency_id
-        ]
+        return self.unresolved_dependencies[unresolved_dependency_name][unresolved_dependency_id]
 
     def iter_unresolved_dependencies(self) -> Generator[Tuple[str, str, str], None, None]:
         """Iterate over unresolved dependencies."""
@@ -300,15 +272,11 @@ class State:
         """Return a swallow copy of this state that can be used as a next state."""
         cloned_advised_environment = None
         if self.advised_runtime_environment:
-            cloned_advised_environment = RuntimeEnvironment.from_dict(
-                self.advised_runtime_environment.to_dict()
-            )
+            cloned_advised_environment = RuntimeEnvironment.from_dict(self.advised_runtime_environment.to_dict())
 
         unresolved_dependencies = OrderedDict(self.unresolved_dependencies)
         for dependency_name in unresolved_dependencies.keys():
-            unresolved_dependencies[dependency_name] = OrderedDict(
-                unresolved_dependencies[dependency_name]
-            )
+            unresolved_dependencies[dependency_name] = OrderedDict(unresolved_dependencies[dependency_name])
 
         return self.__class__(
             score=self.score,

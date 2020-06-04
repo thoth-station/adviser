@@ -61,9 +61,7 @@ class TestMCTS(AdviserTestCase):
 
         assert predictor._policy == {}
         predictor._next_state = flexmock()
-        predictor.set_reward_signal(
-            state, ("numpy", "2.0.0", "https://pypi.org/simple"), math.nan
-        )
+        predictor.set_reward_signal(state, ("numpy", "2.0.0", "https://pypi.org/simple"), math.nan)
         assert predictor._next_state is None
         assert predictor._policy == {}
 
@@ -76,9 +74,7 @@ class TestMCTS(AdviserTestCase):
         assert predictor._policy == {}
         predictor._next_state = flexmock()
 
-        predictor.set_reward_signal(
-            state, ("numpy", "2.0.0", "https://pypi.org/simple"), 7355608.0
-        )
+        predictor.set_reward_signal(state, ("numpy", "2.0.0", "https://pypi.org/simple"), 7355608.0)
         assert predictor._next_state is state
         assert predictor._policy == {}
 
@@ -94,13 +90,9 @@ class TestMCTS(AdviserTestCase):
             ]
         )
         # numpy was already seen, tensorflow was not seen yet
-        predictor._policy = {
-            ("numpy", "2.0.0", "https://pypi.org/simple"): [2.3, 100],
-        }
+        predictor._policy = {("numpy", "2.0.0", "https://pypi.org/simple"): [2.3, 100]}
         predictor._next_state = flexmock()
-        predictor.set_reward_signal(
-            state, ("numpy", "2.0.0", "https://pypi.org/simple"), math.inf
-        )
+        predictor.set_reward_signal(state, ("numpy", "2.0.0", "https://pypi.org/simple"), math.inf)
         assert predictor._next_state is None
         assert predictor._policy == {
             ("numpy", "2.0.0", "https://pypi.org/simple"): [2.3 + 3.1, 101],
@@ -117,9 +109,7 @@ class TestMCTS(AdviserTestCase):
         predictor._next_state = None
 
         flexmock(TemporalDifference)
-        TemporalDifference.should_receive("run").with_args().and_return(
-            state, unresolved_dependency
-        ).once()
+        TemporalDifference.should_receive("run").with_args().and_return(state, unresolved_dependency).once()
 
         context.iteration = 1  # Some small number to hit the heat-up part.
         with predictor.assigned_context(context):
@@ -129,9 +119,9 @@ class TestMCTS(AdviserTestCase):
         """Test running the predictor when the next state is scheduled."""
         state = flexmock()
         unresolved_dependency = ("tensorflow", "2.0.0", "https://pypi.org/simple")
-        state.should_receive("get_random_unresolved_dependency").with_args(
-            prefer_recent=True
-        ).and_return(unresolved_dependency).once()
+        state.should_receive("get_random_unresolved_dependency").with_args(prefer_recent=True).and_return(
+            unresolved_dependency
+        ).once()
 
         predictor = MCTS()
         predictor._next_state = state
@@ -150,9 +140,7 @@ class TestMCTS(AdviserTestCase):
         context.beam.should_receive("get_last").and_return(flexmock()).once()
 
         flexmock(TemporalDifference)
-        TemporalDifference.should_receive("run").with_args().and_return(
-            state, unresolved_dependency
-        ).once()
+        TemporalDifference.should_receive("run").with_args().and_return(state, unresolved_dependency).once()
 
         context.iteration = 1000000  # Some big number not to hit the heat-up part.
         with predictor.assigned_context(context):
@@ -167,9 +155,7 @@ class TestMCTS(AdviserTestCase):
         flexmock(TemporalDifference)
         state = flexmock()
         unresolved_dependency = flexmock()
-        TemporalDifference.should_receive("run").with_args().and_return(
-            state, unresolved_dependency
-        ).once()
+        TemporalDifference.should_receive("run").with_args().and_return(state, unresolved_dependency).once()
         context.iteration = 1000000  # Some big number not to hit the heat-up part.
         with predictor.assigned_context(context):
             assert predictor.run() == (state, unresolved_dependency)
@@ -186,9 +172,7 @@ class TestMCTS(AdviserTestCase):
 
         rewarded = list(predictor._policy.keys())[0]  # numpy
         state = flexmock(score=1.0)
-        state.should_receive("iter_resolved_dependencies").with_args().and_return([
-            rewarded
-        ]).once()
+        state.should_receive("iter_resolved_dependencies").with_args().and_return([rewarded]).once()
 
         # No shrink as we are in this iteration.
         context.iteration = mcts_module._MCTS_POLICY_SIZE_CHECK_ITERATION + 1
@@ -218,12 +202,10 @@ class TestMCTS(AdviserTestCase):
 
         rewarded = list(predictor._policy.keys())[0]  # numpy
         state = flexmock(score=0.5)
-        state.should_receive("iter_resolved_dependencies").with_args().and_return([
-            rewarded
-        ]).once()
+        state.should_receive("iter_resolved_dependencies").with_args().and_return([rewarded]).once()
 
         # No shrink as we are in this iteration.
-        context.iteration = 3*mcts_module._MCTS_POLICY_SIZE_CHECK_ITERATION
+        context.iteration = 3 * mcts_module._MCTS_POLICY_SIZE_CHECK_ITERATION
         old_policy_size = mcts_module._MCTS_POLICY_SIZE
         with predictor.assigned_context(context):
             try:
@@ -233,7 +215,5 @@ class TestMCTS(AdviserTestCase):
                 mcts_module._MCTS_POLICY_SIZE = old_policy_size
 
         # the numpy entry with a value of [1.5, 101] gets removed
-        assert predictor._policy == {
-            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [3.0, 100],
-        }
+        assert predictor._policy == {("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [3.0, 100]}
         assert predictor._next_state is None

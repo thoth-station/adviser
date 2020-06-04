@@ -40,32 +40,24 @@ _LOGGER = logging.getLogger(__name__)
 class PackageIndexSieve(Sieve):
     """Filter out disabled Python package indexes."""
 
-    _cached_records: Dict[str, Optional[bool]] = attr.ib(
-        default=attr.Factory(dict), kw_only=True
-    )
+    _cached_records: Dict[str, Optional[bool]] = attr.ib(default=attr.Factory(dict), kw_only=True)
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Remove indexes which are not enabled in pipeline configuration."""
         if not builder_context.is_included(cls):
             return {}
 
         return None
 
-    def run(
-        self, package_versions: Generator[PackageVersion, None, None]
-    ) -> Generator[PackageVersion, None, None]:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out package versions based on disabled Python package index."""
         for package_version in package_versions:
             if package_version.index.url in self._cached_records:
                 is_enabled = self._cached_records[package_version.index.url]
             else:
                 try:
-                    is_enabled = self.context.graph.is_python_package_index_enabled(
-                        package_version.index.url
-                    )
+                    is_enabled = self.context.graph.is_python_package_index_enabled(package_version.index.url)
                 except NotFoundError:
                     # A special value of None marks non-existing index in thoth's knowledge base.
                     is_enabled = None
@@ -73,15 +65,13 @@ class PackageIndexSieve(Sieve):
             self._cached_records[package_version.index.url] = is_enabled
             if is_enabled is None:
                 _LOGGER.debug(
-                    "Removing Python package version %r as used index is not registered",
-                    package_version.to_tuple(),
+                    "Removing Python package version %r as used index is not registered", package_version.to_tuple()
                 )
                 continue
 
             if not is_enabled:
                 _LOGGER.debug(
-                    "Removing Python package version %r as used index is not enabled",
-                    package_version.to_tuple(),
+                    "Removing Python package version %r as used index is not enabled", package_version.to_tuple()
                 )
                 continue
 

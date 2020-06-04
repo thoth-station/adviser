@@ -42,15 +42,11 @@ class RandomDecisionStride(Stride):
     """Filter out states randomly."""
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Allow inclusion only per user request."""
         return None
 
     def run(self, state: State) -> None:
         """Flip a coin and decide - tails are not acceptable."""
         if bool(random.getrandbits(1)):
-            raise NotAcceptable(
-                f"State with score {state.score!r} was randomly discarded by flipping a coin"
-            )
+            raise NotAcceptable(f"State with score {state.score!r} was randomly discarded by flipping a coin")

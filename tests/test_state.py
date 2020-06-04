@@ -34,9 +34,7 @@ def final_state() -> State:
     """A fixture for a final state."""
     state = State(
         score=0.5,
-        resolved_dependencies=OrderedDict(
-            {"daiquiri": ("daiquiri", "1.6.0", "https://pypi.org/simple")}
-        ),
+        resolved_dependencies=OrderedDict({"daiquiri": ("daiquiri", "1.6.0", "https://pypi.org/simple")}),
         unresolved_dependencies=OrderedDict(),
         advised_runtime_environment=None,
     )
@@ -65,9 +63,7 @@ class TestState(AdviserTestCase):
         # This is actually never done in the code (from final state to a non-final state), but
         # let's test turning the switch.
         assert final_state.is_final()
-        final_state.add_unresolved_dependency(
-            ("selinon", "1.0.0", "https://pypi.org/simple")
-        )
+        final_state.add_unresolved_dependency(("selinon", "1.0.0", "https://pypi.org/simple"))
         assert not final_state.is_final()
         final_state.unresolved_dependencies.pop("selinon")
         assert final_state.is_final()
@@ -112,8 +108,7 @@ class TestState(AdviserTestCase):
 
         for dependency_name in cloned_state.unresolved_dependencies:
             assert (
-                cloned_state.unresolved_dependencies[dependency_name]
-                == state.unresolved_dependencies[dependency_name]
+                cloned_state.unresolved_dependencies[dependency_name] == state.unresolved_dependencies[dependency_name]
             )
             assert (
                 cloned_state.unresolved_dependencies[dependency_name]
@@ -122,14 +117,8 @@ class TestState(AdviserTestCase):
 
         assert cloned_state.resolved_dependencies is not state.resolved_dependencies
         assert cloned_state.resolved_dependencies == state.resolved_dependencies
-        assert (
-            cloned_state.advised_runtime_environment
-            is not state.advised_runtime_environment
-        )
-        assert (
-            cloned_state.advised_runtime_environment
-            == state.advised_runtime_environment
-        )
+        assert cloned_state.advised_runtime_environment is not state.advised_runtime_environment
+        assert cloned_state.advised_runtime_environment == state.advised_runtime_environment
         assert cloned_state.justification is not state.justification
         assert cloned_state.justification == state.justification
 
@@ -145,33 +134,25 @@ class TestState(AdviserTestCase):
 
         assert cloned_state.parent is None
 
-    @given(
-        integers(min_value=0, max_value=16384),
-    )
+    @given(integers(min_value=0, max_value=16384))
     def test_termial_function(self, n: int) -> None:
         """Test termial function."""
         x = State._termial_function(n)
         assert State._termial_function_solution(x) == n
 
-    @given(
-        integers(min_value=0, max_value=4096),
-    )
+    @given(integers(min_value=0, max_value=4096))
     def test_termial_function_compute(self, n: int) -> None:
         """Test termial function - compute explicitly results."""
         x = State._termial_function(n)
         assert x == sum(range(n + 1))
 
-    @given(
-        integers(max_value=-1, min_value=-16384),
-    )
+    @given(integers(max_value=-1, min_value=-16384))
     def test_termial_function_error(self, n: int) -> None:
         """Test termial function."""
         with pytest.raises(ValueError):
             State._termial_function(n)
 
-    @given(
-        integers(min_value=1, max_value=16384),
-    )
+    @given(integers(min_value=1, max_value=16384))
     def test_termial_function_solution(self, n: int) -> None:
         """Test solution to termial function."""
         x = State._termial_function(n)
@@ -181,17 +162,13 @@ class TestState(AdviserTestCase):
         """Test solution to termial function when x is set to zero."""
         assert State._termial_function_solution(0) == 0
 
-    @given(
-        integers(min_value=1, max_value=16384),
-    )
+    @given(integers(min_value=1, max_value=16384))
     def test_random_termial(self, n) -> None:
         """Compute random termial function value."""
         x = State._random_termial(n)
         assert 0 <= x < n
 
-    @given(
-        integers(min_value=-4096, max_value=0),
-    )
+    @given(integers(min_value=-4096, max_value=0))
     def test_random_termial_error(self, n) -> None:
         """Test error out when random termial is used wih negative or zero value."""
         with pytest.raises(ValueError):

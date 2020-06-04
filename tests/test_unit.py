@@ -36,9 +36,7 @@ class TestUnit(AdviserTestCase):
                 PackageVersion(
                     name="tensorflow-serving-api",
                     version="1.12.3",
-                    index=Source(
-                        "https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple"
-                    ),
+                    index=Source("https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple"),
                     develop=False,
                 ),
                 True,
@@ -47,27 +45,20 @@ class TestUnit(AdviserTestCase):
                 PackageVersion(
                     name="tensorflow",
                     version="2.0.0rc2",
-                    index=Source(
-                        "https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/cuda"
-                    ),
+                    index=Source("https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/cuda"),
                     develop=False,
                 ),
                 True,
             ),
             (
                 PackageVersion(
-                    name="tensorflow",
-                    version="2.0.0rc2",
-                    index=Source("https://pypi.org/simple"),
-                    develop=False,
+                    name="tensorflow", version="2.0.0rc2", index=Source("https://pypi.org/simple"), develop=False
                 ),
                 False,
             ),
         ],
     )
-    def test_is_aicoe_release(
-        self, package_version: PackageVersion, expected: bool
-    ) -> None:
+    def test_is_aicoe_release(self, package_version: PackageVersion, expected: bool) -> None:
         """Test checking if the given package is an AICoE package."""
         assert Unit.is_aicoe_release(package_version) is expected
 
@@ -78,40 +69,23 @@ class TestUnit(AdviserTestCase):
                 PackageVersion(
                     name="tensorflow-serving-api",
                     version="1.12.3",
-                    index=Source(
-                        "https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple"
-                    ),
+                    index=Source("https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple"),
                     develop=False,
                 ),
-                {
-                    "os_name": "fedora",
-                    "os_version": "30",
-                    "configuration": "jemalloc",
-                    "platform_tag": None,
-                },
+                {"os_name": "fedora", "os_version": "30", "configuration": "jemalloc", "platform_tag": None},
             ),
             (
                 PackageVersion(
                     name="tensorflow",
                     version="1.12.3",
-                    index=Source(
-                        "https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/cuda/simple"
-                    ),
+                    index=Source("https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/cuda/simple"),
                     develop=False,
                 ),
-                {
-                    "os_name": None,
-                    "os_version": None,
-                    "configuration": "cuda",
-                    "platform_tag": "manylinux2010",
-                },
+                {"os_name": None, "os_version": None, "configuration": "cuda", "platform_tag": "manylinux2010"},
             ),
             (
                 PackageVersion(
-                    name="tensorflow",
-                    version="1.11.0",
-                    index=Source("https://pypi.org/simple"),
-                    develop=False,
+                    name="tensorflow", version="1.11.0", index=Source("https://pypi.org/simple"), develop=False
                 ),
                 None,
             ),

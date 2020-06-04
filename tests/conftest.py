@@ -81,13 +81,7 @@ def pipeline_config() -> PipelineConfig:
     flexmock(Stride1)
     flexmock(Wrap1)
 
-    return PipelineConfig(
-        boots=[Boot1()],
-        sieves=[Sieve1()],
-        steps=[Step1()],
-        strides=[Stride1()],
-        wraps=[Wrap1()],
-    )
+    return PipelineConfig(boots=[Boot1()], sieves=[Sieve1()], steps=[Step1()], strides=[Stride1()], wraps=[Wrap1()])
 
 
 @pytest.fixture
@@ -133,9 +127,7 @@ def predictor_mock_class() -> type:
 
 
 @pytest.fixture
-def resolver(
-    pipeline_config: PipelineConfig, project: Project, predictor_mock: Predictor
-) -> Resolver:
+def resolver(pipeline_config: PipelineConfig, project: Project, predictor_mock: Predictor) -> Resolver:
     """Create a resolver instance for tests."""
     flexmock(Resolver)
     flexmock(GraphDatabase)
@@ -159,18 +151,12 @@ def resolver(
 def state() -> State:
     """A fixture for a non-final state."""
     unresolved_dependency = ("flask", "1.1.1", "https://pypi.org/simple")
-    unresolved_dependencies = OrderedDict(
-        [(id(unresolved_dependency), unresolved_dependency)]
-    )
+    unresolved_dependencies = OrderedDict([(id(unresolved_dependency), unresolved_dependency)])
     state = State(
         score=0.1,
         unresolved_dependencies=OrderedDict({"flask": unresolved_dependencies}),
-        resolved_dependencies=OrderedDict(
-            {"hexsticker": ("hexsticker", "1.0.0", "https://pypi.org/simple")}
-        ),
-        advised_runtime_environment=RuntimeEnvironment.from_dict(
-            {"python_version": "3.6"}
-        ),
+        resolved_dependencies=OrderedDict({"hexsticker": ("hexsticker", "1.0.0", "https://pypi.org/simple")}),
+        advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
     )
     state.add_justification([{"foo": "bar"}, {"bar": "baz"}])
     return state

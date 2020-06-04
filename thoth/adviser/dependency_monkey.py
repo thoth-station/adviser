@@ -46,9 +46,7 @@ class DependencyMonkey:
 
     resolver = attr.ib(type=Resolver, kw_only=True)
     stack_output = attr.ib(type=str, kw_only=True, default="-")
-    context = attr.ib(
-        type=Optional[Dict[Any, Any]], default=attr.Factory(dict), kw_only=True
-    )
+    context = attr.ib(type=Optional[Dict[Any, Any]], default=attr.Factory(dict), kw_only=True)
     dry_run = attr.ib(type=bool, default=False, kw_only=True)
     decision_type = attr.ib(type=DecisionType, default=DecisionType.ALL, kw_only=True)
 
@@ -72,31 +70,21 @@ class DependencyMonkey:
                 self._dm_dry_run, self.stack_output
             )
         elif self.stack_output == "-":
-            _LOGGER.debug(
-                "Results of Dependency Monkey run will be printed to standard output"
-            )
+            _LOGGER.debug("Results of Dependency Monkey run will be printed to standard output")
             output_func = self._dm_stdout_output
         elif self.stack_output.startswith(("https://", "http://")):
-            _LOGGER.debug(
-                "Results of Dependency Monkey run will be submitted to API endpoint %r",
-                self.stack_output,
-            )
+            _LOGGER.debug("Results of Dependency Monkey run will be submitted to API endpoint %r", self.stack_output)
             output_func = partial(  # type: ignore
                 self._dm_amun_output, self.stack_output, self.context or {}
             )
         else:
-            _LOGGER.debug(
-                "Results of Dependency Monkey run will be stored in directory %r",
-                self.stack_output,
-            )
+            _LOGGER.debug("Results of Dependency Monkey run will be stored in directory %r", self.stack_output)
             output_func = partial(  # type: ignore
                 self._dm_dir_output, self.stack_output
             )
 
         report = DependencyMonkeyReport()
-        for count, product in enumerate(
-            self.resolver.resolve_products(with_devel=with_devel)
-        ):
+        for count, product in enumerate(self.resolver.resolve_products(with_devel=with_devel)):
             count += 1
             _LOGGER.info(
                 "Submitting stack %d with score %g and justification:\n%s",
@@ -122,30 +110,20 @@ class DependencyMonkey:
         return report
 
     @staticmethod
-    def _dm_dry_run(
-        output: str, count: int, _: Project
-    ) -> None:
+    def _dm_dry_run(output: str, count: int, _: Project) -> None:
         """A wrapper around dry-run flag."""
-        _LOGGER.info(
-            "Stack %d would be outputted to %r, but dry run flag was set, skipping...",
-            count,
-            output
-        )
+        _LOGGER.info("Stack %d would be outputted to %r, but dry run flag was set, skipping...", count, output)
         return None
 
     @staticmethod
-    def _dm_amun_output(
-        output: str, context: Dict[Any, Any], count: int, generated_project: Project
-    ) -> str:
+    def _dm_amun_output(output: str, context: Dict[Any, Any], count: int, generated_project: Project) -> str:
         """A wrapper around Amun inspection call."""
         context = dict(context)
         context["python"] = generated_project.to_dict()
         # No need to supply runtime environment information.
         context["python"].pop("runtime_environment", None)
         response = amun.inspect(output, **context)
-        _LOGGER.info(
-            "Submitted Amun inspection #%d: %r", count, response["inspection_id"]
-        )
+        _LOGGER.info("Submitted Amun inspection #%d: %r", count, response["inspection_id"])
         _LOGGER.debug("Full Amun response: %s", response)
         inspection_id: str = response["inspection_id"]
         return inspection_id
@@ -159,9 +137,7 @@ class DependencyMonkey:
         os.makedirs(path, exist_ok=True)
 
         _LOGGER.info("Writing project into output directory %r", path)
-        generated_project.to_files(
-            os.path.join(path, "Pipfile"), os.path.join(path, "Pipfile.lock")
-        )
+        generated_project.to_files(os.path.join(path, "Pipfile"), os.path.join(path, "Pipfile.lock"))
 
         return path
 

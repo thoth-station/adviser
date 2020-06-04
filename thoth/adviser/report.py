@@ -42,14 +42,8 @@ class Report:
 
     count = attr.ib(type=int, kw_only=True)
     pipeline = attr.ib(type=PipelineConfig, kw_only=True)
-    _stack_info = attr.ib(
-        type=Optional[List[Dict[str, Any]]], kw_only=True, default=None
-    )
-    _heapq = attr.ib(
-        type=List[Tuple[Tuple[float, int], Product]],
-        default=attr.Factory(list),
-        kw_only=True,
-    )
+    _stack_info = attr.ib(type=Optional[List[Dict[str, Any]]], kw_only=True, default=None)
+    _heapq = attr.ib(type=List[Tuple[Tuple[float, int], Product]], default=attr.Factory(list), kw_only=True)
     _heapq_counter = attr.ib(type=int, default=0, kw_only=True)
 
     @property
@@ -87,11 +81,6 @@ class Report:
         """Iterate over products stored in this report, respect their scores."""
         return (item[1] for item in self._heapq)
 
-    def iter_products_sorted(
-        self, reverse: bool = True
-    ) -> Generator[Product, None, None]:
+    def iter_products_sorted(self, reverse: bool = True) -> Generator[Product, None, None]:
         """Iterate over products stored in this report, respect their scores."""
-        return (
-            item[1]
-            for item in sorted(self._heapq, key=operator.itemgetter(0), reverse=reverse)
-        )
+        return (item[1] for item in sorted(self._heapq, key=operator.itemgetter(0), reverse=reverse))

@@ -48,9 +48,7 @@ class DropoutStep(Step):
     CONFIGURATION_DEFAULT = {"probability": 0.9}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Do not register the dropout step."""
         return None
 

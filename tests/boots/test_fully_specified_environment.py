@@ -39,9 +39,7 @@ class TestFullySpecifiedEnvironment(AdviserTestCase):
 
         assert FullySpecifiedEnvironment.should_include(builder_context) is None
 
-    def test_should_include_no_include(
-        self, builder_context: PipelineBuilderContext
-    ) -> None:
+    def test_should_include_no_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test not registering the pipeline unit."""
         builder_context.should_receive("is_adviser_pipeline").and_return(False)
         assert FullySpecifiedEnvironment.should_include(builder_context) is None

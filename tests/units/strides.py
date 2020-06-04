@@ -34,14 +34,10 @@ if TYPE_CHECKING:
 class Stride1(Stride):
     """A testing stride implementation."""
 
-    CONFIGURATION_DEFAULT = {
-        "linus": {"residence": "oregon", "children": 3, "parents": ["nils", "anna"]}
-    }
+    CONFIGURATION_DEFAULT = {"linus": {"residence": "oregon", "children": 3, "parents": ["nils", "anna"]}}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
     def run(self, state: State) -> Optional[Tuple[float, List[Dict[str, str]]]]:
@@ -54,9 +50,7 @@ class Stride2(Stride):
     CONFIGURATION_DEFAULT = {"foo": None}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
     def run(self, state: State) -> Optional[Tuple[float, List[Dict[str, str]]]]:

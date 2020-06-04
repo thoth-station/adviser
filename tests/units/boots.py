@@ -34,9 +34,7 @@ class Boot1(Boot):
     CONFIGURATION_DEFAULT = {"some_parameter": -0.2}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
     def run(self) -> None:
@@ -47,9 +45,7 @@ class Boot2(Boot):
     """A testing boot implementation."""
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
     def run(self) -> None:

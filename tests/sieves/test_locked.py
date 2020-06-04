@@ -64,10 +64,7 @@ allow_prereleases = true
     def test_cut_locked(self) -> None:
         """Test removing a locked package based on direct dependencies."""
         tf = PackageVersion(
-            name="tensorflow",
-            version="==2.0.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="tensorflow", version="==2.0.0", index=Source("https://pypi.org/simple"), develop=False
         )
 
         context = flexmock(project=Project.from_strings(self._CASE_PIPFILE_LOCKED))
@@ -78,10 +75,7 @@ allow_prereleases = true
     def test_cut_locked_dev(self) -> None:
         """Test removing a locked package based on direct dev dependencies."""
         pytest = PackageVersion(
-            name="pytest",
-            version="==2.0.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="pytest", version="==2.0.0", index=Source("https://pypi.org/simple"), develop=False
         )
 
         context = flexmock(project=Project.from_strings(self._CASE_PIPFILE_LOCKED))
@@ -92,10 +86,7 @@ allow_prereleases = true
     def test_no_cut(self) -> None:
         """Test not removing a locked package based on direct dependencies."""
         tf = PackageVersion(
-            name="tensorflow",
-            version="==1.9.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="tensorflow", version="==1.9.0", index=Source("https://pypi.org/simple"), develop=False
         )
 
         context = flexmock(project=Project.from_strings(self._CASE_PIPFILE_LOCKED))
@@ -106,10 +97,7 @@ allow_prereleases = true
     def test_no_cut_dev(self) -> None:
         """Test not removing a locked package based on dev direct dependencies."""
         pytest = PackageVersion(
-            name="pytest",
-            version="==5.3.1",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="pytest", version="==5.3.1", index=Source("https://pypi.org/simple"), develop=False
         )
 
         context = flexmock(project=Project.from_strings(self._CASE_PIPFILE_LOCKED))
@@ -120,10 +108,7 @@ allow_prereleases = true
     def test_noop(self) -> None:
         """Test no operation if dependencies are not locked."""
         tf = PackageVersion(
-            name="tensorflow",
-            version="==1.9.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="tensorflow", version="==1.9.0", index=Source("https://pypi.org/simple"), develop=False
         )
 
         context = flexmock(project=Project.from_strings(self._CASE_PIPFILE_NOT_LOCKED))
@@ -134,10 +119,7 @@ allow_prereleases = true
     def test_noop_dev(self) -> None:
         """Test no operation if dependencies are not locked."""
         pytest = PackageVersion(
-            name="pytest",
-            version="==5.3.1",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="pytest", version="==5.3.1", index=Source("https://pypi.org/simple"), develop=False
         )
 
         context = flexmock(project=Project.from_strings(self._CASE_PIPFILE_NOT_LOCKED))

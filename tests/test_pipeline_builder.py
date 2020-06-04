@@ -51,11 +51,7 @@ from .helpers import use_test_units
 def builder_context() -> PipelineBuilderContext:
     """Fixture for a builder context."""
     builder_context = PipelineBuilderContext(
-        graph=None,
-        project=None,
-        library_usage=None,
-        decision_type=DecisionType.RANDOM,
-        recommendation_type=None,
+        graph=None, project=None, library_usage=None, decision_type=DecisionType.RANDOM, recommendation_type=None
     )
     builder_context.add_unit(units.boots.Boot1())
     builder_context.add_unit(units.sieves.Sieve1())
@@ -96,11 +92,7 @@ class TestPipelineBuilderContext(AdviserTestCase):
     def test_is_dependency_monkey_pipeline(self) -> None:
         """Test check for a dependency monkey build context."""
         builder_context = PipelineBuilderContext(
-            graph=None,
-            project=None,
-            library_usage=None,
-            decision_type=DecisionType.RANDOM,
-            recommendation_type=None,
+            graph=None, project=None, library_usage=None, decision_type=DecisionType.RANDOM, recommendation_type=None
         )
         assert builder_context.is_dependency_monkey_pipeline()
         assert not builder_context.is_adviser_pipeline()
@@ -110,11 +102,7 @@ class TestPipelineBuilderContext(AdviserTestCase):
         # Exactly one from decision type/recommendation type has to be specified.
         with pytest.raises(ValueError):
             PipelineBuilderContext(
-                graph=None,
-                project=None,
-                library_usage=None,
-                decision_type=None,
-                recommendation_type=None,
+                graph=None, project=None, library_usage=None, decision_type=None, recommendation_type=None
             )
 
         with pytest.raises(ValueError):
@@ -137,10 +125,7 @@ class TestPipelineBuilderContext(AdviserTestCase):
         ],
     )
     def test_add_unit(
-        self,
-        builder_context: PipelineBuilderContext,
-        unit_class: Unit,
-        builder_context_attr: str,
+        self, builder_context: PipelineBuilderContext, unit_class: Unit, builder_context_attr: str
     ) -> None:
         """Test addition of a unit."""
         assert not builder_context.is_included(unit_class)
@@ -157,42 +142,34 @@ class TestPipelineBuilder(AdviserTestCase):
     @pytest.mark.parametrize(
         "pipeline_config_method,kwargs",
         [
-            (
-                "get_adviser_pipeline_config",
-                {"recommendation_type": RecommendationType.LATEST},
-            ),
-            (
-                "get_dependency_monkey_pipeline_config",
-                {"decision_type": DecisionType.RANDOM},
-            ),
+            ("get_adviser_pipeline_config", {"recommendation_type": RecommendationType.LATEST}),
+            ("get_dependency_monkey_pipeline_config", {"decision_type": DecisionType.RANDOM}),
         ],
     )
     def test_build_configuration(
-        self,
-        pipeline_config_method: str,
-        kwargs: Dict[str, Union[RecommendationType, DecisionType]],
+        self, pipeline_config_method: str, kwargs: Dict[str, Union[RecommendationType, DecisionType]]
     ) -> None:
         """Test building configuration."""
         # All test units do not register themselves - let's cherry-pick ones that should be present.
         # There are done 3 iterations in total during pipeline configuration creation.
-        flexmock(units.boots.Boot1).should_receive("should_include").and_return(
-            {"some_parameter": 1.0}
-        ).and_return(None).and_return(None).times(3)
-        flexmock(units.sieves.Sieve2).should_receive("should_include").and_return(
-            {"foo": "bar"}
-        ).and_return(None).and_return(None).times(3)
-        flexmock(units.steps.Step1).should_receive("should_include").and_return(
-            {}
-        ).and_return(None).and_return(None).times(3)
-        flexmock(units.strides.Stride2).should_receive("should_include").and_return(
-            {}
-        ).and_return(None).and_return(None).times(3)
-        flexmock(units.strides.Stride1).should_receive("should_include").and_return(
+        flexmock(units.boots.Boot1).should_receive("should_include").and_return({"some_parameter": 1.0}).and_return(
             None
-        ).and_return({"linus": "torvalds"}).and_return(None).times(3)
-        flexmock(units.wraps.Wrap2).should_receive("should_include").and_return(
-            {}
-        ).and_return(None).and_return(None).times(3)
+        ).and_return(None).times(3)
+        flexmock(units.sieves.Sieve2).should_receive("should_include").and_return({"foo": "bar"}).and_return(
+            None
+        ).and_return(None).times(3)
+        flexmock(units.steps.Step1).should_receive("should_include").and_return({}).and_return(None).and_return(
+            None
+        ).times(3)
+        flexmock(units.strides.Stride2).should_receive("should_include").and_return({}).and_return(None).and_return(
+            None
+        ).times(3)
+        flexmock(units.strides.Stride1).should_receive("should_include").and_return(None).and_return(
+            {"linus": "torvalds"}
+        ).and_return(None).times(3)
+        flexmock(units.wraps.Wrap2).should_receive("should_include").and_return({}).and_return(None).and_return(
+            None
+        ).times(3)
 
         # It is not relevant if adviser/dependency monkey is called in this case.
         pipeline = getattr(PipelineBuilder, pipeline_config_method)(
@@ -201,12 +178,7 @@ class TestPipelineBuilder(AdviserTestCase):
 
         assert pipeline.to_dict() == {
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": 1.0}}],
-            "sieves": [
-                {
-                    "name": "Sieve2",
-                    "configuration": {"date": "2015-09-15", "foo": "bar"},
-                }
-            ],
+            "sieves": [{"name": "Sieve2", "configuration": {"date": "2015-09-15", "foo": "bar"}}],
             "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
             "strides": [
                 {"name": "Stride2", "configuration": {"foo": None}},
@@ -222,10 +194,7 @@ class TestPipelineBuilder(AdviserTestCase):
         flexmock(units.steps.Step1).should_receive("should_include").and_return({}).and_return(None).times(2)
 
         pipeline = PipelineBuilder.get_adviser_pipeline_config(
-            recommendation_type=RecommendationType.LATEST,
-            graph=None,
-            project=project,
-            library_usage=None,
+            recommendation_type=RecommendationType.LATEST, graph=None, project=project, library_usage=None
         )
 
         assert len(pipeline.boots) == 1
@@ -243,10 +212,7 @@ class TestPipelineBuilder(AdviserTestCase):
             flexmock(units.steps.Step1).should_receive("should_include").times(0)
 
             pipeline = PipelineBuilder.get_adviser_pipeline_config(
-                recommendation_type=RecommendationType.LATEST,
-                graph=None,
-                project=None,
-                library_usage=None,
+                recommendation_type=RecommendationType.LATEST, graph=None, project=None, library_usage=None
             )
             assert len(pipeline.boots) == 0
             assert len(pipeline.steps) == 0
@@ -258,12 +224,7 @@ class TestPipelineBuilder(AdviserTestCase):
         """Test instantiation of a pipeline from a dictionary."""
         dict_ = {
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": 1.0}}],
-            "sieves": [
-                {
-                    "name": "Sieve2",
-                    "configuration": {"date": "2015-09-15", "foo": "bar"},
-                }
-            ],
+            "sieves": [{"name": "Sieve2", "configuration": {"date": "2015-09-15", "foo": "bar"}}],
             "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
             "strides": [
                 {"name": "Stride2", "configuration": {"foo": None}},
@@ -328,12 +289,7 @@ class TestPipelineBuilder(AdviserTestCase):
     @use_test_units
     def test_from_dict_unit_configuration_error(self) -> None:
         """Test instantiation of a pipeline unit in case configuration errors.."""
-        dict_ = {
-            "boots": [{
-                "name": "Boot1",
-                "configuration": {"foo": "bar"}
-            }],
-        }
+        dict_ = {"boots": [{"name": "Boot1", "configuration": {"foo": "bar"}}]}
 
         flexmock(units.boots.Boot1)
         units.boots.Boot1.should_receive("update_configuration").with_args({"foo": "bar"}).and_raise(ValueError)
@@ -344,12 +300,7 @@ class TestPipelineBuilder(AdviserTestCase):
     @use_test_units
     def test_from_dict_unit_not_exist_error(self) -> None:
         """Test instantiation of a pipeline from a dictionary in case of missing unit."""
-        dict_ = {
-            "sieves": [{
-                "name": "SieveThatDoesNotExist",
-                "configuration": {"foo": "bar"}
-            }],
-        }
+        dict_ = {"sieves": [{"name": "SieveThatDoesNotExist", "configuration": {"foo": "bar"}}]}
 
         with pytest.raises(UnknownPipelineUnitError):
             PipelineBuilder.from_dict(dict_)

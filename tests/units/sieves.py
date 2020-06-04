@@ -36,14 +36,10 @@ class Sieve1(Sieve):
     CONFIGURATION_DEFAULT = {"flying_circus": 1969}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
-    def run(
-        self, package_versions: Generator[PackageVersion, None, None]
-    ) -> Generator[PackageVersion, None, None]:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """A noop method."""
         return package_versions
 
@@ -54,14 +50,10 @@ class Sieve2(Sieve):
     CONFIGURATION_DEFAULT = {"date": "2015-09-15"}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
-    def run(
-        self, package_versions: Generator[PackageVersion, None, None]
-    ) -> Generator[PackageVersion, None, None]:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """A noop method."""
         return package_versions
 

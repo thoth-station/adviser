@@ -38,44 +38,26 @@ class TestSolver(AdviserTestCase):
         """Check that there is raised an exception if no releases were found."""
         with pytest.raises(SolverException):
             PythonGraphSolver(
-                dependency_parser=PackageVersionDependencyParser(),
-                releases_fetcher=GraphReleasesFetcher(graph=graph),
+                dependency_parser=PackageVersionDependencyParser(), releases_fetcher=GraphReleasesFetcher(graph=graph)
             ).solve(
-                [
-                    PackageVersion(
-                        name="nonexisting-foo",
-                        version="==1.0.0",
-                        index=None,
-                        develop=False,
-                    )
-                ],
-                graceful=False,
+                [PackageVersion(name="nonexisting-foo", version="==1.0.0", index=None, develop=False)], graceful=False
             )
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
     def test_db_0(self, graph: MockedGraphDatabase) -> None:
         """Check that resolving can gather all versions available in the graph database."""
         resolved = PythonGraphSolver(
-            dependency_parser=PackageVersionDependencyParser(),
-            releases_fetcher=GraphReleasesFetcher(graph=graph),
-        ).solve(
-            [PackageVersion(name="a", version="*", index=None, develop=False)],
-            graceful=False,
-        )
+            dependency_parser=PackageVersionDependencyParser(), releases_fetcher=GraphReleasesFetcher(graph=graph)
+        ).solve([PackageVersion(name="a", version="*", index=None, develop=False)], graceful=False)
         assert len(resolved) == 1
         assert "a" in resolved
-        assert set(resolved["a"]) == {
-            ("1.0.0", "index1"),
-            ("1.1.0", "index1"),
-            ("1.2.0", "index2"),
-        }
+        assert set(resolved["a"]) == {("1.0.0", "index1"), ("1.1.0", "index1"), ("1.2.0", "index2")}
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
     def test_db_0_multiple(self, graph: MockedGraphDatabase) -> None:
         """Check that resolving can resolve multiple Python packages."""
         resolved = PythonGraphSolver(
-            dependency_parser=PackageVersionDependencyParser(),
-            releases_fetcher=GraphReleasesFetcher(graph=graph),
+            dependency_parser=PackageVersionDependencyParser(), releases_fetcher=GraphReleasesFetcher(graph=graph)
         ).solve(
             [
                 PackageVersion(name="a", version="*", index=None, develop=False),
@@ -87,11 +69,7 @@ class TestSolver(AdviserTestCase):
         assert len(resolved) == 2
 
         assert "a" in resolved
-        assert set(resolved["a"]) == {
-            ("1.0.0", "index1"),
-            ("1.1.0", "index1"),
-            ("1.2.0", "index2"),
-        }
+        assert set(resolved["a"]) == {("1.0.0", "index1"), ("1.1.0", "index1"), ("1.2.0", "index2")}
 
         assert "b" in resolved
         assert set(resolved["b"]) == {("2.0.0", "index1"), ("3.0.0", "index2")}
@@ -101,23 +79,14 @@ class TestSolver(AdviserTestCase):
         """Check that there is raised an exception if no releases were found."""
         with pytest.raises(SolverException):
             PythonPackageGraphSolver(graph=graph).solve(
-                [
-                    PackageVersion(
-                        name="nonexisting-foo",
-                        version="==1.0.0",
-                        index=None,
-                        develop=False,
-                    )
-                ],
-                graceful=False,
+                [PackageVersion(name="nonexisting-foo", version="==1.0.0", index=None, develop=False)], graceful=False
             )
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
     def test_db_0_all_package_versions(self, graph: MockedGraphDatabase) -> None:
         """Check that resolving can gather all versions available in the graph database."""
         resolved = PythonPackageGraphSolver(graph=graph).solve(
-            [PackageVersion(name="a", version="*", index=None, develop=False)],
-            graceful=False,
+            [PackageVersion(name="a", version="*", index=None, develop=False)], graceful=False
         )
 
         assert len(resolved) == 1
@@ -126,11 +95,7 @@ class TestSolver(AdviserTestCase):
         assert len(resolved["a"]) == 3
 
         assert all(package_version.name == "a" for package_version in resolved["a"])
-        assert set(package_version.version for package_version in resolved["a"]) == {
-            "==1.0.0",
-            "==1.1.0",
-            "==1.2.0",
-        }
+        assert set(package_version.version for package_version in resolved["a"]) == {"==1.0.0", "==1.1.0", "==1.2.0"}
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
     def test_db_0_package_multiple(self, graph: MockedGraphDatabase) -> None:
@@ -148,15 +113,8 @@ class TestSolver(AdviserTestCase):
 
         assert all(package_version.name == "a" for package_version in resolved["a"])
         assert all(package_version.name == "b" for package_version in resolved["b"])
-        assert set(package_version.version for package_version in resolved["a"]) == {
-            "==1.0.0",
-            "==1.1.0",
-            "==1.2.0",
-        }
-        assert set(package_version.version for package_version in resolved["b"]) == {
-            "==2.0.0",
-            "==3.0.0",
-        }
+        assert set(package_version.version for package_version in resolved["a"]) == {"==1.0.0", "==1.1.0", "==1.2.0"}
+        assert set(package_version.version for package_version in resolved["b"]) == {"==2.0.0", "==3.0.0"}
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
     def test_db_0_multiple_times_error(self, graph: MockedGraphDatabase) -> None:
@@ -166,12 +124,8 @@ class TestSolver(AdviserTestCase):
         with pytest.raises(SolverException):
             PythonPackageGraphSolver(graph=graph).solve(
                 [
-                    PackageVersion(
-                        name="a", version="<=1.2.0", index=None, develop=False
-                    ),
-                    PackageVersion(
-                        name="a", version=">1.0.0", index=None, develop=False
-                    ),
+                    PackageVersion(name="a", version="<=1.2.0", index=None, develop=False),
+                    PackageVersion(name="a", version=">1.0.0", index=None, develop=False),
                 ],
                 graceful=False,
             )

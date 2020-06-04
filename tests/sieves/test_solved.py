@@ -51,10 +51,7 @@ tensorflow = "*"
         project = Project.from_strings(self._CASE_PIPFILE)
         flexmock(GraphDatabase)
         package_version = PackageVersion(
-            name="tensorflow",
-            version="==2.0.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="tensorflow", version="==2.0.0", index=Source("https://pypi.org/simple"), develop=False
         )
         return package_version, project
 
@@ -76,8 +73,7 @@ tensorflow = "*"
         )
 
         context = flexmock(
-            graph=GraphDatabase(),
-            project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
+            graph=GraphDatabase(), project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({}))
         )
         with SolvedSieve.assigned_context(context):
             sieve = SolvedSieve()
@@ -101,8 +97,7 @@ tensorflow = "*"
         )
 
         context = flexmock(
-            graph=GraphDatabase(),
-            project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
+            graph=GraphDatabase(), project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({}))
         )
         with SolvedSieve.assigned_context(context):
             sieve = SolvedSieve()
@@ -126,8 +121,7 @@ tensorflow = "*"
         )
 
         context = flexmock(
-            graph=GraphDatabase(),
-            project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
+            graph=GraphDatabase(), project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({}))
         )
         with SolvedSieve.assigned_context(context):
             sieve = SolvedSieve()

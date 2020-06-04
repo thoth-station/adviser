@@ -126,4 +126,3 @@ PostgreSQL instance and compute recommendations. `Browse docs here
 PostgreSQL instance. Also, follow the developer's guide to get `more
 information about developer's setup
 <https://thoth-station.ninja/docs/developers/adviser/developers_guide.html>`__.
-

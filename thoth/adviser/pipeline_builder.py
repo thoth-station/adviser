@@ -57,9 +57,7 @@ class PipelineBuilderContext:
     project = attr.ib(type=Project, kw_only=True, default=None)
     library_usage = attr.ib(type=Optional[Dict[str, Any]], kw_only=True, default=None)
     decision_type = attr.ib(type=Optional[DecisionType], kw_only=True, default=None)
-    recommendation_type = attr.ib(
-        type=Optional[RecommendationType], kw_only=True, default=None
-    )
+    recommendation_type = attr.ib(type=Optional[RecommendationType], kw_only=True, default=None)
 
     _boots = attr.ib(type=List[Boot], default=attr.Factory(list), kw_only=True)
     _sieves = attr.ib(type=List[Sieve], default=attr.Factory(list), kw_only=True)
@@ -100,14 +98,10 @@ class PipelineBuilderContext:
     def __attrs_post_init__(self) -> None:
         """Verify we have only adviser or dependency monkey specific builder."""
         if self.decision_type is not None and self.recommendation_type is not None:
-            raise ValueError(
-                "Cannot instantiate builder for adviser and dependency monkey at the same time"
-            )
+            raise ValueError("Cannot instantiate builder for adviser and dependency monkey at the same time")
 
         if self.decision_type is None and self.recommendation_type is None:
-            raise ValueError(
-                "Cannot instantiate builder context not specific to adviser nor dependency monkey"
-            )
+            raise ValueError("Cannot instantiate builder context not specific to adviser nor dependency monkey")
 
     def is_included(self, unit_class: type) -> bool:
         """Check if the given pipeline unit is already included in the pipeline configuration."""
@@ -155,9 +149,7 @@ class PipelineBuilderContext:
             self._wraps.append(unit)
             return
 
-        raise InternalError(
-            f"Unknown unit {unit!r} of type {unit.__class__.__name__!r}"
-        )
+        raise InternalError(f"Unknown unit {unit!r} of type {unit.__class__.__name__!r}")
 
 
 class PipelineBuilder:
@@ -213,8 +205,7 @@ class PipelineBuilder:
             for unit_class in cls._iter_units():
                 if unit_class.__name__ in blocked_units:
                     _LOGGER.debug(
-                        "Avoiding adding pipeline unit %r based on blocked units configuration",
-                        unit_class.__name__,
+                        "Avoiding adding pipeline unit %r based on blocked units configuration", unit_class.__name__
                     )
                     continue
 
@@ -247,34 +238,23 @@ class PipelineBuilder:
                 ctx.add_unit(unit_instance)
 
         pipeline = PipelineConfig(
-            boots=ctx.boots,
-            sieves=ctx.sieves,
-            steps=ctx.steps,
-            strides=ctx.strides,
-            wraps=ctx.wraps,
+            boots=ctx.boots, sieves=ctx.sieves, steps=ctx.steps, strides=ctx.strides, wraps=ctx.wraps
         )
         _LOGGER.debug(
-            "Pipeline configuration creation ended, configuration:\n%s",
-            json.dumps(pipeline.to_dict(), indent=2),
+            "Pipeline configuration creation ended, configuration:\n%s", json.dumps(pipeline.to_dict(), indent=2)
         )
         return pipeline
 
     @staticmethod
-    def _do_instantiate_from_dict(
-        module: object, configuration_entry: Dict[str, Any]
-    ) -> Unit:
+    def _do_instantiate_from_dict(module: object, configuration_entry: Dict[str, Any]) -> Unit:
         """Instantiate a pipeline unit from a dict representation."""
         if "name" not in configuration_entry:
-            raise ValueError(
-                f"No pipeline unit name provided in the configuration entry: {configuration_entry!r}"
-            )
+            raise ValueError(f"No pipeline unit name provided in the configuration entry: {configuration_entry!r}")
 
         try:
             unit_class = getattr(module, configuration_entry["name"])
         except AttributeError as exc:
-            raise UnknownPipelineUnitError(
-                f"Cannot import unit {configuration_entry['name']}: %s", str(exc)
-            ) from exc
+            raise UnknownPipelineUnitError(f"Cannot import unit {configuration_entry['name']}: %s", str(exc)) from exc
 
         unit: Unit = unit_class()
 
@@ -305,9 +285,7 @@ class PipelineBuilder:
 
         sieves = []
         for sieve_entry in dict_.pop("sieves", []):
-            sieves.append(
-                cls._do_instantiate_from_dict(thoth.adviser.sieves, sieve_entry)
-            )
+            sieves.append(cls._do_instantiate_from_dict(thoth.adviser.sieves, sieve_entry))
 
         steps = []
         for step_entry in dict_.pop("steps", []):
@@ -315,9 +293,7 @@ class PipelineBuilder:
 
         strides = []
         for stride_entry in dict_.pop("strides", []):
-            strides.append(
-                cls._do_instantiate_from_dict(thoth.adviser.strides, stride_entry)
-            )
+            strides.append(cls._do_instantiate_from_dict(thoth.adviser.strides, stride_entry))
 
         wraps = []
         for wrap_entry in dict_.pop("wraps", []):
@@ -334,8 +310,7 @@ class PipelineBuilder:
             wraps=wraps,  # type: ignore
         )
         _LOGGER.debug(
-            "Pipeline configuration creation ended, configuration:\n%s",
-            json.dumps(pipeline.to_dict(), indent=2),
+            "Pipeline configuration creation ended, configuration:\n%s", json.dumps(pipeline.to_dict(), indent=2)
         )
         return pipeline
 
@@ -361,10 +336,7 @@ class PipelineBuilder:
         """Get adviser's pipeline configuration."""
         return cls._build_configuration(
             PipelineBuilderContext(
-                graph=graph,
-                project=project,
-                library_usage=library_usage,
-                recommendation_type=recommendation_type,
+                graph=graph, project=project, library_usage=library_usage, recommendation_type=recommendation_type
             )
         )
 
@@ -380,9 +352,6 @@ class PipelineBuilder:
         """Get dependency-monkey's pipeline configuration."""
         return cls._build_configuration(
             PipelineBuilderContext(
-                graph=graph,
-                project=project,
-                library_usage=library_usage,
-                decision_type=decision_type,
+                graph=graph, project=project, library_usage=library_usage, decision_type=decision_type
             )
         )

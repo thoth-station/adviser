@@ -37,9 +37,7 @@ def should_keep_history(value: Any) -> bool:
     if isinstance(value, bool):
         return value
 
-    raise ValueError(
-        f"Unknown keep history configuration value: {value!r} if of type {type(value)!r}"
-    )
+    raise ValueError(f"Unknown keep history configuration value: {value!r} if of type {type(value)!r}")
 
 
 def log_once(

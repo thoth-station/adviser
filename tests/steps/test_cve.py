@@ -53,10 +53,7 @@ class TestCvePenalizationStep(AdviserTestCase):
         ).and_return([self._FLASK_CVE]).once()
 
         package_version = PackageVersion(
-            name="flask",
-            version="==0.12.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False
         )
 
         context = flexmock(graph=GraphDatabase())
@@ -67,10 +64,7 @@ class TestCvePenalizationStep(AdviserTestCase):
         assert result is not None
         assert isinstance(result, tuple) and len(result) == 2
         assert isinstance(result[0], float)
-        assert (
-            result[0]
-            == 1 * CvePenalizationStep.CONFIGURATION_DEFAULT["cve_penalization"]
-        )
+        assert result[0] == 1 * CvePenalizationStep.CONFIGURATION_DEFAULT["cve_penalization"]
         assert isinstance(result[1], list)
         assert result[1] == [self._FLASK_CVE]
 
@@ -82,10 +76,7 @@ class TestCvePenalizationStep(AdviserTestCase):
         ).and_return([]).once()
 
         package_version = PackageVersion(
-            name="flask",
-            version="==0.12.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False
         )
 
         context = flexmock(graph=GraphDatabase())

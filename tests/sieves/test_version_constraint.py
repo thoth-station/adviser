@@ -37,26 +37,17 @@ class TestVersionConstrainSieve(AdviserTestCase):
             VersionConstraintSieve().pre_run()
 
         unit = VersionConstraintSieve()
-        unit.update_configuration({
-            "package_name": None,
-            "version_specifier": None
-        })
+        unit.update_configuration({"package_name": None, "version_specifier": None})
         with pytest.raises(SieveError):
             unit.pre_run()
 
         unit = VersionConstraintSieve()
-        unit.update_configuration({
-            "package_name": "tensorflow",
-            "version_specifier": None,
-        })
+        unit.update_configuration({"package_name": "tensorflow", "version_specifier": None})
         with pytest.raises(SieveError):
             unit.pre_run()
 
         unit = VersionConstraintSieve()
-        unit.update_configuration({
-            "package_name": None,
-            "version_specifier": ">2.0",
-        })
+        unit.update_configuration({"package_name": None, "version_specifier": ">2.0"})
         with pytest.raises(SieveError):
             unit.pre_run()
 
@@ -68,31 +59,19 @@ class TestVersionConstrainSieve(AdviserTestCase):
     def test_run_filter(self) -> None:
         """Test filtering a package based on version specifier."""
         package_version = PackageVersion(
-            name="tensorflow",
-            version="==2.0.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="tensorflow", version="==2.0.0", index=Source("https://pypi.org/simple"), develop=False
         )
         unit = VersionConstraintSieve()
-        unit.update_configuration({
-            "package_name": "tensorflow",
-            "version_specifier": "<2.0",
-        })
+        unit.update_configuration({"package_name": "tensorflow", "version_specifier": "<2.0"})
         unit.pre_run()
         assert list(unit.run([package_version])) == []
 
     def test_run_no_filter(self) -> None:
         """"Test not filtering a package based on version specifier."""
         package_version = PackageVersion(
-            name="tensorboard",
-            version="==2.1.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="tensorboard", version="==2.1.0", index=Source("https://pypi.org/simple"), develop=False
         )
         unit = VersionConstraintSieve()
-        unit.update_configuration({
-            "package_name": "tensorboard",
-            "version_specifier": ">2.0",
-        })
+        unit.update_configuration({"package_name": "tensorboard", "version_specifier": ">2.0"})
         unit.pre_run()
         assert list(unit.run([package_version])) == [package_version]

@@ -39,9 +39,7 @@ class SolvedSoftwareEnvironmentBoot(Boot):
     """A boot to check for solved software environment before running any resolution."""
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, always."""
         if not builder_context.project.runtime_environment.is_fully_specified():
             return None
@@ -70,20 +68,9 @@ class SolvedSoftwareEnvironmentBoot(Boot):
         _LOGGER.warning(msg)
         _LOGGER.warning("Available configurations:")
 
-        configurations = (
-            self.context.graph.get_solved_python_package_versions_software_environment_all()
-        )
-        _LOGGER.warning(
-            "{:<16} {:<16} {:<8}".format("OS name", "OS version", "Python version")
-        )
-        for conf in sorted(
-            configurations,
-            key=lambda i: (i["os_name"], i["os_version"], i["python_version"]),
-        ):
-            _LOGGER.warning(
-                "{:<16} {:<16} {:<8}".format(
-                    conf["os_name"], conf["os_version"], conf["python_version"]
-                )
-            )
+        configurations = self.context.graph.get_solved_python_package_versions_software_environment_all()
+        _LOGGER.warning("{:<16} {:<16} {:<8}".format("OS name", "OS version", "Python version"))
+        for conf in sorted(configurations, key=lambda i: (i["os_name"], i["os_version"], i["python_version"])):
+            _LOGGER.warning("{:<16} {:<16} {:<8}".format(conf["os_name"], conf["os_version"], conf["python_version"]))
 
         raise NotAcceptable(msg)

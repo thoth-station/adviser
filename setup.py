@@ -90,10 +90,5 @@ setup(
     install_requires=get_install_requires(),
     cmdclass={"test": Test},
     long_description_content_type="text/x-rst",
-    command_options={
-        "build_sphinx": {
-            "version": ("setup.py", VERSION),
-            "release": ("setup.py", VERSION),
-        }
-    },
+    command_options={"build_sphinx": {"version": ("setup.py", VERSION), "release": ("setup.py", VERSION)}},
 )

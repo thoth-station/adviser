@@ -53,9 +53,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
         self._policy.clear()
         self._temperature = float(self.context.limit)
 
-    def set_reward_signal(
-        self, state: State, _: Tuple[str, str, str], reward: float
-    ) -> None:
+    def set_reward_signal(self, state: State, _: Tuple[str, str, str], reward: float) -> None:
         """Note down reward signal of the last action performed."""
         if math.isnan(reward) or math.isinf(reward):
             # Do not take into account final states or states not leading to correct resolution.
@@ -71,9 +69,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
         if _TD_POLICY_SIZE and self.context.iteration % _TD_POLICY_SIZE_CHECK_ITERATION == 0:
             _LOGGER.debug("Shrinking learnt policy to %d entries", _TD_POLICY_SIZE)
             self._policy = dict(
-                sorted(self._policy.items(), key=operator.itemgetter(1), reverse=True)[
-                    : _TD_POLICY_SIZE
-                ]
+                sorted(self._policy.items(), key=operator.itemgetter(1), reverse=True)[:_TD_POLICY_SIZE]
             )
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
@@ -84,11 +80,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
         max_state = self.context.beam.max()
 
         # Pick a random state to be expanded if accepted.
-        probable_state_idx = (
-            random.randrange(1, self.context.beam.size)
-            if self.context.beam.size > 1
-            else 0
-        )
+        probable_state_idx = random.randrange(1, self.context.beam.size) if self.context.beam.size > 1 else 0
         probable_state = self.context.beam.get(probable_state_idx)
         acceptance_probability = self._compute_acceptance_probability(
             max_state.score, probable_state.score, self._temperature
@@ -131,7 +123,4 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
                 to_resolve_package_tuple = package_tuple
 
         # Make sure we found a candidate based on rewards marked. If not, pick a random one.
-        return (
-            to_resolve_package_tuple
-            or state.get_random_unresolved_dependency(prefer_recent=True)
-        )
+        return to_resolve_package_tuple or state.get_random_unresolved_dependency(prefer_recent=True)

@@ -71,10 +71,7 @@ allow_prereleases = true
     def test_remove_pre_releases_allowed_noop(self) -> None:
         """Test removing dependencies not hitting limit causes a noop."""
         tf_2_0_0rc = PackageVersion(
-            name="tensorflow",
-            version="==2.0.0rc0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="tensorflow", version="==2.0.0rc0", index=Source("https://pypi.org/simple"), develop=False
         )
 
         context = flexmock(project=Project.from_strings(self._CASE_ALLOWED_PIPFILE))
@@ -87,9 +84,7 @@ allow_prereleases = true
         tf_2_0_0 = PackageVersion(
             name="tensorflow",
             version="==2.0.0",
-            index=Source(
-                "https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple/"
-            ),
+            index=Source("https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple/"),
             develop=False,
         )
 
@@ -103,9 +98,7 @@ allow_prereleases = true
         tf_2_0_0rc0 = PackageVersion(
             name="tensorflow",
             version="==2.0.0rc0",
-            index=Source(
-                "https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple/"
-            ),
+            index=Source("https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple/"),
             develop=False,
         )
 

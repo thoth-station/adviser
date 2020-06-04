@@ -32,15 +32,10 @@ if TYPE_CHECKING:
 class Wrap1(Wrap):
     """A testing wrap implementation."""
 
-    CONFIGURATION_DEFAULT = {
-        "thoth": [2018, 2019],
-        "cities": ["Brno", "Bonn", "Boston", "Milan"],
-    }
+    CONFIGURATION_DEFAULT = {"thoth": [2018, 2019], "cities": ["Brno", "Bonn", "Boston", "Milan"]}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
     def run(self, state: State) -> None:
@@ -53,9 +48,7 @@ class Wrap2(Wrap):
     CONFIGURATION_DEFAULT: Dict[str, Any] = {}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
     def run(self, state: State) -> None:

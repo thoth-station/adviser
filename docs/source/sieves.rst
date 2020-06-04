@@ -129,4 +129,3 @@ The implementation can also provide other methods, such as :func:`Unit.pre_run
 <thoth.adviser.unit.Unit.post_run>` or :func:`Unit.post_run_report
 <thoth.adviser.unit.Unit.post_run>` and pipeline unit configuration adjustment.
 See :ref:`unit documentation <unit>` for more info.
-

@@ -55,7 +55,7 @@ class MCTS(TemporalDifference):
         # This function, in comparision to TD/SA, does not need to take into account iteration as it
         # works on accepted states.
         k = context.accepted_final_states_count / context.limit
-        temperature = t0 * 0.99**k
+        temperature = t0 * 0.99 ** k
         _LOGGER.debug(
             "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, beam size= %d, k=%f) = %g",
             context.iteration,
@@ -66,11 +66,9 @@ class MCTS(TemporalDifference):
             k,
             temperature,
         )
-        return max(temperature, .0)
+        return max(temperature, 0.0)
 
-    def set_reward_signal(
-        self, state: State, _: Tuple[str, str, str], reward: float
-    ) -> None:
+    def set_reward_signal(self, state: State, _: Tuple[str, str, str], reward: float) -> None:
         """Note down reward signal of the last action performed."""
         if math.isnan(reward):
             # Invalid state reached, continue with another one in the next round.
@@ -96,9 +94,7 @@ class MCTS(TemporalDifference):
         if _MCTS_POLICY_SIZE and self.context.iteration % _MCTS_POLICY_SIZE_CHECK_ITERATION == 0:
             _LOGGER.warning("Shrinking learnt policy to %d entries", _MCTS_POLICY_SIZE)
             self._policy = dict(
-                sorted(self._policy.items(), key=operator.itemgetter(1), reverse=True)[
-                    :_MCTS_POLICY_SIZE
-                ]
+                sorted(self._policy.items(), key=operator.itemgetter(1), reverse=True)[:_MCTS_POLICY_SIZE]
             )
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
@@ -113,9 +109,6 @@ class MCTS(TemporalDifference):
         # in the beam is the one we keep as next expanded. If they do not match, the last added is not the next state
         # we wanted to expand - this is based on the MCTS logic.
         if self._next_state is not None and self._next_state is self.context.beam.get_last():
-            return (
-                self._next_state,
-                self._next_state.get_random_unresolved_dependency(prefer_recent=True),
-            )
+            return (self._next_state, self._next_state.get_random_unresolved_dependency(prefer_recent=True))
 
         return super().run()
