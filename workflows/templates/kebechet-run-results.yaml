@@ -1,0 +1,135 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: kebechet-run-results
+  annotations:
+    thoth-station.ninja/template-version: 0.6.1
+  labels:
+    app: thoth
+    component: kebechet-run-results
+spec:
+  templates:
+    - name: extract-metadata
+      inputs:
+        parameters:
+          - name: "THOTH_ADVISER_METADATA"
+      container:
+        name: extract-metadata
+        image: workflow-helpers
+        env:
+          - name: APP_SCRIPT
+            value: "app.sh"
+          - name: THOTH_WORKFLOW_TASK
+            value: "trigger_integration"
+          - name: THOTH_ADVISER_METADATA
+            value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
+        resources:
+          limits:
+            cpu: 250m
+            memory: 256Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        volumeMounts:
+          - name: workdir
+            mountPath: /mnt/workdir
+      outputs:
+        parameters:
+          - name: origin
+            valueFrom:
+              path: /mnt/workdir/origin
+              default: ""
+          - name: source_type
+            valueFrom:
+              path: /mnt/workdir/source_type
+              default: ""
+    - name: schedule-kebechet
+      inputs:
+        parameters:
+          - name: "WORKFLOW_NAME"
+          - name: "THOTH_DOCUMENT_ID"
+          - name: "THOTH_ADVISER_METADATA"
+          - name: "origin"
+          - name: "source_type"
+      container:
+        image: kebechet-job
+        volumeMounts:
+          - name: ssh-config
+            mountPath: /home/user/.ssh
+            readOnly: true
+        env:
+          - name: PIPENV_NOSPIN
+            value: "1"
+          - name: PIPENV_COLORBLIND
+            value: "1"
+          - name: PIPENV_HIDE_EMOJIS
+            value: "1"
+          - name: KEBECHET_SUBCOMMAND
+            value: run-results
+          - name: KEBECHET_REPO_URL
+            value: "{{inputs.parameters.origin}}"
+          - name: KEBECHET_SERVICE_NAME
+            value: "github"  # TODO: temp
+          - name: KEBECHET_ANALYSIS_ID
+            value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+          - name: GITHUB_KEBECHET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: github-oauth-token
+                name: kebechet-secret
+          - name: GITLAB_KEBECHET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: gitlab-oauth-token
+                name: kebechet-secret
+          - name: PAGURE_KEBECHET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: pagure-oauth-token
+                name: kebechet-secret
+          - name: SENTRY_DSN
+            valueFrom:
+              secretKeyRef:
+                key: sentry-dsn
+                name: thoth
+          - name: THOTH_DEPLOYMENT_NAME
+            valueFrom:
+              configMapKeyRef:
+                key: storage-bucket-name
+                name: thoth
+        resources:
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+          requests:
+            cpu: "2"
+            memory: "2Gi"
+    - name: run-results
+      inputs:
+        parameters:
+          - name: "WORKFLOW_NAME"
+          - name: "THOTH_DOCUMENT_ID"
+          - name: "THOTH_ADVISER_METADATA"
+      steps:
+        - - name: extract-metadata
+            template: extract-metadata
+            arguments:
+              parameters:
+                - name: "THOTH_ADVISER_METADATA"
+                  value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
+        - - name: schedule-kebechet
+            template: schedule-kebechet
+            arguments:
+              parameters:
+                - name: "WORKFLOW_NAME"
+                  value: "{{inputs.parameters.WORKFLOW_NAME}}"
+                - name: "THOTH_DOCUMENT_ID"
+                  value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+                - name: "THOTH_ADVISER_METADATA"
+                  value: "{{inputs.parameters.THOTH_ADVISER_METADATA}}"
+                - name: "origin"
+                  value: "{{steps.extract-metadata.outputs.parameters.origin}}"
+                - name: "source_type"
+                  value: "{{steps.extract-metadata.outputs.parameters.source_type}}"
+            when: "{{steps.extract-metadata.outputs.parameters.source_type}} == KEBECHET"
