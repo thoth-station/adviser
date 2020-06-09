@@ -275,8 +275,10 @@ objects:
                       value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
                     - name: "THOTH_ADVISER_METADATA"
                       value: "{{workflow.parameters.THOTH_ADVISER_METADATA}}"
+
               - name: "kebechet-run-results"
                 dependencies:
+                  - "graph-sync-advise"
                   - "trigger-integration"
                 templateRef:
                   name: "kebechet-run-results"
