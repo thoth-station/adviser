@@ -3,18 +3,18 @@
 Configuring and setting up adviser in a cluster
 -----------------------------------------------
 
-In the upcoming secions one can find information needed when configuring a
-cluster deployment where adviser runs in.
+In the upcoming sections one can find information needed when configuring a
+cluster deployment that adviser runs in.
 
 Adviser provides hyperparameters that can be tweaked to gain more performance
 or obtain better results when recommending a software stack. The upcoming
-sections act as a reference guide how to act in different scenarios when
+sections act as a reference guide on how to act in different scenarios when
 certain issues are spotted in the cluster or if you wish to fine-tune adviser.
 
 .. note::
 
-  As adviser shares core parts with Dependency Monkey, most of the details
-  stated below apply also for Dependency Monkey.
+  As adviser shares core components with Dependency Monkey, most of the details
+  stated below also apply for Dependency Monkey.
 
 Pre-requisities to run adviser
 ==============================
@@ -43,7 +43,7 @@ This behavior can be naturally used with Kubernetes/OpenShift liveness probes.
 Memory management
 =================
 
-To avoid exploiding memory consumption, adviser was designed with few features
+To avoid exploding memory consumption, adviser was designed with few features
 in mind.
 
 Adviser can do a fork from its main process and perform memory expensive
@@ -92,12 +92,12 @@ Beam and it's width
 ###################
 
 One of the core data structures keeping resolver's internal states is beam (see
-:ref:`pipeline <pipeline>` and :ref:`predictor <predictor` docs on more info).
-Beam width is the maximum number of elements stored at the same time and can be configured using a hyperparameter during deployment.
-time) that is configured as a hyperparameter during deployment. There are few
-pros and cons for large and small *width* numbers. The optimal beam width
-depends on the stack size, CPU time allocated and memory available per adviser
-run in a deployment.
+:ref:`pipeline <pipeline>` and :ref:`predictor <predictor` docs for more info).
+Beam width is the maximum number of elements stored at the same time and can be
+configured using a hyperparameter during deployment.  There are few pros and
+cons for large and small *width* numbers. The optimal beam width depends on the
+stack size, CPU time allocated and memory available per adviser run in a
+deployment.
 
 If the beam width is set to a large number, it results in higher overhead
 needed for maintaining internal data structure per resolver iteration/round
@@ -110,7 +110,7 @@ If the beam width is set to a small number, it will result in a smaller state
 space explored (state space of all the possible stacks) possibly finding not
 good-enough software stack candidate to recommend. In the worst case it can
 result in no software stack resolved as candidates that would lead to a fully
-resovled software stack might be removed from the beam (pushed away by
+resolved software stack might be removed from the beam (pushed away by
 candidates that have higher score but do not lead to a fully resolved software
 stack given the version range specification of dependencies).
 
