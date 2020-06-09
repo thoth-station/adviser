@@ -24,7 +24,6 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Generator
-from collections import OrderedDict
 import random
 import weakref
 
@@ -42,11 +41,11 @@ class State:
     iteration = attr.ib(type=int, default=0)
     # States added in the given iteration.
     unresolved_dependencies = attr.ib(
-        default=attr.Factory(OrderedDict)
-    )  # type: OrderedDict[str, OrderedDict[int, Tuple[str, str, str]]]
+        default=attr.Factory(dict)
+    )  # type: Dict[str, Dict[int, Tuple[str, str, str]]]
     resolved_dependencies = attr.ib(
-        default=attr.Factory(OrderedDict)
-    )  # type: OrderedDict[str, Tuple[str, str, str]]
+        default=attr.Factory(dict)
+    )  # type: Dict[str, Tuple[str, str, str]]
     advised_runtime_environment = attr.ib(
         type=Optional[RuntimeEnvironment], kw_only=True, default=None
     )
@@ -74,10 +73,10 @@ class State:
         cls, direct_dependencies: Dict[str, List[PackageVersion]]
     ) -> "State":
         """Create an initial state out of direct dependencies."""
-        unresolved_dependencies = OrderedDict()
+        unresolved_dependencies = {}
 
         for dependency_name, dependency_versions in direct_dependencies.items():
-            unresolved_dependencies[dependency_name] = OrderedDict()
+            unresolved_dependencies[dependency_name] = {}
             for dependency_version in dependency_versions:
                 dependency_tuple = dependency_version.to_tuple()
                 unresolved_dependencies[dependency_name][
@@ -117,7 +116,7 @@ class State:
     def add_unresolved_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
         """Add unresolved dependency into the state."""
         if package_tuple[0] not in self.unresolved_dependencies:
-            self.unresolved_dependencies[package_tuple[0]] = OrderedDict()
+            self.unresolved_dependencies[package_tuple[0]] = {}
 
         self.unresolved_dependencies[package_tuple[0]][
             hash(package_tuple)
@@ -128,8 +127,8 @@ class State:
     ) -> None:
         """Set unresolved dependencies - any unresolved dependencies will be overwritten."""
         for dependency_name, dependency_tuples in dependencies.items():
-            self.unresolved_dependencies[dependency_name] = OrderedDict(
-                [(hash(d), d) for d in dependency_tuples]
+            self.unresolved_dependencies[dependency_name] = dict(
+                (hash(d), d) for d in dependency_tuples
             )
 
     def remove_unresolved_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
@@ -304,9 +303,9 @@ class State:
                 self.advised_runtime_environment.to_dict()
             )
 
-        unresolved_dependencies = OrderedDict(self.unresolved_dependencies)
+        unresolved_dependencies = dict(self.unresolved_dependencies)
         for dependency_name in unresolved_dependencies.keys():
-            unresolved_dependencies[dependency_name] = OrderedDict(
+            unresolved_dependencies[dependency_name] = dict(
                 unresolved_dependencies[dependency_name]
             )
 
@@ -314,7 +313,7 @@ class State:
             score=self.score,
             iteration=self.iteration,
             unresolved_dependencies=unresolved_dependencies,
-            resolved_dependencies=OrderedDict(self.resolved_dependencies),
+            resolved_dependencies=dict(self.resolved_dependencies),
             advised_runtime_environment=cloned_advised_environment,
             justification=list(self.justification),
             parent=weakref.ref(self),
