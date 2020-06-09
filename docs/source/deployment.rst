@@ -93,7 +93,7 @@ Beam and it's width
 
 One of the core data structures keeping resolver's internal states is beam (see
 :ref:`pipeline <pipeline>` and :ref:`predictor <predictor` docs on more info).
-One can configure its width (maximum number of elements stored at the same
+Beam width is the maximum number of elements stored at the same time and can be configured using a hyperparameter during deployment.
 time) that is configured as a hyperparameter during deployment. There are few
 pros and cons for large and small *width* numbers. The optimal beam width
 depends on the stack size, CPU time allocated and memory available per adviser
@@ -135,4 +135,3 @@ developement dependencies the dependency graph explored on Thoth's side can be
 smaller which can narrow down the exploration to dependencies that go to the
 deployment. Naturally, this can have positive impact on the resulting software
 stack recommended (a better one can be found given the state space explored).
-
