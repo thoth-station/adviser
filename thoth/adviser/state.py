@@ -316,3 +316,9 @@ class State:
             justification=self.justification.copy(),
             parent=weakref.ref(self),
         )
+
+    def __del__(self):
+        """Destruct self."""
+        # Destruct parts that are not eventually populated to the pipeline product abstraction.
+        del self.unresolved_dependencies
+        del self.resolved_dependencies
