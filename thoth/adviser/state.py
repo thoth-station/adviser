@@ -127,9 +127,9 @@ class State:
     ) -> None:
         """Set unresolved dependencies - any unresolved dependencies will be overwritten."""
         for dependency_name, dependency_tuples in dependencies.items():
-            self.unresolved_dependencies[dependency_name] = dict(
-                (hash(d), d) for d in dependency_tuples
-            )
+            self.unresolved_dependencies[dependency_name] = {
+                hash(d): d for d in dependency_tuples
+            }
 
     def remove_unresolved_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
         """Remove the given unresolved dependency from state."""
@@ -303,19 +303,17 @@ class State:
                 self.advised_runtime_environment.to_dict()
             )
 
-        unresolved_dependencies = dict(self.unresolved_dependencies)
+        unresolved_dependencies = self.unresolved_dependencies.copy()
         for dependency_name in unresolved_dependencies.keys():
-            unresolved_dependencies[dependency_name] = dict(
-                unresolved_dependencies[dependency_name]
-            )
+            unresolved_dependencies[dependency_name] = unresolved_dependencies[dependency_name].copy()
 
         return self.__class__(
             score=self.score,
             iteration=self.iteration,
             unresolved_dependencies=unresolved_dependencies,
-            resolved_dependencies=dict(self.resolved_dependencies),
+            resolved_dependencies=self.resolved_dependencies.copy(),
             advised_runtime_environment=cloned_advised_environment,
-            justification=list(self.justification),
+            justification=self.justification.copy(),
             parent=weakref.ref(self),
         )
 
