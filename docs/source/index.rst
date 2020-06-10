@@ -20,6 +20,7 @@ Introductory sections
    compatibility
    developers_guide
    architecture
+   deployment
 
 
 Resolver and stack resolution pipeline
