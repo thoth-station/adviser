@@ -1116,6 +1116,7 @@ class Resolver:
                     context=self.context, state=final_state
                 )
                 yield product
+                del final_state
         except EagerStopPipeline as exc:
             _LOGGER.info("Stopping pipeline eagerly as per request: %s", str(exc))
 
