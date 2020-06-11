@@ -105,17 +105,16 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:1100727d3e56c2b89250f532940daddad658cd39035ad044d0244dea2416f8fc",
-                "sha256:76022d2a895ba3faa2550e6e4e0ea9dc9227d8d3bcb5ab6775a904a4d628d090"
+                "sha256:aa8370f4ba58ffc1d68960fe42689dd716e8159f27f6b86b2211c130d19f9724",
+                "sha256:acaabe139ac605cfd4bf22f5edc15dbdcad20a020284d168421ab37df21a6319"
             ],
-            "version": "==1.13.26"
+            "version": "==1.14.1"
         },
         "botocore": {
             "hashes": [
-                "sha256:318b487b9496bf162883fce9ce137b1cd864a968bb0c9e70e0e44c4a62cf2d3c",
-                "sha256:34f4324d15245482a78f1f1b71861982f3e30ed22245bf2e1ec112b5dac5b349"
+                "sha256:db21cc82f1d6e76aec91d8801e17fa701019805268914b2d0d538a2344fba74a"
             ],
-            "version": "==1.16.26"
+            "version": "==1.17.1"
         },
         "cachetools": {
             "hashes": [
@@ -220,10 +219,10 @@
         },
         "google-auth": {
             "hashes": [
-                "sha256:2f1a6bc3031fc7cd0c1aeb225ad34febcb60268f71f5df75d5976dd20a52c002",
-                "sha256:c041ffe8887fda3b040b39700d839fe38260c281ee11dbf6627978e21c99a626"
+                "sha256:2f35b33801a41e4115cd93ff0aeb152f383edc0e27277ae28be2dccf238611b9",
+                "sha256:6056f9aadc9806839be74a80bb704791c74136bfc6a85a517115155b2a40aab7"
             ],
-            "version": "==1.16.1"
+            "version": "==1.17.0"
         },
         "idna": {
             "hashes": [
@@ -643,10 +642,9 @@
         },
         "rsa": {
             "hashes": [
-                "sha256:14ba45700ff1ec9eeb206a2ce76b32814958a98e372006c8fb76ba820211be66",
-                "sha256:1a836406405730121ae9823e19c6e806c62bbad73f890574fff50efa4122c487"
+                "sha256:aaefa4b84752e3e99bd8333a2e1e3e7a7da64614042bd66f775573424370108a"
             ],
-            "version": "==4.0"
+            "version": "==4.2"
         },
         "ruamel.yaml": {
             "hashes": [
@@ -762,10 +760,10 @@
         },
         "thoth-common": {
             "hashes": [
-                "sha256:b91d55d014555a13a3c993d86a26f1ae49d81866c3ba5de9184b135625b0bfc1",
-                "sha256:e19f4bfb7319de6d771210a97e9ee186b13a3dbb1598c404e207c5425c23f504"
+                "sha256:6c2997cf7f3fad4ad067d3c2429644addb9778380e1e24f8c30b3eb046f73877",
+                "sha256:d8efa12b2bd036cf0bd92ab2cab69000358497766c7e45c3d3fe5c4b22af68b3"
             ],
-            "version": "==0.13.9"
+            "version": "==0.13.11"
         },
         "thoth-python": {
             "hashes": [
@@ -785,11 +783,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:48bcddf3cf917a7e8d2ca3a75627ea582f1bdc3d9b634b92932923e54ea76e80",
-                "sha256:fc456f97d8399913610045c4e5c1a3ab21e2a7e65acf17d04e13946b07677785"
+                "sha256:373e2edd29b4ba690a7e9e62b73e6a6ded8f59be217431a79efd02679267194e",
+                "sha256:f6226eba235fa1e23981d3ce2dfa224943a21ddd2fc7f8482239485c56b7493c"
             ],
             "index": "pypi",
-            "version": "==0.22.12"
+            "version": "==0.23.0"
         },
         "timestamp": {
             "hashes": [
@@ -826,7 +824,6 @@
                 "sha256:3018294ebefce6572a474f0604c2021e33b3fd8006ecd11d62107a5d2a963527",
                 "sha256:88206b0eb87e6d677d424843ac5209e3fb9d0190d0ee169599165ec25e9d9115"
             ],
-            "markers": "python_version != '3.4'",
             "version": "==1.25.9"
         },
         "virtualenv": {
