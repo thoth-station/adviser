@@ -2988,3 +2988,52 @@
 * Fix liveness probe
 * Add missing liveness probe to advise workflow
 * Export variable as adviser forks a sub-process
+
+## Release 0.10.0 (2020-06-11T20:52:00)
+* :pushpin: Automatic update of dependency hypothesis from 5.16.0 to 5.16.1
+* Respect review comments
+* Update docs/source/deployment.rst
+* Call destructor of the final state explictly once done with the state
+* Note down beam width once the resolution is terminated
+* Document deployment and configuring adviser in a deployment
+* More optimizations to speed up adviser
+* Coala fix
+* :recycle: Removed unnecessary tempalates
+* Do not use OrderedDict for internal state representation
+* Add a boot for tracing memory consumption
+* Preserve order in pre and post run methods
+* adjust kebechet run-results workflow
+* add conditional to workflow
+* add default output params
+* indent to follow coala styling
+* Added black
+* :pushpin: Automatic update of dependency pytest from 5.4.2 to 5.4.3
+* Added pyproject.toml
+* Use trigger integration in adviser workflow
+* add is_missing to mock tests
+* correct typo
+* use workflow-helpers
+* Add outputs
+* remove imagestream envs
+* Change to trigger integration task
+* kebechet->KEBECHET because of enum values
+* remove image stream params
+* add ssh to adviser workflow
+* secret mount WorkflowTemplate->Workflow
+* add ssh volume mount
+* remove debugging step
+* added a 'tekton trigger tag_release pipeline issue'
+* add volume mount for proper output
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.11 to 0.22.12
+* fix parameter passing
+* change env name
+* :pushpin: Automatic update of dependency hypothesis from 5.15.1 to 5.16.0
+* add run-result to adviser workflow
+* add is missing resolver
+* use THOTH_ in fron env
+* use workflow-helpers for tasks
+* clean up tasks, remove unnecessary stuff
+* first attempt at kebechet run results task
+* Remove sieve and use inital query
+* added to do for thoth.storages
+* create sieve for missing package versions
