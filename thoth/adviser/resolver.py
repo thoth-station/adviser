@@ -733,6 +733,7 @@ class Resolver:
                 marker_evaluation_result=True
                 if self.project.runtime_environment.is_fully_specified()
                 else None,
+                is_missing=False,
             )
         except NotFoundError:
             log_once(
@@ -1063,7 +1064,10 @@ class Resolver:
                         self.context.discarded_final_states_count += 1
 
         if self.stop_resolving:
-            _LOGGER.warning("Resolving stopped as the allocated CPU time was exhausted")
+            _LOGGER.warning(
+                "Resolving stopped with the current beam size %d as the allocated CPU time was exhausted",
+                self.beam.size
+            )
 
     def _do_resolve_products(
         self, *, with_devel: bool = True, user_stack_scoring: bool = True,
@@ -1112,6 +1116,7 @@ class Resolver:
                     context=self.context, state=final_state
                 )
                 yield product
+                del final_state
         except EagerStopPipeline as exc:
             _LOGGER.info("Stopping pipeline eagerly as per request: %s", str(exc))
 

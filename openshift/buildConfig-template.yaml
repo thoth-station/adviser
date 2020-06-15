@@ -84,6 +84,8 @@ objects:
               value: "1"
             - name: UPGRADE_PIP_TO_LATEST
               value: ""
+            - name: DISABLE_SETUP_PY_PROCESSING
+              value: "1"
             - name: "THOTH_DRY_RUN"
               value: "0"
             - name: "THOTH_ADVISE"

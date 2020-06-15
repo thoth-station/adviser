@@ -2941,3 +2941,99 @@
 
 ## Release 0.9.4 (2020-04-06T14:48:43)
 * Empty commit to trigger the new release
+
+## Release 0.9.5 (2020-05-25T20:15:31)
+* :pushpin: Automatic update of dependency pytest-cov from 2.8.1 to 2.9.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.10 to 0.22.11
+* :pushpin: Automatic update of dependency hypothesis from 5.15.0 to 5.15.1
+* Add unsolved-package-handler to adviser workflow
+* :pushpin: Automatic update of dependency hypothesis from 5.14.0 to 5.15.0
+* update versions
+* Use thoth-toolbox
+* Use thamos from upstream
+* :pushpin: Automatic update of dependency packaging from 20.3 to 20.4
+* Fix links to docs and add s2i migration video
+* :pushpin: Automatic update of dependency toml from 0.10.0 to 0.10.1
+* :pushpin: Automatic update of dependency hypothesis from 5.13.1 to 5.14.0
+* :pushpin: Automatic update of dependency hypothesis from 5.11.0 to 5.13.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.9 to 0.22.10
+* :pushpin: Automatic update of dependency pytest from 5.4.1 to 5.4.2
+* Improve message provided to user
+* :pushpin: Automatic update of dependency hypothesis from 5.10.5 to 5.11.0
+* Point to s2i-example-migration
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.8 to 0.22.9
+* :pushpin: Automatic update of dependency hypothesis from 5.10.4 to 5.10.5
+* Sync variable fix for provenance check
+* Update dependencies to pass the test suite
+* Implement platform boot
+* Adviser Dev env var added to template
+* Include MKL warning also in dependency monkey runs
+* intel-tensorflow is built with MKL support
+* :pushpin: Automatic update of dependency hypothesis from 5.9.1 to 5.10.0
+* Handle exit code regardless core file is produced
+* :pushpin: Automatic update of dependency hypothesis from 5.9.0 to 5.9.1
+* fixed coala errors
+* fixed coala complaint
+* fixed the apiVersion of all the OpenShift Templates
+* :pushpin: Automatic update of dependency hypothesis from 5.8.6 to 5.9.0
+* :pushpin: Automatic update of dependency hypothesis from 5.8.5 to 5.8.6
+* :pushpin: Automatic update of dependency hypothesis from 5.8.4 to 5.8.5
+* :pushpin: Automatic update of dependency hypothesis from 5.8.3 to 5.8.4
+* Create a wrap for Intel's MKL env variable configuration
+* :pushpin: Automatic update of dependency hypothesis from 5.8.2 to 5.8.3
+* :pushpin: Automatic update of dependency hypothesis from 5.8.1 to 5.8.2
+* :pushpin: Automatic update of dependency hypothesis from 5.8.0 to 5.8.1
+* Fixed readme link
+* consistency in using secrets
+* Fix liveness probe
+* Add missing liveness probe to advise workflow
+* Export variable as adviser forks a sub-process
+
+## Release 0.10.0 (2020-06-11T20:52:00)
+* :pushpin: Automatic update of dependency hypothesis from 5.16.0 to 5.16.1
+* Respect review comments
+* Update docs/source/deployment.rst
+* Call destructor of the final state explictly once done with the state
+* Note down beam width once the resolution is terminated
+* Document deployment and configuring adviser in a deployment
+* More optimizations to speed up adviser
+* Coala fix
+* :recycle: Removed unnecessary tempalates
+* Do not use OrderedDict for internal state representation
+* Add a boot for tracing memory consumption
+* Preserve order in pre and post run methods
+* adjust kebechet run-results workflow
+* add conditional to workflow
+* add default output params
+* indent to follow coala styling
+* Added black
+* :pushpin: Automatic update of dependency pytest from 5.4.2 to 5.4.3
+* Added pyproject.toml
+* Use trigger integration in adviser workflow
+* add is_missing to mock tests
+* correct typo
+* use workflow-helpers
+* Add outputs
+* remove imagestream envs
+* Change to trigger integration task
+* kebechet->KEBECHET because of enum values
+* remove image stream params
+* add ssh to adviser workflow
+* secret mount WorkflowTemplate->Workflow
+* add ssh volume mount
+* remove debugging step
+* added a 'tekton trigger tag_release pipeline issue'
+* add volume mount for proper output
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.11 to 0.22.12
+* fix parameter passing
+* change env name
+* :pushpin: Automatic update of dependency hypothesis from 5.15.1 to 5.16.0
+* add run-result to adviser workflow
+* add is missing resolver
+* use THOTH_ in fron env
+* use workflow-helpers for tasks
+* clean up tasks, remove unnecessary stuff
+* first attempt at kebechet run results task
+* Remove sieve and use inital query
+* added to do for thoth.storages
+* create sieve for missing package versions
