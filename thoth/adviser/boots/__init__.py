@@ -24,12 +24,14 @@ from .rhel_version import RHELVersionBoot
 from .solved_software_environment import SolvedSoftwareEnvironmentBoot
 from .ubi import UbiBoot
 from .version_clash import VersionClashBoot
+from .memtrace import MemTraceBoot
 
 
 # Relative ordering of units is relevant, as the order specifies order
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
 __all__ = [
+    "MemTraceBoot",
     "UbiBoot",
     "PythonVersionBoot",
     "SolvedSoftwareEnvironmentBoot",

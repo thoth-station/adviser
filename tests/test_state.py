@@ -21,6 +21,7 @@ import gc
 import pytest
 from collections import OrderedDict
 import random
+import string
 
 from hypothesis import given
 from hypothesis.strategies import integers
@@ -196,3 +197,28 @@ class TestState(AdviserTestCase):
         """Test error out when random termial is used wih negative or zero value."""
         with pytest.raises(ValueError):
             State._random_termial(n)
+
+    @pytest.mark.parametrize("n", range(5))
+    def test_dict_order(self, n: int) -> None:
+        """Test relative insertion into dict preserves order.
+
+        This is an implementation detail for Python3.6 dict implementation and
+        requirement for Python 3.7. Make sure the running interpreter obeys
+        this.
+        """
+        items = []
+        seen = set()
+        for i in range(10):
+            key = "".join(random.choice(string.ascii_letters) for i in range(n))
+            if key in seen:
+                continue
+
+            seen.add(key)
+            items.append((key, i))
+
+        dict_ = dict(items)
+        assert list(dict_.items()) == items, "Order of items in dict is not preserved"
+
+        dict_["foo"] = 3003
+        assert list(dict_.items())[-1] == ("foo", 3003), "Last item added to dict is not last obtained"
+
