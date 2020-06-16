@@ -28,6 +28,7 @@ from voluptuous import Required
 from voluptuous import Schema
 
 from ..boot import Boot
+from ..exceptions import NotAcceptable
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
@@ -62,3 +63,7 @@ class PlatformBoot(Boot):
                 self.configuration["default_platform"]
             )
             self.context.project.runtime_environment.platform = self.configuration["default_platform"]
+
+        platform = self.context.project.runtime_environment.platform
+        if not self.context.graph.python_package_version_depends_on_platform_exists(platform):
+            raise NotAcceptable(f"No platform conforming to {platform!r} found in the database")
