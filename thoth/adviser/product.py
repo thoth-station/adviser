@@ -86,7 +86,7 @@ class Product:
 
             # Marker depends based on the stack that was resolved. Do not change package_version directly,
             # rather clone it and used a cloned version not to clash with environment markers.
-            environment_marker = None
+            environment_markers = []
             for dependent_tuple in dependents_tuples:
                 try:
                     marker = context.graph.get_python_environment_marker(
@@ -104,14 +104,19 @@ class Product:
                     # marker evaluation result.
                     continue
 
-                if marker and environment_marker:
-                    # Multiple markers based on dependency that introduced it.
-                    environment_marker = f"({environment_marker}) or ({marker})"
-                elif marker and not environment_marker:
-                    environment_marker = marker
+                if marker and marker not in environment_markers:
+                    environment_markers.append(marker)
 
-            if environment_marker:
-                package_version = attr.evolve(package_version, markers=environment_marker)
+            if environment_markers:
+                if len(environment_markers) > 1:
+                    markers = " or ".join(f"({m})" for m in environment_markers)
+                else:
+                    markers = environment_markers[0]
+
+                package_version = attr.evolve(
+                    package_version,
+                    markers=markers,
+                )
 
             package_versions_locked.append(package_version)
 
