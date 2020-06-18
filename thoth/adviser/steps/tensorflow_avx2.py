@@ -46,7 +46,8 @@ class TensorFlowAVX2Step(Step):
     _JUSTIFICATION_ADDITION = [
         {
             "type": "INFO",
-            "message": "AICoE TensorFlow builds are optimized for AVX2 instruction sets that your CPU supports",
+            "message": "AICoE TensorFlow builds are optimized for AVX2 instruction sets supported in the CPU identified"
+
         }
     ]
 
