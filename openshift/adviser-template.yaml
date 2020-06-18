@@ -111,7 +111,7 @@ objects:
       serviceAccountName: argo
       ttlStrategy:
         # Keep adviser 1h to let users browse the logs.
-        secondsAfterSuccess: 3600
+        secondsAfterSuccess: 7200
         # secondsAfterFailure kept unset to keep failed advisers
       entrypoint: adviser
       arguments:
