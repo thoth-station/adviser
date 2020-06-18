@@ -112,7 +112,7 @@ objects:
       ttlStrategy:
         # Keep adviser 1h to let users browse the logs.
         secondsAfterSuccess: 7200
-        # secondsAfterFailure kept unset to keep failed advisers
+        secondsAfterFailure: 7200
       entrypoint: adviser
       arguments:
         parameters:
