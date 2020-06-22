@@ -19,6 +19,7 @@
 
 from .mkl_threads import MKLThreadsWrap
 from .no_onservation import NoObservationWrap
+from .numexpr import NumExprWrap
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -27,4 +28,5 @@ from .no_onservation import NoObservationWrap
 __all__ = [
     "MKLThreadsWrap",
     "NoObservationWrap",
+    "NumExprWrap",
 ]
