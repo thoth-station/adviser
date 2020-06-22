@@ -278,7 +278,6 @@ objects:
 
               - name: "kebechet-run-results"
                 dependencies:
-                  - "graph-sync-advise"
                   - "trigger-integration"
                 templateRef:
                   name: "kebechet-run-results"
