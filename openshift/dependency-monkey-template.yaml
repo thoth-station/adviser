@@ -68,9 +68,6 @@ parameters:
   - name: THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT
     required: true
     description: Output to which stack should be submitted to.
-  - name: THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT
-    required: true
-    description: Output to which the dependency monkey report should be submitted.
   - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
     required: true
     description: A dry run dependency monkey (not running the stasck).
@@ -121,8 +118,6 @@ objects:
             value: "${THOTH_ADVISER_LIMIT_LATEST_VERSIONS}"
           - name: THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT
             value: "${THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT}"
-          - name: THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT
-            value: "${THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT}"
           - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
             value: "${THOTH_DEPENDENCY_MONKEY_DRY_RUN}"
           - name: THOTH_DOCUMENT_ID
@@ -144,10 +139,10 @@ objects:
             archiveLogs: true
           dag:
             tasks:
-              - name: "dependency-monkey"
+              - name: "dm"
                 templateRef:
-                  name: "dependency-monkey"
-                  template: "dependency-monkey"
+                  name: "dm"
+                  template: "dm"
                 continueOn:
                   failed: true
                 arguments:
@@ -176,8 +171,6 @@ objects:
                       value: "{{workflow.parameters.THOTH_ADVISER_LIMIT_LATEST_VERSIONS}}"
                     - name: THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT
                       value: "{{workflow.parameters.THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT}}"
-                    - name: THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT
-                      value: "{{workflow.parameters.THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT}}"
                     - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
                       value: "{{workflow.parameters.THOTH_DEPENDENCY_MONKEY_DRY_RUN}}"
                     - name: THOTH_DOCUMENT_ID
@@ -193,14 +186,16 @@ objects:
 
               - name: "graph-sync-dependency-monkey"
                 dependencies:
-                  - "dependency-monkey"
+                  - "dm"
                 templateRef:
                   name: "graph-sync"
                   template: "graph-sync"
                 arguments:
                   artifacts:
                     - name: outputdocument
-                      from: "{{tasks.dependency-monkey.outputs.artifacts.outputdocument}}"
+                      from: "{{tasks.dm.outputs.artifacts.outputdocument}}"
                   parameters:
                     - name: "THOTH_DOCUMENT_ID"
                       value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
+                    - name: "THOTH_FORCE_SYNC"
+                      value: "1"
