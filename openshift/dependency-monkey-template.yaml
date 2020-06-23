@@ -1,0 +1,206 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: dependency-monkey
+  annotations:
+    description: "Thoth: Dependency Monkey"
+    openshift.io/display-name: "Thoth: Dependency Monkey"
+    version: 0.1.0
+    tags: thoth,ai-stacks,dependency-monkey
+    template.openshift.io/documentation-url: https://github.com/Thoth-Station/
+    template.openshift.io/long-description: >
+      This template defines resources needed to run Dependency Monkey logic of Thoth to OpenShift.
+    template.openshift.io/provider-display-name: "Red Hat, Inc."
+  labels:
+    app: thoth
+    template: dependency-monkey
+    component: dependency-monkey
+
+parameters:
+  - name: THOTH_DEPENDENCY_MONKEY_JOB_ID
+    required: true
+    description: A unique dentifier of dependency monkey job.
+    displayName: Dependency Monkey ID
+  - name: THOTH_ADVISER_REQUIREMENTS
+    required: false
+    description: Raw stack requirements
+  - name: THOTH_ADVISER_PIPELINE
+    required: false
+    description: Pipeline configuration to be used.
+  - name: THOTH_AMUN_CONTEXT
+    required: false
+    description: Context to be sent to Amun API to test resolved stack.
+  - name: THOTH_DEPENDENCY_MONKEY_DECISION_TYPE
+    required: false
+    description: Type of requested decisions during dependency monkey runs.
+    displayName: Decision type
+  - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+    required: false
+    description: Runtime environment to resolve stacks for.
+    displayName: Runtime environment
+  - name: THOTH_DEPENDENCY_MONKEY_SEED
+    required: true
+    description: Random seed to run dependency monkey with.
+    displayName: Random seed
+    # Keep seed constant across adviser runs so that two runs with same knowledge base report same results to user.
+    # Not to answer with a different stack each time a request is made.
+    value: "42"
+  - name: THOTH_ADVISER_BEAM_WIDTH
+    required: true
+    description: Resolver's beam width to restrict memory requirements with states generated.
+    displayName: Beam width
+    value: "100000"
+  - name: THOTH_LOG_ADVISER
+    required: false
+    description: Log dependency monkey actions
+    displayName: Log dependency monkey actions
+    value: INFO
+  - name: THOTH_DEPENDENCY_MONKEY_COUNT
+    required: false
+    description: Number of software stacks resolved.
+    displayName: Dependency Monkey count
+    value: "1"
+  - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+    required: false
+    description: Limit number of versions starting from latest in stacks.
+    displayName: Limit latest versions.
+    value: "9999999"
+  - name: THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT
+    required: true
+    description: Output to which stack should be submitted to.
+  - name: THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT
+    required: true
+    description: Output to which the dependency monkey report should be submitted.
+  - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
+    required: true
+    description: A dry run dependency monkey (not running the stasck).
+  - name: THOTH_DOCUMENT_ID
+    required: true
+    description: The resulting document id.
+
+objects:
+  - apiVersion: argoproj.io/v1alpha1
+    kind: Workflow
+    metadata:
+      name: "${THOTH_DEPENDENCY_MONKEY_JOB_ID}"
+      annotations:
+        thoth-station.ninja/template-version: 0.1.0
+      labels:
+        app: thoth
+        component: dependency-monkey
+    spec:
+      serviceAccountName: argo
+      ttlStrategy:
+        # Keep dependency-monkey 1h.
+        secondsAfterSuccess: 7200
+        secondsAfterFailure: 7200
+      entrypoint: dependency-monkey
+      arguments:
+        parameters:
+          - name: THOTH_DEPENDENCY_MONKEY_JOB_ID
+            value: "${THOTH_DEPENDENCY_MONKEY_JOB_ID}"
+          - name: THOTH_ADVISER_REQUIREMENTS
+            value: "${THOTH_ADVISER_REQUIREMENTS}"
+          - name: THOTH_ADVISER_PIPELINE
+            value: "${THOTH_ADVISER_PIPELINE}"
+          - name: THOTH_AMUN_CONTEXT
+            value: "${THOTH_AMUN_CONTEXT}"
+          - name: THOTH_DEPENDENCY_MONKEY_DECISION_TYPE
+            value: "${THOTH_DEPENDENCY_MONKEY_DECISION_TYPE}"
+          - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+            value: "${THOTH_ADVISER_RUNTIME_ENVIRONMENT}"
+          - name: THOTH_DEPENDENCY_MONKEY_SEED
+            value: "${THOTH_DEPENDENCY_MONKEY_SEED}"
+          - name: THOTH_ADVISER_BEAM_WIDTH
+            value: "${THOTH_ADVISER_BEAM_WIDTH}"
+          - name: THOTH_LOG_ADVISER
+            value: "${THOTH_LOG_ADVISER}"
+          - name: THOTH_DEPENDENCY_MONKEY_COUNT
+            value: "${THOTH_DEPENDENCY_MONKEY_COUNT}"
+          - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+            value: "${THOTH_ADVISER_LIMIT_LATEST_VERSIONS}"
+          - name: THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT
+            value: "${THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT}"
+          - name: THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT
+            value: "${THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT}"
+          - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
+            value: "${THOTH_DEPENDENCY_MONKEY_DRY_RUN}"
+          - name: THOTH_DOCUMENT_ID
+            value: "${THOTH_DOCUMENT_ID}"
+          - name: ceph_bucket_prefix
+          - name: ceph_bucket_name
+          - name: ceph_host
+          - name: deployment_name
+
+      volumes:
+        - name: workdir
+          emptyDir: {}
+        - name: output
+          emptyDir: {}
+
+      templates:
+        - name: "dependency-monkey"
+          archiveLocation:
+            archiveLogs: true
+          dag:
+            tasks:
+              - name: "dependency-monkey"
+                templateRef:
+                  name: "dependency-monkey"
+                  template: "dependency-monkey"
+                continueOn:
+                  failed: true
+                arguments:
+                  parameters:
+                    - name: THOTH_DEPENDENCY_MONKEY_JOB_ID
+                      value: "{{workflow.parameters.THOTH_DEPENDENCY_MONKEY_JOB_ID}}"
+                    - name: THOTH_ADVISER_REQUIREMENTS
+                      value: "{{workflow.parameters.THOTH_ADVISER_REQUIREMENTS}}"
+                    - name: THOTH_ADVISER_PIPELINE
+                      value: "{{workflow.parameters.THOTH_ADVISER_PIPELINE}}"
+                    - name: THOTH_AMUN_CONTEXT
+                      value: "{{workflow.parameters.THOTH_AMUN_CONTEXT}}"
+                    - name: THOTH_DEPENDENCY_MONKEY_DECISION_TYPE
+                      value: "{{workflow.parameters.THOTH_DEPENDENCY_MONKEY_DECISION_TYPE}}"
+                    - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+                      value: "{{workflow.parameters.THOTH_ADVISER_RUNTIME_ENVIRONMENT}}"
+                    - name: THOTH_DEPENDENCY_MONKEY_SEED
+                      value: "{{workflow.parameters.THOTH_DEPENDENCY_MONKEY_SEED}}"
+                    - name: THOTH_ADVISER_BEAM_WIDTH
+                      value: "{{workflow.parameters.THOTH_ADVISER_BEAM_WIDTH}}"
+                    - name: THOTH_LOG_ADVISER
+                      value: "{{workflow.parameters.THOTH_LOG_ADVISER}}"
+                    - name: THOTH_DEPENDENCY_MONKEY_COUNT
+                      value: "{{workflow.parameters.THOTH_DEPENDENCY_MONKEY_COUNT}}"
+                    - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+                      value: "{{workflow.parameters.THOTH_ADVISER_LIMIT_LATEST_VERSIONS}}"
+                    - name: THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT
+                      value: "{{workflow.parameters.THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT}}"
+                    - name: THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT
+                      value: "{{workflow.parameters.THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT}}"
+                    - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
+                      value: "{{workflow.parameters.THOTH_DEPENDENCY_MONKEY_DRY_RUN}}"
+                    - name: THOTH_DOCUMENT_ID
+                      value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
+                    - name: THOTH_S3_ENDPOINT_URL
+                      value: "{{workflow.parameters.ceph_host}}"
+                    - name: THOTH_CEPH_BUCKET_NAME
+                      value: "{{workflow.parameters.ceph_bucket_name}}"
+                    - name: THOTH_CEPH_BUCKET_PREFIX
+                      value: "{{workflow.parameters.ceph_bucket_prefix}}"
+                    - name: THOTH_DEPLOYMENT_NAME
+                      value: "{{workflow.parameters.deployment_name}}"
+
+              - name: "graph-sync-dependency-monkey"
+                dependencies:
+                  - "dependency-monkey"
+                templateRef:
+                  name: "graph-sync"
+                  template: "graph-sync"
+                arguments:
+                  artifacts:
+                    - name: outputdocument
+                      from: "{{tasks.dependency-monkey.outputs.artifacts.outputdocument}}"
+                  parameters:
+                    - name: "THOTH_DOCUMENT_ID"
+                      value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"

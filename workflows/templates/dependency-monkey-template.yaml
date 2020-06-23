@@ -1,0 +1,151 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: dependency-monkey
+  annotations:
+    thoth-station.ninja/template-version: 0.6.5
+  labels:
+    app: thoth
+    component: dependency-monkey
+spec:
+  templates:
+    - name: dependency-monkey
+      inputs:
+        parameters:
+          - name: THOTH_DEPENDENCY_MONKEY_JOB_ID
+          - name: THOTH_ADVISER_REQUIREMENTS
+          - name: THOTH_ADVISER_PIPELINE
+          - name: THOTH_AMUN_CONTEXT
+          - name: THOTH_DEPENDENCY_MONKEY_DECISION_TYPE
+          - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+          - name: THOTH_DEPENDENCY_MONKEY_SEED
+          - name: THOTH_ADVISER_BEAM_WIDTH
+          - name: THOTH_LOG_ADVISER
+          - name: THOTH_DEPENDENCY_MONKEY_COUNT
+          - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+          - name: THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT
+          - name: THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT
+          - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
+          - name: THOTH_DOCUMENT_ID
+          - name: THOTH_S3_ENDPOINT_URL
+          - name: THOTH_CEPH_BUCKET_NAME
+          - name: THOTH_CEPH_BUCKET_PREFIX
+          - name: THOTH_DEPLOYMENT_NAME
+      outputs:
+        artifacts:
+          - name: outputdocument
+            path: "/mnt/workdir/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+            archive:
+              none: {}
+            s3:
+              key: "{{inputs.parameters.THOTH_CEPH_BUCKET_PREFIX}}/\
+              {{inputs.parameters.THOTH_DEPLOYMENT_NAME}}/\
+              dependency-monkey/{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+              endpoint: "{{inputs.parameters.THOTH_S3_ENDPOINT_URL}}"
+              bucket: "{{inputs.parameters.THOTH_CEPH_BUCKET_NAME}}"
+              insecure: true
+              accessKeySecret:
+                name: argo-artifact-repository-secrets
+                key: accessKey
+              secretKeySecret:
+                name: argo-artifact-repository-secrets
+                key: secretKey
+      container:
+        name: dependency-monkey
+        image: adviser
+        env:
+          - name: THOTH_DEPENDENCY_MONKEY_JOB_ID
+            value: "{{inputs.parameters.THOTH_DEPENDENCY_MONKEY_JOB_ID}}"
+          - name: THOTH_ADVISER_REQUIREMENTS
+            value: "{{inputs.parameters.THOTH_ADVISER_REQUIREMENTS}}"
+          - name: THOTH_ADVISER_PIPELINE
+            value: "{{inputs.parameters.THOTH_ADVISER_PIPELINE}}"
+          - name: THOTH_AMUN_CONTEXT
+            value: "{{inputs.parameters.THOTH_AMUN_CONTEXT}}"
+          - name: THOTH_DEPENDENCY_MONKEY_DECISION_TYPE
+            value: "{{inputs.parameters.THOTH_DEPENDENCY_MONKEY_DECISION_TYPE}}"
+          - name: THOTH_ADVISER_RUNTIME_ENVIRONMENT
+            value: "{{inputs.parameters.THOTH_ADVISER_RUNTIME_ENVIRONMENT}}"
+          - name: THOTH_DEPENDENCY_MONKEY_SEED
+            value: "{{inputs.parameters.THOTH_DEPENDENCY_MONKEY_SEED}}"
+          - name: THOTH_ADVISER_BEAM_WIDTH
+            value: "{{inputs.parameters.THOTH_ADVISER_BEAM_WIDTH}}"
+          - name: THOTH_LOG_ADVISER
+            value: "{{inputs.parameters.THOTH_LOG_ADVISER}}"
+          - name: THOTH_DEPENDENCY_MONKEY_COUNT
+            value: "{{inputs.parameters.THOTH_DEPENDENCY_MONKEY_COUNT}}"
+          - name: THOTH_ADVISER_LIMIT_LATEST_VERSIONS
+            value: "{{inputs.parameters.THOTH_ADVISER_LIMIT_LATEST_VERSIONS}}"
+          - name: THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT
+            value: "{{inputs.parameters.THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT}}"
+          - name: THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT
+            value: "{{inputs.parameters.THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT}}"
+          - name: THOTH_DEPENDENCY_MONKEY_DRY_RUN
+            value: "{{inputs.parameters.THOTH_DEPENDENCY_MONKEY_DRY_RUN}}"
+          - name: THOTH_DOCUMENT_ID
+            value: "{{inputs.parameters.THOTH_DOCUMENT_ID}}"
+          - name: THOTH_ADVISER_SUBCOMMAND
+            value: "dependency-monkey"
+          - name: PROMETHEUS_PUSHGATEWAY_HOST
+            valueFrom:
+              configMapKeyRef:
+                key: prometheus-pushgateway-host
+                name: thoth
+          - name: PROMETHEUS_PUSHGATEWAY_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: thoth
+                key: prometheus-pushgateway-port
+          - name: THOTH_DEPLOYMENT_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: thoth
+                key: storage-bucket-name
+          - name: SENTRY_DSN
+            valueFrom:
+              secretKeyRef:
+                name: thoth
+                key: sentry-dsn
+          - name: KNOWLEDGE_GRAPH_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: thoth
+                key: postgresql-host
+          - name: KNOWLEDGE_GRAPH_PORT
+            value: "5432"
+          - name: KNOWLEDGE_GRAPH_SSL_DISABLED
+            value: "1"
+          - name: KNOWLEDGE_GRAPH_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgresql
+                key: database-user
+          - name: KNOWLEDGE_GRAPH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgresql
+                key: database-password
+          - name: KNOWLEDGE_GRAPH_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: postgresql
+                key: database-name
+        volumeMounts:
+          - name: workdir
+            mountPath: /mnt/workdir
+        resources:
+          limits:
+            cpu: 1.1
+            memory: 8Gi
+          requests:
+            cpu: 1.1
+            memory: 8Gi
+        livenessProbe:
+          exec:
+            command:
+              - python3
+              - liveness.py
+          failureThreshold: 1
+          initialDelaySeconds: 1500
+          timeoutSeconds: 600
