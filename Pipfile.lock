@@ -958,10 +958,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:7e8e0b7d412cb758c662dcbdcdc93cb8dccc38a9c67f2cd4bf885ba9f714f8d4"
+                "sha256:29e69777d460494ac987b0f60a9ace5a3142c7ba731e27f014caf5a0b93409da",
+                "sha256:57935a5a1272227b945de3b7d0cefdbbfec1c3d479d22e5f7361ac0d1717dc14"
             ],
             "index": "pypi",
-            "version": "==5.16.3"
+            "version": "==5.18.0"
         },
         "hypothesis-auto": {
             "hashes": [
