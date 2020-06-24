@@ -1,2 +1,26 @@
+.coafile
+exclude liveness.py
+exclude *.md
+exclude *.sh
+exclude thoth-adviser
+exclude *.toml
+exclude *.yaml
+include LICENSE
+include mypy.ini
+include OWNERS
+include Pipfile
+include Pipfile.lock
 include requirements.txt
-
+include tests/data/projects/Pipfile
+include tests/data/projects/Pipfile_project0
+include tests/data/projects/Pipfile_project1
+recursive-exclude docs *.dia
+recursive-exclude docs *.html
+recursive-exclude docs *.png
+recursive-exclude docs *.py
+recursive-exclude docs *.rst
+recursive-exclude openshift *.yaml
+recursive-exclude tests *.lock
+recursive-exclude tests *.py
+recursive-exclude tests *.yaml
+recursive-exclude workflows *.yaml
