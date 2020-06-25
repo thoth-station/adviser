@@ -111,8 +111,8 @@ objects:
       serviceAccountName: argo
       ttlStrategy:
         # Keep adviser 1h to let users browse the logs.
-        secondsAfterSuccess: 3600
-        # secondsAfterFailure kept unset to keep failed advisers
+        secondsAfterSuccess: 7200
+        secondsAfterFailure: 7200
       entrypoint: adviser
       arguments:
         parameters:
@@ -168,6 +168,13 @@ objects:
             items:
               - key: kafka_ca.crt
                 path: kafka_ca.crt
+        - name: ssh-config
+          secret:
+            secretName: kebechet-secret
+            items:
+              - key: ssh-privatekey
+                path: id_rsa
+                mode: 0600
 
       templates:
         - name: "adviser"
@@ -268,3 +275,23 @@ objects:
                       value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
                     - name: "THOTH_ADVISER_METADATA"
                       value: "{{workflow.parameters.THOTH_ADVISER_METADATA}}"
+
+              - name: "kebechet-run-results"
+                dependencies:
+                  - "trigger-integration"
+                templateRef:
+                  name: "kebechet-run-results"
+                  template: "schedule-kebechet"
+                arguments:
+                  parameters:
+                    - name: "WORKFLOW_NAME"
+                      value: "{{workflow.parameters.THOTH_ADVISER_JOB_ID}}"
+                    - name: "THOTH_DOCUMENT_ID"
+                      value: "{{workflow.parameters.THOTH_DOCUMENT_ID}}"
+                    - name: "THOTH_ADVISER_METADATA"
+                      value: "{{workflow.parameters.THOTH_ADVISER_METADATA}}"
+                    - name: origin
+                      value: "{{tasks.trigger-integration.outputs.parameters.origin}}"
+                    - name: source_type
+                      value: "{{tasks.trigger-integration.outputs.parameters.source_type}}"
+                when: "{{tasks.trigger-integration.outputs.parameters.source_type}} == KEBECHET"

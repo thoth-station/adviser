@@ -91,6 +91,11 @@ in the described events:
 * :func:`Unit.post_run <thoth.adviser.unit.Unit.post_run>` - called after the resolution is finished
 * :func:`Unit.post_run_report <thoth.adviser.unit.Unit.post_run_report>` - post-run method run after the resolving has finished - this method is called only if resolving with a report
 
+Note the "post-run" methods are called in a reverse order to ``pre_run``. The
+very first pipeline unit on which the pre-run method was called will be
+notified as last after the pipeline finishes in its respective post-run method
+implementation.
+
 Afterword for pipeline units
 ============================
 

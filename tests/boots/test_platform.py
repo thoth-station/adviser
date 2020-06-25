@@ -17,8 +17,11 @@
 
 """Test handling of platform information."""
 
+import pytest
+
 from thoth.adviser.boots import PlatformBoot
 from thoth.adviser.context import Context
+from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from ..base import AdviserTestCase
 
@@ -36,20 +39,41 @@ class TestPlatformBoot(AdviserTestCase):
 
     def test_adjust(self, context: Context) -> None:
         """Test adjusting the runtime environment to a default if not provided explicitly."""
+        default_platform = "linux-x86_64"
         context.project.runtime_environment.platform = None
+        context.graph.should_receive("python_package_version_depends_on_platform_exists").with_args(
+            default_platform
+        ).and_return(True).once()
 
         unit = PlatformBoot()
         with unit.assigned_context(context):
             assert unit.run() is None
 
-        assert context.project.runtime_environment.platform == "linux-x86_64"
+        assert context.project.runtime_environment.platform == default_platform
+
+    def test_no_platform(self, context: Context) -> None:
+        """Test raising an exception if the given platform was not found in the database."""
+        platform = "foo-bar"
+        context.project.runtime_environment.platform = platform
+        context.graph.should_receive("python_package_version_depends_on_platform_exists").with_args(
+            platform
+        ).and_return(False).once()
+
+        unit = PlatformBoot()
+        with unit.assigned_context(context):
+            with pytest.raises(NotAcceptable, match="No platform conforming to 'foo-bar' found in the database"):
+                unit.run()
 
     def test_no_adjust(self, context: Context) -> None:
         """Test no adjustment if the runtime environment provides platform info."""
-        context.project.runtime_environment.platform = "linux-i586"
+        platform = "linux-i586"
+        context.project.runtime_environment.platform = platform
+        context.graph.should_receive("python_package_version_depends_on_platform_exists").with_args(
+            platform
+        ).and_return(True).once()
 
         unit = PlatformBoot()
         with unit.assigned_context(context):
             assert unit.run() is None
 
-        assert context.project.runtime_environment.platform == "linux-i586"
+        assert context.project.runtime_environment.platform == platform

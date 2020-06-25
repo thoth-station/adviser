@@ -24,7 +24,6 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Generator
-from collections import OrderedDict
 import random
 import weakref
 
@@ -42,11 +41,17 @@ class State:
     iteration = attr.ib(type=int, default=0)
     # States added in the given iteration.
     unresolved_dependencies = attr.ib(
-        default=attr.Factory(OrderedDict)
-    )  # type: OrderedDict[str, OrderedDict[int, Tuple[str, str, str]]]
-    resolved_dependencies = attr.ib(default=attr.Factory(OrderedDict))  # type: OrderedDict[str, Tuple[str, str, str]]
-    advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], kw_only=True, default=None)
-    justification = attr.ib(type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True)
+        default=attr.Factory(dict)
+    )  # type: Dict[str, Dict[int, Tuple[str, str, str]]]
+    resolved_dependencies = attr.ib(
+        default=attr.Factory(dict)
+    )  # type: Dict[str, Tuple[str, str, str]]
+    advised_runtime_environment = attr.ib(
+        type=Optional[RuntimeEnvironment], kw_only=True, default=None
+    )
+    justification = attr.ib(
+        type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True
+    )
     _parent = attr.ib(default=None, type=weakref)
 
     _EPSILON = 0.1
@@ -66,10 +71,10 @@ class State:
     @classmethod
     def from_direct_dependencies(cls, direct_dependencies: Dict[str, List[PackageVersion]]) -> "State":
         """Create an initial state out of direct dependencies."""
-        unresolved_dependencies = OrderedDict()
+        unresolved_dependencies = {}
 
         for dependency_name, dependency_versions in direct_dependencies.items():
-            unresolved_dependencies[dependency_name] = OrderedDict()
+            unresolved_dependencies[dependency_name] = {}
             for dependency_version in dependency_versions:
                 dependency_tuple = dependency_version.to_tuple()
                 unresolved_dependencies[dependency_name][hash(dependency_tuple)] = dependency_tuple
@@ -107,14 +112,16 @@ class State:
     def add_unresolved_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
         """Add unresolved dependency into the state."""
         if package_tuple[0] not in self.unresolved_dependencies:
-            self.unresolved_dependencies[package_tuple[0]] = OrderedDict()
+            self.unresolved_dependencies[package_tuple[0]] = {}
 
         self.unresolved_dependencies[package_tuple[0]][hash(package_tuple)] = package_tuple
 
     def set_unresolved_dependencies(self, dependencies: Dict[str, List[Tuple[str, str, str]]]) -> None:
         """Set unresolved dependencies - any unresolved dependencies will be overwritten."""
         for dependency_name, dependency_tuples in dependencies.items():
-            self.unresolved_dependencies[dependency_name] = OrderedDict([(hash(d), d) for d in dependency_tuples])
+            self.unresolved_dependencies[dependency_name] = {
+                hash(d): d for d in dependency_tuples
+            }
 
     def remove_unresolved_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
         """Remove the given unresolved dependency from state."""
@@ -274,16 +281,22 @@ class State:
         if self.advised_runtime_environment:
             cloned_advised_environment = RuntimeEnvironment.from_dict(self.advised_runtime_environment.to_dict())
 
-        unresolved_dependencies = OrderedDict(self.unresolved_dependencies)
+        unresolved_dependencies = self.unresolved_dependencies.copy()
         for dependency_name in unresolved_dependencies.keys():
-            unresolved_dependencies[dependency_name] = OrderedDict(unresolved_dependencies[dependency_name])
+            unresolved_dependencies[dependency_name] = unresolved_dependencies[dependency_name].copy()
 
         return self.__class__(
             score=self.score,
             iteration=self.iteration,
             unresolved_dependencies=unresolved_dependencies,
-            resolved_dependencies=OrderedDict(self.resolved_dependencies),
+            resolved_dependencies=self.resolved_dependencies.copy(),
             advised_runtime_environment=cloned_advised_environment,
-            justification=list(self.justification),
+            justification=self.justification.copy(),
             parent=weakref.ref(self),
         )
+
+    def __del__(self):
+        """Destruct self."""
+        # Destruct parts that are not eventually populated to the pipeline product abstraction.
+        del self.unresolved_dependencies
+        del self.resolved_dependencies

@@ -64,6 +64,14 @@ class PipelineConfig:
         """Iterate over units present in the configuration."""
         yield from chain(self.boots, self.sieves, self.steps, self.strides, self.wraps)
 
+    def iter_units_reversed(self) -> Generator["Unit", None, None]:
+        """Iterate over units present in the configuration in a reversed order."""
+        yield from reversed(self.wraps)
+        yield from reversed(self.strides)
+        yield from reversed(self.steps)
+        yield from reversed(self.sieves)
+        yield from reversed(self.boots)
+
     def call_pre_run(self) -> None:
         """Call pre-run method on all units registered in this configuration."""
         for unit in self.iter_units():
@@ -76,7 +84,7 @@ class PipelineConfig:
 
     def call_post_run(self) -> None:
         """Call post-run method on all units registered in this configuration."""
-        for unit in self.iter_units():
+        for unit in self.iter_units_reversed():
             try:
                 unit.post_run()
             except Exception as exc:
@@ -86,7 +94,7 @@ class PipelineConfig:
 
     def call_post_run_report(self, report: Union["Report", DependencyMonkeyReport]) -> None:
         """Call post-run method when report is generated."""
-        for unit in self.iter_units():
+        for unit in self.iter_units_reversed():
             try:
                 unit.post_run_report(report)
             except Exception as exc:
