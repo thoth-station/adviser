@@ -20,6 +20,7 @@
 from .aicoe import AICoEReleasesStep
 from .cve import CvePenalizationStep
 from .dropout import DropoutStep
+from .tensorflow_avx2 import TensorFlowAVX2Step
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -29,4 +30,5 @@ __all__ = [
     "AICoEReleasesStep",
     "CvePenalizationStep",
     "DropoutStep",
+    "TensorFlowAVX2Step",
 ]
