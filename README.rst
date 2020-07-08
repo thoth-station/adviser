@@ -59,7 +59,8 @@ Provenance Checks
 =================
 
 As Thoth aggregates information about packages available, it can verify
-a user's stack against its knowledge base. See provenance_checks
+a user's stack against its knowledge base. See `Provenance Checks
+<https://thoth-station.ninja/docs/developers/adviser/provenance_checks.html>`_
 for more info.
 
 Package source configuration
