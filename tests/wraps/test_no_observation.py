@@ -31,10 +31,7 @@ class TestNoObservationWrap(AdviserTestCase):
         state = State()
         assert not state.justification
 
-        state.add_justification([{
-            "type": "INFO",
-            "message": "Foo bar"
-        }])
+        state.add_justification([{"type": "INFO", "message": "Foo bar"}])
 
         unit = NoObservationWrap()
         unit.run(state)

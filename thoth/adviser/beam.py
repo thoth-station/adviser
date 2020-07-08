@@ -63,18 +63,11 @@ class Beam:
     """
 
     width = attr.ib(default=None, type=Optional[int])
-    keep_history = attr.ib(
-        type=bool,
-        kw_only=True,
-        default=None,
-        converter=should_keep_history
-    )
+    keep_history = attr.ib(type=bool, kw_only=True, default=None, converter=should_keep_history)
 
     _heap = attr.ib(type=ExtHeapQueue)
 
-    _beam_history = attr.ib(
-        type=List[Tuple[int, Optional[float]]], default=attr.Factory(list), kw_only=True
-    )
+    _beam_history = attr.ib(type=List[Tuple[int, Optional[float]]], default=attr.Factory(list), kw_only=True)
 
     _WIDTH_VALIDATOR_ERR_MSG = "Beam width has to be None or positive integer, got {!r}"
 
@@ -102,7 +95,7 @@ class Beam:
 
         return ExtHeapQueue()
 
-    def new_iteration(self) -> None:
+    def new_iteration(self) -> None:  # noqa: D401
         """Called once a new iteration is done in resolver.
 
         Used to keep track of beam history and to keep track of states added.
@@ -110,9 +103,7 @@ class Beam:
         if not self.keep_history:
             return
 
-        self._beam_history.append(
-            (self.size, self.max().score if self.size > 0 else None)
-        )
+        self._beam_history.append((self.size, self.max().score if self.size > 0 else None))
 
     @staticmethod
     def _make_patch_spines_invisible(ax: Any) -> None:
@@ -145,8 +136,8 @@ class Beam:
         host.spines["right"].set_visible(False)
         host.spines["top"].set_visible(False)
 
-        p1, = host.plot(x, y1, ",g", label="Beam size")
-        p2, = par1.plot(x, y2, ",b", label="Top rated state score")
+        (p1,) = host.plot(x, y1, ",g", label="Beam size")
+        (p2,) = par1.plot(x, y2, ",b", label="Top rated state score")
 
         host.set_xlabel("iteration")
         host.set_ylabel("beam size")
@@ -163,12 +154,7 @@ class Beam:
         font_prop = FontProperties()
         font_prop.set_size("medium")
         fig.legend(
-            loc="upper center",
-            bbox_to_anchor=(0.50, 1.00),
-            ncol=2,
-            fancybox=True,
-            shadow=True,
-            prop=font_prop,
+            loc="upper center", bbox_to_anchor=(0.50, 1.00), ncol=2, fancybox=True, shadow=True, prop=font_prop,
         )
         return fig
 

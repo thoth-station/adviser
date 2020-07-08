@@ -49,16 +49,12 @@ class MemTraceBoot(Boot):
 
     CONFIGURATION_DEFAULT = {
         "frame_count": 100,  # Number of frames traced.
-        "top_limit": 100,    # Number of top mem usage consumers printed.
+        "top_limit": 100,  # Number of top mem usage consumers printed.
     }
-    CONFIGURATION_SCHEMA = Schema({
-        SchemaOptional("frame_count"): int,
-    })
+    CONFIGURATION_SCHEMA = Schema({SchemaOptional("frame_count"): int,})
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, never."""
         # Uncomment this to release the beast.
         # if not builder_context.is_included(cls):
@@ -77,17 +73,15 @@ class MemTraceBoot(Boot):
         Inspired by Python docs:
           https://docs.python.org/3/library/tracemalloc.html#get-the-traceback-of-a-memory-block
         """
-        snapshot = snapshot.filter_traces((
-            tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
-            tracemalloc.Filter(False, "<unknown>"),
-        ))
+        snapshot = snapshot.filter_traces(
+            (tracemalloc.Filter(False, "<frozen importlib._bootstrap>"), tracemalloc.Filter(False, "<unknown>"),)
+        )
         top_stats = snapshot.statistics(key_type)
 
         print("Top %s lines" % limit)
         for index, stat in enumerate(top_stats[:limit], 1):
             frame = stat.traceback[0]
-            print("#%s: %s:%s: %.1f KiB"
-                  % (index, frame.filename, frame.lineno, stat.size / 1024))
+            print("#%s: %s:%s: %.1f KiB" % (index, frame.filename, frame.lineno, stat.size / 1024))
             line = linecache.getline(frame.filename, frame.lineno).strip()
             if line:
                 print("    %s" % line)
@@ -101,9 +95,7 @@ class MemTraceBoot(Boot):
 
     def post_run(self) -> None:
         """De-initialize memory tracing and print the stats."""
-        _LOGGER.warning(
-            "Turning memory consumption tracing off and aggregating statistics; this might take a while..."
-        )
+        _LOGGER.warning("Turning memory consumption tracing off and aggregating statistics; this might take a while...")
         snapshot = tracemalloc.take_snapshot()
         self._display_top(snapshot, limit=self.configuration["top_limit"])
         tracemalloc.stop()

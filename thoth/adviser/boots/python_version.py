@@ -38,9 +38,7 @@ class PythonVersionBoot(Boot):
     """A boot that checks Python3 configuration used by user."""
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, always for adviser."""
         if not builder_context.is_adviser_pipeline():
             return None
@@ -53,18 +51,14 @@ class PythonVersionBoot(Boot):
     def run(self) -> None:
         """Check Python configuration used by user."""
         python_version = self.context.project.runtime_environment.python_version
-        pipfile_python_version = self.context.project.pipfile.meta.requires.get(
-            "python_version"
-        )
+        pipfile_python_version = self.context.project.pipfile.meta.requires.get("python_version")
         if pipfile_python_version is not None and python_version is None:
             msg = (
                 f"No version of Python specified in the configuration, using Python version "
                 f"found in Pipfile: {pipfile_python_version!r}"
             )
             _LOGGER.warning(msg)
-            self.context.project.runtime_environment.python_version = (
-                pipfile_python_version
-            )
+            self.context.project.runtime_environment.python_version = pipfile_python_version
             self.context.stack_info.append({"type": "WARNING", "Message": msg})
         elif python_version is not None and pipfile_python_version is None:
             msg = (
@@ -72,7 +66,5 @@ class PythonVersionBoot(Boot):
                 f"Thoth's configuration: {python_version!r}"
             )
             _LOGGER.warning(msg)
-            self.context.project.pipfile.meta.requires[
-                "python_version"
-            ] = python_version
+            self.context.project.pipfile.meta.requires["python_version"] = python_version
             self.context.stack_info.append({"type": "WARNING", "Message": msg})

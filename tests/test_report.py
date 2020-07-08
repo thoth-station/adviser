@@ -29,7 +29,7 @@ from .base import AdviserTestCase
 
 
 @pytest.fixture
-def pipeline_config() -> PipelineConfig:
+def pipeline_config() -> PipelineConfig:  # noqa: D401
     """A fixture for a pipeline config."""
     return PipelineConfig(boots=[], sieves=[], steps=[], strides=[], wraps=[])
 
@@ -44,13 +44,7 @@ class TestReport(AdviserTestCase):
 
         assert report.product_count() == 0
         assert report.to_dict() == {
-            "pipeline": {
-                "boots": [],
-                "sieves": [],
-                "steps": [],
-                "strides": [],
-                "wraps": [],
-            },
+            "pipeline": {"boots": [], "sieves": [], "steps": [], "strides": [], "wraps": [],},
             "products": [],
             "stack_info": [{"foo": "bar"}],
         }
@@ -59,17 +53,13 @@ class TestReport(AdviserTestCase):
         """Test adding a product to a report."""
         report = Report(count=2, pipeline=pipeline_config)
 
-        product1 = Product(
-            project=None, score=0.42, justification=[], advised_runtime_environment=None
-        )
+        product1 = Product(project=None, score=0.42, justification=[], advised_runtime_environment=None)
         report.add_product(product1)
         assert report.product_count() == 1
         assert list(report.iter_products()) == [product1]
         assert list(report.iter_products_sorted()) == [product1]
 
-        product2 = Product(
-            project=None, score=0.0, justification=[], advised_runtime_environment=None
-        )
+        product2 = Product(project=None, score=0.0, justification=[], advised_runtime_environment=None)
         report.add_product(product2)
         assert report.product_count() == 2
         assert set(report.iter_products()) == {product1, product2}
@@ -77,9 +67,7 @@ class TestReport(AdviserTestCase):
         assert list(report.iter_products_sorted(reverse=True)) == [product1, product2]
         assert list(report.iter_products_sorted(reverse=False)) == [product2, product1]
 
-        product3 = Product(
-            project=None, score=0.98, justification=[], advised_runtime_environment=None
-        )
+        product3 = Product(project=None, score=0.98, justification=[], advised_runtime_environment=None)
         report.add_product(product3)
         assert report.product_count() == 2
         assert set(report.iter_products()) == {product3, product1}
@@ -87,12 +75,7 @@ class TestReport(AdviserTestCase):
         assert list(report.iter_products_sorted(reverse=True)) == [product3, product1]
         assert list(report.iter_products_sorted(reverse=False)) == [product1, product3]
 
-        product4 = Product(
-            project=None,
-            score=0.666,
-            justification=[],
-            advised_runtime_environment=None,
-        )
+        product4 = Product(project=None, score=0.666, justification=[], advised_runtime_environment=None,)
         report.add_product(product4)
         assert report.product_count() == 2
         assert set(report.iter_products()) == {product3, product4}
@@ -106,17 +89,13 @@ class TestReport(AdviserTestCase):
 
         project = flexmock()
         project_dict = {"aresto momentum": "avada kedavra"}
-        project.should_receive("to_dict").with_args().and_return(
-            project_dict
-        ).twice()  # In test and in the report.
+        project.should_receive("to_dict").with_args().and_return(project_dict).twice()  # In test and in the report.
 
         product = Product(
             project=project,
             score=0.666,
             justification=[{"gryffindor": "le gladium leviosa"}],
-            advised_runtime_environment=RuntimeEnvironment.from_dict(
-                {"python_version": "3.6"}
-            ),
+            advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
         )
         report.add_product(product)
 

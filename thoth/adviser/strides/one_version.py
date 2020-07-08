@@ -53,9 +53,7 @@ class OneVersionStride(Stride):
     version_seen = attr.ib(type=Optional[str], default=None)
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include this pipeline unit only if user asks for it explicitly."""
         return None
 

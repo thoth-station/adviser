@@ -35,6 +35,4 @@ class TestExceptions(AdviserTestCase):
                 continue
 
             if issubclass(item, AdviserException):
-                assert issubclass(
-                    item, AdviserException
-                ), f"Exception {name!r} is not of type AdviserException"
+                assert issubclass(item, AdviserException), f"Exception {name!r} is not of type AdviserException"

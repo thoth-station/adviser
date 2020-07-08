@@ -51,9 +51,7 @@ class VersionConstraintSieve(Sieve):
     _specifier = attr.ib(type=Optional[Specifier], default=None)
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include this sieve only if user explicitly asks for it."""
         return None
 
@@ -67,9 +65,7 @@ class VersionConstraintSieve(Sieve):
 
         self._specifier = Specifier(self.configuration["version_specifier"])
 
-    def run(
-        self, package_versions: Generator[PackageVersion, None, None]
-    ) -> Generator[PackageVersion, None, None]:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages based on build time/installation issues.."""
         for package_version in package_versions:
             if (

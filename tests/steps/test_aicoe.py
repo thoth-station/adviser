@@ -56,10 +56,7 @@ class TestAICoEReleasesStep(AdviserTestCase):
     def test_no_aicoe_release(self) -> None:
         """Make sure the stack score is untouched if not an AICoE release."""
         package_version = PackageVersion(
-            name="tensorflow",
-            version="==2.0.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="tensorflow", version="==2.0.0", index=Source("https://pypi.org/simple"), develop=False,
         )
 
         context = flexmock()

@@ -62,23 +62,15 @@ python_version = "3.7"
                 }
             ),
             unresolved_dependencies=OrderedDict(),
-            advised_runtime_environment=RuntimeEnvironment.from_dict(
-                {"python_version": "3.6"}
-            ),
+            advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
         )
         state.add_justification([{"foo": "bar"}])
 
         pypi = Source("https://pypi.org/simple")
 
-        pv_daiquiri_locked = PackageVersion(
-            name="daiquiri", version="==1.6.0", index=pypi, develop=False
-        )
-        pv_numpy_locked = PackageVersion(
-            name="numpy", version="==1.17.4", index=pypi, develop=False
-        )
-        pv_tensorflow_locked = PackageVersion(
-            name="tensorflow", version="==2.0.0", index=pypi, develop=False
-        )
+        pv_daiquiri_locked = PackageVersion(name="daiquiri", version="==1.6.0", index=pypi, develop=False)
+        pv_numpy_locked = PackageVersion(name="numpy", version="==1.17.4", index=pypi, develop=False)
+        pv_tensorflow_locked = PackageVersion(name="tensorflow", version="==2.0.0", index=pypi, develop=False)
 
         context.should_receive("get_package_version").with_args(
             ("daiquiri", "1.6.0", "https://pypi.org/simple"), graceful=False
@@ -101,43 +93,30 @@ python_version = "3.7"
             "tensorflow", "2.0.0", "https://pypi.org/simple"
         ).and_return(["222"]).ordered()
 
-        pv_daiquiri = PackageVersion(
-            name="daiquiri", version="*", index=pypi, develop=False
-        )
-        pv_tensorflow = PackageVersion(
-            name="tensorflow", version=">=2.0.0", index=pypi, develop=False
-        )
+        pv_daiquiri = PackageVersion(name="daiquiri", version="*", index=pypi, develop=False)
+        pv_tensorflow = PackageVersion(name="tensorflow", version=">=2.0.0", index=pypi, develop=False)
 
         project = flexmock(
             pipfile=Pipfile.from_string(self._PIPFILE),
-            runtime_environment=RuntimeEnvironment.from_dict(
-                {"operating_system": {"name": "rhel"}}
-            ),
+            runtime_environment=RuntimeEnvironment.from_dict({"operating_system": {"name": "rhel"}}),
         )
-        project.should_receive("iter_dependencies").with_args(
-            with_devel=True
-        ).and_return([pv_daiquiri, pv_tensorflow]).once()
+        project.should_receive("iter_dependencies").with_args(with_devel=True).and_return(
+            [pv_daiquiri, pv_tensorflow]
+        ).once()
 
         context.project = project
         context.dependencies = {
             "daiquiri": {("daiquiri", "1.6.0", "https://pypi.org/simple"): set(),},
             "numpy": {("numpy", "1.17.4", "https://pypi.org/simple"): set()},
             "tensorflow": {
-                ("tensorflow", "2.0.0", "https://pypi.org/simple"): {
-                    ("numpy", "1.17.4", "https://pypi.org/simple")
-                }
+                ("tensorflow", "2.0.0", "https://pypi.org/simple"): {("numpy", "1.17.4", "https://pypi.org/simple")}
             },
         }
         context.dependents = {
             "daiquiri": {("daiquiri", "1.6.0", "https://pypi.org/simple"): set(),},
             "numpy": {
                 ("numpy", "1.17.4", "https://pypi.org/simple"): {
-                    (
-                        ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                        "fedora",
-                        "31",
-                        "3.7",
-                    )
+                    (("tensorflow", "2.0.0", "https://pypi.org/simple"), "fedora", "31", "3.7",)
                 }
             },
             "tensorflow": {("tensorflow", "2.0.0", "https://pypi.org/simple"): set()},
@@ -165,46 +144,24 @@ python_version = "3.7"
                 },
                 "dev-packages": {},
                 "requires": {"python_version": "3.7"},
-                "source": [
-                    {
-                        "url": "https://pypi.org/simple",
-                        "verify_ssl": True,
-                        "name": "pypi-org",
-                    }
-                ],
+                "source": [{"url": "https://pypi.org/simple", "verify_ssl": True, "name": "pypi-org",}],
             },
             "requirements_locked": {
                 "_meta": {
-                    "sources": [
-                        {
-                            "url": "https://pypi.org/simple",
-                            "verify_ssl": True,
-                            "name": "pypi-org",
-                        }
-                    ],
+                    "sources": [{"url": "https://pypi.org/simple", "verify_ssl": True, "name": "pypi-org",}],
                     "requires": {"python_version": "3.7"},
-                    "hash": {
-                        "sha256": "f08689732b596fd705a45bbf9ec44c3995b17a1aa6392c46500aeb736c4d4e88"
-                    },
+                    "hash": {"sha256": "f08689732b596fd705a45bbf9ec44c3995b17a1aa6392c46500aeb736c4d4e88"},
                     "pipfile-spec": 6,
                 },
                 "default": {
-                    "daiquiri": {
-                        "version": "==1.6.0",
-                        "hashes": ["sha256:000"],
-                        "index": "pypi-org",
-                    },
+                    "daiquiri": {"version": "==1.6.0", "hashes": ["sha256:000"], "index": "pypi-org",},
                     "numpy": {
                         "version": "==1.17.4",
                         "hashes": ["sha256:111"],
                         "index": "pypi-org",
                         "markers": "python_version >= '3.7'",
                     },
-                    "tensorflow": {
-                        "version": "==2.0.0",
-                        "hashes": ["sha256:222"],
-                        "index": "pypi-org",
-                    },
+                    "tensorflow": {"version": "==2.0.0", "hashes": ["sha256:222"], "index": "pypi-org",},
                 },
                 "develop": {},
             },
@@ -224,9 +181,7 @@ python_version = "3.7"
         project.should_receive("to_dict").with_args().and_return({"baz": "bar"}).once()
 
         advised_runtime_environment = flexmock()
-        advised_runtime_environment.should_receive("to_dict").with_args().and_return(
-            {"hello": "thoth"}
-        ).once()
+        advised_runtime_environment.should_receive("to_dict").with_args().and_return({"hello": "thoth"}).once()
 
         product = Product(
             score=0.999,
@@ -264,12 +219,8 @@ python_version = "3.7"
         ).and_return(["111"]).once()
 
         pypi = Source("https://pypi.org/simple")
-        pv_numpy_locked = PackageVersion(
-            name="numpy", version="==1.0.0", index=pypi, develop=False
-        )
-        pv_tensorflow_locked = PackageVersion(
-            name="tensorflow", version="==2.0.0", index=pypi, develop=False
-        )
+        pv_numpy_locked = PackageVersion(name="numpy", version="==1.0.0", index=pypi, develop=False)
+        pv_tensorflow_locked = PackageVersion(name="tensorflow", version="==2.0.0", index=pypi, develop=False)
 
         context.should_receive("get_package_version").with_args(
             ("numpy", "1.0.0", "https://pypi.org/simple"), graceful=False
@@ -282,12 +233,7 @@ python_version = "3.7"
         context.dependents = {
             "numpy": {
                 ("numpy", "1.0.0", "https://pypi.org/simple"): {
-                    (
-                        ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                        "fedora",
-                        "31",
-                        "3.7",
-                    )
+                    (("tensorflow", "2.0.0", "https://pypi.org/simple"), "fedora", "31", "3.7",)
                 }
             },
             "tensorflow": {("tensorflow", "2.0.0", "https://pypi.org/simple"): set()},
@@ -302,9 +248,7 @@ python_version = "3.7"
             os_name="fedora",
             os_version="31",
             python_version="3.7",
-        ).and_return("python_version >= '3.7'").and_return(
-            "python_version >= '3' or 1"
-        ).twice()
+        ).and_return("python_version >= '3.7'").and_return("python_version >= '3' or 1").twice()
 
         product = Product.from_final_state(context=context, state=state)
         expected = {
@@ -316,36 +260,18 @@ python_version = "3.7"
                     "packages": {"flask": "*", "tensorflow": "==1.9.0"},
                     "requires": {"python_version": "3.6"},
                     "source": [
-                        {
-                            "name": "pypi",
-                            "url": "https://pypi.org/simple",
-                            "verify_ssl": True,
-                        },
-                        {
-                            "name": "pypi-org",
-                            "url": "https://pypi.org/simple",
-                            "verify_ssl": True,
-                        },
+                        {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True,},
+                        {"name": "pypi-org", "url": "https://pypi.org/simple", "verify_ssl": True,},
                     ],
                 },
                 "requirements_locked": {
                     "_meta": {
-                        "hash": {
-                            "sha256": "e55b6bbaba9467f1629c34e7a4180a6a2d82df37e02e762866e7aac27ced0f99"
-                        },
+                        "hash": {"sha256": "e55b6bbaba9467f1629c34e7a4180a6a2d82df37e02e762866e7aac27ced0f99"},
                         "pipfile-spec": 6,
                         "requires": {"python_version": "3.6"},
                         "sources": [
-                            {
-                                "name": "pypi",
-                                "url": "https://pypi.org/simple",
-                                "verify_ssl": True,
-                            },
-                            {
-                                "name": "pypi-org",
-                                "url": "https://pypi.org/simple",
-                                "verify_ssl": True,
-                            },
+                            {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True,},
+                            {"name": "pypi-org", "url": "https://pypi.org/simple", "verify_ssl": True,},
                         ],
                     },
                     "default": {
@@ -355,11 +281,7 @@ python_version = "3.7"
                             "markers": "python_version >= '3.7'",
                             "version": "==1.0.0",
                         },
-                        "tensorflow": {
-                            "hashes": ["sha256:111"],
-                            "index": "pypi-org",
-                            "version": "==2.0.0",
-                        },
+                        "tensorflow": {"hashes": ["sha256:111"], "index": "pypi-org", "version": "==2.0.0",},
                     },
                     "develop": {},
                 },
@@ -379,7 +301,5 @@ python_version = "3.7"
 
         # Markers should not intersect.
         product = Product.from_final_state(context=context, state=state)
-        expected["project"]["requirements_locked"]["default"]["numpy"][
-            "markers"
-        ] = "python_version >= '3' or 1"
+        expected["project"]["requirements_locked"]["default"]["numpy"]["markers"] = "python_version >= '3' or 1"
         assert product.to_dict() == expected

@@ -17,10 +17,8 @@
 
 """Test sieve for filtering packages coming from a specific index."""
 
-import pytest
 
 from thoth.adviser.sieves import FilterIndexSieve
-from thoth.adviser.exceptions import SieveError
 from thoth.python import Source
 from thoth.python import PackageVersion
 
@@ -38,18 +36,13 @@ class TestFilterIndexSieve(AdviserTestCase):
     def test_run_filter(self) -> None:
         """Test filtering a package based on source index used."""
         package_version = PackageVersion(
-            name="tensorflow",
-            version="==2.0.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="tensorflow", version="==2.0.0", index=Source("https://pypi.org/simple"), develop=False,
         )
         unit = FilterIndexSieve()
         unit.update_configuration(
             {
                 "package_name": "tensorflow",
-                "index_url": [
-                    "https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/"
-                ],
+                "index_url": ["https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/"],
             }
         )
         unit.pre_run()
@@ -60,18 +53,14 @@ class TestFilterIndexSieve(AdviserTestCase):
         package_version = PackageVersion(
             name="tensorflow",
             version="==2.1.0",
-            index=Source(
-                "https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/"
-            ),
+            index=Source("https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/"),
             develop=False,
         )
         unit = FilterIndexSieve()
         unit.update_configuration(
             {
                 "package_name": "tensorflow",
-                "index_url": [
-                    "https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/"
-                ],
+                "index_url": ["https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/"],
             }
         )
         unit.pre_run()
@@ -80,10 +69,7 @@ class TestFilterIndexSieve(AdviserTestCase):
     def test_run_no_filter_multiple(self) -> None:
         """Test not filtering a package based on source index used."""
         package_version = PackageVersion(
-            name="tensorboard",
-            version="==2.1.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="tensorboard", version="==2.1.0", index=Source("https://pypi.org/simple"), develop=False,
         )
         unit = FilterIndexSieve()
         unit.update_configuration(

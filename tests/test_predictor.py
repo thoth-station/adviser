@@ -31,14 +31,10 @@ class TestPredictor(AdviserTestCase):
         """Test initialization of temperature history."""
         assert "THOTH_ADVISER_NO_HISTORY" not in os.environ
         predictor = predictor_mock_class()
-        assert (
-            predictor.keep_history is True
-        ), "Temperature history not kept by default"
+        assert predictor.keep_history is True, "Temperature history not kept by default"
 
         flexmock(os)
-        os.should_receive("getenv").with_args("THOTH_ADVISER_NO_HISTORY", 0).and_return(
-            "0"
-        ).and_return("1").twice()
+        os.should_receive("getenv").with_args("THOTH_ADVISER_NO_HISTORY", 0).and_return("0").and_return("1").twice()
 
         predictor = predictor_mock_class()
         assert predictor.keep_history is True

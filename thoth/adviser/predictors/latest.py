@@ -47,18 +47,14 @@ class ApproximatingLatest(HillClimbing):
     _initial_state = attr.ib(type=Optional[State], default=None)
     _latest_versions_heat_up = attr.ib(type=set, factory=set)
 
-    def set_reward_signal(
-        self, state: State, package_tuple: Tuple[str, str, str], reward: float
-    ) -> None:
+    def set_reward_signal(self, state: State, package_tuple: Tuple[str, str, str], reward: float) -> None:
         """Set hop to True if we did not get resolve any stack with latest."""
         super().set_reward_signal(state, package_tuple, reward)
 
         if math.isnan(reward):
             self._hop = True
             if not self._hop_logged:
-                _LOGGER.warning(
-                    "The latest stack couldn't be resolved, performing hops across package versions"
-                )
+                _LOGGER.warning("The latest stack couldn't be resolved, performing hops across package versions")
                 self._hop_logged = True
 
         if math.isinf(reward):
@@ -100,20 +96,11 @@ class ApproximatingLatest(HillClimbing):
 
             self._packages_heated_up.add(unresolved_dependency)
             unresolved_dependency_tuple = next(
-                iter(
-                    self._initial_state.unresolved_dependencies[
-                        unresolved_dependency
-                    ].values()
-                )
+                iter(self._initial_state.unresolved_dependencies[unresolved_dependency].values())
             )
 
             if self.keep_history:
-                self._history.append(
-                    (
-                        self._initial_state.score,
-                        self.context.accepted_final_states_count,
-                    )
-                )
+                self._history.append((self._initial_state.score, self.context.accepted_final_states_count,))
 
             return self._initial_state, unresolved_dependency_tuple
 
@@ -133,9 +120,7 @@ class ApproximatingLatest(HillClimbing):
             state = self.context.beam.get_random()
 
         if self.keep_history:
-            self._history.append(
-                (state.score, self.context.accepted_final_states_count)
-            )
+            self._history.append((state.score, self.context.accepted_final_states_count))
 
         if self._hop:
             return state, state.get_random_unresolved_dependency(prefer_recent=True)

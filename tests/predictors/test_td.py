@@ -43,18 +43,12 @@ class TestTemporalDifference(AdviserTestCase):
         floats(allow_nan=False, allow_infinity=False),
         floats(min_value=0.0, allow_nan=False, allow_infinity=False),
     )
-    def test_acceptance_probability(
-        self, top_score: float, neighbour_score: float, temperature: float
-    ) -> None:
+    def test_acceptance_probability(self, top_score: float, neighbour_score: float, temperature: float) -> None:
         """Test acceptance probability is always between 0 and 1."""
         acceptance_probability = TemporalDifference._compute_acceptance_probability(
-            top_score=top_score,
-            neighbour_score=neighbour_score,
-            temperature=temperature,
+            top_score=top_score, neighbour_score=neighbour_score, temperature=temperature,
         )
-        assert (
-            0.0 <= acceptance_probability <= 1.0
-        ), "Acceptance probability not within 0 and 1"
+        assert 0.0 <= acceptance_probability <= 1.0, "Acceptance probability not within 0 and 1"
 
     @given(
         floats(min_value=0.0, allow_nan=False, allow_infinity=False),
@@ -64,12 +58,7 @@ class TestTemporalDifference(AdviserTestCase):
         integers(min_value=0),
     )
     def test_temperature_function(
-        self,
-        t0: float,
-        accepted_final_states_count: int,
-        limit: int,
-        iteration: int,
-        count: int,
+        self, t0: float, accepted_final_states_count: int, limit: int, iteration: int, count: int,
     ) -> None:
         """Test the temperature function never drops bellow 0."""
         context = flexmock(
@@ -81,9 +70,7 @@ class TestTemporalDifference(AdviserTestCase):
         )
 
         predictor = TemporalDifference()
-        assert (
-            predictor._temperature_function(t0=t0, context=context) >= 0.0
-        ), "Temperature dropped bellow 0 or is NaN"
+        assert predictor._temperature_function(t0=t0, context=context) >= 0.0, "Temperature dropped bellow 0 or is NaN"
 
     def test_init(self) -> None:
         """Test instantiation."""
@@ -96,9 +83,7 @@ class TestTemporalDifference(AdviserTestCase):
         """Test initialization done before running."""
         predictor = TemporalDifference()
 
-        predictor._policy = {
-            ("tensorflow", "2.0.0", "https://pypi.org/simple"): [1.0, 2]
-        }
+        predictor._policy = {("tensorflow", "2.0.0", "https://pypi.org/simple"): [1.0, 2]}
         predictor._temperature_history = [(0.212, True, 0.23, 100)]
         predictor._temperature = 12.3
 
@@ -117,10 +102,7 @@ class TestTemporalDifference(AdviserTestCase):
         predictor = TemporalDifference()
         state = flexmock()
         assert (
-            predictor.set_reward_signal(
-                state, ("tensorflow", "2.0.0", "https://pypi.org/simple"), float_case
-            )
-            is None
+            predictor.set_reward_signal(state, ("tensorflow", "2.0.0", "https://pypi.org/simple"), float_case) is None
         )
         assert predictor._policy == {}
 
@@ -130,9 +112,7 @@ class TestTemporalDifference(AdviserTestCase):
         package_tuple = ("tensorflow", "2.0.0", "https://thoth-station.ninja")
 
         state = flexmock()
-        state.should_receive("iter_resolved_dependencies").and_return(
-            [package_tuple]
-        ).once()
+        state.should_receive("iter_resolved_dependencies").and_return([package_tuple]).once()
 
         predictor = TemporalDifference()
         predictor._policy = {
@@ -152,9 +132,7 @@ class TestTemporalDifference(AdviserTestCase):
         package_tuple = ("pytorch", "1.0.2", "https://thoth-station.ninja")
 
         state = flexmock()
-        state.should_receive("iter_resolved_dependencies").and_return(
-            [package_tuple]
-        ).once()
+        state.should_receive("iter_resolved_dependencies").and_return([package_tuple]).once()
 
         predictor = TemporalDifference()
         predictor._policy = {
@@ -188,32 +166,23 @@ class TestTemporalDifference(AdviserTestCase):
         ).once()
 
         state.should_receive("get_random_unresolved_dependency").times(0)
-        assert predictor._do_exploitation(state) == (
-            "tensorflow",
-            "2.1.0",
-            "https://thoth-station.ninja",
-        )
+        assert predictor._do_exploitation(state) == ("tensorflow", "2.1.0", "https://thoth-station.ninja",)
 
     def test_do_exploitation_no_records(self) -> None:
         """Tests on exploitation when no relevant records found."""
         predictor = TemporalDifference()
         assert predictor._policy == {}
 
-        random_unresolved_dependency = (
-            ("tensorflow", "2.1.0", "https://thoth-station.ninja"),
-        )
+        random_unresolved_dependency = (("tensorflow", "2.1.0", "https://thoth-station.ninja"),)
 
         state = flexmock()
         state.should_receive("iter_unresolved_dependencies").and_return(
-            [
-                ("micropipenv", "0.1.4", "https://pypi.org/simple"),
-                random_unresolved_dependency,
-            ]
+            [("micropipenv", "0.1.4", "https://pypi.org/simple"), random_unresolved_dependency,]
         ).once()
 
-        state.should_receive("get_random_unresolved_dependency").with_args(
-            prefer_recent=True
-        ).and_return(random_unresolved_dependency).once()
+        state.should_receive("get_random_unresolved_dependency").with_args(prefer_recent=True).and_return(
+            random_unresolved_dependency
+        ).once()
 
         assert predictor._do_exploitation(state) == random_unresolved_dependency
 
@@ -228,9 +197,7 @@ class TestTemporalDifference(AdviserTestCase):
 
         rewarded = list(predictor._policy.keys())[0]  # numpy
         state = flexmock()
-        state.should_receive("iter_resolved_dependencies").with_args().and_return(
-            [rewarded]
-        ).once()
+        state.should_receive("iter_resolved_dependencies").with_args().and_return([rewarded]).once()
 
         # No shrink as we are in this iteration.
         context.iteration = td_module._TD_POLICY_SIZE_CHECK_ITERATION + 1
@@ -258,9 +225,7 @@ class TestTemporalDifference(AdviserTestCase):
 
         rewarded = list(predictor._policy.keys())[0]  # numpy
         state = flexmock()
-        state.should_receive("iter_resolved_dependencies").with_args().and_return(
-            [rewarded]
-        ).once()
+        state.should_receive("iter_resolved_dependencies").with_args().and_return([rewarded]).once()
 
         # No shrink as we are in this iteration.
         context.iteration = 2 * td_module._TD_POLICY_SIZE_CHECK_ITERATION
@@ -301,15 +266,13 @@ class TestTemporalDifference(AdviserTestCase):
         random.should_receive("random").with_args().and_return(
             0.50
         ).once()  # *lower* than acceptance_probability that is 0.75 so we do exploitation
-        probable_state.should_receive("get_random_unresolved_dependency").with_args(
-            prefer_recent=True
-        ).and_return(unresolved_dependency).once()
-        TemporalDifference.should_receive("_temperature_function").with_args(
-            1.0, context
-        ).and_return(0.9).once()
-        AdaptiveSimulatedAnnealing.should_receive(
-            "_compute_acceptance_probability"
-        ).with_args(max_state.score, probable_state.score, 0.9).and_return(0.75).once()
+        probable_state.should_receive("get_random_unresolved_dependency").with_args(prefer_recent=True).and_return(
+            unresolved_dependency
+        ).once()
+        TemporalDifference.should_receive("_temperature_function").with_args(1.0, context).and_return(0.9).once()
+        AdaptiveSimulatedAnnealing.should_receive("_compute_acceptance_probability").with_args(
+            max_state.score, probable_state.score, 0.9
+        ).and_return(0.75).once()
         context.beam.should_receive("max").with_args().and_return(max_state).and_return(max_state).twice()
 
         predictor = TemporalDifference()
@@ -339,15 +302,13 @@ class TestTemporalDifference(AdviserTestCase):
         random.should_receive("random").with_args().and_return(
             0.99
         ).once()  # *higher* than acceptance_probability that is 0.75 so we do exploitation
-        TemporalDifference.should_receive("_do_exploitation").with_args(
-            max_state
-        ).and_return(unresolved_dependency).once()
-        TemporalDifference.should_receive("_temperature_function").with_args(
-            1.0, context
-        ).and_return(0.9).once()
-        AdaptiveSimulatedAnnealing.should_receive(
-            "_compute_acceptance_probability"
-        ).with_args(max_state.score, probable_state.score, 0.9).and_return(0.75).once()
+        TemporalDifference.should_receive("_do_exploitation").with_args(max_state).and_return(
+            unresolved_dependency
+        ).once()
+        TemporalDifference.should_receive("_temperature_function").with_args(1.0, context).and_return(0.9).once()
+        AdaptiveSimulatedAnnealing.should_receive("_compute_acceptance_probability").with_args(
+            max_state.score, probable_state.score, 0.9
+        ).and_return(0.75).once()
         context.beam.should_receive("max").with_args().and_return(max_state).and_return(max_state).twice()
 
         predictor = TemporalDifference()

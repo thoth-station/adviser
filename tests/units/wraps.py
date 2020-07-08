@@ -38,13 +38,11 @@ class Wrap1(Wrap):
     }
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
     def run(self, state: State) -> None:
-        """A noop method."""
+        """Run noop method."""
 
 
 class Wrap2(Wrap):
@@ -53,13 +51,11 @@ class Wrap2(Wrap):
     CONFIGURATION_DEFAULT: Dict[str, Any] = {}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
     def run(self, state: State) -> None:
-        """A noop method."""
+        """Run noop method."""
 
 
 __all__ = ["Wrap1", "Wrap2"]

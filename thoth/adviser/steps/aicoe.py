@@ -44,15 +44,10 @@ class AICoEReleasesStep(Step):
     """Prioritize releases from AICoE."""
 
     _SCORE_ADDITION = 0.1
-    _JUSTIFICATION = [{
-        "type": "INFO",
-        "message": "Builds produced by AICoE are optimized for performance"
-    }]
+    _JUSTIFICATION = [{"type": "INFO", "message": "Builds produced by AICoE are optimized for performance"}]
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, for non-latest adviser runs."""
         if not builder_context.is_adviser_pipeline():
             return None
@@ -65,9 +60,7 @@ class AICoEReleasesStep(Step):
 
         return None
 
-    def run(
-        self, _: State, package_version: PackageVersion
-    ) -> Optional[Tuple[float, List[Dict[str, str]]]]:
+    def run(self, _: State, package_version: PackageVersion) -> Optional[Tuple[float, List[Dict[str, str]]]]:
         """Prioritize releases from AICoE."""
         if self.is_aicoe_release(package_version):
             return self._SCORE_ADDITION, self._JUSTIFICATION

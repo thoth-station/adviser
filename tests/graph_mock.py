@@ -32,9 +32,8 @@ class MockedGraphDatabase:
     DEFAULT_COUNT = 100
 
     def __init__(self, database_file: str):
-        with open(
-            os.path.join(AdviserTestCase.data_dir, "graph", database_file), "r"
-        ) as db_file:
+        """Initialize mock database."""
+        with open(os.path.join(AdviserTestCase.data_dir, "graph", database_file), "r") as db_file:
             self.db = yaml.safe_load(db_file)
         # A map mapping package id to its tuples - this map can be used after the retrieve
         # transitive_dependencies_python call which fills this dict.
@@ -42,6 +41,7 @@ class MockedGraphDatabase:
         self._reverse_id_map = {}
 
     def connect(self):
+        """Connect to fake database (does nothing)."""
         pass
 
     def get_solved_python_package_versions_all(
@@ -64,9 +64,7 @@ class MockedGraphDatabase:
 
         return result
 
-    def retrieve_transitive_dependencies_python(
-        self, package_name: str, version: str, index: str
-    ) -> typing.List[list]:
+    def retrieve_transitive_dependencies_python(self, package_name: str, version: str, index: str) -> typing.List[list]:
         """Retrieve transitive dependencies for the given Python package."""
         # Cache for checking whether we have triplet (package_name, version, index) already seen
         # to avoid recursion.
@@ -78,9 +76,7 @@ class MockedGraphDatabase:
             package_name, package_version, index = queue.pop()
 
             if package_name not in self.db:
-                raise ValueError(
-                    f"The given package {package_name!r} is not present in the database"
-                )
+                raise ValueError(f"The given package {package_name!r} is not present in the database")
 
             info_entry = self.db[package_name].get(package_version)
             if not info_entry:
@@ -92,11 +88,7 @@ class MockedGraphDatabase:
                 for depends_on_entry in version_entry.get("depends_on", []):
                     for version in depends_on_entry["resolved"]:
                         queue.append(
-                            [
-                                depends_on_entry["package_name"],
-                                version,
-                                depends_on_entry["index_url"],
-                            ]
+                            [depends_on_entry["package_name"], version, depends_on_entry["index_url"],]
                         )
 
                         source = (package_name, package_version, index)
@@ -123,16 +115,13 @@ class MockedGraphDatabase:
 
         return result
 
-    def get_python_package_tuples(
-        self, python_package_node_ids: typing.Set[int]
-    ) -> typing.Dict[int, tuple]:
+    def get_python_package_tuples(self, python_package_node_ids: typing.Set[int]) -> typing.Dict[int, tuple]:
+        """Get package tuples from fake database."""
         result = {}
         for python_package_id in python_package_node_ids:
             package_tuple = self._id_map.get(python_package_id)
             if package_tuple is None:
-                raise ValueError(
-                    f"The given id {python_package_id} was never retrieved from the graph"
-                )
+                raise ValueError(f"The given id {python_package_id} was never retrieved from the graph")
             result[python_package_id] = package_tuple
 
         return result

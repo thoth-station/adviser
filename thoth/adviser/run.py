@@ -71,8 +71,7 @@ def subprocess_run(
         _LOGGER.debug("Created a child process to compute report")
         try:
             report: Union[DependencyMonkeyReport, Report] = resolver.resolve(
-                with_devel=with_devel,
-                user_stack_scoring=user_stack_scoring
+                with_devel=with_devel, user_stack_scoring=user_stack_scoring
             )
             if plot:
                 parts = plot.rsplit(".", maxsplit=1)
@@ -83,39 +82,27 @@ def subprocess_run(
                 beam_history_file = f"{file_name}_{resolver.beam.__class__.__name__}.{extension}"
                 try:
                     figure = resolver.predictor.plot()
-                    figure.savefig(
-                        predictor_history_file,
-                        format=extension
-                    )
+                    figure.savefig(predictor_history_file, format=extension)
                 except Exception as exc:
-                    _LOGGER.exception(
-                        "Failed to plot predictor history to %r: %s", plot, str(exc)
-                    )
+                    _LOGGER.exception("Failed to plot predictor history to %r: %s", plot, str(exc))
                 else:
                     _LOGGER.info("Predictor history saved to %r", predictor_history_file)
 
                 try:
                     figure = resolver.beam.plot()
-                    figure.savefig(
-                        beam_history_file,
-                        format=extension
-                    )
+                    figure.savefig(beam_history_file, format=extension)
                 except Exception as exc:
-                    _LOGGER.exception(
-                        "Failed to plot beam history to %r: %s", plot, str(exc)
-                    )
+                    _LOGGER.exception("Failed to plot beam history to %r: %s", plot, str(exc))
                 else:
                     _LOGGER.info("Beam history saved to %r", beam_history_file)
 
-            result_dict.update(
-                dict(error=False, error_msg=None, report=report.to_dict())
-            )
+            result_dict.update(dict(error=False, error_msg=None, report=report.to_dict()))
         except AdviserRunException as exc:
             if isinstance(exc, UnresolvedDependencies):
                 _LOGGER.error(
                     "Resolver failed due to unsolved dependencies for packages %s; these dependencies will be "
                     "automatically marked for solving by the system for future resolutions",
-                    ", ".join(exc.unresolved)
+                    ", ".join(exc.unresolved),
                 )
                 return_code = 2
             else:
@@ -126,11 +113,9 @@ def subprocess_run(
 
         except Exception as exc:
             _LOGGER.exception("Adviser raised exception: %s", str(exc))
-            result_dict.update(dict(
-                error=True,
-                error_msg=str(exc),
-                report=dict(ERROR="An error occurred, see logs for more info")
-            ))
+            result_dict.update(
+                dict(error=True, error_msg=str(exc), report=dict(ERROR="An error occurred, see logs for more info"))
+            )
             return_code = 2
 
         # Always submit results, even on error.
@@ -148,9 +133,7 @@ def subprocess_run(
         if exit_code != 0:
             _LOGGER.error("Child exited with exit code %r", exit_code)
             if exit_code == 9 or exit_code == 137:
-                err_msg = (
-                    "Adviser was killed as allocated memory has been exceeded (OOM)"
-                )
+                err_msg = "Adviser was killed as allocated memory has been exceeded (OOM)"
             elif os.path.isfile(_LIVENESS_PROBE_KILL_FILE):
                 err_msg = "Adviser was killed as allocated CPU time was exceeded"
             else:

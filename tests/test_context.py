@@ -34,18 +34,13 @@ from .base import AdviserTestCase
 
 
 @pytest.fixture
-def package_version() -> PackageVersion:
+def package_version() -> PackageVersion:  # noqa: D401
     """A fixture for a package version representative."""
-    return PackageVersion(
-        name="selinon",
-        version="==1.0.0",
-        index=Source("https://pypi.org/simple"),
-        develop=False,
-    )
+    return PackageVersion(name="selinon", version="==1.0.0", index=Source("https://pypi.org/simple"), develop=False,)
 
 
 @pytest.fixture
-def package_tuple() -> Tuple[str, str, str]:
+def package_tuple() -> Tuple[str, str, str]:  # noqa: D401
     """A fixture for a package tuple representative."""
     return "selinon", "1.0.0", "https://pypi.org/simple"
 
@@ -53,39 +48,24 @@ def package_tuple() -> Tuple[str, str, str]:
 class TestContext(AdviserTestCase):
     """Test context carried within resolution."""
 
-    def test_get_package_version(
-        self, context: Context, package_version: PackageVersion
-    ) -> None:
+    def test_get_package_version(self, context: Context, package_version: PackageVersion) -> None:
         """Test getting registering and getting a package version."""
         with pytest.raises(NotFound):
             context.get_package_version(package_version.to_tuple())
 
         assert context.register_package_version(package_version) is False
-        assert (
-            context.get_package_version(package_version.to_tuple()) is package_version
-        )
+        assert context.get_package_version(package_version.to_tuple()) is package_version
 
-    def test_get_package_version_graceful(
-        self, context: Context, package_version: PackageVersion
-    ) -> None:
+    def test_get_package_version_graceful(self, context: Context, package_version: PackageVersion) -> None:
         """Test getting registered package version, gracefully."""
-        assert (
-            context.get_package_version(package_version.to_tuple(), graceful=True)
-            is None
-        )
+        assert context.get_package_version(package_version.to_tuple(), graceful=True) is None
         with pytest.raises(NotFound):
             context.get_package_version(package_version.to_tuple(), graceful=False)
 
         assert context.register_package_version(package_version) is False
 
-        assert (
-            context.get_package_version(package_version.to_tuple(), graceful=True)
-            is package_version
-        )
-        assert (
-            context.get_package_version(package_version.to_tuple(), graceful=False)
-            is package_version
-        )
+        assert context.get_package_version(package_version.to_tuple(), graceful=True) is package_version
+        assert context.get_package_version(package_version.to_tuple(), graceful=False) is package_version
 
     def test_get_top_accepted_final_state(self, context: Context) -> None:
         """Test retrieval of top accepted final state."""
@@ -150,19 +130,13 @@ class TestContext(AdviserTestCase):
         assert list(context.iter_accepted_final_states_sorted(reverse=True)) == [state3, state4]
         assert list(context.iter_accepted_final_states_sorted(reverse=False)) == [state4, state3]
 
-    def test_register_package_version_existing(
-        self, context: Context, package_version: PackageVersion
-    ) -> None:
+    def test_register_package_version_existing(self, context: Context, package_version: PackageVersion) -> None:
         """Test registering an existing package version to context."""
         assert context.register_package_version(package_version) is False
-        assert (
-            context.get_package_version(package_version.to_tuple()) is package_version
-        )
+        assert context.get_package_version(package_version.to_tuple()) is package_version
         assert context.register_package_version(package_version) is True
 
-    def test_register_package_tuple_new(
-        self, context: Context, package_tuple: Tuple[str, str, str]
-    ) -> None:
+    def test_register_package_tuple_new(self, context: Context, package_tuple: Tuple[str, str, str]) -> None:
         """Test registering a new package tuple to the context."""
         with pytest.raises(NotFound):
             context.get_package_version(package_tuple)
@@ -171,12 +145,7 @@ class TestContext(AdviserTestCase):
 
         assert (
             context.register_package_tuple(
-                package_tuple,
-                develop=True,
-                extras=extras,
-                os_name="rhel",
-                os_version="8.1",
-                python_version="3.6"
+                package_tuple, develop=True, extras=extras, os_name="rhel", os_version="8.1", python_version="3.6"
             )
             is not None
         )
@@ -185,15 +154,13 @@ class TestContext(AdviserTestCase):
 
         assert package_version.name == "selinon"
         assert package_version.version == "==1.0.0"
-        assert package_version.develop == True
+        assert package_version.develop is True
         assert package_version.index is not None
         assert package_version.index.url == "https://pypi.org/simple"
         assert package_version.markers is None
         assert package_version.extras == extras
 
-    def test_register_package_tuple_existing(
-        self, context: Context, package_tuple: Tuple[str, str, str]
-    ) -> None:
+    def test_register_package_tuple_existing(self, context: Context, package_tuple: Tuple[str, str, str]) -> None:
         """Check registering an existing package tuple does not instantiate a new one."""
         with pytest.raises(NotFound):
             context.get_package_version(package_tuple)
@@ -201,28 +168,16 @@ class TestContext(AdviserTestCase):
         extras = ["postgresql"]
 
         package_version_registered = context.register_package_tuple(
-            package_tuple,
-            develop=True,
-            extras=extras,
-            os_name="fedora",
-            os_version="31",
-            python_version="3.7"
+            package_tuple, develop=True, extras=extras, os_name="fedora", os_version="31", python_version="3.7"
         )
 
         assert package_version_registered is not None
 
         package_version_another = context.register_package_tuple(
-            package_tuple,
-            develop=True,
-            extras=extras,
-            os_name="fedora",
-            os_version="31",
-            python_version="3.7"
+            package_tuple, develop=True, extras=extras, os_name="fedora", os_version="31", python_version="3.7"
         )
 
-        assert (
-            package_version_registered is package_version_another
-        ), "Different instances returned"
+        assert package_version_registered is package_version_another, "Different instances returned"
 
     def test_note_dependencies(self, context: Context) -> None:
         """Test noting dependencies to the context."""
@@ -231,10 +186,7 @@ class TestContext(AdviserTestCase):
 
         context.register_package_version(
             PackageVersion(
-                name=package_tuple[0],
-                version="==" + package_tuple[1],
-                index=Source(package_tuple[2]),
-                develop=False,
+                name=package_tuple[0], version="==" + package_tuple[1], index=Source(package_tuple[2]), develop=False,
             )
         )
 

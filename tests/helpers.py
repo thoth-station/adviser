@@ -27,7 +27,7 @@ import thoth.adviser
 
 def use_test_units(func: Any) -> Any:
     """Substitute implemented units in adviser implementation with the ones provided by testsuite."""
-
+    # noqa
     @functools.wraps(func)
     def wrapped(*args: Any, **kwargs: Any) -> Any:
         """Substitute implemented units with the testing ones."""

@@ -41,9 +41,7 @@ class RHELVersionBoot(Boot):
     """
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, always."""
         if not builder_context.is_included(cls):
             return {}
@@ -60,6 +58,6 @@ class RHELVersionBoot(Boot):
                 _LOGGER.info(
                     "RHEL major releases guarantee ABI compatibility across minor releases; "
                     "discarding minor release information and using RHEL version %r",
-                    version_parts[0]
+                    version_parts[0],
                 )
                 self.context.project.runtime_environment.operating_system.version = version_parts[0]
