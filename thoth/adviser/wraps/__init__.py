@@ -19,9 +19,14 @@
 
 from .mkl_threads import MKLThreadsWrap
 from .no_onservation import NoObservationWrap
+from .no_semantic_interposition import NoSemanticInterpositionWrap
 
 
 # Relative ordering of units is relevant, as the order specifies order
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
-__all__ = ["MKLThreadsWrap", "NoObservationWrap"]
+__all__ = [
+    "MKLThreadsWrap",
+    "NoObservationWrap",
+    "NoSemanticInterpositionWrap",
+]

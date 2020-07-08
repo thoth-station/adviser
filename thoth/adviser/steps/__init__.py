@@ -20,9 +20,17 @@
 from .aicoe import AICoEReleasesStep
 from .cve import CvePenalizationStep
 from .dropout import DropoutStep
+from .tensorflow_avx2 import TensorFlowAVX2Step
+# from .mock_score import MockScoreStep
 
 
 # Relative ordering of units is relevant, as the order specifies order
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
-__all__ = ["AICoEReleasesStep", "CvePenalizationStep", "DropoutStep"]
+__all__ = [
+    "AICoEReleasesStep",
+    "CvePenalizationStep",
+    "DropoutStep",
+    "TensorFlowAVX2Step",
+    # "MockScoreStep",
+]
