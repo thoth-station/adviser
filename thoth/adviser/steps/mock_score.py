@@ -50,9 +50,7 @@ class MockScoreStep(Step):
     _score_history = attr.ib(type=Dict[Tuple[str, str, str], float], factory=dict)
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, never."""
         return None
 
@@ -69,12 +67,12 @@ class MockScoreStep(Step):
         for key, value in packages.items():
             packages[key] = sorted(value, key=operator.itemgetter(1), reverse=True)
 
-        print("-"*10, " Mock score report ", "-"*10, file=sys.stderr)
+        print("-" * 10, " Mock score report ", "-" * 10, file=sys.stderr)
         for key in sorted(packages):
             print(key, file=sys.stderr)
             for entry in packages[key]:
                 print(f"{str((entry[0][1], entry[0][2])):>50} | {entry[1]:+f}", file=sys.stderr)
-        print("-"*40, file=sys.stderr)
+        print("-" * 40, file=sys.stderr)
 
     def run(
         self, _: State, package_version: PackageVersion

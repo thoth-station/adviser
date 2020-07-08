@@ -21,6 +21,7 @@ from .aicoe import AICoEReleasesStep
 from .cve import CvePenalizationStep
 from .dropout import DropoutStep
 from .tensorflow_avx2 import TensorFlowAVX2Step
+
 # from .mock_score import MockScoreStep
 
 

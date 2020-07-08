@@ -40,18 +40,10 @@ class State:
     # Iteration in which the state was introduced.
     iteration = attr.ib(type=int, default=0)
     # States added in the given iteration.
-    unresolved_dependencies = attr.ib(
-        default=attr.Factory(dict)
-    )  # type: Dict[str, Dict[int, Tuple[str, str, str]]]
-    resolved_dependencies = attr.ib(
-        default=attr.Factory(dict)
-    )  # type: Dict[str, Tuple[str, str, str]]
-    advised_runtime_environment = attr.ib(
-        type=Optional[RuntimeEnvironment], kw_only=True, default=None
-    )
-    justification = attr.ib(
-        type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True
-    )
+    unresolved_dependencies = attr.ib(default=attr.Factory(dict))  # type: Dict[str, Dict[int, Tuple[str, str, str]]]
+    resolved_dependencies = attr.ib(default=attr.Factory(dict))  # type: Dict[str, Tuple[str, str, str]]
+    advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], kw_only=True, default=None)
+    justification = attr.ib(type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True)
     _parent = attr.ib(default=None, type=weakref)
 
     _EPSILON = 0.1
@@ -119,9 +111,7 @@ class State:
     def set_unresolved_dependencies(self, dependencies: Dict[str, List[Tuple[str, str, str]]]) -> None:
         """Set unresolved dependencies - any unresolved dependencies will be overwritten."""
         for dependency_name, dependency_tuples in dependencies.items():
-            self.unresolved_dependencies[dependency_name] = {
-                hash(d): d for d in dependency_tuples
-            }
+            self.unresolved_dependencies[dependency_name] = {hash(d): d for d in dependency_tuples}
 
     def remove_unresolved_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
         """Remove the given unresolved dependency from state."""

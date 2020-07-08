@@ -31,7 +31,7 @@ from ..base import AdviserTestCase
 class TestNoSemanticInterpositionWrap(AdviserTestCase):
     """Test recommending Python3.8 on RHEL/UBI 8.2."""
 
-    @pytest.mark.parametrize("os_name,os_version,python_version", [("rhel", "8.2", "3.6"), ("ubi", "8.2", "3.7"),])
+    @pytest.mark.parametrize("os_name,os_version,python_version", [("rhel", "8.2", "3.6"), ("ubi", "8.2", "3.7")])
     def test_include(
         self, builder_context: PipelineBuilderContext, os_name: str, os_version: str, python_version: str
     ) -> None:

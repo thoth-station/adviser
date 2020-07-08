@@ -945,7 +945,7 @@ class Resolver:
         if self.stop_resolving:
             _LOGGER.warning(
                 "Resolving stopped with the current beam size %d as the allocated CPU time was exhausted",
-                self.beam.size
+                self.beam.size,
             )
 
     def _do_resolve_products(

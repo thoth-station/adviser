@@ -107,10 +107,7 @@ class Product:
                 else:
                     markers = environment_markers[0]
 
-                package_version = attr.evolve(
-                    package_version,
-                    markers=markers,
-                )
+                package_version = attr.evolve(package_version, markers=markers)
 
             package_versions_locked.append(package_version)
 

@@ -198,4 +198,3 @@ class TestState(AdviserTestCase):
 
         dict_["foo"] = 3003
         assert list(dict_.items())[-1] == ("foo", 3003), "Last item added to dict is not last obtained"
-

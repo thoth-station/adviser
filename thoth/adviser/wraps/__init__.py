@@ -25,8 +25,4 @@ from .no_semantic_interposition import NoSemanticInterpositionWrap
 # Relative ordering of units is relevant, as the order specifies order
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
-__all__ = [
-    "MKLThreadsWrap",
-    "NoObservationWrap",
-    "NoSemanticInterpositionWrap",
-]
+__all__ = ["MKLThreadsWrap", "NoObservationWrap", "NoSemanticInterpositionWrap"]
