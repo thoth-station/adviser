@@ -185,7 +185,8 @@ class Unit(metaclass=abc.ABCMeta):
         This method should not raise any exception.
         """
 
-    def post_run_report(self, report: Union[Report, DependencyMonkeyReport]) -> None:
+    def post_run_report(self, report):
+        # type:('Unit', Union[Report, DependencyMonkeyReport]) -> None
         """Post-run method run after the resolving has finished - this method is called only if resolving with a report.
 
         This method should not raise any exception.

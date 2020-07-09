@@ -150,9 +150,9 @@ class Resolver:
     DEFAULT_LOG_FINAL_STATE_COUNT = 500
     DEFAULT_LOG_FINAL_STATE_TOP = False
 
-    cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict))
-    stop_resolving = attr.ib(type=bool, default=False)
-    log_final_state_count = attr.ib(type=int)
+    cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict), kw_only=True)
+    stop_resolving = attr.ib(type=bool, default=False, kw_only=True)
+    log_final_state_count = attr.ib(type=int, kw_only=True)
 
     pipeline = attr.ib(type=PipelineConfig, kw_only=True)
     project = attr.ib(type=Project, kw_only=True)

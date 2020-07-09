@@ -42,21 +42,22 @@ class State:
     # States added in the given iteration.
     unresolved_dependencies = attr.ib(default=attr.Factory(dict))  # type: Dict[str, Dict[int, Tuple[str, str, str]]]
     resolved_dependencies = attr.ib(default=attr.Factory(dict))  # type: Dict[str, Tuple[str, str, str]]
-    _parent = attr.ib(type=weakref.ReferenceType["State"], default=None)
+    _parent = attr.ib(default=None)  # type: weakref.ReferenceType['State']
     advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], kw_only=True, default=None)
     justification = attr.ib(type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True)
 
     _EPSILON = 0.1
 
     @property
-    def parent(self) -> Optional[weakref.ReferenceType["State"]]:
+    def parent(self):
+        # type:('State') -> Optional['State']
         """Retrieve parent to this state.
 
         If None the state is top level state or parent is no longer maintained. Note the return
         value of None depends on actual gc runs.
         """
         if self._parent:
-            return self._parent
+            return self._parent()
 
         return None
 
