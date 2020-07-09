@@ -21,6 +21,7 @@ https://software.intel.com/en-us/mkl-linux-developer-guide-setting-the-number-of
 """
 
 from typing import TYPE_CHECKING
+from typing import Optional, Dict, Any
 
 from ..state import State
 from ..wrap import Wrap
@@ -45,7 +46,7 @@ class MKLThreadsWrap(Wrap):
     ]
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext"):
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
         """Include this wrap in adviser, once."""
         if not builder_context.is_included(cls):
             return {}

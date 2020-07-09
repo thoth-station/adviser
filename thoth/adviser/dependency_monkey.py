@@ -66,26 +66,20 @@ class DependencyMonkey:
             _LOGGER.warning("Ignoring user_stack_scoring flag in dependency monkey runs")
         if self.dry_run:
             _LOGGER.warning("Dry run of Dependency Monkey is set, stacks will be just computed")
-            output_func = partial(  # type: ignore
-                self._dm_dry_run, self.stack_output
-            )
+            output_func = partial(self._dm_dry_run, self.stack_output)
         elif self.stack_output == "-":
             _LOGGER.debug("Results of Dependency Monkey run will be printed to standard output")
-            output_func = self._dm_stdout_output
+            output_func = self._dm_stdout_output  # type: ignore
         elif self.stack_output.startswith(("https://", "http://")):
             _LOGGER.debug(
                 "Results of Dependency Monkey run will be submitted to API endpoint %r", self.stack_output,
             )
-            output_func = partial(  # type: ignore
-                self._dm_amun_output, self.stack_output, self.context or {}
-            )
+            output_func = partial(self._dm_amun_output, self.stack_output, self.context or {})  # type: ignore
         else:
             _LOGGER.debug(
                 "Results of Dependency Monkey run will be stored in directory %r", self.stack_output,
             )
-            output_func = partial(  # type: ignore
-                self._dm_dir_output, self.stack_output
-            )
+            output_func = partial(self._dm_dir_output, self.stack_output)  # type: ignore
 
         report = DependencyMonkeyReport()
         for count, product in enumerate(self.resolver.resolve_products(with_devel=with_devel)):

@@ -18,12 +18,7 @@
 """Filter out stacks which have require non-existent ABI symbols."""
 
 import logging
-from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import Generator
-from typing import Set
-from typing import TYPE_CHECKING
+from typing import Any, Dict, Optional, Generator, Set, TYPE_CHECKING
 
 import attr
 from thoth.python import PackageVersion
@@ -40,7 +35,7 @@ _LOGGER = logging.getLogger(__name__)
 class AbiCompatibilitySieve(Sieve):
     """Remove packages if the image being used doesn't have necessary ABI."""
 
-    image_symbols = attr.ib(type=Set, factory=set)
+    image_symbols = attr.ib(type=Set[str], factory=set)  # type: ignore
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -50,7 +45,7 @@ class AbiCompatibilitySieve(Sieve):
 
         return None
 
-    def pre_run(self):
+    def pre_run(self) -> None:
         """Initialize image_symbols."""
         runtime_environment = self.context.project.runtime_environment
         self.image_symbols = set(
@@ -64,7 +59,7 @@ class AbiCompatibilitySieve(Sieve):
 
         _LOGGER.debug("Analyzed image has the following symbols: %r", self.image_symbols)
 
-    def run(self, package_versions: Generator[PackageVersion, None, None]):
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """If package requires non-present symbols remove it."""
         for pkg_vers in package_versions:
             package_symbols = set(

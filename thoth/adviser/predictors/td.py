@@ -44,7 +44,7 @@ _TD_POLICY_SIZE_CHECK_ITERATION = 1024
 class TemporalDifference(AdaptiveSimulatedAnnealing):
     """Implementation of Temporal Difference (TD) based predictor with adaptive simulated annealing schedule."""
 
-    _policy = attr.ib(type=Dict[str, List[Union[float, int]]], factory=dict)
+    _policy = attr.ib(type=Dict[Tuple[str, str, str], List[Union[float, int]]], factory=dict, init=False)
 
     def pre_run(self) -> None:
         """Initialize pre-running of this predictor."""

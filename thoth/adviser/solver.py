@@ -42,7 +42,7 @@ from thoth.solver.python import PythonDependencyParser
 
 
 @attr.s(slots=True)
-class GraphReleasesFetcher(ReleasesFetcher):
+class GraphReleasesFetcher(ReleasesFetcher):  # type: ignore
     """Fetch releases for packages from the graph database."""
 
     graph = attr.ib(type=GraphDatabase, kw_only=True)
@@ -81,12 +81,10 @@ class GraphReleasesFetcher(ReleasesFetcher):
 
 
 @attr.s(slots=True)
-class PackageVersionDependencyParser(DependencyParser):
+class PackageVersionDependencyParser(DependencyParser):  # type: ignore
     """Parse an instance of PackageVersion to Dependency object needed by solver."""
 
-    def parse(  # type: ignore
-        self, dependencies: List[PackageVersion]
-    ) -> Generator[Requirement, None, None]:
+    def parse(self, dependencies: List[PackageVersion]) -> Generator[Requirement, None, None]:
         """Parse the given list of PackageVersion objects."""
         for package_version in dependencies:
             version = package_version.version if package_version.version != "*" else ""
@@ -95,7 +93,7 @@ class PackageVersionDependencyParser(DependencyParser):
 
 
 @attr.s(slots=True)
-class PythonGraphSolver(Solver):
+class PythonGraphSolver(Solver):  # type: ignore
     """Solve Python dependencies based on data available in the graph database."""
 
     dependency_parser = attr.ib(type=PackageVersionDependencyParser, kw_only=True)
@@ -124,9 +122,7 @@ class PythonPackageGraphSolver:
         if not self._solver:
             self._solver = PythonGraphSolver(
                 dependency_parser=PackageVersionDependencyParser(),
-                releases_fetcher=GraphReleasesFetcher(  # type: ignore
-                    graph=self.graph, runtime_environment=self.runtime_environment
-                ),
+                releases_fetcher=GraphReleasesFetcher(graph=self.graph, runtime_environment=self.runtime_environment),
             )
 
         return self._solver

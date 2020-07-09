@@ -28,6 +28,7 @@ from typing import Optional
 from typing import List
 from typing import Union
 from typing import Set
+from typing import Iterator
 import logging
 from itertools import chain
 import contextlib
@@ -126,10 +127,10 @@ def _library_usage(value: Any) -> Dict[str, Any]:
 
 
 @contextlib.contextmanager
-def _sigint_handler(resolver: "Resolver") -> None:
+def _sigint_handler(resolver: "Resolver") -> Iterator[None]:
     """Register signal handler for resolver handling."""
     # noqa
-    def handler(sig_num: int, _) -> None:
+    def handler(sig_num: int, _: Any) -> None:
         resolver.stop_resolving = True
 
     old_handler = signal.getsignal(signal.SIGINT)
@@ -149,6 +150,10 @@ class Resolver:
     DEFAULT_LOG_FINAL_STATE_COUNT = 500
     DEFAULT_LOG_FINAL_STATE_TOP = False
 
+    cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict))
+    stop_resolving = attr.ib(type=bool, default=False)
+    log_final_state_count = attr.ib(type=int)
+
     pipeline = attr.ib(type=PipelineConfig, kw_only=True)
     project = attr.ib(type=Project, kw_only=True)
     library_usage = attr.ib(type=Dict[str, Any], kw_only=True, converter=_library_usage)
@@ -167,9 +172,6 @@ class Resolver:
         default=DEFAULT_LIMIT_LATEST_VERSIONS,
         converter=_limit_latest_versions,  # type: ignore
     )
-    cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict))
-    stop_resolving = attr.ib(type=bool, default=False)
-    log_final_state_count = attr.ib(type=int)
 
     _beam = attr.ib(type=Optional[Beam], kw_only=True, default=None)
     _solver = attr.ib(type=Optional[PythonPackageGraphSolver], kw_only=True, default=None)
@@ -179,7 +181,7 @@ class Resolver:
     _log_unsolved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
     _log_sieved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
     _log_step_not_acceptable = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
-    _log_no_intersected = attr.ib(type=Tuple[Tuple[str, str, str], str], default=attr.Factory(set), kw_only=True)
+    _log_no_intersected = attr.ib(type=Set[Tuple[Tuple[str, str, str], str]], default=attr.Factory(set), kw_only=True)
 
     @limit.validator
     @count.validator
@@ -794,6 +796,7 @@ class Resolver:
             self.predictor.set_reward_signal(state, package_tuple, math.nan)
             return None
 
+        dependency_tuples: Union[List[Any], Set[Any]]  # indicate that dependency_tuples type change during iteration
         for dependency_name, dependency_tuples in all_dependencies.items():
             if dependency_name in state.unresolved_dependencies:
                 # We have shared dependencies - let's compute intersection and use intersected dependencies if
@@ -836,7 +839,9 @@ class Resolver:
                     continue
 
                 all_dependencies[dependency_name] = sorted(
-                    dependency_tuples, key=lambda d: self.context.get_package_version(d).semantic_version, reverse=True,
+                    dependency_tuples,
+                    key=lambda d: self.context.get_package_version(d).semantic_version,  # type: ignore
+                    reverse=True,
                 )
                 continue
 
@@ -855,7 +860,7 @@ class Resolver:
                 continue
 
             package_versions = [self.context.get_package_version(d) for d in dependency_tuples]
-            package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
+            package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)  # type: ignore
             package_versions = list(self._run_sieves(package_versions))
             if not package_versions:
                 log_once(
@@ -875,10 +880,10 @@ class Resolver:
 
             if self.limit_latest_versions:
                 all_dependencies[dependency_name] = [
-                    pv.to_tuple() for pv in package_versions[: self.limit_latest_versions]
+                    pv.to_tuple() for pv in package_versions[: self.limit_latest_versions]  # type: ignore
                 ]
             else:
-                all_dependencies[dependency_name] = [pv.to_tuple() for pv in package_versions]
+                all_dependencies[dependency_name] = [pv.to_tuple() for pv in package_versions]  # type: ignore
 
         return self._run_steps(state, package_version, all_dependencies)
 

@@ -24,7 +24,6 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import Optional
-from typing import TYPE_CHECKING
 from typing import Union
 from contextlib import contextmanager
 
@@ -35,8 +34,11 @@ from thoth.python import PackageVersion
 from .context import Context
 from .dm_report import DependencyMonkeyReport
 
+from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .pipeline_builder import PipelineBuilderContext
+    from .report import Report
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -183,7 +185,7 @@ class Unit(metaclass=abc.ABCMeta):
         This method should not raise any exception.
         """
 
-    def post_run_report(self, report: Union["Report", DependencyMonkeyReport]) -> None:
+    def post_run_report(self, report: Union[Report, DependencyMonkeyReport]) -> None:
         """Post-run method run after the resolving has finished - this method is called only if resolving with a report.
 
         This method should not raise any exception.

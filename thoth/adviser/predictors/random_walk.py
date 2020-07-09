@@ -39,7 +39,7 @@ _LOGGER = logging.getLogger(__name__)
 class RandomWalk(Predictor):
     """Implementation of a Random Walk based dependency graph sampling predictor."""
 
-    _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
+    _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list), init=False)
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Generate stacks using random walking."""

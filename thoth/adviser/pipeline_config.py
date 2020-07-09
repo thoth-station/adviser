@@ -34,6 +34,12 @@ from .step import Step
 from .stride import Stride
 from .wrap import Wrap
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .unit import Unit
+    from .report import Report
+
 
 @attr.s(slots=True)
 class PipelineConfig:
@@ -55,11 +61,11 @@ class PipelineConfig:
             "wraps": [wrap.to_dict() for wrap in self.wraps],
         }
 
-    def iter_units(self) -> Generator["Unit", None, None]:
+    def iter_units(self) -> Generator[Unit, None, None]:
         """Iterate over units present in the configuration."""
         yield from chain(self.boots, self.sieves, self.steps, self.strides, self.wraps)
 
-    def iter_units_reversed(self) -> Generator["Unit", None, None]:
+    def iter_units_reversed(self) -> Generator[Unit, None, None]:
         """Iterate over units present in the configuration in a reversed order."""
         yield from reversed(self.wraps)
         yield from reversed(self.strides)
@@ -87,7 +93,7 @@ class PipelineConfig:
                     "Failed to run post_run method on unit %r: %s", unit.__class__.__name__, str(exc),
                 ) from exc
 
-    def call_post_run_report(self, report: Union["Report", DependencyMonkeyReport]) -> None:
+    def call_post_run_report(self, report: Union[Report, DependencyMonkeyReport]) -> None:
         """Call post-run method when report is generated."""
         for unit in self.iter_units_reversed():
             try:

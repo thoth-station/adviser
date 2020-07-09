@@ -48,7 +48,7 @@ class VersionConstraintSieve(Sieve):
 
     CONFIGURATION_DEFAULT = {"package_name": None, "version_specifier": None}
 
-    _specifier = attr.ib(type=Optional[Specifier], default=None)
+    _specifier = attr.ib(type=Optional[Specifier], default=None, init=False)
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -67,10 +67,12 @@ class VersionConstraintSieve(Sieve):
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages based on build time/installation issues.."""
+        if self._specifier is None:
+            return
+
         for package_version in package_versions:
-            if (
-                package_version.name == self.configuration["package_name"]
-                and package_version.locked_version not in self._specifier
+            if package_version.name == self.configuration["package_name"] and not self._specifier.contains(
+                package_version.locked_version
             ):
                 _LOGGER.debug(
                     "Removing package %r based on configured version specifier %r",

@@ -43,7 +43,7 @@ _MCTS_POLICY_SIZE_CHECK_ITERATION = 1024
 class MCTS(TemporalDifference):
     """Implementation of Monte-Carlo Tree Search (MCTS) based predictor with adaptive simulated annealing schedule."""
 
-    _next_state = attr.ib(type=Optional[State], default=None)
+    _next_state = attr.ib(type=Optional[State], default=None, init=False)
 
     def pre_run(self) -> None:
         """Initialize pre-running of this predictor."""

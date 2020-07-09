@@ -120,7 +120,7 @@ class UnresolvedDependencies(AdviserRunException):
         super().__init__(*args)
         self.unresolved = unresolved
 
-    def to_dict(self) -> Optional[Dict[str, str]]:
+    def to_dict(self) -> Optional[Dict[str, Any]]:
         """Convert unresolved dependencies exception to the user."""
         return {
             "ERROR": "No dependencies found for "

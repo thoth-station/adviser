@@ -42,12 +42,12 @@ def should_keep_history(value: Any) -> bool:
 
 def log_once(
     logger: logging.Logger,
-    log_state: Set[object],
-    log_state_key: object,
+    log_state: Set[Any],
+    log_state_key: Any,
     msg: str,
-    *args: object,
+    *args: Any,
     level: int = logging.WARNING,
-    **kwargs: object,
+    **kwargs: Any,
 ) -> None:
     """Log the given message once."""
     if log_state_key in log_state:

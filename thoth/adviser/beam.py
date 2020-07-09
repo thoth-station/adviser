@@ -65,10 +65,9 @@ class Beam:
     width = attr.ib(default=None, type=Optional[int])
     keep_history = attr.ib(type=bool, kw_only=True, default=None, converter=should_keep_history)
 
-    _heap = attr.ib(type=ExtHeapQueue)
-
     _beam_history = attr.ib(type=List[Tuple[int, Optional[float]]], default=attr.Factory(list), kw_only=True)
 
+    _heap = attr.ib(type=ExtHeapQueue, init=False)
     _WIDTH_VALIDATOR_ERR_MSG = "Beam width has to be None or positive integer, got {!r}"
 
     @width.validator
@@ -88,7 +87,7 @@ class Beam:
         raise ValueError(self._WIDTH_VALIDATOR_ERR_MSG.format(value))
 
     @_heap.default
-    def _heap_default(self):
+    def _heap_default(self) -> ExtHeapQueue:
         """Initialize the extended heap queue."""
         if self.width is not None:
             return ExtHeapQueue(size=self.width)
@@ -169,7 +168,8 @@ class Beam:
 
     def iter_states(self) -> List[State]:
         """Iterate over states, do not respect their score in order of iteration."""
-        return self._heap.items()
+        to_return = self._heap.items()  # type: List[State]
+        return to_return
 
     def iter_states_sorted(self, reverse: bool = True) -> Generator[State, None, None]:
         """Iterate over sorted states."""
@@ -177,7 +177,8 @@ class Beam:
 
     def max(self) -> State:
         """Return the highest rated state as kept in the beam."""
-        return self._heap.get_max()
+        to_return = self._heap.get_max()  # type: State
+        return to_return
 
     def add_state(self, state: State) -> None:
         """Add state to the internal state listing (do it in O(log(N)) time."""
@@ -191,11 +192,13 @@ class Beam:
         assigned - beam under the hood uses min-heapq (as of now), but the index used is not guaranteed to
         point to a heap-like data structure.
         """
-        return self._heap.get(idx)
+        to_return = self._heap.get(idx)  # type: State
+        return to_return
 
     def get_last(self) -> Optional[State]:
         """Get state that was added in the previous resolution round."""
-        return self._heap.get_last()
+        to_return = self._heap.get_last()  # type: Optional[State]
+        return to_return
 
     def get_random(self) -> State:
         """Get a random state from beam."""
@@ -212,7 +215,7 @@ class Beam:
         If index is not provided, pop the largest item kept in the beam.
         """
         if idx is None:
-            to_pop_state = self._heap.get_max()
+            to_pop_state = self._heap.get_max()  # type: State
         else:
             to_pop_state = self._heap.get(idx)
 

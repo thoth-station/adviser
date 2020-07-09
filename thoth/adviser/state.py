@@ -42,28 +42,28 @@ class State:
     # States added in the given iteration.
     unresolved_dependencies = attr.ib(default=attr.Factory(dict))  # type: Dict[str, Dict[int, Tuple[str, str, str]]]
     resolved_dependencies = attr.ib(default=attr.Factory(dict))  # type: Dict[str, Tuple[str, str, str]]
+    _parent = attr.ib(type=weakref.ReferenceType["State"], default=None)
     advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], kw_only=True, default=None)
     justification = attr.ib(type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True)
-    _parent = attr.ib(default=None, type=weakref)
 
     _EPSILON = 0.1
 
     @property
-    def parent(self) -> Optional["State"]:
+    def parent(self) -> Optional[weakref.ReferenceType["State"]]:
         """Retrieve parent to this state.
 
         If None the state is top level state or parent is no longer maintained. Note the return
         value of None depends on actual gc runs.
         """
         if self._parent:
-            return self._parent()
+            return self._parent
 
         return None
 
     @classmethod
     def from_direct_dependencies(cls, direct_dependencies: Dict[str, List[PackageVersion]]) -> "State":
         """Create an initial state out of direct dependencies."""
-        unresolved_dependencies = {}
+        unresolved_dependencies = {}  # type: Dict[str, Dict[int, Tuple[str, str, str]]]
 
         for dependency_name, dependency_versions in direct_dependencies.items():
             unresolved_dependencies[dependency_name] = {}
@@ -73,7 +73,7 @@ class State:
 
         return cls(unresolved_dependencies=unresolved_dependencies)
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: "State") -> bool:
         """Compare two objects, comparision protocol used in the beam."""
         return self.score < other.score
 
@@ -285,7 +285,7 @@ class State:
             parent=weakref.ref(self),
         )
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Destruct self."""
         # Destruct parts that are not eventually populated to the pipeline product abstraction.
         del self.unresolved_dependencies

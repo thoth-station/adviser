@@ -39,7 +39,7 @@ _LOGGER = logging.getLogger(__name__)
 class Sampling(Predictor):
     """Implementation of a random sampling of the state space."""
 
-    _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
+    _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list), init=False)
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Get random state and random unresolved dependency from the beam for the next resolution round."""
