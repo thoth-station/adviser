@@ -41,6 +41,7 @@ repos:
       - id: mypy
         exclude: '^(docs|tasks|tests)|setup\.py'
         args: [--ignore-missing-imports]
+        additional_dependencies: [attrs~=19.3]
 
   - repo: https://github.com/psf/black
     rev: 19.10b0
