@@ -3037,3 +3037,32 @@
 * Remove sieve and use inital query
 * added to do for thoth.storages
 * create sieve for missing package versions
+
+## Release 0.11.0 (2020-07-10T10:25:10)
+* :pushpin: Automatic update of dependency thoth-storages from 0.24.0 to 0.24.2 (#1048)
+* Document Wrap pipeline unit type (#1047)
+* Remove tempalates handled by thoth-application (#1046)
+* :sparkles: added the cyborg-supervisors team to prow univers, after we have had it as a github team
+* Add link to Provenance Checks (#1045)
+* Introduce a mock score step for experimenting with predictors
+* Implement a pipeline step for recommending AVX2 builds of AICoE Tenso… (#1020)
+* :pushpin: Automatic update of dependency hypothesis from 5.18.3 to 5.19.0 (#1043)
+* Introduce a wrap for recommending Python3.8 on RHEL 8.2 (#1042)
+* :pushpin: Automatic update of dependency hypothesis from 5.18.0 to 5.18.3 (#1041)
+* Remove provenance-checker job template
+* Update OWNERS
+* :pushpin: Automatic update of dependency hypothesis from 5.16.3 to 5.18.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.23.2 to 0.24.0
+* Remove latest versions limitation
+* Adjust MANIFEST.in
+* :pushpin: Automatic update of dependency hypothesis from 5.16.1 to 5.16.3
+* :pushpin: Automatic update of dependency matplotlib from 3.2.1 to 3.2.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.23.0 to 0.23.2
+* :pushpin: Automatic update of dependency thoth-python from 0.9.2 to 0.10.0
+* add secondsAfterFailure
+* Increase time for SLI
+* Remove dependency
+* Include each marker of a type just once
+* Disable setup.py processing in s2i builds
+* Add a check for available platforms
+* Disable provenance checks
