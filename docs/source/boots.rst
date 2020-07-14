@@ -5,18 +5,21 @@ Boot pipeline unit type
 
 A very first :ref:`pipeline unit <unit>` is called ":class:`boot
 <thoth.adviser.boot.Boot>`" as it is started as a first pipeline unit. It's
-main purpose is to halt adviser in case of any undesired conditions or to print
-any messages to logger (that will show up in user logs).  As in case of all
-units, it has access to adviser context to check any input values to the
-adviser (user input, parameters or hyperparameters).
+main purpose is to check input, adjust input parameters, halt adviser in case
+of any undesired conditions or to print any messages to logger (that will show
+up in user logs).  As in case of all units, it has access to adviser context to
+check any input values to the adviser (user input, parameters or
+hyperparameters).
 
 .. note::
 
-  Each boot pipeline unit is called just once before the stack generation
-  pipeline is started.
+  Each boot pipeline unit is called just once per resolution before the
+  stack generation pipeline is started.
 
 Main usage
 ==========
+
+* Adjust input parameters to the resolution process.
 
 * Halt adviser before any stack resolution is done based on input values
 

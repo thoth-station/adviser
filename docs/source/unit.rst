@@ -11,7 +11,7 @@ accessible by :class:`context abstraction <thoth.adviser.context.Context>`. See
 documentation.
 
 Note the instantiation of units is done once during pipeline creation - units
-are kept instantiated once during stack generation pipeline run.
+are kept instantiated during stack generation pipeline run.
 
 Registering a pipeline unit to pipeline
 =======================================
