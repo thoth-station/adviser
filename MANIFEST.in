@@ -23,3 +23,4 @@ recursive-include tests *.lock
 recursive-include tests *.py
 recursive-include tests *.yaml
 recursive-include workflows *.yaml
+include OWNERS_ALIASES

@@ -149,11 +149,6 @@ class Resolver:
     DEFAULT_LIMIT_LATEST_VERSIONS = -1
     DEFAULT_LOG_FINAL_STATE_COUNT = 500
     DEFAULT_LOG_FINAL_STATE_TOP = False
-
-    cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict), kw_only=True)
-    stop_resolving = attr.ib(type=bool, default=False, kw_only=True)
-    log_final_state_count = attr.ib(type=int, kw_only=True)
-
     pipeline = attr.ib(type=PipelineConfig, kw_only=True)
     project = attr.ib(type=Project, kw_only=True)
     library_usage = attr.ib(type=Dict[str, Any], kw_only=True, converter=_library_usage)
@@ -172,6 +167,10 @@ class Resolver:
         default=DEFAULT_LIMIT_LATEST_VERSIONS,
         converter=_limit_latest_versions,  # type: ignore
     )
+
+    cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict), kw_only=True)
+    stop_resolving = attr.ib(type=bool, default=False, kw_only=True)
+    log_final_state_count = attr.ib(type=int, kw_only=True)
 
     _beam = attr.ib(type=Optional[Beam], kw_only=True, default=None)
     _solver = attr.ib(type=Optional[PythonPackageGraphSolver], kw_only=True, default=None)
