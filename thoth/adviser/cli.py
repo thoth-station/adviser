@@ -126,6 +126,8 @@ def _get_adviser_predictor(
     elif (
         recommendation_type == RecommendationType.STABLE
         or recommendation_type == RecommendationType.TESTING
+        or recommendation_type == RecommendationType.PERFORMANT
+        or recommendation_type == RecommendationType.SECURE
     ):
         return predictors.MCTS
 
