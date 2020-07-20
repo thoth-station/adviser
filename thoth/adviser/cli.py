@@ -115,7 +115,12 @@ def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationTy
 
     if recommendation_type == RecommendationType.LATEST:
         return predictors.ApproximatingLatest
-    elif recommendation_type == RecommendationType.STABLE or recommendation_type == RecommendationType.TESTING:
+    elif (
+        recommendation_type == RecommendationType.STABLE
+        or recommendation_type == RecommendationType.TESTING
+        or recommendation_type == RecommendationType.PERFORMANT
+        or recommendation_type == RecommendationType.SECURE
+    ):
         return predictors.MCTS
 
     raise ValueError(f"Unknown recommendation type: {recommendation_type!r}")
