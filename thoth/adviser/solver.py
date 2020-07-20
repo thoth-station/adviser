@@ -28,7 +28,6 @@ from typing import Dict
 from typing import Generator
 from typing import Tuple
 from typing import Set
-from typing import TYPE_CHECKING
 
 import attr
 from packaging.requirements import Requirement
@@ -42,19 +41,13 @@ from thoth.solver.python.base import Solver
 from thoth.solver.python import PythonDependencyParser
 
 
-if TYPE_CHECKING:
-    from thoth.storages import GraphDatabase
-
-
 @attr.s(slots=True)
-class GraphReleasesFetcher(ReleasesFetcher):
+class GraphReleasesFetcher(ReleasesFetcher):  # type: ignore
     """Fetch releases for packages from the graph database."""
 
     graph = attr.ib(type=GraphDatabase, kw_only=True)
     runtime_environment = attr.ib(
-        type=RuntimeEnvironment,
-        default=attr.Factory(RuntimeEnvironment.from_dict),
-        kw_only=True,
+        type=RuntimeEnvironment, default=attr.Factory(RuntimeEnvironment.from_dict), kw_only=True,
     )
 
     def fetch_releases(self, package_name: str) -> Tuple[str, List[Tuple[str, str]]]:
@@ -88,23 +81,19 @@ class GraphReleasesFetcher(ReleasesFetcher):
 
 
 @attr.s(slots=True)
-class PackageVersionDependencyParser(DependencyParser):
+class PackageVersionDependencyParser(DependencyParser):  # type: ignore
     """Parse an instance of PackageVersion to Dependency object needed by solver."""
 
-    def parse(  # type: ignore
-        self, dependencies: List[PackageVersion]
-    ) -> Generator[Requirement, None, None]:
+    def parse(self, dependencies: List[PackageVersion]) -> Generator[Requirement, None, None]:
         """Parse the given list of PackageVersion objects."""
         for package_version in dependencies:
             version = package_version.version if package_version.version != "*" else ""
-            dependency = PythonDependencyParser.parse_python(
-                package_version.name + version
-            )
+            dependency = PythonDependencyParser.parse_python(package_version.name + version)
             yield dependency
 
 
 @attr.s(slots=True)
-class PythonGraphSolver(Solver):
+class PythonGraphSolver(Solver):  # type: ignore
     """Solve Python dependencies based on data available in the graph database."""
 
     dependency_parser = attr.ib(type=PackageVersionDependencyParser, kw_only=True)
@@ -117,15 +106,11 @@ class PythonPackageGraphSolver:
 
     graph = attr.ib(type=GraphDatabase, kw_only=True)
     runtime_environment = attr.ib(
-        type=RuntimeEnvironment,
-        kw_only=True,
-        default=attr.Factory(RuntimeEnvironment.from_dict),
+        type=RuntimeEnvironment, kw_only=True, default=attr.Factory(RuntimeEnvironment.from_dict),
     )
     # Do not instantiate multiple objects for same python package tuple to optimize memory usage.
     _package_versions = attr.ib(
-        type=Dict[Tuple[str, str, str], PackageVersion],
-        default=attr.Factory(dict),
-        kw_only=True,
+        type=Dict[Tuple[str, str, str], PackageVersion], default=attr.Factory(dict), kw_only=True,
     )
     # Have just one instance of Source object per python package source index url.
     _sources = attr.ib(type=Dict[str, Source], default=attr.Factory(dict), kw_only=True)
@@ -137,16 +122,12 @@ class PythonPackageGraphSolver:
         if not self._solver:
             self._solver = PythonGraphSolver(
                 dependency_parser=PackageVersionDependencyParser(),
-                releases_fetcher=GraphReleasesFetcher(  # type: ignore
-                    graph=self.graph, runtime_environment=self.runtime_environment
-                ),
+                releases_fetcher=GraphReleasesFetcher(graph=self.graph, runtime_environment=self.runtime_environment),
             )
 
         return self._solver
 
-    def solve(
-        self, dependencies: List[PackageVersion], graceful: bool = True
-    ) -> Dict[str, List[PackageVersion]]:
+    def solve(self, dependencies: List[PackageVersion], graceful: bool = True) -> Dict[str, List[PackageVersion]]:
         """Solve the given dependencies and return object representation of packages."""
         result = {}
         # First, construct the map for checking packages.

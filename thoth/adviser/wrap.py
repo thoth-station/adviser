@@ -31,4 +31,4 @@ class Wrap(Unit):
 
     @abc.abstractmethod
     def run(self, state: State) -> None:
-        """Main entry-point for wrap units to filter and score packages."""
+        """Run main entry-point for wrap units to filter and score packages."""

@@ -120,16 +120,14 @@ class UnresolvedDependencies(AdviserRunException):
         super().__init__(*args)
         self.unresolved = unresolved
 
-    def to_dict(self) -> Optional[Dict[str, str]]:
+    def to_dict(self) -> Optional[Dict[str, Any]]:
         """Convert unresolved dependencies exception to the user."""
         return {
             "ERROR": "No dependencies found for "
-                     f"{', '.join(f'{dep!r}' for dep in self.unresolved)}  - these "
-                     "dependencies were not yet solved in Thoth "
-                     "cannot resolve all direct dependencies",
-            "_ERROR_DETAILS": {
-                "unresolved": self.unresolved,
-            }
+            f"{', '.join(f'{dep!r}' for dep in self.unresolved)}  - these "
+            "dependencies were not yet solved in Thoth "
+            "cannot resolve all direct dependencies",
+            "_ERROR_DETAILS": {"unresolved": self.unresolved,},
         }
 
 

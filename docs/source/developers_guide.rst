@@ -343,4 +343,3 @@ information from function documentation):
 Once all the adapters get imported and instantiated, you can perform scheduling
 of workload using the OpenShift abstraction, which will directly talk to
 OpenShift's master to schedule workload in the cluster.
-

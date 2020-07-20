@@ -18,10 +18,11 @@
 """Implementation of sieves used in adviser pipeline."""
 
 from .abi_compat import AbiCompatibilitySieve
+from .filter_index import FilterIndexSieve
 from .index_enabled import PackageIndexSieve
 from .locked import CutLockedSieve
-from .filter_index import FilterIndexSieve
 from .prereleases import CutPreReleasesSieve
+from .py36_setuptools import Py36SetuptoolsSieve
 from .solved import SolvedSieve
 from .version_constraint import VersionConstraintSieve
 
@@ -32,6 +33,7 @@ from .version_constraint import VersionConstraintSieve
 __all__ = [
     "CutLockedSieve",
     "CutPreReleasesSieve",
+    "Py36SetuptoolsSieve",
     "PackageIndexSieve",
     "SolvedSieve",
     "VersionConstraintSieve",

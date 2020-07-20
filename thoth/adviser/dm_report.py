@@ -36,9 +36,7 @@ class DependencyMonkeyReport:
     """Report produced by a Dependency Monkey run."""
 
     skipped = attr.ib(type=int, default=0)
-    _responses = attr.ib(
-        type=List[Dict[str, Union[Dict[str, Any], str]]], default=attr.Factory(list)
-    )
+    _responses = attr.ib(type=List[Dict[str, Union[Dict[str, Any], str]]], default=attr.Factory(list))
 
     def add_response(self, response: str, product: Product) -> None:
         """Add a new response to response listing."""

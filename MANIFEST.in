@@ -1,4 +1,3 @@
-.coafile
 exclude liveness.py
 exclude *.md
 exclude *.sh
@@ -14,13 +13,14 @@ include requirements.txt
 include tests/data/projects/Pipfile
 include tests/data/projects/Pipfile_project0
 include tests/data/projects/Pipfile_project1
-recursive-exclude docs *.dia
-recursive-exclude docs *.html
-recursive-exclude docs *.png
-recursive-exclude docs *.py
-recursive-exclude docs *.rst
-recursive-exclude openshift *.yaml
-recursive-exclude tests *.lock
-recursive-exclude tests *.py
-recursive-exclude tests *.yaml
-recursive-exclude workflows *.yaml
+recursive-include docs *.dia
+recursive-include docs *.html
+recursive-include docs *.png
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include openshift *.yaml
+recursive-include tests *.lock
+recursive-include tests *.py
+recursive-include tests *.yaml
+recursive-include workflows *.yaml
+include OWNERS_ALIASES

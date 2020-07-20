@@ -39,7 +39,7 @@ _LOGGER = logging.getLogger(__name__)
 class RandomWalk(Predictor):
     """Implementation of a Random Walk based dependency graph sampling predictor."""
 
-    _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
+    _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list), init=False)
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Generate stacks using random walking."""
@@ -53,7 +53,7 @@ class RandomWalk(Predictor):
         return state, state.get_random_unresolved_dependency(prefer_recent=False)
 
     def pre_run(self) -> None:
-        """Initialization before the random walk run."""
+        """Initialize before the random walk run."""
         self._history = []
 
     def plot(self) -> matplotlib.figure.Figure:
@@ -77,8 +77,8 @@ class RandomWalk(Predictor):
         host.spines["right"].set_visible(False)
         host.spines["top"].set_visible(False)
 
-        p1, = host.plot(x, y1, ",g", label="Score of a random picked state")
-        p2, = par1.plot(x, y2, ",y", label="Number of products conducted")
+        (p1,) = host.plot(x, y1, ",g", label="Score of a random picked state")
+        (p2,) = par1.plot(x, y2, ",y", label="Number of products conducted")
 
         host.set_xlabel("iteration")
         host.set_ylabel("score")
@@ -95,11 +95,6 @@ class RandomWalk(Predictor):
         font_prop = FontProperties()
         font_prop.set_size("medium")
         fig.legend(
-            loc="upper center",
-            bbox_to_anchor=(0.50, 1.00),
-            ncol=2,
-            fancybox=True,
-            shadow=True,
-            prop=font_prop,
+            loc="upper center", bbox_to_anchor=(0.50, 1.00), ncol=2, fancybox=True, shadow=True, prop=font_prop,
         )
         return fig

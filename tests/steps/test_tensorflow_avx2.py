@@ -88,7 +88,7 @@ class TestTensorFlowAVX2Step(AdviserTestCase):
                 [
                     {
                         "message": "AICoE TensorFlow builds are optimized for AVX2 instruction "
-                                   "sets supported in the CPU identified",
+                        "sets supported in the CPU identified",
                         "type": "INFO",
                     }
                 ],

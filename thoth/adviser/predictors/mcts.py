@@ -43,7 +43,7 @@ _MCTS_POLICY_SIZE_CHECK_ITERATION = 1024
 class MCTS(TemporalDifference):
     """Implementation of Monte-Carlo Tree Search (MCTS) based predictor with adaptive simulated annealing schedule."""
 
-    _next_state = attr.ib(type=Optional[State], default=None)
+    _next_state = attr.ib(type=Optional[State], default=None, init=False)
 
     def pre_run(self) -> None:
         """Initialize pre-running of this predictor."""
@@ -55,7 +55,7 @@ class MCTS(TemporalDifference):
         # This function, in comparision to TD/SA, does not need to take into account iteration as it
         # works on accepted states.
         k = context.accepted_final_states_count / context.limit
-        temperature = t0 * 0.99**k
+        temperature = t0 * 0.99 ** k
         _LOGGER.debug(
             "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, beam size= %d, k=%f) = %g",
             context.iteration,
@@ -66,11 +66,9 @@ class MCTS(TemporalDifference):
             k,
             temperature,
         )
-        return max(temperature, .0)
+        return max(temperature, 0.0)
 
-    def set_reward_signal(
-        self, state: State, _: Tuple[str, str, str], reward: float
-    ) -> None:
+    def set_reward_signal(self, state: State, _: Tuple[str, str, str], reward: float) -> None:
         """Note down reward signal of the last action performed."""
         if math.isnan(reward):
             # Invalid state reached, continue with another one in the next round.
@@ -96,9 +94,7 @@ class MCTS(TemporalDifference):
         if _MCTS_POLICY_SIZE and self.context.iteration % _MCTS_POLICY_SIZE_CHECK_ITERATION == 0:
             _LOGGER.warning("Shrinking learnt policy to %d entries", _MCTS_POLICY_SIZE)
             self._policy = dict(
-                sorted(self._policy.items(), key=operator.itemgetter(1), reverse=True)[
-                    :_MCTS_POLICY_SIZE
-                ]
+                sorted(self._policy.items(), key=operator.itemgetter(1), reverse=True)[:_MCTS_POLICY_SIZE]
             )
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:

@@ -183,17 +183,11 @@ class TestBeam(AdviserTestCase):
         """Test adding states to beam and order during addition when score is same - iteration is relevant."""
         beam = Beam(width=1)
 
-        state01 = State(
-            score=0.0,
-            iteration=1,
-        )
+        state01 = State(score=0.0, iteration=1,)
         state01.add_justification([{"state": "01"}])
         beam.add_state(state01)
 
-        state02 = State(
-            score=0.0,
-            iteration=0,
-        )
+        state02 = State(score=0.0, iteration=0,)
         state02.add_justification([{"state": "02"}])
         beam.add_state(state02)
 

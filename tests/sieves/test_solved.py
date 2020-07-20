@@ -17,12 +17,10 @@
 
 """Tests related to filtering out unsolved packages and packages with build-time error (installation issues)."""
 
-import pytest
 import flexmock
 from typing import Tuple
 
 from thoth.adviser.sieves import SolvedSieve
-from thoth.adviser.exceptions import NotAcceptable
 from thoth.common import RuntimeEnvironment
 from thoth.python import Source
 from thoth.python import PackageVersion
@@ -51,10 +49,7 @@ tensorflow = "*"
         project = Project.from_strings(self._CASE_PIPFILE)
         flexmock(GraphDatabase)
         package_version = PackageVersion(
-            name="tensorflow",
-            version="==2.0.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="tensorflow", version="==2.0.0", index=Source("https://pypi.org/simple"), develop=False,
         )
         return package_version, project
 
@@ -76,8 +71,7 @@ tensorflow = "*"
         )
 
         context = flexmock(
-            graph=GraphDatabase(),
-            project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
+            graph=GraphDatabase(), project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
         )
         with SolvedSieve.assigned_context(context):
             sieve = SolvedSieve()
@@ -101,8 +95,7 @@ tensorflow = "*"
         )
 
         context = flexmock(
-            graph=GraphDatabase(),
-            project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
+            graph=GraphDatabase(), project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
         )
         with SolvedSieve.assigned_context(context):
             sieve = SolvedSieve()
@@ -126,8 +119,7 @@ tensorflow = "*"
         )
 
         context = flexmock(
-            graph=GraphDatabase(),
-            project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
+            graph=GraphDatabase(), project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
         )
         with SolvedSieve.assigned_context(context):
             sieve = SolvedSieve()

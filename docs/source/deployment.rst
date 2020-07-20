@@ -73,7 +73,7 @@ experimenting with adviser or developing it. Naturally, this number cannot be
 bigger than ``limit``.
 
 When obtaining *latest* stack, this number can be set to ``1`` which will cause
-adviser to immidiatelly terminate once it finds the first latest stack. 
+adviser to immidiatelly terminate once it finds the first latest stack.
 
 Setting seed
 ############

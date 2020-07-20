@@ -43,18 +43,14 @@ class SolvedSieve(Sieve):
     CONFIGURATION_DEFAULT = {"without_error": True}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include solved pipeline sieve for adviser or Dependency Monkey on pipeline creation."""
         if not builder_context.is_included(cls):
             return {}
 
         return None
 
-    def run(
-        self, package_versions: Generator[PackageVersion, None, None]
-    ) -> Generator[PackageVersion, None, None]:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages based on build time/installation issues.."""
         for package_version in package_versions:
             try:
@@ -68,9 +64,7 @@ class SolvedSieve(Sieve):
                 )
             except NotFoundError as exc:
                 _LOGGER.debug(
-                    "Removing package %r as it was not solved: %s",
-                    package_version.to_tuple(),
-                    str(exc),
+                    "Removing package %r as it was not solved: %s", package_version.to_tuple(), str(exc),
                 )
                 continue
 

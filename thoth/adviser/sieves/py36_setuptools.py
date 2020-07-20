@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019, 2020 Fridolin Pokorny
+# Copyright(C) 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A sieve to filter out pre-releases in direct dependencies."""
+"""A sieve to filter out old setuptools that do not work with Python 3.6."""
 
 import logging
 from typing import Optional
@@ -36,28 +36,30 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class CutPreReleasesSieve(Sieve):
-    """Cut-off pre-releases if project does not explicitly allows them."""
+class Py36SetuptoolsSieve(Sieve):
+    """Filter out old setuptools that do not work with Python 3.6.
+
+    https://github.com/pypa/setuptools/issues/378
+    https://github.com/thoth-station/solver/issues/350
+    """
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
-        """Include cut-prereleases pipeline sieve for adviser or Dependency Monkey if pre-releases are not allowed."""
-        if not builder_context.is_included(cls) and not builder_context.project.prereleases_allowed:
+    def should_include(
+        cls, builder_context: "PipelineBuilderContext"
+    ) -> Optional[Dict[str, Any]]:
+        """Include for Python 3.6 and adviser/dependency monkey runs."""
+        if builder_context.is_included(cls):
+            return None
+
+        if builder_context.project.runtime_environment.python_version == "3.6":
             return {}
 
         return None
 
-    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
-        """Cut-off pre-releases if project does not explicitly allows them."""
+    def run(
+        self, package_versions: Generator[PackageVersion, None, None]
+    ) -> Generator[PackageVersion, None, None]:
+        """Filter out old setuptools that do not work with Python 3.6"""
         for package_version in package_versions:
-            if self.context.project.prereleases_allowed:
-                _LOGGER.info("Project accepts pre-releases, skipping cutting pre-releases step")
+            if package_version.name != "setuptools" or package_version.semantic_version.major >= 17:
                 yield package_version
-
-            if package_version.semantic_version.is_prerelease:
-                _LOGGER.debug(
-                    "Removing package %s - pre-releases are disabled", package_version.to_tuple(),
-                )
-                continue
-
-            yield package_version

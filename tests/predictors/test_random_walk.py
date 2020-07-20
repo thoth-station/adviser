@@ -33,9 +33,7 @@ from ..base import AdviserTestCase
 class TestRandomWalk(AdviserTestCase):
     """Tests related to random walk in the dependency graph."""
 
-    @given(
-        integers(min_value=1, max_value=256),
-    )
+    @given(integers(min_value=1, max_value=256),)
     def test_run(self, state: State, state_count: int) -> None:
         """Test running the random walk method."""
         beam = Beam()
@@ -65,6 +63,4 @@ class TestRandomWalk(AdviserTestCase):
 
         with predictor.assigned_context(context):
             predictor.pre_run()
-            assert (
-                predictor._history == []
-            ), "Predictor's history not discarded"
+            assert predictor._history == [], "Predictor's history not discarded"

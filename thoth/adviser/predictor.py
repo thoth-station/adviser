@@ -20,7 +20,6 @@
 import abc
 import logging
 from contextlib import contextmanager
-import sys
 
 import attr
 from typing import Any
@@ -42,12 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 class Predictor:
     """A base class for implementing a predictor for resolver."""
 
-    keep_history = attr.ib(
-        type=bool,
-        kw_only=True,
-        default=None,
-        converter=should_keep_history
-    )
+    keep_history = attr.ib(type=bool, kw_only=True, default=None, converter=should_keep_history)
 
     _CONTEXT: Optional[Context] = None
 
@@ -79,7 +73,7 @@ class Predictor:
 
     @abc.abstractmethod
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
-        """The main method used to run the predictor."""
+        """Run the main method used to run the predictor."""
         raise NotImplementedError
 
     def post_run(self) -> None:
@@ -104,7 +98,7 @@ class Predictor:
         """
         # noop
 
-    def finalize_state(self, state_id: int) -> None:
+    def finalize_state(self, state_id: int) -> None:  # noqa: D401
         """Finalizer called when the given state is about to be destructed by garbage collector.
 
         Method suitable if predictor keeps internal state for states. Note that this method is not
@@ -118,7 +112,7 @@ class Predictor:
         """Plot information about predictor."""
         _LOGGER.error(
             "Cannot plot predictor history as plotting is not implemented for predictor %r, error is not fatal",
-            self.__class__.__name__
+            self.__class__.__name__,
         )
 
     @staticmethod

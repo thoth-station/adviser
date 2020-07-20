@@ -31,4 +31,4 @@ class Stride(Unit):
 
     @abc.abstractmethod
     def run(self, state: State) -> None:
-        """Main entry-point for strides."""
+        """Run main entry-point for strides."""

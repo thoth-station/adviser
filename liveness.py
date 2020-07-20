@@ -36,7 +36,7 @@ _LIVENESS_PROBE_KILL_FILE = "/tmp/thoth_adviser_cpu_timeout"
 
 def main() -> int:
     """Kill all processes except for main."""
-    pids = [int(pid) for pid in os.listdir('/proc') if pid.isdigit()]
+    pids = [int(pid) for pid in os.listdir("/proc") if pid.isdigit()]
 
     for pid in pids:
         if pid == 1:
@@ -55,5 +55,5 @@ def main() -> int:
     return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

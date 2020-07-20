@@ -79,9 +79,7 @@ def _print_version(ctx: click.Context, _, value: str):
 
 
 def _instantiate_project(
-    requirements: str,
-    requirements_locked: Optional[str] = None,
-    runtime_environment: RuntimeEnvironment = None,
+    requirements: str, requirements_locked: Optional[str] = None, runtime_environment: RuntimeEnvironment = None,
 ):
     """Create Project instance based on arguments passed to CLI."""
     try:
@@ -100,11 +98,7 @@ def _instantiate_project(
             requirements_locked = requirements_locked.replace("\\n", "\n")
 
     pipfile = Pipfile.from_string(requirements)
-    pipfile_lock = (
-        PipfileLock.from_string(requirements_locked, pipfile)
-        if requirements_locked
-        else None
-    )
+    pipfile_lock = PipfileLock.from_string(requirements_locked, pipfile) if requirements_locked else None
     project = Project(
         pipfile=pipfile,
         pipfile_lock=pipfile_lock,
@@ -114,9 +108,7 @@ def _instantiate_project(
     return project
 
 
-def _get_adviser_predictor(
-    predictor: str, recommendation_type: RecommendationType
-) -> type:
+def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationType) -> type:
     """Get adviser predictor based on command line option."""
     if predictor != "AUTO":
         return getattr(predictors, predictor)
@@ -137,11 +129,7 @@ def _get_adviser_predictor(
 @click.group()
 @click.pass_context
 @click.option(
-    "-v",
-    "--verbose",
-    is_flag=True,
-    envvar="THOTH_ADVISER_DEBUG",
-    help="Be verbose about what's going on.",
+    "-v", "--verbose", is_flag=True, envvar="THOTH_ADVISER_DEBUG", help="Be verbose about what's going on.",
 )
 @click.option(
     "--version",
@@ -233,8 +221,7 @@ def provenance(
         project = _instantiate_project(requirements, requirements_locked)
         result["parameters"]["project"] = project.to_dict()
         report = project.check_provenance(
-            whitelisted_sources=whitelisted_sources,
-            digests_fetcher=GraphDigestsFetcher(),
+            whitelisted_sources=whitelisted_sources, digests_fetcher=GraphDigestsFetcher(),
         )
     except (AdviserException, UnsupportedConfiguration) as exc:
         if isinstance(exc, InternalError):
@@ -244,9 +231,7 @@ def provenance(
         _LOGGER.exception("Error during checking provenance: %s", str(exc))
         result["error"] = True
         result["error_msg"] = str(exc)
-        result["report"] = [
-            {"type": "ERROR", "justification": f"{str(exc)} ({type(exc).__name__})"}
-        ]
+        result["report"] = [{"type": "ERROR", "justification": f"{str(exc)} ({type(exc).__name__})"}]
     else:
         result["error"] = False
         result["error_msg"] = None
@@ -344,9 +329,7 @@ def provenance(
     type=str,
     help="Runtime environment specification (file or directly JSON) to describe target environment.",
 )
-@click.option(
-    "--plot", envvar="THOTH_ADVISER_PLOT", type=str, help="Plot history of predictor."
-)
+@click.option("--plot", envvar="THOTH_ADVISER_PLOT", type=str, help="Plot history of predictor.")
 @click.option(
     "--beam-width",
     "-b",
@@ -384,8 +367,8 @@ def provenance(
     default=True,
     show_default=True,
     help="Turn off or on user stack scoring - the lock file supplied, if any, will be used "
-         "as a base for relative stack quality comparision. Adviser will score the supplied "
-         "lock file and will try to find a better stack.",
+    "as a base for relative stack quality comparision. Adviser will score the supplied "
+    "lock file and will try to find a better stack.",
 )
 @click.option(
     "--dev/--no-dev",
@@ -425,7 +408,7 @@ def advise(
         if os.path.isfile(library_usage):
             try:
                 library_usage = json.loads(Path(library_usage).read_text())
-            except Exception as exc:
+            except Exception:
                 _LOGGER.error("Failed to load library usage file %r", library_usage)
                 raise
         else:
@@ -434,9 +417,7 @@ def advise(
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
     recommendation_type = RecommendationType.by_name(recommendation_type)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
-    project = _instantiate_project(
-        requirements, requirements_locked, runtime_environment
-    )
+    project = _instantiate_project(requirements, requirements_locked, runtime_environment)
     pipeline_config = None if pipeline is None else PipelineBuilder.load(pipeline)
 
     parameters["project"] = project.to_dict()
@@ -447,9 +428,7 @@ def advise(
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
     seed = seed if seed is not None else int(time.time())
     _LOGGER.info(
-        "Starting resolver using %r predictor with random seed set to %r",
-        predictor_class.__name__,
-        seed,
+        "Starting resolver using %r predictor with random seed set to %r", predictor_class.__name__, seed,
     )
     random.seed(seed)
 
@@ -581,9 +560,7 @@ def advise(
     type=str,
     help="Runtime environment specification (file or directly JSON) to describe target environment.",
 )
-@click.option(
-    "--plot", envvar="THOTH_ADVISER_PLOT", type=str, help="Plot predictor history."
-)
+@click.option("--plot", envvar="THOTH_ADVISER_PLOT", type=str, help="Plot predictor history.")
 @click.option(
     "--beam-width",
     "-b",
@@ -653,7 +630,7 @@ def dependency_monkey(
         if os.path.isfile(library_usage):
             try:
                 library_usage = json.loads(Path(library_usage).read_text())
-            except Exception as exc:
+            except Exception:
                 _LOGGER.error("Failed to load library usage file %r", library_usage)
                 raise
         else:
@@ -661,9 +638,7 @@ def dependency_monkey(
 
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
-    project = _instantiate_project(
-        requirements, runtime_environment=runtime_environment
-    )
+    project = _instantiate_project(requirements, runtime_environment=runtime_environment)
     pipeline_config = None if pipeline is None else PipelineBuilder.load(pipeline)
 
     parameters["project"] = project.to_dict()
@@ -673,9 +648,7 @@ def dependency_monkey(
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
     seed = seed if seed is not None else int(time.time())
     _LOGGER.info(
-        "Starting resolver using predictor %r with random seed set to %r",
-        predictor,
-        seed,
+        "Starting resolver using predictor %r with random seed set to %r", predictor, seed,
     )
     random.seed(seed)
 
