@@ -12,4 +12,3 @@ runtime_environments:
       cpu_model: {cpu_model}
     python_version: '{python_version}'
     recommendation_type: latest
-    limit_latest_versions: 5
