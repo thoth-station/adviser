@@ -25,6 +25,10 @@ from .solved_software_environment import SolvedSoftwareEnvironmentBoot
 from .ubi import UbiBoot
 from .version_clash import VersionClashBoot
 from .memtrace import MemTraceBoot
+from .backports import ImportlibMetadataBackportBoot
+from .backports import ImportlibResourcesBackportBoot
+from .backports import Enum34BackportBoot
+from .backports import MockBackportBoot
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -33,6 +37,10 @@ from .memtrace import MemTraceBoot
 __all__ = [
     "MemTraceBoot",
     "UbiBoot",
+    "Enum34BackportBoot",
+    "ImportlibMetadataBackportBoot",
+    "ImportlibResourcesBackportBoot",
+    "MockBackportBoot",
     "PythonVersionBoot",
     "SolvedSoftwareEnvironmentBoot",
     "RHELVersionBoot",
