@@ -48,4 +48,4 @@ class Step(Unit):
     def run(
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
-        """Main entry-point for steps to filter and score packages."""
+        """Run main entry-point for steps to filter and score packages."""

@@ -28,7 +28,6 @@ import attr
 from thoth.python import PackageVersion
 
 from ..sieve import Sieve
-from ..exceptions import NotAcceptable
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
@@ -46,18 +45,14 @@ class CutLockedSieve(Sieve):
     """
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include cut-locked pipeline sieve for adviser or Dependency Monkey, always."""
         if not builder_context.is_included(cls):
             return {}
 
         return None
 
-    def run(
-        self, package_versions: Generator[PackageVersion, None, None]
-    ) -> Generator[PackageVersion, None, None]:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Cut-off locked versions to a specific version."""
         packages = self.context.project.pipfile.packages.packages
         dev_packages = self.context.project.pipfile.dev_packages.packages

@@ -28,6 +28,7 @@ from typing import Optional
 from typing import List
 from typing import Union
 from typing import Set
+from typing import Iterator
 import logging
 from itertools import chain
 import contextlib
@@ -80,9 +81,7 @@ def _beam_width(value: Any) -> Optional[int]:
         return None
 
     if not isinstance(value, int):
-        raise ValueError(
-            f"Unknown type for beam width: {value!r} is of type {type(value)!r}"
-        )
+        raise ValueError(f"Unknown type for beam width: {value!r} is of type {type(value)!r}")
 
     if value < 0:
         if value == -1:
@@ -102,9 +101,7 @@ def _limit_latest_versions(value: Any) -> Optional[int]:
         return None
 
     if not isinstance(value, int):
-        raise ValueError(
-            f"Unknown type for limit latest versions: {value!r} is of type {type(value)!r}"
-        )
+        raise ValueError(f"Unknown type for limit latest versions: {value!r} is of type {type(value)!r}")
 
     if value < 0:
         if value == -1:
@@ -124,17 +121,16 @@ def _library_usage(value: Any) -> Dict[str, Any]:
         return {}
 
     if not isinstance(value, dict):
-        raise ValueError(
-            f"Unknown type for library usage: {value!r} is of type {type(value)!r}, a dict expected"
-        )
+        raise ValueError(f"Unknown type for library usage: {value!r} is of type {type(value)!r}, a dict expected")
 
     return value
 
 
 @contextlib.contextmanager
-def _sigint_handler(resolver: "Resolver") -> None:
+def _sigint_handler(resolver: "Resolver") -> Iterator[None]:
     """Register signal handler for resolver handling."""
-    def handler(sig_num: int, _) -> None:
+    # noqa
+    def handler(sig_num: int, _: Any) -> None:
         resolver.stop_resolving = True
 
     old_handler = signal.getsignal(signal.SIGINT)
@@ -153,23 +149,17 @@ class Resolver:
     DEFAULT_LIMIT_LATEST_VERSIONS = -1
     DEFAULT_LOG_FINAL_STATE_COUNT = 500
     DEFAULT_LOG_FINAL_STATE_TOP = False
-
     pipeline = attr.ib(type=PipelineConfig, kw_only=True)
     project = attr.ib(type=Project, kw_only=True)
     library_usage = attr.ib(type=Dict[str, Any], kw_only=True, converter=_library_usage)
     graph = attr.ib(type=GraphDatabase, kw_only=True)
     predictor = attr.ib(type=Predictor, kw_only=True)
-    recommendation_type = attr.ib(
-        type=Optional[RecommendationType], kw_only=True, default=None
-    )
+    recommendation_type = attr.ib(type=Optional[RecommendationType], kw_only=True, default=None)
     decision_type = attr.ib(type=Optional[DecisionType], kw_only=True, default=None)
     limit = attr.ib(type=int, kw_only=True, default=DEFAULT_LIMIT)
     count = attr.ib(type=int, kw_only=True, default=DEFAULT_COUNT)
     beam_width = attr.ib(
-        type=Optional[int],
-        kw_only=True,
-        default=DEFAULT_BEAM_WIDTH,
-        converter=_beam_width,  # type: ignore
+        type=Optional[int], kw_only=True, default=DEFAULT_BEAM_WIDTH, converter=_beam_width,  # type: ignore
     )
     limit_latest_versions = attr.ib(
         type=Optional[int],
@@ -177,41 +167,30 @@ class Resolver:
         default=DEFAULT_LIMIT_LATEST_VERSIONS,
         converter=_limit_latest_versions,  # type: ignore
     )
-    cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict))
-    stop_resolving = attr.ib(type=bool, default=False)
-    log_final_state_count = attr.ib(type=int)
+
+    cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict), kw_only=True)
+    stop_resolving = attr.ib(type=bool, default=False, kw_only=True)
+    log_final_state_count = attr.ib(type=int, kw_only=True)
 
     _beam = attr.ib(type=Optional[Beam], kw_only=True, default=None)
-    _solver = attr.ib(
-        type=Optional[PythonPackageGraphSolver], kw_only=True, default=None
-    )
+    _solver = attr.ib(type=Optional[PythonPackageGraphSolver], kw_only=True, default=None)
     _context = attr.ib(type=Optional[Context], default=None, kw_only=True)
 
-    _log_unresolved = attr.ib(
-        type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True
-    )
+    _log_unresolved = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
     _log_unsolved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
     _log_sieved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
-    _log_step_not_acceptable = attr.ib(
-        type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True
-    )
-    _log_no_intersected = attr.ib(
-        type=Tuple[Tuple[str, str, str], str], default=attr.Factory(set), kw_only=True
-    )
+    _log_step_not_acceptable = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
+    _log_no_intersected = attr.ib(type=Set[Tuple[Tuple[str, str, str], str]], default=attr.Factory(set), kw_only=True)
 
     @limit.validator
     @count.validator
     def _positive_int_validator(self, attribute: str, value: int) -> None:
         """Validate the given attribute - the given attribute should have a value of a positive integer."""
         if not isinstance(value, int):
-            raise ValueError(
-                f"Attribute {attribute!r} should be of type int, got {type(value)!r} instead"
-            )
+            raise ValueError(f"Attribute {attribute!r} should be of type int, got {type(value)!r} instead")
 
         if value <= 0:
-            raise ValueError(
-                f"Value for attribute {attribute!r} should be a positive integer, got {value} instead"
-            )
+            raise ValueError(f"Value for attribute {attribute!r} should be a positive integer, got {value} instead")
 
     @log_final_state_count.default
     def _log_final_state_count_default(self) -> int:
@@ -223,9 +202,7 @@ class Resolver:
     def context(self) -> Context:
         """Retrieve context bound to the current resolver."""
         if self._context is None:
-            raise ValueError(
-                "Context not assigned yes to the current resolver instance"
-            )
+            raise ValueError("Context not assigned yes to the current resolver instance")
 
         return self._context
 
@@ -276,13 +253,9 @@ class Resolver:
             try:
                 boot.run()
             except NotAcceptable as exc:
-                raise CannotProduceStack(
-                    f"Boot pipeline unit {boot.__class__.__name__} failed: {str(exc)!r}"
-                )
+                raise CannotProduceStack(f"Boot pipeline unit {boot.__class__.__name__} failed: {str(exc)!r}")
             except Exception as exc:
-                raise BootError(
-                    f"Failed to run pipeline boot {boot.__class__.__name__!r}: {str(exc)}"
-                ) from exc
+                raise BootError(f"Failed to run pipeline boot {boot.__class__.__name__!r}: {str(exc)}") from exc
 
     def _run_sieves(
         self, package_versions: List[PackageVersion], *, log_level: int = logging.DEBUG
@@ -295,10 +268,7 @@ class Resolver:
                 result = sieve.run(result)
             except NotAcceptable as exc:
                 _LOGGER.log(
-                    log_level,
-                    "Sieve %r removed packages %r: %s",
-                    sieve.__class__.__name__,
-                    str(exc),
+                    log_level, "Sieve %r removed packages %r: %s", sieve.__class__.__name__, str(exc),
                 )
                 result = []  # type: ignore
                 break
@@ -342,9 +312,7 @@ class Resolver:
         score_addition = 0.0
         justification_addition = []
         for step in self.pipeline.steps:
-            _LOGGER.debug(
-                "Running step %r for %r", step.__class__.__name__, package_version_tuple
-            )
+            _LOGGER.debug("Running step %r for %r", step.__class__.__name__, package_version_tuple)
 
             if multi_package_resolution and not step.MULTI_PACKAGE_RESOLUTIONS:
                 _LOGGER.debug(
@@ -372,9 +340,7 @@ class Resolver:
                     if package_version_tuple[0] not in state.unresolved_dependencies:
                         self.beam.remove(state)
 
-                    self.predictor.set_reward_signal(
-                        state, package_version_tuple, math.nan
-                    )
+                    self.predictor.set_reward_signal(state, package_version_tuple, math.nan)
                 return None
             except Exception as exc:
                 raise StepError(
@@ -387,14 +353,10 @@ class Resolver:
 
                 if step_score_addition is not None:
                     if math.isnan(step_score_addition):
-                        raise StepError(
-                            f"Step {step.__class__.__name__} returned score which is not a number",
-                        )
+                        raise StepError(f"Step {step.__class__.__name__} returned score which is not a number",)
 
                     if math.isinf(step_score_addition):
-                        raise StepError(
-                            f"Step {step.__class__.__name__} returned score that is infinite",
-                        )
+                        raise StepError(f"Step {step.__class__.__name__} returned score that is infinite",)
 
                     if step_score_addition > step.SCORE_MAX:
                         _LOGGER.warning(
@@ -420,9 +382,7 @@ class Resolver:
 
         if state.unresolved_dependencies:
             cloned_state = state.clone()
-            weakref.finalize(
-                cloned_state, self.predictor.finalize_state, id(cloned_state)
-            ).atexit = False
+            weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state)).atexit = False
         else:
             # Optimization - reuse the old one as it would be discarded anyway.
             cloned_state = state
@@ -440,15 +400,11 @@ class Resolver:
 
         if not user_stack_scoring:
             if cloned_state.unresolved_dependencies:
-                self.predictor.set_reward_signal(
-                    cloned_state, package_version_tuple, score_addition
-                )
+                self.predictor.set_reward_signal(cloned_state, package_version_tuple, score_addition)
                 if state is not cloned_state or score_addition != 0.0:
                     self.beam.add_state(cloned_state)
             else:
-                self.predictor.set_reward_signal(
-                    cloned_state, package_version_tuple, math.inf
-                )
+                self.predictor.set_reward_signal(cloned_state, package_version_tuple, math.inf)
 
         return cloned_state
 
@@ -460,16 +416,11 @@ class Resolver:
                 stride.run(state)
             except NotAcceptable as exc:
                 _LOGGER.debug(
-                    "Stride %r removed final state %r: %s",
-                    stride.__class__.__name__,
-                    state,
-                    str(exc),
+                    "Stride %r removed final state %r: %s", stride.__class__.__name__, state, str(exc),
                 )
                 return False
             except Exception as exc:
-                raise StrideError(
-                    f"Failed to run stride {stride.__class__.__name__!r}: {str(exc)}"
-                ) from exc
+                raise StrideError(f"Failed to run stride {stride.__class__.__name__!r}: {str(exc)}") from exc
 
         return True
 
@@ -480,9 +431,7 @@ class Resolver:
             try:
                 wrap.run(state)
             except Exception as exc:
-                raise WrapError(
-                    f"Failed to run wrap {wrap.__class__.__name__!r} on a final step: {str(exc)}"
-                ) from exc
+                raise WrapError(f"Failed to run wrap {wrap.__class__.__name__!r} on a final step: {str(exc)}") from exc
 
     def _prepare_user_lock_file(self, *, with_devel: bool = True) -> None:
         """Perform operations on the user's lock file required before running the pipeline.
@@ -495,18 +444,14 @@ class Resolver:
         sources = list(self.project.pipfile_lock.meta.sources.values())
         source_urls = {source.url for source in sources}
 
-        enabled_indexes = set(
-            self.graph.get_python_package_index_urls_all(enabled=True)
-        )
+        enabled_indexes = set(self.graph.get_python_package_index_urls_all(enabled=True))
         if not source_urls.issubset(enabled_indexes):
             raise UserLockFileError(
                 "User's lock file uses one or more indexes that are "
                 f"not enabled: {', '.join(source_urls - enabled_indexes)}"
             )
 
-        for package_version in self.project.iter_dependencies_locked(
-            with_devel=with_devel
-        ):
+        for package_version in self.project.iter_dependencies_locked(with_devel=with_devel):
             if package_version.index is not None:
                 continue
 
@@ -514,17 +459,13 @@ class Resolver:
                 # Only one source configured, we can use it directly.
                 package_version.index = sources[0]
             else:
-                package_version_hashes = {
-                    h[len("sha256:"):] for h in package_version.hashes
-                }
+                package_version_hashes = {h[len("sha256:") :] for h in package_version.hashes}
 
                 # Assign index based on sources.
                 for source in sources:
                     known_hashes = set(
                         self.graph.get_python_package_hashes_sha256(
-                            package_version.name,
-                            package_version.locked_version,
-                            source.url,
+                            package_version.name, package_version.locked_version, source.url,
                         )
                     )
 
@@ -566,9 +507,7 @@ class Resolver:
         self._prepare_user_lock_file(with_devel=True)
 
         _LOGGER.info("Scoring user's stack based on the lock file submitted")
-        for package_version in self.project.iter_dependencies_locked(
-            with_devel=with_devel
-        ):
+        for package_version in self.project.iter_dependencies_locked(with_devel=with_devel):
             # First time seen, register this package for pipeline units.
             self.context.register_package_version(package_version)
             package_version = list(self._run_sieves([package_version], log_level=logging.INFO))
@@ -577,38 +516,32 @@ class Resolver:
                 return None
 
         state = State()
-        for package_version in self.project.iter_dependencies_locked(
-            with_devel=with_devel
-        ):
+        for package_version in self.project.iter_dependencies_locked(with_devel=with_devel):
             if not self._run_steps(state, package_version, user_stack_scoring=True, log_level=logging.INFO):
                 _LOGGER.info("User's stack was removed based on steps")
                 return None
 
-        state.add_justification([{
-            "type": "INFO",
-            "message": "Score of the supplied lock file is the highest possible \
+        state.add_justification(
+            [
+                {
+                    "type": "INFO",
+                    "message": "Score of the supplied lock file is the highest possible \
                 according to the current knowledge in Thoth and the parameters used to solve the stack.",
-        }])
+                }
+            ]
+        )
         self._run_wraps(state)
         self.beam.add_state(state)
         _LOGGER.info("User's software stack has a score of %g", state.score)
         return state
 
-    def _resolve_direct_dependencies(
-        self, *, with_devel: bool
-    ) -> Dict[str, List[PackageVersion]]:
+    def _resolve_direct_dependencies(self, *, with_devel: bool) -> Dict[str, List[PackageVersion]]:
         """Resolve all the direct dependencies based on the resolution and data available in the graph."""
         # It's important that solver preserves order in which packages were inserted.
         # This is also a requirement for running under Python3.6+!!!
         _LOGGER.info("Resolving direct dependencies")
-        resolved_direct_dependencies: Dict[
-            str, List[PackageVersion]
-        ] = self.solver.solve(
-            sorted(
-                self.project.iter_dependencies(with_devel=with_devel),
-                key=lambda p: p.name,
-            ),
-            graceful=True,
+        resolved_direct_dependencies: Dict[str, List[PackageVersion]] = self.solver.solve(
+            sorted(self.project.iter_dependencies(with_devel=with_devel), key=lambda p: p.name,), graceful=True,
         )
 
         unresolved = []
@@ -627,14 +560,10 @@ class Resolver:
                         error_msg += f" in OS version {runtime_environment.operating_system.version!r}"
 
                 if runtime_environment.python_version:
-                    error_msg += (
-                        f" for Python in version {runtime_environment.python_version!r}"
-                    )
+                    error_msg += f" for Python in version {runtime_environment.python_version!r}"
 
                 if runtime_environment.platform:
-                    error_msg += (
-                        f" using platform {runtime_environment.platform!r}"
-                    )
+                    error_msg += f" using platform {runtime_environment.platform!r}"
 
                 _LOGGER.warning(error_msg)
                 continue
@@ -646,9 +575,7 @@ class Resolver:
             )
 
         if unresolved:
-            raise UnresolvedDependencies(
-                "Unable to resolve all direct dependencies", unresolved=unresolved
-            )
+            raise UnresolvedDependencies("Unable to resolve all direct dependencies", unresolved=unresolved)
 
         # Now we are free to de-instantiate solver.
         del self._solver
@@ -676,9 +603,7 @@ class Resolver:
                 )
 
             if self.limit_latest_versions:
-                direct_dependencies[direct_dependency_name] = package_versions[
-                    : self.limit_latest_versions
-                ]
+                direct_dependencies[direct_dependency_name] = package_versions[: self.limit_latest_versions]
             else:
                 direct_dependencies[direct_dependency_name] = package_versions
 
@@ -689,9 +614,7 @@ class Resolver:
         weakref.finalize(state, self.predictor.finalize_state, id(state)).atexit = False
         self.beam.add_state(state)
 
-    def _expand_state(
-        self, state: State, package_tuple: Tuple[str, str, str]
-    ) -> Optional[State]:
+    def _expand_state(self, state: State, package_tuple: Tuple[str, str, str]) -> Optional[State]:
         """Expand the given state, generate new states respecting the pipeline configuration.
 
         This function retrieves dependencies of the expanded state. The decision tree:
@@ -713,9 +636,7 @@ class Resolver:
         # Obtain extras for the given package. Extras are non-empty only for direct dependencies. If indirect
         # dependencies use extras, they don't need to be explicitly stated as solvers mark "hard" dependency on
         # the given package.
-        package_version: PackageVersion = self.context.get_package_version(
-            package_tuple, graceful=False
-        )
+        package_version: PackageVersion = self.context.get_package_version(package_tuple, graceful=False)
 
         state.remove_unresolved_dependency(package_tuple)
 
@@ -730,9 +651,7 @@ class Resolver:
                 os_version=self.project.runtime_environment.operating_system.version,
                 python_version=self.project.runtime_environment.python_version,
                 extras=extras,
-                marker_evaluation_result=True
-                if self.project.runtime_environment.is_fully_specified()
-                else None,
+                marker_evaluation_result=True if self.project.runtime_environment.is_fully_specified() else None,
                 is_missing=False,
             )
         except NotFoundError:
@@ -752,16 +671,11 @@ class Resolver:
             return None
 
         return self._expand_state_add_dependencies(
-            state=state,
-            package_version=package_version,
-            dependencies=list(chain(*dependencies.values())),
+            state=state, package_version=package_version, dependencies=list(chain(*dependencies.values())),
         )
 
     def _expand_state_add_dependencies(
-        self,
-        state: State,
-        package_version: PackageVersion,
-        dependencies: List[Tuple[str, str]],
+        self, state: State, package_version: PackageVersion, dependencies: List[Tuple[str, str]],
     ) -> Optional[State]:
         """Create new state out of existing ones based on dependencies if necessary.
 
@@ -808,9 +722,7 @@ class Resolver:
                                      -> no - run steps
 
         """
-        _LOGGER.debug(
-            "Expanding state with dependencies based on packages solved in software environments"
-        )
+        _LOGGER.debug("Expanding state with dependencies based on packages solved in software environments")
 
         package_tuple = package_version.to_tuple()
         all_dependencies: Dict[str, List[Tuple[str, str, str]]] = {}
@@ -828,10 +740,7 @@ class Resolver:
             # will not work well with preserving seed across resolver runs.
             all_dependencies.setdefault(dependency_name, [])
             resolved_dependency_tuple = state.resolved_dependencies.get(dependency_name)
-            if (
-                resolved_dependency_tuple
-                and resolved_dependency_tuple[1] != dependency_version
-            ):
+            if resolved_dependency_tuple and resolved_dependency_tuple[1] != dependency_version:
                 _LOGGER.debug(
                     "Skipping adding dependency %r in version %r as this dependency is already present "
                     "in state in a different version: %r",
@@ -863,9 +772,7 @@ class Resolver:
 
         # Check unsolved before sorting to optimize a bit.
         unsolved = [
-            dependency_name
-            for dependency_name, package_versions in all_dependencies.items()
-            if not package_versions
+            dependency_name for dependency_name, package_versions in all_dependencies.items() if not package_versions
         ]
         if unsolved:
             # We don't have all dependencies of package_tuple solved for the given environment, give up here.
@@ -888,6 +795,7 @@ class Resolver:
             self.predictor.set_reward_signal(state, package_tuple, math.nan)
             return None
 
+        dependency_tuples: Union[List[Any], Set[Any]]  # indicate that dependency_tuples type change during iteration
         for dependency_name, dependency_tuples in all_dependencies.items():
             if dependency_name in state.unresolved_dependencies:
                 # We have shared dependencies - let's compute intersection and use intersected dependencies if
@@ -931,7 +839,7 @@ class Resolver:
 
                 all_dependencies[dependency_name] = sorted(
                     dependency_tuples,
-                    key=lambda d: self.context.get_package_version(d).semantic_version,
+                    key=lambda d: self.context.get_package_version(d).semantic_version,  # type: ignore
                     reverse=True,
                 )
                 continue
@@ -950,10 +858,8 @@ class Resolver:
                 all_dependencies[dependency_name] = [resolved_dependency]
                 continue
 
-            package_versions = [
-                self.context.get_package_version(d) for d in dependency_tuples
-            ]
-            package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
+            package_versions = [self.context.get_package_version(d) for d in dependency_tuples]
+            package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)  # type: ignore
             package_versions = list(self._run_sieves(package_versions))
             if not package_versions:
                 log_once(
@@ -973,13 +879,10 @@ class Resolver:
 
             if self.limit_latest_versions:
                 all_dependencies[dependency_name] = [
-                    pv.to_tuple()
-                    for pv in package_versions[: self.limit_latest_versions]
+                    pv.to_tuple() for pv in package_versions[: self.limit_latest_versions]  # type: ignore
                 ]
             else:
-                all_dependencies[dependency_name] = [
-                    pv.to_tuple() for pv in package_versions
-                ]
+                all_dependencies[dependency_name] = [pv.to_tuple() for pv in package_versions]  # type: ignore
 
         return self._run_steps(state, package_version, all_dependencies)
 
@@ -992,8 +895,7 @@ class Resolver:
 
         if not self.project.runtime_environment.is_fully_specified():
             _LOGGER.warning(
-                "Environment is not fully specified, pre-computed environment markers will not be "
-                "taken into account"
+                "Environment is not fully specified, pre-computed environment markers will not be " "taken into account"
             )
 
         if user_stack_scoring:
@@ -1002,28 +904,20 @@ class Resolver:
             except UserLockFileError as exc:
                 _LOGGER.warning("Failed to score user's lock file: %s", str(exc))
             except Exception:
-                _LOGGER.exception(
-                    "Failed to score supplied user stack, the error is not fatal"
-                )
+                _LOGGER.exception("Failed to score supplied user stack, the error is not fatal")
             else:
                 if user_stack:
                     yield user_stack
 
         self._prepare_initial_state(with_devel=with_devel)
 
-        _LOGGER.info(
-            "Hold tight, Thoth is computing recommendations for your application..."
-        )
+        _LOGGER.info("Hold tight, Thoth is computing recommendations for your application...")
 
         self.context.iteration = 0
         self.stop_resolving = False
         with _sigint_handler(self):
             while not self.stop_resolving:
-                if (
-                    self.context.accepted_final_states_count
-                    + self.context.discarded_final_states_count
-                    >= self.limit
-                ):
+                if self.context.accepted_final_states_count + self.context.discarded_final_states_count >= self.limit:
                     _LOGGER.info(
                         "Reached limit of stacks to be generated - %r (limit is %r), stopping resolver "
                         "with the current beam size %d in iteration %d",
@@ -1047,10 +941,7 @@ class Resolver:
                 state, unresolved_package_tuple = self.predictor.run()
 
                 _LOGGER.debug(
-                    "Resolving package %r in state with score %g: %r",
-                    unresolved_package_tuple,
-                    state.score,
-                    state,
+                    "Resolving package %r in state with score %g: %r", unresolved_package_tuple, state.score, state,
                 )
                 state_returned = self._expand_state(state, unresolved_package_tuple)
                 if state_returned is not None and not state_returned.unresolved_dependencies:
@@ -1066,7 +957,7 @@ class Resolver:
         if self.stop_resolving:
             _LOGGER.warning(
                 "Resolving stopped with the current beam size %d as the allocated CPU time was exhausted",
-                self.beam.size
+                self.beam.size,
             )
 
     def _do_resolve_products(
@@ -1075,10 +966,7 @@ class Resolver:
         """Resolve raw products as produced by this resolver pipeline."""
         if self.count > self.limit:
             _LOGGER.warning(
-                "Count (%d) is higher than limit (%d), setting count to %d",
-                self.count,
-                self.limit,
-                self.limit,
+                "Count (%d) is higher than limit (%d), setting count to %d", self.count, self.limit, self.limit,
             )
             self.count = self.limit
 
@@ -1087,34 +975,26 @@ class Resolver:
 
         start_time = time.monotonic()
         try:
-            for final_state in self._do_resolve_states(
-                with_devel=with_devel, user_stack_scoring=user_stack_scoring
-            ):
+            for final_state in self._do_resolve_states(with_devel=with_devel, user_stack_scoring=user_stack_scoring):
                 _LOGGER.debug(
-                    "Pipeline reached a new final state, yielding pipeline product "
-                    "with a score of %g - %d/%d",
+                    "Pipeline reached a new final state, yielding pipeline product " "with a score of %g - %d/%d",
                     final_state.score,
                     self.context.accepted_final_states_count,
                     self.context.limit,
                 )
 
-                if (
-                    self.context.accepted_final_states_count - 1
-                ) % self.log_final_state_count == 0:
+                if (self.context.accepted_final_states_count - 1) % self.log_final_state_count == 0:
                     _LOGGER.info(
                         "Pipeline reached %d final states out of %d requested in iteration %d "
                         "(pipeline pace %.02f stacks/second), top rated software stack has a score of %s",
                         self.context.accepted_final_states_count,
                         self.context.limit,
                         self.context.iteration,
-                        self.context.accepted_final_states_count
-                        / (time.monotonic() - start_time),
+                        self.context.accepted_final_states_count / (time.monotonic() - start_time),
                         self.beam.max().score if self.beam.size > 0 else "N/A",
                     )
 
-                product = Product.from_final_state(
-                    context=self.context, state=final_state
-                )
+                product = Product.from_final_state(context=self.context, state=final_state)
                 yield product
                 del final_state
         except EagerStopPipeline as exc:
@@ -1141,26 +1021,16 @@ class Resolver:
     ) -> Generator[Product, None, None]:
         """Resolve raw products as produced by this resolver pipeline."""
         self._init_context()
-        with Unit.assigned_context(self.context), self.predictor.assigned_context(
-            self.context
-        ):
-            yield from self._do_resolve_products(
-                with_devel=with_devel, user_stack_scoring=user_stack_scoring
-            )
+        with Unit.assigned_context(self.context), self.predictor.assigned_context(self.context):
+            yield from self._do_resolve_products(with_devel=with_devel, user_stack_scoring=user_stack_scoring)
 
-    def resolve(
-        self, *, with_devel: bool = True, user_stack_scoring: bool = True
-    ) -> Report:
+    def resolve(self, *, with_devel: bool = True, user_stack_scoring: bool = True) -> Report:
         """Resolve software stacks and return resolver report."""
         report = Report(count=self.count, pipeline=self.pipeline)
 
         self._init_context()
-        with Unit.assigned_context(self.context), self.predictor.assigned_context(
-            self.context
-        ):
-            for product in self._do_resolve_products(
-                with_devel=with_devel, user_stack_scoring=user_stack_scoring
-            ):
+        with Unit.assigned_context(self.context), self.predictor.assigned_context(self.context):
+            for product in self._do_resolve_products(with_devel=with_devel, user_stack_scoring=user_stack_scoring):
                 report.add_product(product)
 
             if report.product_count() == 0:
@@ -1197,10 +1067,7 @@ class Resolver:
 
         if pipeline_config is None:
             pipeline = PipelineBuilder.get_adviser_pipeline_config(
-                recommendation_type=recommendation_type,
-                project=project,
-                library_usage=library_usage,
-                graph=graph,
+                recommendation_type=recommendation_type, project=project, library_usage=library_usage, graph=graph,
             )
         else:
             if isinstance(pipeline_config, PipelineConfig):
@@ -1208,9 +1075,7 @@ class Resolver:
             elif isinstance(pipeline_config, dict):
                 pipeline = PipelineBuilder.from_dict(pipeline_config)
             else:
-                raise PipelineConfigurationError(
-                    f"Unknown pipeline configuration type: {type(pipeline_config)!r}"
-                )
+                raise PipelineConfigurationError(f"Unknown pipeline configuration type: {type(pipeline_config)!r}")
 
         return cls(
             beam_width=beam_width,
@@ -1248,10 +1113,7 @@ class Resolver:
 
         if pipeline_config is None:
             pipeline = PipelineBuilder.get_dependency_monkey_pipeline_config(
-                decision_type=decision_type,
-                graph=graph,
-                project=project,
-                library_usage=library_usage,
+                decision_type=decision_type, graph=graph, project=project, library_usage=library_usage,
             )
         else:
             if isinstance(pipeline_config, PipelineConfig):
@@ -1259,9 +1121,7 @@ class Resolver:
             elif isinstance(pipeline_config, dict):
                 pipeline = PipelineBuilder.from_dict(pipeline_config)
             else:
-                raise PipelineConfigurationError(
-                    f"Unknown pipeline configuration type: {type(pipeline_config)!r}"
-                )
+                raise PipelineConfigurationError(f"Unknown pipeline configuration type: {type(pipeline_config)!r}")
 
         return cls(
             beam_width=beam_width,

@@ -47,9 +47,7 @@ class CvePenalizationStep(Step):
     CONFIGURATION_DEFAULT = {"cve_penalization": -0.2}
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Remove CVEs only for advised stacks."""
         if not builder_context.is_adviser_pipeline():
             return None
@@ -62,23 +60,18 @@ class CvePenalizationStep(Step):
 
         return None
 
-    def run(
-        self, _: State, package_version: PackageVersion
-    ) -> Optional[Tuple[float, List[Dict[str, str]]]]:
+    def run(self, _: State, package_version: PackageVersion) -> Optional[Tuple[float, List[Dict[str, str]]]]:
         """Penalize stacks with a CVE."""
         try:
             cve_records = self.context.graph.get_python_cve_records_all(
-                package_name=package_version.name,
-                package_version=package_version.locked_version,
+                package_name=package_version.name, package_version=package_version.locked_version,
             )
         except NotFoundError as exc:
             _LOGGER.warning("Package %r in version %r not found: %r", str(exc))
             return None
 
         if cve_records:
-            _LOGGER.debug(
-                "Found a CVEs for %r: %r", package_version.to_tuple(), cve_records
-            )
+            _LOGGER.debug("Found a CVEs for %r: %r", package_version.to_tuple(), cve_records)
             penalization = len(cve_records) * self.configuration["cve_penalization"]
 
             # Note down package causing this CVE.

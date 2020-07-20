@@ -24,6 +24,7 @@ import attr
 from typing import Optional
 from typing import Tuple
 from typing import Set
+from typing import Any
 
 from .hill_climbing import HillClimbing
 from ..state import State
@@ -41,24 +42,20 @@ class ApproximatingLatest(HillClimbing):
     if resolution to all latest cannot be satisfied.
     """
 
-    _hop = attr.ib(type=bool, default=False)
-    _hop_logged = attr.ib(type=bool, default=False)
-    _packages_heated_up = attr.ib(type=Set[str], factory=set)
-    _initial_state = attr.ib(type=Optional[State], default=None)
-    _latest_versions_heat_up = attr.ib(type=set, factory=set)
+    _hop = attr.ib(type=bool, default=False, init=False)
+    _hop_logged = attr.ib(type=bool, default=False, init=False)
+    _packages_heated_up = attr.ib(type=Set[str], factory=set, init=False)
+    _initial_state = attr.ib(type=Optional[State], default=None, init=False)
+    _latest_versions_heat_up = attr.ib(type=Set[Any], factory=set, init=False)
 
-    def set_reward_signal(
-        self, state: State, package_tuple: Tuple[str, str, str], reward: float
-    ) -> None:
+    def set_reward_signal(self, state: State, package_tuple: Tuple[str, str, str], reward: float) -> None:
         """Set hop to True if we did not get resolve any stack with latest."""
         super().set_reward_signal(state, package_tuple, reward)
 
         if math.isnan(reward):
             self._hop = True
             if not self._hop_logged:
-                _LOGGER.warning(
-                    "The latest stack couldn't be resolved, performing hops across package versions"
-                )
+                _LOGGER.warning("The latest stack couldn't be resolved, performing hops across package versions")
                 self._hop_logged = True
 
         if math.isinf(reward):
@@ -79,9 +76,10 @@ class ApproximatingLatest(HillClimbing):
         in states generated out of the very first state and very first dependency.
         """
         if not self._packages_heated_up:
-            assert self.context.beam.size == 1
             self._initial_state = self.context.beam.get(0)
 
+        if self._initial_state is None:
+            raise RuntimeError
         # Keeping the initial state as an attribute in this predictor and this
         # check is an optimization thanks to the logic behind resolver's state
         # manipulation - it reuses the initial state for generating new states
@@ -100,20 +98,11 @@ class ApproximatingLatest(HillClimbing):
 
             self._packages_heated_up.add(unresolved_dependency)
             unresolved_dependency_tuple = next(
-                iter(
-                    self._initial_state.unresolved_dependencies[
-                        unresolved_dependency
-                    ].values()
-                )
+                iter(self._initial_state.unresolved_dependencies[unresolved_dependency].values())
             )
 
             if self.keep_history:
-                self._history.append(
-                    (
-                        self._initial_state.score,
-                        self.context.accepted_final_states_count,
-                    )
-                )
+                self._history.append((self._initial_state.score, self.context.accepted_final_states_count,))
 
             return self._initial_state, unresolved_dependency_tuple
 
@@ -133,9 +122,7 @@ class ApproximatingLatest(HillClimbing):
             state = self.context.beam.get_random()
 
         if self.keep_history:
-            self._history.append(
-                (state.score, self.context.accepted_final_states_count)
-            )
+            self._history.append((state.score, self.context.accepted_final_states_count))
 
         if self._hop:
             return state, state.get_random_unresolved_dependency(prefer_recent=True)

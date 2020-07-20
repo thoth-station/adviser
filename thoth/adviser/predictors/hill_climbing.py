@@ -39,7 +39,7 @@ _LOGGER = logging.getLogger(__name__)
 class HillClimbing(Predictor):
     """Implementation of hill climbing in the state space."""
 
-    _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list))
+    _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list), init=False)
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Get top state from the beam for the next resolution round."""
@@ -51,7 +51,7 @@ class HillClimbing(Predictor):
         return state, state.get_first_unresolved_dependency()
 
     def pre_run(self) -> None:
-        """Initialization before the actual hill climbing run."""
+        """Initialize before the actual hill climbing run."""
         self._history = []
 
     def plot(self) -> matplotlib.figure.Figure:
@@ -75,8 +75,8 @@ class HillClimbing(Predictor):
         host.spines["right"].set_visible(False)
         host.spines["top"].set_visible(False)
 
-        p1, = host.plot(x, y1, ",g", label="Score of the expanded state")
-        p2, = par1.plot(x, y2, ",y", label="Number of products conducted")
+        (p1,) = host.plot(x, y1, ",g", label="Score of the expanded state")
+        (p2,) = par1.plot(x, y2, ",y", label="Number of products conducted")
 
         host.set_xlabel("iteration")
         host.set_ylabel("score")
@@ -93,11 +93,6 @@ class HillClimbing(Predictor):
         font_prop = FontProperties()
         font_prop.set_size("medium")
         fig.legend(
-            loc="upper center",
-            bbox_to_anchor=(0.50, 1.00),
-            ncol=2,
-            fancybox=True,
-            shadow=True,
-            prop=font_prop,
+            loc="upper center", bbox_to_anchor=(0.50, 1.00), ncol=2, fancybox=True, shadow=True, prop=font_prop,
         )
         return fig

@@ -18,6 +18,7 @@
 """A wrap that notifies about missing observations."""
 
 from typing import TYPE_CHECKING
+from typing import Optional, Dict, Any
 
 from ..state import State
 from ..wrap import Wrap
@@ -29,20 +30,12 @@ if TYPE_CHECKING:
 class NoObservationWrap(Wrap):
     """A wrap that notifies about missing observations."""
 
-    _JUSTIFICATION = [
-        {
-            "type": "INFO",
-            "message": "No observations spotted for this stack in Thoth's database",
-        }
-    ]
+    _JUSTIFICATION = [{"type": "INFO", "message": "No observations spotted for this stack in Thoth's database",}]
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext"):
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
         """Include this wrap in adviser, once."""
-        if (
-            not builder_context.is_included(cls)
-            and builder_context.is_adviser_pipeline()
-        ):
+        if not builder_context.is_included(cls) and builder_context.is_adviser_pipeline():
             return {}
 
         return None
