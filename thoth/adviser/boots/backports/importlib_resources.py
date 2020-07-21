@@ -41,6 +41,11 @@ class ImportlibResourcesBackportBoot(Boot):
     https://docs.python.org/3/library/importlib.metadata.html
     """
 
+    _MESSAGE = (
+        "Direct dependency 'importlib-resources' removed: importlib.pkg_resources is available "
+        "in Python standard library starting Python 3.8"
+    )
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include for Python 3.8 and above for adviser and dependency monkey runs."""
@@ -58,9 +63,7 @@ class ImportlibResourcesBackportBoot(Boot):
 
     def run(self) -> None:
         """Remove dependency importlib-resources for newer Python versions."""
-        _LOGGER.warning(
-            "Removing direct dependency 'importlib-resources': importlib.pkg_resources is available in Python standard "
-            "library starting Python 3.8"
-        )
+        _LOGGER.warning(self._MESSAGE)
+        self.context.stack_info.append({"type": "INFO", "message": self._MESSAGE})
         self.context.project.pipfile.packages.packages.pop("importlib-resources", None)
         self.context.project.pipfile.dev_packages.packages.pop("importlib-resources", None)

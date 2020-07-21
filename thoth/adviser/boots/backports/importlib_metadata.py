@@ -40,6 +40,11 @@ class ImportlibMetadataBackportBoot(Boot):
     https://docs.python.org/3/library/importlib.metadata.html
     """
 
+    _MESSAGE = (
+        "Direct dependency 'importlib-metadata' removed: importlib.metadata is available in "
+        "Python standard library starting Python 3.8"
+    )
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include for Python 3.8 and above for adviser and dependency monkey runs."""
@@ -57,9 +62,7 @@ class ImportlibMetadataBackportBoot(Boot):
 
     def run(self) -> None:
         """Remove dependency importlib-metadata for newer Python versions."""
-        _LOGGER.warning(
-            "Removing direct dependency 'importlib-metadata': importlib.metadata is available in Python standard "
-            "library starting Python 3.8"
-        )
+        _LOGGER.warning(self._MESSAGE)
+        self.context.stack_info.append({"type": "INFO", "message": self._MESSAGE})
         self.context.project.pipfile.packages.packages.pop("importlib-metadata", None)
         self.context.project.pipfile.dev_packages.packages.pop("importlib-metadata", None)
