@@ -28,7 +28,11 @@ class AdviserException(Exception):
 
 
 class NotAcceptable(AdviserException):
-    """An exception raised during stack generation when the given  action would produce un-acceptable solution."""
+    """An exception raised during stack generation when the given action would produce un-acceptable solution."""
+
+
+class SkipPackage(AdviserException):
+    """An exception raised during stack generation when the given package should be skipped in the stack."""
 
 
 class PipfileParseError(AdviserException):

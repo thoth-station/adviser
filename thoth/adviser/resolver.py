@@ -48,6 +48,7 @@ from .exceptions import BootError
 from .exceptions import CannotProduceStack
 from .exceptions import EagerStopPipeline
 from .exceptions import NotAcceptable
+from .exceptions import SkipPackage
 from .exceptions import SieveError
 from .exceptions import StepError
 from .exceptions import StrideError
@@ -266,6 +267,8 @@ class Resolver:
             _LOGGER.debug("Running sieve %r", sieve.__class__.__name__)
             try:
                 result = sieve.run(result)
+            except SkipPackage:
+                raise
             except NotAcceptable as exc:
                 _LOGGER.log(
                     log_level, "Sieve %r removed packages %r: %s", sieve.__class__.__name__, str(exc),
@@ -510,7 +513,12 @@ class Resolver:
         for package_version in self.project.iter_dependencies_locked(with_devel=with_devel):
             # First time seen, register this package for pipeline units.
             self.context.register_package_version(package_version)
-            package_version = list(self._run_sieves([package_version], log_level=logging.INFO))
+            try:
+                package_version = list(self._run_sieves([package_version], log_level=logging.INFO))
+            except SkipPackage as exc:
+                _LOGGER.warning("Package %r skipped by sieves: %s", package_version.name, str(exc))
+                continue
+
             if not package_version:
                 _LOGGER.info("User's stack was removed based on sieves")
                 return None
@@ -595,7 +603,12 @@ class Resolver:
                 self.context.register_package_version(direct_dependency)
 
             package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
-            package_versions = list(self._run_sieves(package_versions))
+            try:
+                package_versions = list(self._run_sieves(package_versions))
+            except SkipPackage as exc:
+                _LOGGER.warning("Package %r skipped by sieves: %s", direct_dependency_name, str(exc))
+                continue
+
             if not package_versions:
                 raise CannotProduceStack(
                     f"Cannot satisfy direct dependencies - direct dependencies "
@@ -860,7 +873,12 @@ class Resolver:
 
             package_versions = [self.context.get_package_version(d) for d in dependency_tuples]
             package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)  # type: ignore
-            package_versions = list(self._run_sieves(package_versions))
+            try:
+                package_versions = list(self._run_sieves(package_versions))
+            except SkipPackage as exc:
+                _LOGGER.warning("Package %r skipped by sieves: %s", dependency_name, str(exc))
+                continue
+
             if not package_versions:
                 log_once(
                     _LOGGER,
