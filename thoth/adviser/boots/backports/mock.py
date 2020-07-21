@@ -40,6 +40,10 @@ class MockBackportBoot(Boot):
     https://docs.python.org/3/library/unittest.mock.html
     """
 
+    _MESSAGE = (
+        "Direct dependency 'mock' removed: unittest.mock is available in Python " "standard library starting Python 3.3"
+    )
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include for Python 3.3 and above for adviser and dependency monkey runs."""
@@ -57,9 +61,7 @@ class MockBackportBoot(Boot):
 
     def run(self) -> None:
         """Remove dependency mock for newer Python versions."""
-        _LOGGER.warning(
-            "Removing direct dependency 'mock': unittest.mock is available in Python standard "
-            "library starting Python 3.3"
-        )
+        _LOGGER.warning(self._MESSAGE)
+        self.context.stack_info.append({"type": "INFO", "message": self._MESSAGE})
         self.context.project.pipfile.packages.packages.pop("mock", None)
         self.context.project.pipfile.dev_packages.packages.pop("mock", None)

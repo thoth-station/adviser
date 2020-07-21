@@ -110,11 +110,13 @@ class TestEnum34BackportBoot(AdviserTestCase):
         context.project.pipfile.add_package_version(package_version)
         assert "enum34" in context.project.pipfile.packages.packages
         assert "enum34" not in context.project.pipfile.dev_packages.packages
+        assert not context.stack_info
 
         with Enum34BackportBoot.assigned_context(context):
             unit = Enum34BackportBoot()
             assert unit.run() is None
 
+        assert len(context.stack_info) == 1
         assert "enum34" not in context.project.pipfile.packages.packages
         assert "enum34" not in context.project.pipfile.dev_packages.packages
 
@@ -127,10 +129,12 @@ class TestEnum34BackportBoot(AdviserTestCase):
         context.project.pipfile.add_package_version(package_version)
         assert "enum34" not in context.project.pipfile.packages.packages
         assert "enum34" in context.project.pipfile.dev_packages.packages
+        assert not context.stack_info
 
         with Enum34BackportBoot.assigned_context(context):
             unit = Enum34BackportBoot()
             assert unit.run() is None
 
+        assert len(context.stack_info) == 1
         assert "enum34" not in context.project.pipfile.packages.packages
         assert "enum34" not in context.project.pipfile.dev_packages.packages

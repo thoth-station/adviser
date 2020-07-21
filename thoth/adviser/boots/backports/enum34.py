@@ -40,6 +40,8 @@ class Enum34BackportBoot(Boot):
     https://docs.python.org/3/library/enum.html
     """
 
+    _MESSAGE = "Direct dependency 'enum34' removed: emum34 is available in Python standard library starting Python 3.4"
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include for Python 3.5 and above for adviser and dependency monkey runs."""
@@ -57,8 +59,7 @@ class Enum34BackportBoot(Boot):
 
     def run(self) -> None:
         """Remove dependency enum34 for newer Python versions."""
-        _LOGGER.warning(
-            "Removing direct dependency 'enum34': emum34 is available in Python standard " "library starting Python 3.4"
-        )
+        _LOGGER.warning(self._MESSAGE)
+        self.context.stack_info.append({"type": "INFO", "message": self._MESSAGE})
         self.context.project.pipfile.packages.packages.pop("enum34", None)
         self.context.project.pipfile.dev_packages.packages.pop("enum34", None)
