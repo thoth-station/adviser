@@ -24,7 +24,7 @@ from typing import Any
 from typing import TYPE_CHECKING
 
 import attr
-from thoth.adviser.boot import Boot
+from ...boot import Boot
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext

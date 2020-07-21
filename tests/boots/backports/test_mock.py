@@ -45,12 +45,12 @@ class TestMockBackportBoot(AdviserTestCase):
         ],
     )
     def test_should_include(
-            self,
-            builder_context: PipelineBuilderContext,
-            python_version: str,
-            recommendation_type: RecommendationType,
-            decision_type: DecisionType,
-            develop: bool,
+        self,
+        builder_context: PipelineBuilderContext,
+        python_version: str,
+        recommendation_type: RecommendationType,
+        decision_type: DecisionType,
+        develop: bool,
     ) -> None:
         """Test registering this unit."""
         builder_context.project.runtime_environment.python_version = python_version
@@ -78,12 +78,12 @@ class TestMockBackportBoot(AdviserTestCase):
         ],
     )
     def test_no_include(
-            self,
-            builder_context: PipelineBuilderContext,
-            python_version: Optional[str],
-            recommendation_type: RecommendationType,
-            decision_type: DecisionType,
-            develop: bool,
+        self,
+        builder_context: PipelineBuilderContext,
+        python_version: Optional[str],
+        recommendation_type: RecommendationType,
+        decision_type: DecisionType,
+        develop: bool,
     ) -> None:
         """Test not including this unit."""
         builder_context.project.runtime_environment.python_version = python_version
@@ -100,7 +100,7 @@ class TestMockBackportBoot(AdviserTestCase):
         assert MockBackportBoot.should_include(builder_context) is None
 
     def test_remove(self, context: Context) -> None:
-        """Test removing importlib-resources dependency"""
+        """Test removing importlib-resources dependency."""
         package_version = PackageVersion(
             name="mock", version="==4.0.2", develop=False, index=Source("https://pypi.org/simple"),
         )
@@ -117,7 +117,7 @@ class TestMockBackportBoot(AdviserTestCase):
         assert "mock" not in context.project.pipfile.dev_packages.packages
 
     def test_remove_develop(self, context: Context) -> None:
-        """Test removing develop importlib-resources dependency"""
+        """Test removing develop importlib-resources dependency."""
         package_version = PackageVersion(
             name="mock", version="==4.0.2", develop=True, index=Source("https://pypi.org/simple"),
         )

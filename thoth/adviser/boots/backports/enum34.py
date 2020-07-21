@@ -24,7 +24,7 @@ from typing import Any
 from typing import TYPE_CHECKING
 
 import attr
-from thoth.adviser.boot import Boot
+from ...boot import Boot
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
@@ -58,8 +58,7 @@ class Enum34BackportBoot(Boot):
     def run(self) -> None:
         """Remove dependency enum34 for newer Python versions."""
         _LOGGER.warning(
-            "Removing direct dependency 'enum34': emum34 is available in Python standard "
-            "library starting Python 3.4"
+            "Removing direct dependency 'enum34': emum34 is available in Python standard " "library starting Python 3.4"
         )
         self.context.project.pipfile.packages.packages.pop("enum34", None)
         self.context.project.pipfile.dev_packages.packages.pop("enum34", None)

@@ -100,7 +100,7 @@ class TestImportlibMetadataBackportBoot(AdviserTestCase):
         assert ImportlibMetadataBackportBoot.should_include(builder_context) is None
 
     def test_remove(self, context: Context) -> None:
-        """Test removing importlib-metadata dependency"""
+        """Test removing importlib-metadata dependency."""
         package_version = PackageVersion(
             name="importlib-metadata", version="==1.7.0", develop=False, index=Source("https://pypi.org/simple"),
         )
@@ -117,7 +117,7 @@ class TestImportlibMetadataBackportBoot(AdviserTestCase):
         assert "importlib-metadata" not in context.project.pipfile.dev_packages.packages
 
     def test_remove_develop(self, context: Context) -> None:
-        """Test removing develop importlib-metadata dependency"""
+        """Test removing develop importlib-metadata dependency."""
         package_version = PackageVersion(
             name="importlib-metadata", version="==1.7.0", develop=True, index=Source("https://pypi.org/simple"),
         )
