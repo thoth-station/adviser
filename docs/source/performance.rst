@@ -50,7 +50,8 @@ Example:
   {
     "name": "PiMatmul",
     "framework": "tensorflow",
-    "tensorflow_buildinfo": null,
+    "tensorflow_aicoe_buildinfo": null,
+    "tensorflow_upstream_buildinfo": null,
     "@parameters": {
       "dtype": "float32",
       "device": "cpu",
