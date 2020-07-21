@@ -44,9 +44,7 @@ class Py36SetuptoolsSieve(Sieve):
     """
 
     @classmethod
-    def should_include(
-        cls, builder_context: "PipelineBuilderContext"
-    ) -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include for Python 3.6 and adviser/dependency monkey runs."""
         if builder_context.is_included(cls):
             return None
@@ -56,10 +54,8 @@ class Py36SetuptoolsSieve(Sieve):
 
         return None
 
-    def run(
-        self, package_versions: Generator[PackageVersion, None, None]
-    ) -> Generator[PackageVersion, None, None]:
-        """Filter out old setuptools that do not work with Python 3.6"""
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
+        """Filter out old setuptools that do not work with Python 3.6."""
         for package_version in package_versions:
             if package_version.name != "setuptools" or package_version.semantic_version.major >= 17:
                 yield package_version

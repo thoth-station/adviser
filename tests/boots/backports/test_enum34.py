@@ -102,7 +102,7 @@ class TestEnum34BackportBoot(AdviserTestCase):
         assert Enum34BackportBoot.should_include(builder_context) is None
 
     def test_remove(self, context: Context) -> None:
-        """Test removing enum34 dependency"""
+        """Test removing enum34 dependency."""
         package_version = PackageVersion(
             name="enum34", version="==1.1.10", develop=False, index=Source("https://pypi.org/simple"),
         )
@@ -119,7 +119,7 @@ class TestEnum34BackportBoot(AdviserTestCase):
         assert "enum34" not in context.project.pipfile.dev_packages.packages
 
     def test_remove_develop(self, context: Context) -> None:
-        """Test removing develop enum34 dependency"""
+        """Test removing develop enum34 dependency."""
         package_version = PackageVersion(
             name="enum34", version="==1.1.10", develop=True, index=Source("https://pypi.org/simple"),
         )
