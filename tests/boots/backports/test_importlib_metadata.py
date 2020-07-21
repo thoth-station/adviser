@@ -108,11 +108,13 @@ class TestImportlibMetadataBackportBoot(AdviserTestCase):
         context.project.pipfile.add_package_version(package_version)
         assert "importlib-metadata" in context.project.pipfile.packages.packages
         assert "importlib-metadata" not in context.project.pipfile.dev_packages.packages
+        assert not context.stack_info
 
         with ImportlibMetadataBackportBoot.assigned_context(context):
             unit = ImportlibMetadataBackportBoot()
             assert unit.run() is None
 
+        assert len(context.stack_info) == 1
         assert "importlib-metadata" not in context.project.pipfile.packages.packages
         assert "importlib-metadata" not in context.project.pipfile.dev_packages.packages
 
@@ -125,10 +127,12 @@ class TestImportlibMetadataBackportBoot(AdviserTestCase):
         context.project.pipfile.add_package_version(package_version)
         assert "importlib-metadata" not in context.project.pipfile.packages.packages
         assert "importlib-metadata" in context.project.pipfile.dev_packages.packages
+        assert not context.stack_info
 
         with ImportlibMetadataBackportBoot.assigned_context(context):
             unit = ImportlibMetadataBackportBoot()
             assert unit.run() is None
 
+        assert len(context.stack_info) == 1
         assert "importlib-metadata" not in context.project.pipfile.packages.packages
         assert "importlib-metadata" not in context.project.pipfile.dev_packages.packages

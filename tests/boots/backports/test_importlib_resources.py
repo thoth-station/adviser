@@ -108,11 +108,13 @@ class TestImportlibResourcesBackportBoot(AdviserTestCase):
         context.project.pipfile.add_package_version(package_version)
         assert "importlib-resources" in context.project.pipfile.packages.packages
         assert "importlib-resources" not in context.project.pipfile.dev_packages.packages
+        assert not context.stack_info
 
         with ImportlibResourcesBackportBoot.assigned_context(context):
             unit = ImportlibResourcesBackportBoot()
             assert unit.run() is None
 
+        assert len(context.stack_info) == 1
         assert "importlib-resources" not in context.project.pipfile.packages.packages
         assert "importlib-resources" not in context.project.pipfile.dev_packages.packages
 
@@ -125,10 +127,12 @@ class TestImportlibResourcesBackportBoot(AdviserTestCase):
         context.project.pipfile.add_package_version(package_version)
         assert "importlib-resources" not in context.project.pipfile.packages.packages
         assert "importlib-resources" in context.project.pipfile.dev_packages.packages
+        assert not context.stack_info
 
         with ImportlibResourcesBackportBoot.assigned_context(context):
             unit = ImportlibResourcesBackportBoot()
             assert unit.run() is None
 
+        assert len(context.stack_info) == 1
         assert "importlib-resources" not in context.project.pipfile.packages.packages
         assert "importlib-resources" not in context.project.pipfile.dev_packages.packages

@@ -108,11 +108,13 @@ class TestMockBackportBoot(AdviserTestCase):
         context.project.pipfile.add_package_version(package_version)
         assert "mock" in context.project.pipfile.packages.packages
         assert "mock" not in context.project.pipfile.dev_packages.packages
+        assert not context.stack_info
 
         with MockBackportBoot.assigned_context(context):
             unit = MockBackportBoot()
             assert unit.run() is None
 
+        assert len(context.stack_info) == 1
         assert "mock" not in context.project.pipfile.packages.packages
         assert "mock" not in context.project.pipfile.dev_packages.packages
 
@@ -125,10 +127,12 @@ class TestMockBackportBoot(AdviserTestCase):
         context.project.pipfile.add_package_version(package_version)
         assert "mock" not in context.project.pipfile.packages.packages
         assert "mock" in context.project.pipfile.dev_packages.packages
+        assert not context.stack_info
 
         with MockBackportBoot.assigned_context(context):
             unit = MockBackportBoot()
             assert unit.run() is None
 
+        assert len(context.stack_info) == 1
         assert "mock" not in context.project.pipfile.packages.packages
         assert "mock" not in context.project.pipfile.dev_packages.packages
