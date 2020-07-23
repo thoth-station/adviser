@@ -74,7 +74,7 @@ class Context:
     sources = attr.ib(type=Dict[str, Source], kw_only=True, default=attr.Factory(dict))
     iteration = attr.ib(type=int, default=0, kw_only=True)
     cli_parameters = attr.ib(type=Dict[str, Any], kw_only=True, default=attr.Factory(dict))
-    stack_info = attr.ib(type=Optional[List[Dict[str, Any]]], kw_only=True, default=attr.Factory(list))
+    stack_info = attr.ib(type=List[Dict[str, Any]], kw_only=True, default=attr.Factory(list))
     accepted_final_states_count = attr.ib(type=int, kw_only=True, default=0)
     discarded_final_states_count = attr.ib(type=int, kw_only=True, default=0)
 
