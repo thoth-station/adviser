@@ -509,6 +509,7 @@ class Resolver:
 
         self._prepare_user_lock_file(with_devel=True)
 
+        skipped_packages: List[PackageVersion] = []
         _LOGGER.info("Scoring user's stack based on the lock file submitted")
         for package_version in self.project.iter_dependencies_locked(with_devel=with_devel):
             # First time seen, register this package for pipeline units.
@@ -516,12 +517,30 @@ class Resolver:
             try:
                 package_version = list(self._run_sieves([package_version], log_level=logging.INFO))
             except SkipPackage as exc:
+                skipped_packages.append(package_version)
                 _LOGGER.warning("Package %r skipped by sieves: %s", package_version.name, str(exc))
                 continue
 
             if not package_version:
                 _LOGGER.info("User's stack was removed based on sieves")
                 return None
+
+        for skipped_package in skipped_packages:
+            if skipped_package.develop:
+                package_lock_listing = self.project.pipfile_lock.dev_packages
+                package_listing = self.project.pipfile.dev_packages
+            else:
+                package_lock_listing = self.project.pipfile_lock.packages
+                package_listing = self.project.pipfile.packages
+
+            try:
+                package_lock_listing.packages.pop(skipped_package.name)
+            except KeyError:
+                _LOGGER.exception("Tried to skip a package which is not part of the application stack")
+                continue
+
+            # If the package is not direct dependency, do no-op with pop.
+            package_listing.packages.pop(skipped_package.name, None)
 
         state = State()
         for package_version in self.project.iter_dependencies_locked(with_devel=with_devel):
@@ -597,6 +616,7 @@ class Resolver:
         if not direct_dependencies:
             raise CannotProduceStack("No direct dependencies found")
 
+        skipped_packages: List[str] = []
         for direct_dependency_name, package_versions in direct_dependencies.items():
             # Register the given dependency first.
             for direct_dependency in package_versions:
@@ -606,6 +626,7 @@ class Resolver:
             try:
                 package_versions = list(self._run_sieves(package_versions))
             except SkipPackage as exc:
+                skipped_packages.append(direct_dependency_name)
                 _LOGGER.warning("Package %r skipped by sieves: %s", direct_dependency_name, str(exc))
                 continue
 
@@ -619,6 +640,12 @@ class Resolver:
                 direct_dependencies[direct_dependency_name] = package_versions[: self.limit_latest_versions]
             else:
                 direct_dependencies[direct_dependency_name] = package_versions
+
+        for direct_dependency_name in skipped_packages:
+            # Remove separately due to dictionary size changes during dict iterations in items. Also, this loop
+            # should occur rarely so it's more efficient to do it this way instead of creating a swallow copy of
+            # dict during iteration.
+            direct_dependencies.pop(direct_dependency_name)
 
         # Create an initial state which is made out of all the direct dependencies (kept as unresolved) in
         # resolved versions.
@@ -808,6 +835,7 @@ class Resolver:
             self.predictor.set_reward_signal(state, package_tuple, math.nan)
             return None
 
+        skipped_packages: List[str] = []
         dependency_tuples: Union[List[Any], Set[Any]]  # indicate that dependency_tuples type change during iteration
         for dependency_name, dependency_tuples in all_dependencies.items():
             if dependency_name in state.unresolved_dependencies:
@@ -876,6 +904,8 @@ class Resolver:
             try:
                 package_versions = list(self._run_sieves(package_versions))
             except SkipPackage as exc:
+                # This will probably happen occasionally. Let's maintain a separate list for this.
+                skipped_packages.append(dependency_name)
                 _LOGGER.warning("Package %r skipped by sieves: %s", dependency_name, str(exc))
                 continue
 
@@ -901,6 +931,9 @@ class Resolver:
                 ]
             else:
                 all_dependencies[dependency_name] = [pv.to_tuple() for pv in package_versions]  # type: ignore
+
+        for skipped_package in skipped_packages:
+            all_dependencies.pop(skipped_package)
 
         return self._run_steps(state, package_version, all_dependencies)
 
