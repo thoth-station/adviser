@@ -15,25 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A boot to remove backport of mock intended for older Python versions."""
+"""A sieve to remove backport of mock intended for older Python versions."""
 
 import logging
-from typing import Optional
-from typing import Dict
 from typing import Any
+from typing import Dict
+from typing import Generator
+from typing import Optional
 from typing import TYPE_CHECKING
 
 import attr
-from ...boot import Boot
+from thoth.python import PackageVersion
+
+from ...exceptions import SkipPackage
+from ...sieve import Sieve
 
 if TYPE_CHECKING:
-    from ..pipeline_builder import PipelineBuilderContext
+    from ...pipeline_builder import PipelineBuilderContext
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class MockBackportBoot(Boot):
+class MockBackportSieve(Sieve):
     """Remove backport of unittest.mock, available in the standard library starting Python 3.3.
 
     https://pypi.org/project/mock/
@@ -41,8 +45,14 @@ class MockBackportBoot(Boot):
     """
 
     _MESSAGE = (
-        "Direct dependency 'mock' removed: unittest.mock is available in Python " "standard library starting Python 3.3"
+        "Dependency 'mock' removed: unittest.mock is available in Python " "standard library starting Python 3.3"
     )
+
+    _logged = attr.ib(default=False, type=bool)
+
+    def pre_run(self) -> None:
+        """Initialize self before running."""
+        self._logged = False
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -51,17 +61,20 @@ class MockBackportBoot(Boot):
             return None
 
         python_version = tuple(map(int, builder_context.project.runtime_environment.python_version.split(".")))
-        if python_version >= (3, 3) and (
-            "mock" in builder_context.project.pipfile.packages.packages
-            or "mock" in builder_context.project.pipfile.dev_packages.packages
-        ):
+        if python_version >= (3, 3):
             return {}
 
         return None
 
-    def run(self) -> None:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Remove dependency mock for newer Python versions."""
-        _LOGGER.warning(self._MESSAGE)
-        self.context.stack_info.append({"type": "INFO", "message": self._MESSAGE})
-        self.context.project.pipfile.packages.packages.pop("mock", None)
-        self.context.project.pipfile.dev_packages.packages.pop("mock", None)
+        for package_version in package_versions:
+            if package_version.name == "mock":
+                if not self._logged:
+                    self.context.stack_info.append({"type": "WARNING", "message": self._MESSAGE})
+                    _LOGGER.warning(self._MESSAGE)
+                    self._logged = True
+
+                raise SkipPackage
+
+            yield package_version

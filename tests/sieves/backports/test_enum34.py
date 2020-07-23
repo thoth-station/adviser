@@ -21,9 +21,10 @@ from typing import Optional
 
 import pytest
 
-from thoth.adviser.boots import Enum34BackportBoot
+from thoth.adviser.sieves import Enum34BackportSieve
 from thoth.adviser.context import Context
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
+from thoth.adviser.exceptions import SkipPackage
 
 from ...base import AdviserTestCase
 
@@ -33,8 +34,8 @@ from thoth.python import PackageVersion
 from thoth.python import Source
 
 
-class TestEnum34BackportBoot(AdviserTestCase):
-    """Test boot removing enum34 backport."""
+class TestEnum34BackportSieve(AdviserTestCase):
+    """Test sieve removing enum34 backport."""
 
     @pytest.mark.parametrize(
         "python_version,recommendation_type,decision_type,develop",
@@ -59,14 +60,8 @@ class TestEnum34BackportBoot(AdviserTestCase):
         builder_context.recommendation_type = recommendation_type
         builder_context.decision_type = decision_type
 
-        package_version = PackageVersion(
-            name="enum34", version="==1.1.10", develop=develop, index=Source("https://pypi.org/simple"),
-        )
-
-        builder_context.project.pipfile.add_package_version(package_version)
-
         assert builder_context.is_dependency_monkey_pipeline() or builder_context.is_adviser_pipeline()
-        assert Enum34BackportBoot.should_include(builder_context) == {}
+        assert Enum34BackportSieve.should_include(builder_context) == {}
 
     @pytest.mark.parametrize(
         "python_version,recommendation_type,decision_type,develop",
@@ -92,14 +87,8 @@ class TestEnum34BackportBoot(AdviserTestCase):
         builder_context.recommendation_type = recommendation_type
         builder_context.decision_type = decision_type
 
-        package_version = PackageVersion(
-            name="enum34", version="==1.1.10", develop=develop, index=Source("https://pypi.org/simple"),
-        )
-
-        builder_context.project.pipfile.add_package_version(package_version)
-
         assert builder_context.is_dependency_monkey_pipeline() or builder_context.is_adviser_pipeline()
-        assert Enum34BackportBoot.should_include(builder_context) is None
+        assert Enum34BackportSieve.should_include(builder_context) is None
 
     def test_remove(self, context: Context) -> None:
         """Test removing enum34 dependency."""
@@ -107,34 +96,12 @@ class TestEnum34BackportBoot(AdviserTestCase):
             name="enum34", version="==1.1.10", develop=False, index=Source("https://pypi.org/simple"),
         )
 
-        context.project.pipfile.add_package_version(package_version)
-        assert "enum34" in context.project.pipfile.packages.packages
-        assert "enum34" not in context.project.pipfile.dev_packages.packages
-        assert not context.stack_info
+        unit = Enum34BackportSieve()
+        with Enum34BackportSieve.assigned_context(context):
+            with pytest.raises(SkipPackage):
+                list(unit.run(pv for pv in (package_version,)))
 
-        with Enum34BackportBoot.assigned_context(context):
-            unit = Enum34BackportBoot()
-            assert unit.run() is None
-
-        assert len(context.stack_info) == 1
-        assert "enum34" not in context.project.pipfile.packages.packages
-        assert "enum34" not in context.project.pipfile.dev_packages.packages
-
-    def test_remove_develop(self, context: Context) -> None:
-        """Test removing develop enum34 dependency."""
-        package_version = PackageVersion(
-            name="enum34", version="==1.1.10", develop=True, index=Source("https://pypi.org/simple"),
-        )
-
-        context.project.pipfile.add_package_version(package_version)
-        assert "enum34" not in context.project.pipfile.packages.packages
-        assert "enum34" in context.project.pipfile.dev_packages.packages
-        assert not context.stack_info
-
-        with Enum34BackportBoot.assigned_context(context):
-            unit = Enum34BackportBoot()
-            assert unit.run() is None
+            with pytest.raises(SkipPackage):
+                list(unit.run(pv for pv in (package_version,)))
 
         assert len(context.stack_info) == 1
-        assert "enum34" not in context.project.pipfile.packages.packages
-        assert "enum34" not in context.project.pipfile.dev_packages.packages

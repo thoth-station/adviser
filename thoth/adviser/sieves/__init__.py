@@ -25,14 +25,22 @@ from .prereleases import CutPreReleasesSieve
 from .py36_setuptools import Py36SetuptoolsSieve
 from .solved import SolvedSieve
 from .version_constraint import VersionConstraintSieve
+from .backports import ImportlibMetadataBackportSieve
+from .backports import ImportlibResourcesBackportSieve
+from .backports import Enum34BackportSieve
+from .backports import MockBackportSieve
 
 
 # Relative ordering of units is relevant, as the order specifies order
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
 __all__ = [
-    "CutLockedSieve",
     "CutPreReleasesSieve",
+    "ImportlibMetadataBackportSieve",
+    "ImportlibResourcesBackportSieve",
+    "Enum34BackportSieve",
+    "MockBackportSieve",
+    "CutLockedSieve",
     "Py36SetuptoolsSieve",
     "PackageIndexSieve",
     "SolvedSieve",
