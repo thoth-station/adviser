@@ -59,8 +59,6 @@ class PythonVersionBoot(Boot):
             )
             _LOGGER.warning(msg)
             self.context.project.runtime_environment.python_version = pipfile_python_version
-            if self.context.stack_info is None:
-                self.context.stack_info = []
             self.context.stack_info.append({"type": "WARNING", "Message": msg})
         elif python_version is not None and pipfile_python_version is None:
             msg = (
@@ -69,6 +67,4 @@ class PythonVersionBoot(Boot):
             )
             _LOGGER.warning(msg)
             self.context.project.pipfile.meta.requires["python_version"] = python_version
-            if self.context.stack_info is None:
-                self.context.stack_info = []
             self.context.stack_info.append({"type": "WARNING", "Message": msg})
