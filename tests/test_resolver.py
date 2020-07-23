@@ -2180,29 +2180,15 @@ class TestResolver(AdviserTestCase):
         assert len(state_returned.unresolved_dependencies["absl-py"]) == 1
         assert "functools32" not in state_returned.unresolved_dependencies
 
-    def test_skip_package_direct(
-        self,
-        resolver: Resolver,
-        numpy_package_versions: List[PackageVersion],
-    ) -> None:
+    def test_skip_package_direct(self, resolver: Resolver, numpy_package_versions: List[PackageVersion],) -> None:
         """Test raising a SkipPackage exception causes a direct dependency to be excluded."""
         flexmock(sieves.Sieve1)
         sieves.Sieve1.should_call("run").times(2)
 
         pypi = Source("https://pypi.org/simple")
         functools32_package_versions = [
-            PackageVersion(
-                name="functools32",
-                version="==3.2.3-2",
-                index=pypi,
-                develop=False
-            ),
-            PackageVersion(
-                name="functools32",
-                version="==3.2.3-1",
-                index=pypi,
-                develop=False
-            ),
+            PackageVersion(name="functools32", version="==3.2.3-2", index=pypi, develop=False),
+            PackageVersion(name="functools32", version="==3.2.3-1", index=pypi, develop=False),
         ]
 
         resolver.should_receive("_resolve_direct_dependencies").with_args(with_devel=True).and_return(
@@ -2231,27 +2217,10 @@ class TestResolver(AdviserTestCase):
 
         pypi = Source("https://pypi.org/simple")
         resolver.project = Project.from_package_versions(
-            packages=[
-                PackageVersion(
-                    name="tensorflow",
-                    version=">=2.0",
-                    index=pypi,
-                    develop=False
-                ),
-            ],
+            packages=[PackageVersion(name="tensorflow", version=">=2.0", index=pypi, develop=False),],
             packages_locked=[
-                PackageVersion(
-                    name="functools32",
-                    version="==3.2.3-1",
-                    index=pypi,
-                    develop=False
-                ),
-                PackageVersion(
-                    name="tensorflow",
-                    version="==2.2.0",
-                    index=pypi,
-                    develop=False
-                ),
+                PackageVersion(name="functools32", version="==3.2.3-1", index=pypi, develop=False),
+                PackageVersion(name="tensorflow", version="==2.2.0", index=pypi, develop=False),
             ],
         )
 
@@ -2281,32 +2250,12 @@ class TestResolver(AdviserTestCase):
         pypi = Source("https://pypi.org/simple")
         resolver.project = Project.from_package_versions(
             packages=[
-                PackageVersion(
-                    name="thoth-glyph",
-                    version="*",
-                    index=pypi,
-                    develop=False
-                ),
-                PackageVersion(
-                    name="functools32",
-                    version="==3.2.3-1",
-                    index=pypi,
-                    develop=False
-                ),
+                PackageVersion(name="thoth-glyph", version="*", index=pypi, develop=False),
+                PackageVersion(name="functools32", version="==3.2.3-1", index=pypi, develop=False),
             ],
             packages_locked=[
-                PackageVersion(
-                    name="thoth-glyph",
-                    version="==0.1.1",
-                    index=pypi,
-                    develop=False
-                ),
-                PackageVersion(
-                    name="functools32",
-                    version="==3.2.3-1",
-                    index=pypi,
-                    develop=False
-                ),
+                PackageVersion(name="thoth-glyph", version="==0.1.1", index=pypi, develop=False),
+                PackageVersion(name="functools32", version="==3.2.3-1", index=pypi, develop=False),
             ],
         )
 
