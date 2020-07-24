@@ -118,8 +118,8 @@ def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationTy
     elif (
         recommendation_type == RecommendationType.STABLE
         or recommendation_type == RecommendationType.TESTING
-        or recommendation_type == RecommendationType.PERFORMANT
-        or recommendation_type == RecommendationType.SECURE
+        or recommendation_type == RecommendationType.PERFORMANCE
+        or recommendation_type == RecommendationType.SECURITY
     ):
         return predictors.MCTS
 
