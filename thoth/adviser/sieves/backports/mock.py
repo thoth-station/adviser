@@ -44,9 +44,7 @@ class MockBackportSieve(Sieve):
     https://docs.python.org/3/library/unittest.mock.html
     """
 
-    _MESSAGE = (
-        "Dependency 'mock' removed: unittest.mock is available in Python " "standard library starting Python 3.3"
-    )
+    _MESSAGE = "Dependency 'mock' removed: unittest.mock is available in Python " "standard library starting Python 3.3"
 
     _logged = attr.ib(default=False, type=bool, init=False)
 

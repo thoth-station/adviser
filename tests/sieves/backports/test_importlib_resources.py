@@ -103,4 +103,3 @@ class TestImportlibResourcesBackportSieve(AdviserTestCase):
                 list(unit.run(pv for pv in (package_version,)))
 
         assert len(context.stack_info) == 1
-
