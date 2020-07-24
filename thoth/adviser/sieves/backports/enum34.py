@@ -46,7 +46,7 @@ class Enum34BackportSieve(Sieve):
 
     _MESSAGE = "Dependency 'enum34' removed: emum34 is available in Python standard library starting Python 3.4"
 
-    _logged = attr.ib(default=False, type=bool)
+    _logged = attr.ib(default=False, type=bool, init=False)
 
     def pre_run(self) -> None:
         """Initialize self before running."""

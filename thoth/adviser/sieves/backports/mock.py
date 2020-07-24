@@ -48,7 +48,7 @@ class MockBackportSieve(Sieve):
         "Dependency 'mock' removed: unittest.mock is available in Python " "standard library starting Python 3.3"
     )
 
-    _logged = attr.ib(default=False, type=bool)
+    _logged = attr.ib(default=False, type=bool, init=False)
 
     def pre_run(self) -> None:
         """Initialize self before running."""

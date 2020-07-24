@@ -49,7 +49,7 @@ class ImportlibMetadataBackportSieve(Sieve):
         "Python standard library starting Python 3.8"
     )
 
-    _logged = attr.ib(default=False, type=bool)
+    _logged = attr.ib(default=False, type=bool, init=False)
 
     def pre_run(self) -> None:
         """Initialize self before running."""
