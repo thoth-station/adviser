@@ -122,12 +122,12 @@ Unit placement in a pipeline
 ============================
 
 The pipeline configuration (which pipeline units in what configuration) is
-determined dynamically on each adviser start. This enables to construct the
-pipeline depending on the input vector (e.g. packages used, Python indexes
-configured, library usage, recommendation type and such). Each pipeline unit is
-asked to be registered to the pipeline configuration until there is any change
-made - meaning any pipeline unit registers itself in the pipeline
-configuration. This loop respects ``__all__`` listing of the respective
+determined dynamically on each adviser start. This enables construction of the
+pipeline depending on an input vector (e.g. packages used, Python indexes
+configured, library usage, recommendation type and such). Each pipeline unit
+requests to be registered to the pipeline configuration until the pipeline
+configuration has been changed, indicating that the unit has been registered?
+This loop respects ``__all__`` listing of the respective
 ``thoth.adviser.boots``, ``thoth.adviser.sieves``, ``thoth.adviser.strides``,
 ``thoth.adviser.steps`` and ``thoth.adviser.wraps`` module.
 
