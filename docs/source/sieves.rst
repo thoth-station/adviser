@@ -57,6 +57,9 @@ Main usage
     <thoth.adviser.exceptions.EagerStopPipeline>` will cause stopping the whole
     resolver run and causing resolver to return products computed so far
 
+* Removing a library from a stack even though it is stated as a dependency by
+  raising :class:`SkipPackage <thoth.adviser.exceptions.SkipPackage>`
+
 .. note::
 
   Even if pipeline sieves discard all the versions for a certain package, the
@@ -93,6 +96,19 @@ Real world examples
 * Filter out packages that are nightly builds or pre-releases in case of
   ``STABLE`` recommendation type or disabled pre-releases configuration option
   in ``Pipfile``
+
+* A library maintainer added `enum34 package <https://pypi.org/project/enum34/>`_
+  as a library dependency but did not restrict requirements to Python version with
+  an environment marker:
+
+  .. code-block:: console
+
+     enum34>=1.0; python_version < '3.4'
+
+  The resolver can skip this package based on a pipeline sieve specific to the
+  library which would raise :class:`SkipPackage
+  <thoth.adviser.exceptions.SkipPackage>` exception if the ``enum34`` would be
+  used with newer Python version.
 
 An example implementation
 =========================

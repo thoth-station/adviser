@@ -26,6 +26,7 @@ from collections import OrderedDict
 from copy import deepcopy
 import itertools
 from typing import List
+from typing import Generator
 import random
 
 from thoth.adviser.beam import Beam
@@ -38,6 +39,7 @@ from thoth.adviser.pipeline_builder import PipelineBuilder
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.step import Step
+from thoth.adviser.sieve import Sieve
 from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
 from thoth.python import PipfileLock
@@ -47,6 +49,7 @@ from thoth.storages import GraphDatabase
 from thoth.storages.exceptions import NotFoundError
 
 from thoth.adviser.exceptions import BootError
+from thoth.adviser.exceptions import SkipPackage
 from thoth.adviser.exceptions import CannotProduceStack
 from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.exceptions import SieveError
@@ -145,6 +148,17 @@ def final_state() -> State:
         resolved_dependencies=OrderedDict(),
         advised_runtime_environment=RuntimeEnvironment.from_dict({}),
     )
+
+
+class _Functools32SkipPackageSieve(Sieve):
+    """A mock to skip functools32 package."""
+
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
+        for pv in package_versions:
+            if pv.name == "functools32":
+                raise SkipPackage
+
+            yield pv
 
 
 class TestResolver(AdviserTestCase):
@@ -1987,3 +2001,278 @@ class TestResolver(AdviserTestCase):
 
         resolver._prepare_user_lock_file()
         assert package_version.index == thoth_station_source
+
+    def test_skip_package_exception(self, resolver: Resolver, tf_package_versions: List[PackageVersion]) -> None:
+        """Test propagation of an exception caused to skip a package."""
+        flexmock(sieves.Sieve1)
+        flexmock(sieves.Sieve2)
+
+        sieves.Sieve1.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
+        sieves.Sieve2.should_receive("run").with_args(object).and_raise(SkipPackage).once()
+
+        resolver.pipeline.sieves = [sieves.Sieve1(), sieves.Sieve2()]
+
+        with pytest.raises(SkipPackage):
+            list(resolver._run_sieves(tf_package_versions))
+
+    def test_skip_package(self, resolver: Resolver, state: State) -> None:
+        """Test raising a SkipPackage exception causes a dependency to be excluded."""
+        flexmock(sieves.Sieve1)
+        sieves.Sieve1.should_call("run").times(1)
+
+        to_expand_package_tuple = ("tensorflow", "2.2.0", "https://pypi.org/simple")
+
+        pypi = Source("https://pypi.org/simple")
+        dep_package_versions = [
+            PackageVersion(name="functools32", version="==3.2.3-1", index=pypi, develop=False),
+            PackageVersion(name="functools32", version="==3.2.3-2", index=pypi, develop=False),
+        ]
+
+        functools323_1_records = [
+            {
+                "package_name": "functools32",
+                "package_version": "3.2.3-1",
+                "index_url": "https://pypi.org/simple",
+                "os_name": resolver.project.runtime_environment.operating_system.name,
+                "os_version": resolver.project.runtime_environment.operating_system.version,
+                "python_version": resolver.project.runtime_environment.python_version,
+            }
+        ]
+
+        functools323_2_records = [
+            {
+                "package_name": "functools32",
+                "package_version": "3.2.3-2",
+                "index_url": "https://pypi.org/simple",
+                "os_name": resolver.project.runtime_environment.operating_system.name,
+                "os_version": resolver.project.runtime_environment.operating_system.version,
+                "python_version": resolver.project.runtime_environment.python_version,
+            }
+        ]
+
+        resolver.graph.should_receive("get_python_package_version_records").with_args(
+            package_name="functools32",
+            package_version="3.2.3-1",
+            index_url=None,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        ).and_return(functools323_1_records).ordered()
+
+        resolver.graph.should_receive("get_python_package_version_records").with_args(
+            package_name="functools32",
+            package_version="3.2.3-2",
+            index_url=None,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        ).and_return(functools323_2_records).ordered()
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+            *to_expand_package_tuple,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.operating_system.version,
+            extras=frozenset([None]),
+            marker_evaluation_result=None,
+            is_missing=False,
+        ).and_return({None: [(pv.name, pv.locked_version) for pv in dep_package_versions]}).once()
+
+        resolver._init_context()
+        resolver.beam.add_state(state)
+        resolver.context.register_package_tuple(
+            to_expand_package_tuple,
+            develop=False,
+            extras=None,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        )
+
+        resolver.pipeline.sieves = [sieves.Sieve1(), _Functools32SkipPackageSieve()]
+        state.unresolved_dependencies.clear()
+        state.add_unresolved_dependency(to_expand_package_tuple)
+        state_returned = resolver._expand_state(state, to_expand_package_tuple)
+        # No more unresolved dependencies, the state is final.
+        assert state_returned is state
+        assert not state.unresolved_dependencies
+
+    def test_skip_package_unresolved(self, resolver: Resolver, state: State) -> None:
+        """Test raising a SkipPackage exception causes a dependency to be excluded."""
+        flexmock(sieves.Sieve1)
+        sieves.Sieve1.should_call("run").times(2)
+
+        to_expand_package_tuple = ("tensorflow", "2.2.0", "https://pypi.org/simple")
+
+        pypi = Source("https://pypi.org/simple")
+        dep_package_versions = [
+            PackageVersion(name="absl-py", version="==0.9.0", index=pypi, develop=False),
+            PackageVersion(name="functools32", version="==3.2.3-2", index=pypi, develop=False),
+        ]
+
+        absl_py_records = [
+            {
+                "package_name": "absl-py",
+                "package_version": "0.9.0",
+                "index_url": "https://pypi.org/simple",
+                "os_name": resolver.project.runtime_environment.operating_system.name,
+                "os_version": resolver.project.runtime_environment.operating_system.version,
+                "python_version": resolver.project.runtime_environment.python_version,
+            }
+        ]
+
+        functools323_2_records = [
+            {
+                "package_name": "functools32",
+                "package_version": "3.2.3-2",
+                "index_url": "https://pypi.org/simple",
+                "os_name": resolver.project.runtime_environment.operating_system.name,
+                "os_version": resolver.project.runtime_environment.operating_system.version,
+                "python_version": resolver.project.runtime_environment.python_version,
+            }
+        ]
+
+        resolver.graph.should_receive("get_python_package_version_records").with_args(
+            package_name="absl-py",
+            package_version="0.9.0",
+            index_url=None,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        ).and_return(absl_py_records).ordered()
+
+        resolver.graph.should_receive("get_python_package_version_records").with_args(
+            package_name="functools32",
+            package_version="3.2.3-2",
+            index_url=None,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        ).and_return(functools323_2_records).ordered()
+
+        resolver.graph.should_receive("get_depends_on").with_args(
+            *to_expand_package_tuple,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.operating_system.version,
+            extras=frozenset([None]),
+            marker_evaluation_result=None,
+            is_missing=False,
+        ).and_return({None: [(pv.name, pv.locked_version) for pv in dep_package_versions]}).once()
+
+        resolver._init_context()
+        resolver.beam.add_state(state)
+        resolver.context.register_package_tuple(
+            to_expand_package_tuple,
+            develop=False,
+            extras=None,
+            os_name=resolver.project.runtime_environment.operating_system.name,
+            os_version=resolver.project.runtime_environment.operating_system.version,
+            python_version=resolver.project.runtime_environment.python_version,
+        )
+
+        resolver.pipeline.sieves = [sieves.Sieve1(), _Functools32SkipPackageSieve()]
+        state.add_unresolved_dependency(to_expand_package_tuple)
+        state_returned = resolver._expand_state(state, to_expand_package_tuple)
+        assert state_returned is not None
+        assert state_returned is not state
+        assert "absl-py" in state_returned.unresolved_dependencies
+        assert len(state_returned.unresolved_dependencies["absl-py"]) == 1
+        assert "functools32" not in state_returned.unresolved_dependencies
+
+    def test_skip_package_direct(self, resolver: Resolver, numpy_package_versions: List[PackageVersion],) -> None:
+        """Test raising a SkipPackage exception causes a direct dependency to be excluded."""
+        flexmock(sieves.Sieve1)
+        sieves.Sieve1.should_call("run").times(2)
+
+        pypi = Source("https://pypi.org/simple")
+        functools32_package_versions = [
+            PackageVersion(name="functools32", version="==3.2.3-2", index=pypi, develop=False),
+            PackageVersion(name="functools32", version="==3.2.3-1", index=pypi, develop=False),
+        ]
+
+        resolver.should_receive("_resolve_direct_dependencies").with_args(with_devel=True).and_return(
+            {"numpy": numpy_package_versions, "functools32": functools32_package_versions}
+        ).once()
+
+        flexmock(Beam)
+        resolver.beam.should_receive("wipe").with_args().and_return(None).once()
+        resolver._init_context()
+
+        resolver.pipeline.sieves = [sieves.Sieve1(), _Functools32SkipPackageSieve()]
+
+        assert resolver._prepare_initial_state(with_devel=True) is None
+        assert resolver.beam.size == 1
+        initial_state = resolver.beam.get(0)
+        assert "functools32" not in initial_state.unresolved_dependencies
+        assert "numpy" in initial_state.unresolved_dependencies
+        assert len(initial_state.unresolved_dependencies["numpy"]) == len(numpy_package_versions)
+
+    def test_skip_package_user_stack(self, resolver: Resolver) -> None:
+        """Test skipping a package on the supplied user stack."""
+        flexmock(sieves.Sieve1)
+        sieves.Sieve1.should_call("run").times(2)
+        resolver.pipeline.sieves = [sieves.Sieve1(), _Functools32SkipPackageSieve()]
+        resolver.should_receive("_prepare_user_lock_file").with_args(with_devel=True).and_return(None).once()
+
+        pypi = Source("https://pypi.org/simple")
+        resolver.project = Project.from_package_versions(
+            packages=[PackageVersion(name="tensorflow", version=">=2.0", index=pypi, develop=False),],
+            packages_locked=[
+                PackageVersion(name="functools32", version="==3.2.3-1", index=pypi, develop=False),
+                PackageVersion(name="tensorflow", version="==2.2.0", index=pypi, develop=False),
+            ],
+        )
+
+        assert "functools32" not in (pv.name for pv in resolver.project.iter_dependencies(with_devel=True))
+        assert "functools32" in (pv.name for pv in resolver.project.iter_dependencies_locked(with_devel=True))
+
+        resolver._init_context()
+        user_stack_state = resolver._maybe_score_user_lock_file()
+
+        assert not user_stack_state.unresolved_dependencies
+        assert "tensorflow" in user_stack_state.resolved_dependencies
+        assert "functools32" not in user_stack_state.resolved_dependencies
+
+        assert "functools32" not in (pv.name for pv in resolver.project.iter_dependencies(with_devel=True))
+        assert "functools32" not in (pv.name for pv in resolver.project.iter_dependencies_locked(with_devel=True))
+
+        assert "tensorflow" in (pv.name for pv in resolver.project.iter_dependencies(with_devel=False))
+        assert "tensorflow" in (pv.name for pv in resolver.project.iter_dependencies_locked(with_devel=False))
+
+    def test_skip_package_user_stack_direct(self, resolver: Resolver) -> None:
+        """Test skipping a package on the supplied user stack, the package is a direct dependency."""
+        flexmock(sieves.Sieve1)
+        sieves.Sieve1.should_call("run").times(2)
+        resolver.pipeline.sieves = [sieves.Sieve1(), _Functools32SkipPackageSieve()]
+        resolver.should_receive("_prepare_user_lock_file").with_args(with_devel=True).and_return(None).once()
+
+        pypi = Source("https://pypi.org/simple")
+        resolver.project = Project.from_package_versions(
+            packages=[
+                PackageVersion(name="thoth-glyph", version="*", index=pypi, develop=False),
+                PackageVersion(name="functools32", version="==3.2.3-1", index=pypi, develop=False),
+            ],
+            packages_locked=[
+                PackageVersion(name="thoth-glyph", version="==0.1.1", index=pypi, develop=False),
+                PackageVersion(name="functools32", version="==3.2.3-1", index=pypi, develop=False),
+            ],
+        )
+
+        assert "functools32" in (pv.name for pv in resolver.project.iter_dependencies(with_devel=True))
+        assert "functools32" in (pv.name for pv in resolver.project.iter_dependencies_locked(with_devel=True))
+
+        resolver._init_context()
+
+        user_stack_state = resolver._maybe_score_user_lock_file()
+
+        assert not user_stack_state.unresolved_dependencies
+
+        assert "thoth-glyph" in user_stack_state.resolved_dependencies
+        assert "functools32" not in user_stack_state.resolved_dependencies
+
+        assert "functools32" not in (pv.name for pv in resolver.project.iter_dependencies(with_devel=True))
+        assert "functools32" not in (pv.name for pv in resolver.project.iter_dependencies_locked(with_devel=True))
+
+        assert "thoth-glyph" in (pv.name for pv in resolver.project.iter_dependencies(with_devel=False))
+        assert "thoth-glyph" in (pv.name for pv in resolver.project.iter_dependencies_locked(with_devel=False))
