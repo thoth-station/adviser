@@ -18,12 +18,14 @@
 """Sieve units for backports to older Python versions."""
 
 from .enum34 import Enum34BackportSieve
+from .functools32 import Functools32BackportSieve
 from .importlib_metadata import ImportlibMetadataBackportSieve
 from .importlib_resources import ImportlibResourcesBackportSieve
 from .mock import MockBackportSieve
 
 __all__ = [
     "Enum34BackportSieve",
+    "Functools32BackportSieve",
     "ImportlibMetadataBackportSieve",
     "ImportlibResourcesBackportSieve",
     "MockBackportSieve",
