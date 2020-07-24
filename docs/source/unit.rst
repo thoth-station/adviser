@@ -108,8 +108,45 @@ Pipeline units of type :class:`Sieve <thoth.adviser.sieve.Sieve>` and
 <thoth.adviser.exceptions.NotAcceptable>`, see :ref:`sieves <sieves>` and
 :ref:`steps <steps>` sections for more info.
 
+Pipeline units of type :class:`Sieve` can also raise :class:`SkipPackage
+<thoth.adviser.exceptions.SkipPacakge>` to exclude the given package from an
+application stack completely. See :ref:`sieves <sieves>` section for more info.
+
 Raising any other exception in pipeline units causes resolver failure.
 
 All pipeline units should be atomic pieces and `they should do one thing and do
 it well <https://en.wikipedia.org/wiki/Unix_philosophy>`_. They were designed
 to be small pieces forming complex resolution system.
+
+Unit placement in a pipeline
+============================
+
+The pipeline configuration (which pipeline units in what configuration) is
+determined dynamically on each adviser start. This enables construction of the
+pipeline depending on an input vector (e.g. packages used, Python indexes
+configured, library usage, recommendation type and such). Each pipeline unit
+requests to be registered to the pipeline configuration until the pipeline
+configuration has been changed, indicating that the unit has been registered?
+This loop respects ``__all__`` listing of the respective
+``thoth.adviser.boots``, ``thoth.adviser.sieves``, ``thoth.adviser.strides``,
+``thoth.adviser.steps`` and ``thoth.adviser.wraps`` module.
+
+It's good to note how pipeline units should be listed in ``__all__``:
+
+1. If a pipeline unit ``Foo`` depends on another pipeline unit, say ``Bar``, the
+   pipeline unit ``Foo`` should be stated before ``Bar`` in the ``__all__`` listing.
+
+2. It's a good practice to place pipeline units that remove/filter packages
+   from an application stack sooner than pipeline units that perform other
+   tasks (e.g. scoring, adding package information, ...). As packages are
+   filtered, the code of other units is performed less time making the pipeline
+   run more optimal.
+
+3. If a pipeline unit ``Foo`` is less expensive than another pipeline unit, say
+   ``Bar``, the pipeline unit ``Foo`` should be stated before ``Bar`` in the
+   ``__all__`` listing.
+
+  An example of a pipeline unit that is considered expensive is a pipeline unit
+  that performs a knowledge graph query (the more queries or more expensive
+  queries, the more pipeline unit is expensive). Note the overhead needed to
+  query the knowledge base.
