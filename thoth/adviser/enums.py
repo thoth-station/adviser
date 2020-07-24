@@ -39,8 +39,8 @@ class RecommendationType(_ExtendedEnum):
     STABLE = auto()
     TESTING = auto()
     LATEST = auto()
-    PERFORMANT = auto()
-    SECURE = auto()
+    PERFORMANCE = auto()
+    SECURITY = auto()
 
 
 class PythonRecommendationOutput(_ExtendedEnum):
