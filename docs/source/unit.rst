@@ -154,26 +154,26 @@ It's good to note how pipeline units should be listed in ``__all__``:
 Which pipeline unit type should be chosen?
 ==========================================
 
-Sometimes it might be tricky to select the right pipeline unit. There were
-designed multiple unit types to provide a framework for resolver to easily
-write units. These units have different overhead and are designed for specific
-use cases. It's crucial to select the right pipeline unit for the right use
-case to keep the pipeline well performing.
+Sometimes it might be tricky to select the right pipeline unit. Multiple unit
+types were designed to provide a framework for resolver to easily write units.
+These units have different overhead and are designed for specific use cases.
+It's crucial to select the right pipeline unit for the right use case to keep
+the pipeline performing well.
 
 The most expensive pipeline units are :ref:`steps <steps>`. They are run each
 time a package is about to be added to resolver's internal state. As it is the
 most expensive one, it also provides the most information for a pipeline unit
 developer - which package in which specific version is about to be added to a
-partially resolved state and how the resolver state looks like. These units, as
-the only ones, can affect the final unit score.
+partially resolved state and what the resolver state looks like. These units
+are the only ones that can affect the final unit score.
 
 The second most expensive pipeline units are :ref:`sieves <sieves>`. They do
 not provide access to resolver's internal state, but are called each time there
 are packages in specific versions considered for further resolution. As the
 name suggests, these units filter out packages that should not occur in the
-final software stack. These units, in opposite to :ref:`steps <steps>`, do not
-provide access to resolver's internal state (states are created out of the
-packages that were not filtered by sieves).
+final software stack. These units, unlike :ref:`steps <steps>`, do not provide
+access to resolver's internal state (states are created out of the packages
+that were not filtered by sieves).
 
 The third most expensive pipeline units are :ref:`strides <strides>`. They are
 called on each fully resolved state that eventually (if all wraps accept fully
@@ -192,7 +192,7 @@ information.
 Unroll pipeline units
 =====================
 
-To keep the resolver well-performing, try to always unroll all the operations
+To keep the resolver performing well, try to always unroll all the operations
 that do not need to be included in the actual pipeline unit run method and put
 these operations to pre or post run methods. In that case, pipeline units can
 configure/prepare for a resolver run in advance, keeping the initialization
