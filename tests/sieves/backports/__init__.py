@@ -15,4 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Tests for boot units implementing backported implementation from std library."""
+"""Tests for sieve units implementing backported implementation from std library."""

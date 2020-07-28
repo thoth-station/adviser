@@ -18,6 +18,11 @@
 """Implementation of sieves used in adviser pipeline."""
 
 from .abi_compat import AbiCompatibilitySieve
+from .backports import Enum34BackportSieve
+from .backports import Functools32BackportSieve
+from .backports import ImportlibMetadataBackportSieve
+from .backports import ImportlibResourcesBackportSieve
+from .backports import MockBackportSieve
 from .filter_index import FilterIndexSieve
 from .index_enabled import PackageIndexSieve
 from .locked import CutLockedSieve
@@ -31,8 +36,13 @@ from .version_constraint import VersionConstraintSieve
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
 __all__ = [
-    "CutLockedSieve",
     "CutPreReleasesSieve",
+    "Functools32BackportSieve",
+    "ImportlibMetadataBackportSieve",
+    "ImportlibResourcesBackportSieve",
+    "Enum34BackportSieve",
+    "MockBackportSieve",
+    "CutLockedSieve",
     "Py36SetuptoolsSieve",
     "PackageIndexSieve",
     "SolvedSieve",

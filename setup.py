@@ -84,10 +84,10 @@ setup(
     packages=[
         "thoth.adviser",
         "thoth.adviser.boots",
-        "thoth.adviser.boots.backports",
         "thoth.adviser.predictors",
         "thoth.adviser.steps",
         "thoth.adviser.sieves",
+        "thoth.adviser.sieves.backports",
         "thoth.adviser.strides",
         "thoth.adviser.wraps",
     ],

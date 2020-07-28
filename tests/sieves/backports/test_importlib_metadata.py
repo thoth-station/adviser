@@ -23,7 +23,8 @@ import pytest
 
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import RecommendationType
-from thoth.adviser.boots import ImportlibMetadataBackportBoot
+from thoth.adviser.exceptions import SkipPackage
+from thoth.adviser.sieves import ImportlibMetadataBackportSieve
 from thoth.adviser.context import Context
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from ...base import AdviserTestCase
@@ -32,8 +33,8 @@ from thoth.python import PackageVersion
 from thoth.python import Source
 
 
-class TestImportlibMetadataBackportBoot(AdviserTestCase):
-    """Test boot removing importlib-metadata backport."""
+class TestImportlibMetadataBackportSieve(AdviserTestCase):
+    """Test sieve removing importlib-metadata backport."""
 
     @pytest.mark.parametrize(
         "python_version,recommendation_type,decision_type,develop",
@@ -57,14 +58,8 @@ class TestImportlibMetadataBackportBoot(AdviserTestCase):
         builder_context.recommendation_type = recommendation_type
         builder_context.decision_type = decision_type
 
-        package_version = PackageVersion(
-            name="importlib-metadata", version="==1.7.0", develop=develop, index=Source("https://pypi.org/simple"),
-        )
-
-        builder_context.project.pipfile.add_package_version(package_version)
-
         assert builder_context.is_dependency_monkey_pipeline() or builder_context.is_adviser_pipeline()
-        assert ImportlibMetadataBackportBoot.should_include(builder_context) == {}
+        assert ImportlibMetadataBackportSieve.should_include(builder_context) == {}
 
     @pytest.mark.parametrize(
         "python_version,recommendation_type,decision_type,develop",
@@ -90,14 +85,8 @@ class TestImportlibMetadataBackportBoot(AdviserTestCase):
         builder_context.recommendation_type = recommendation_type
         builder_context.decision_type = decision_type
 
-        package_version = PackageVersion(
-            name="importlib-metadata", version="==1.7.0", develop=develop, index=Source("https://pypi.org/simple"),
-        )
-
-        builder_context.project.pipfile.add_package_version(package_version)
-
         assert builder_context.is_dependency_monkey_pipeline() or builder_context.is_adviser_pipeline()
-        assert ImportlibMetadataBackportBoot.should_include(builder_context) is None
+        assert ImportlibMetadataBackportSieve.should_include(builder_context) is None
 
     def test_remove(self, context: Context) -> None:
         """Test removing importlib-metadata dependency."""
@@ -105,34 +94,13 @@ class TestImportlibMetadataBackportBoot(AdviserTestCase):
             name="importlib-metadata", version="==1.7.0", develop=False, index=Source("https://pypi.org/simple"),
         )
 
-        context.project.pipfile.add_package_version(package_version)
-        assert "importlib-metadata" in context.project.pipfile.packages.packages
-        assert "importlib-metadata" not in context.project.pipfile.dev_packages.packages
-        assert not context.stack_info
+        unit = ImportlibMetadataBackportSieve()
+        with ImportlibMetadataBackportSieve.assigned_context(context):
+            with pytest.raises(SkipPackage):
+                list(unit.run(pv for pv in (package_version,)))
 
-        with ImportlibMetadataBackportBoot.assigned_context(context):
-            unit = ImportlibMetadataBackportBoot()
-            assert unit.run() is None
-
-        assert len(context.stack_info) == 1
-        assert "importlib-metadata" not in context.project.pipfile.packages.packages
-        assert "importlib-metadata" not in context.project.pipfile.dev_packages.packages
-
-    def test_remove_develop(self, context: Context) -> None:
-        """Test removing develop importlib-metadata dependency."""
-        package_version = PackageVersion(
-            name="importlib-metadata", version="==1.7.0", develop=True, index=Source("https://pypi.org/simple"),
-        )
-
-        context.project.pipfile.add_package_version(package_version)
-        assert "importlib-metadata" not in context.project.pipfile.packages.packages
-        assert "importlib-metadata" in context.project.pipfile.dev_packages.packages
-        assert not context.stack_info
-
-        with ImportlibMetadataBackportBoot.assigned_context(context):
-            unit = ImportlibMetadataBackportBoot()
-            assert unit.run() is None
+            # Run twice to ensure only one entry is added to stack info.
+            with pytest.raises(SkipPackage):
+                list(unit.run(pv for pv in (package_version,)))
 
         assert len(context.stack_info) == 1
-        assert "importlib-metadata" not in context.project.pipfile.packages.packages
-        assert "importlib-metadata" not in context.project.pipfile.dev_packages.packages

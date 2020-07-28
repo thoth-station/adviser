@@ -15,25 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A boot to remove backport of importlib-metadata intended for older Python versions."""
+"""A sieve to remove backport of importlib-metadata intended for older Python versions."""
 
 import logging
-from typing import Optional
-from typing import Dict
 from typing import Any
+from typing import Dict
+from typing import Generator
+from typing import Optional
 from typing import TYPE_CHECKING
 
 import attr
-from ...boot import Boot
+from thoth.python import PackageVersion
+
+from ...exceptions import SkipPackage
+from ...sieve import Sieve
 
 if TYPE_CHECKING:
-    from ..pipeline_builder import PipelineBuilderContext
+    from ...pipeline_builder import PipelineBuilderContext
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class ImportlibMetadataBackportBoot(Boot):
+class ImportlibMetadataBackportSieve(Sieve):
     """Remove backport of importlib-metadata, available in the standard library starting Python 3.8.
 
     https://pypi.org/project/importlib-metadata/
@@ -41,9 +45,15 @@ class ImportlibMetadataBackportBoot(Boot):
     """
 
     _MESSAGE = (
-        "Direct dependency 'importlib-metadata' removed: importlib.metadata is available in "
+        "Dependency 'importlib-metadata' removed: importlib.metadata is available in "
         "Python standard library starting Python 3.8"
     )
+
+    _logged = attr.ib(default=False, type=bool, init=False)
+
+    def pre_run(self) -> None:
+        """Initialize self before running."""
+        self._logged = False
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -52,17 +62,20 @@ class ImportlibMetadataBackportBoot(Boot):
             return None
 
         python_version = tuple(map(int, builder_context.project.runtime_environment.python_version.split(".")))
-        if python_version >= (3, 8) and (
-            "importlib-metadata" in builder_context.project.pipfile.packages.packages
-            or "importlib-metadata" in builder_context.project.pipfile.dev_packages.packages
-        ):
+        if python_version >= (3, 8):
             return {}
 
         return None
 
-    def run(self) -> None:
+    def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Remove dependency importlib-metadata for newer Python versions."""
-        _LOGGER.warning(self._MESSAGE)
-        self.context.stack_info.append({"type": "INFO", "message": self._MESSAGE})
-        self.context.project.pipfile.packages.packages.pop("importlib-metadata", None)
-        self.context.project.pipfile.dev_packages.packages.pop("importlib-metadata", None)
+        for package_version in package_versions:
+            if package_version.name == "importlib-metadata":
+                if not self._logged:
+                    self.context.stack_info.append({"type": "WARNING", "message": self._MESSAGE})
+                    _LOGGER.warning(self._MESSAGE)
+                    self._logged = True
+
+                raise SkipPackage
+
+            yield package_version

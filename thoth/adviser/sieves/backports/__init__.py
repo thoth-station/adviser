@@ -15,16 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Boot units for backports to older Python versions."""
+"""Sieve units for backports to older Python versions."""
 
-from .enum34 import Enum34BackportBoot
-from .importlib_metadata import ImportlibMetadataBackportBoot
-from .importlib_resources import ImportlibResourcesBackportBoot
-from .mock import MockBackportBoot
+from .enum34 import Enum34BackportSieve
+from .functools32 import Functools32BackportSieve
+from .importlib_metadata import ImportlibMetadataBackportSieve
+from .importlib_resources import ImportlibResourcesBackportSieve
+from .mock import MockBackportSieve
 
 __all__ = [
-    "Enum34BackportBoot",
-    "ImportlibMetadataBackportBoot",
-    "ImportlibResourcesBackportBoot",
-    "MockBackportBoot",
+    "Enum34BackportSieve",
+    "Functools32BackportSieve",
+    "ImportlibMetadataBackportSieve",
+    "ImportlibResourcesBackportSieve",
+    "MockBackportSieve",
 ]
