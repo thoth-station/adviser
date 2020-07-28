@@ -150,3 +150,52 @@ It's good to note how pipeline units should be listed in ``__all__``:
   that performs a knowledge graph query (the more queries or more expensive
   queries, the more pipeline unit is expensive). Note the overhead needed to
   query the knowledge base.
+
+Which pipeline unit type should be chosen?
+==========================================
+
+Sometimes it might be tricky to select the right pipeline unit. Multiple unit
+types were designed to provide a framework for resolver to easily write units.
+These units have different overhead and are designed for specific use cases.
+It's crucial to select the right pipeline unit for the right use case to keep
+the pipeline performing well.
+
+The most expensive pipeline units are :ref:`steps <steps>`. They are run each
+time a package is about to be added to resolver's internal state. As it is the
+most expensive one, it also provides the most information for a pipeline unit
+developer - which package in which specific version is about to be added to a
+partially resolved state and what the resolver state looks like. These units
+are the only ones that can affect the final unit score.
+
+The second most expensive pipeline units are :ref:`sieves <sieves>`. They do
+not provide access to resolver's internal state, but are called each time there
+are packages in specific versions considered for further resolution. As the
+name suggests, these units filter out packages that should not occur in the
+final software stack. These units, unlike :ref:`steps <steps>`, do not provide
+access to resolver's internal state (states are created out of the packages
+that were not filtered by sieves).
+
+The third most expensive pipeline units are :ref:`strides <strides>`. They are
+called on each fully resolved state that eventually (if all wraps accept fully
+resolved state by resolver) form the recommended software stack (hence become
+final states).
+
+The most cheapest pipeline units are :ref:`boots <boots>` and :ref:`wraps
+<wraps>`. Boot pipeline unit types were designed to prepare resolver, the input
+vector coming to the resolver or pipeline units. Wrap pipeline unit types make
+final changes to final states that are not relevant to the state score,
+packages resolved in the final state or resolver input vector.
+
+Refer to sections specific to pipeline unit types for examples and more
+information.
+
+Unroll pipeline units
+=====================
+
+To keep the resolver performing well, try to always unroll all the operations
+that do not need to be included in the actual pipeline unit run method and put
+these operations to pre or post run methods. In that case, pipeline units can
+configure/prepare for a resolver run in advance, keeping the initialization
+part out of the actual pipeline run. Note the run method of a pipeline unit can
+be called thousands times in a single resolver run so optimizing these pieces
+matter a lot.
