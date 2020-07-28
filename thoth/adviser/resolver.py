@@ -518,7 +518,7 @@ class Resolver:
                 package_version = list(self._run_sieves([package_version], log_level=logging.INFO))
             except SkipPackage as exc:
                 skipped_packages.append(package_version)
-                _LOGGER.warning("Package %r skipped by sieves: %s", package_version.name, str(exc))
+                _LOGGER.debug("Package %r skipped by sieves: %s", package_version.name, str(exc))
                 continue
 
             if not package_version:
@@ -627,7 +627,7 @@ class Resolver:
                 package_versions = list(self._run_sieves(package_versions))
             except SkipPackage as exc:
                 skipped_packages.append(direct_dependency_name)
-                _LOGGER.warning("Package %r skipped by sieves: %s", direct_dependency_name, str(exc))
+                _LOGGER.debug("Package %r skipped by sieves: %s", direct_dependency_name, str(exc))
                 continue
 
             if not package_versions:
@@ -906,7 +906,7 @@ class Resolver:
             except SkipPackage as exc:
                 # This will probably happen occasionally. Let's maintain a separate list for this.
                 skipped_packages.append(dependency_name)
-                _LOGGER.warning("Package %r skipped by sieves: %s", dependency_name, str(exc))
+                _LOGGER.debug("Package %r skipped by sieves: %s", dependency_name, str(exc))
                 continue
 
             if not package_versions:
