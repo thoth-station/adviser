@@ -101,6 +101,7 @@ class TestEnum34BackportSieve(AdviserTestCase):
             with pytest.raises(SkipPackage):
                 list(unit.run(pv for pv in (package_version,)))
 
+            # Run twice to ensure only one entry is added to stack info.
             with pytest.raises(SkipPackage):
                 list(unit.run(pv for pv in (package_version,)))
 
