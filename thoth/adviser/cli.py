@@ -126,6 +126,19 @@ def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationTy
     raise ValueError(f"Unknown recommendation type: {recommendation_type!r}")
 
 
+def _get_dependency_monkey_predictor(predictor: str, decision_type: DecisionType) -> type:
+    """Get dependency monkey predictor based on command line option."""
+    if predictor != "AUTO":
+        return getattr(predictors, predictor)
+
+    if decision_type == DecisionType.RANDOM:
+        return predictors.RandomWalk
+    elif decision_type == DecisionType.ALL:
+        return predictors.ApproximatingLatest
+
+    raise ValueError(f"Unknown decision type: {decision_type!r}")
+
+
 @click.group()
 @click.pass_context
 @click.option(
@@ -580,8 +593,8 @@ def advise(
 @click.option(
     "--predictor",
     envvar="THOTH_ADVISER_PREDICTOR",
-    default="RandomWalk",
-    type=click.Choice(predictors.__all__),
+    default="AUTO",
+    type=click.Choice(predictors.__all__ + ["AUTO"]),
     help="Predictor to be used with the resolver.",
 )
 @click.option(
@@ -637,6 +650,7 @@ def dependency_monkey(
             library_usage = json.loads(library_usage)
 
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
+    decision_type = DecisionType.by_name(decision_type)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
     project = _instantiate_project(requirements, runtime_environment=runtime_environment)
     pipeline_config = None if pipeline is None else PipelineBuilder.load(pipeline)
@@ -647,13 +661,14 @@ def dependency_monkey(
 
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
     seed = seed if seed is not None else int(time.time())
+    predictor_class = _get_dependency_monkey_predictor(predictor, decision_type)
     _LOGGER.info(
-        "Starting resolver using predictor %r with random seed set to %r", predictor, seed,
+        "Starting resolver using predictor %r with random seed set to %r", predictor_class.__name__, seed,
     )
     random.seed(seed)
 
     resolver = Resolver.get_dependency_monkey_instance(
-        predictor=getattr(predictors, predictor)(keep_history=plot is not None),
+        predictor=predictor_class(keep_history=plot is not None),
         project=project,
         library_usage=library_usage,
         count=count,
