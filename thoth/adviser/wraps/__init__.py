@@ -20,6 +20,7 @@
 from .mkl_threads import MKLThreadsWrap
 from .no_onservation import NoObservationWrap
 from .no_semantic_interposition import NoSemanticInterpositionWrap
+from .intel_tensorflow import IntelTensorFlowWrap
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -29,4 +30,5 @@ __all__ = [
     "MKLThreadsWrap",
     "NoObservationWrap",
     "NoSemanticInterpositionWrap",
+    "IntelTensorFlowWrap",
 ]
