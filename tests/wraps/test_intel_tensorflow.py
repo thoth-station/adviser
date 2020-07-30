@@ -34,11 +34,15 @@ from ..base import AdviserTestCase
 class TestIntelTensorflowWrap(AdviserTestCase):
     """Test recommending Intel TensorFlow build optimized for specific CPU architectures."""
 
-    @pytest.mark.parametrize("cpu_model,cpu_family,recommendation_type",
-        [(13, 6, rt) for rt in RecommendationType],
+    @pytest.mark.parametrize(
+        "cpu_model,cpu_family,recommendation_type", [(13, 6, rt) for rt in RecommendationType],
     )
     def test_include(
-        self, builder_context: PipelineBuilderContext, cpu_model: int, cpu_family: str, recommendation_type: RecommendationType
+        self,
+        builder_context: PipelineBuilderContext,
+        cpu_model: int,
+        cpu_family: str,
+        recommendation_type: RecommendationType,
     ) -> None:
         """Test including this pipeline unit."""
         builder_context.decision_type = None
@@ -90,4 +94,7 @@ class TestIntelTensorflowWrap(AdviserTestCase):
         assert len(state.justification) == 1
         assert set(state.justification[0].keys()) == {"type", "message"}
         assert state.justification[0]["type"] == "INFO"
-        assert state.justification[0]["message"] == "Consider using intel-tensorflow which is optimized for CPU detected in your environment"
+        assert (
+            state.justification[0]["message"]
+            == "Consider using intel-tensorflow which is optimized for CPU detected in your environment"
+        )

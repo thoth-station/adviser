@@ -34,27 +34,30 @@ class IntelTensorFlowWrap(Wrap):
 
     https://software.intel.com/content/www/us/en/develop/articles/intel-optimization-for-tensorflow-installation-guide.html#pip_wheels
     """
+
     # Sandy bridge CPUID taken from https://en.wikipedia.org/wiki/Sandy_Bridge
     # Ivy bridge CPUID taken from https://en.wikipedia.org/wiki/Ivy_Bridge_(microarchitecture)
     #
     # As CPUID encodes family (bits 8 - 11 with mask 0xF00) and model (bits 4 - 7 with mask 0xF0) we got these
     # numbers from CPUID.
-    _CPU_TABLE = frozenset({
-        # tuple (model, family)
-        # Sandy Bridge-HE-4, Sandy Bridge-H-2, Sandy Bridge-M-2
-        # ((0x0206A7 & 0xF0) >> 4, (0x0206A7 & 0xF00) >> 8),
-        # Sandy Bridge - EP - 8
-        # ((0x0206D6 & 0xF0) >> 4, (0x0206D6 & 0xF00) >> 8),
-        # ((0x0206D7 & 0xF0) >> 4, (0x0206D7 & 0xF00) >> 8),
-        # Sandy Bridge - EP - 4
-        # ((0x0206D6 & 0xF0) >> 4, (0x0206D6 & 0xF00) >> 8),
-        # ((0x0206D7 & 0xF0) >> 4, (0x0206D7 & 0xF00) >> 8),
-        # Ivy Bridge-M-2, Ivy Bridge-H-2, Ivy Bridge-HM-4, Ivy Bridge-HE-4
-        # ((0x000306A9 & 0xF0) >> 4, (0x000306A9 & 0xF00) >> 8),
-        # All maps to the following values:
-        (13, 6),
-        (10, 6),
-    })
+    _CPU_TABLE = frozenset(
+        {
+            # tuple (model, family)
+            # Sandy Bridge-HE-4, Sandy Bridge-H-2, Sandy Bridge-M-2
+            # ((0x0206A7 & 0xF0) >> 4, (0x0206A7 & 0xF00) >> 8),
+            # Sandy Bridge - EP - 8
+            # ((0x0206D6 & 0xF0) >> 4, (0x0206D6 & 0xF00) >> 8),
+            # ((0x0206D7 & 0xF0) >> 4, (0x0206D7 & 0xF00) >> 8),
+            # Sandy Bridge - EP - 4
+            # ((0x0206D6 & 0xF0) >> 4, (0x0206D6 & 0xF00) >> 8),
+            # ((0x0206D7 & 0xF0) >> 4, (0x0206D7 & 0xF00) >> 8),
+            # Ivy Bridge-M-2, Ivy Bridge-H-2, Ivy Bridge-HM-4, Ivy Bridge-HE-4
+            # ((0x000306A9 & 0xF0) >> 4, (0x000306A9 & 0xF00) >> 8),
+            # All maps to the following values:
+            (13, 6),
+            (10, 6),
+        }
+    )
     _JUSTIFICATION = [
         {
             "type": "INFO",
@@ -73,10 +76,7 @@ class IntelTensorFlowWrap(Wrap):
 
         runtime_environment = builder_context.project.runtime_environment
         cpu_tuple = (runtime_environment.hardware.cpu_model, runtime_environment.hardware.cpu_family)
-        if (
-            runtime_environment.platform == "linux-x86_64" and
-            cpu_tuple in cls._CPU_TABLE
-        ):
+        if runtime_environment.platform == "linux-x86_64" and cpu_tuple in cls._CPU_TABLE:
             return {}
 
         return None
