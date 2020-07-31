@@ -829,11 +829,11 @@
         },
         "thoth-solver": {
             "hashes": [
-                "sha256:440068bad52ae7c7d0ec48caee1a96d3ddda562c02c55c8cf1d198b4f034bfed",
-                "sha256:ace557f6ffc89e05a1da36e046fd6f3f831e22cb14c1409f9209b3a02bceb599"
+                "sha256:cf0b9e6b2662f0bac7867a6fe8e978b16b4f9a2508afc4f8cfcece0660b77fa4",
+                "sha256:e7abc60f003c8c1ac1ed961a3e8b889473040b46c60ec6a657c6fda5012c8bff"
             ],
             "index": "pypi",
-            "version": "==1.5.2"
+            "version": "==1.6.0"
         },
         "thoth-storages": {
             "hashes": [
