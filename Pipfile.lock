@@ -1005,11 +1005,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:b287f36ed3e3922154ee10603d1828378538e14878c2064e78fa7c19154bb330",
-                "sha256:be8ef81c9e5d05b3e9ac94f460aed71a7ed1e9d142d97d2acc09927d59d798f6"
+                "sha256:3d40ba66042b15d6653fb0360728007144f7e540efdfe0c81cdd38587d34583b",
+                "sha256:772e85dd18c9670891e0da1b585c6fb5cffb498a681a5feca94086a70bcef07a"
             ],
             "index": "pypi",
-            "version": "==5.23.7"
+            "version": "==5.23.8"
         },
         "hypothesis-auto": {
             "hashes": [
