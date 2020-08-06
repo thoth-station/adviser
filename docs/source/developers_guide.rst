@@ -209,10 +209,17 @@ available in ``thoth-storages`` package and you can talk to Ceph instance.
 
 In most cases you will need to set ``THOTH_DEPLOYMENT_NAME`` environment
 variable which distinguishes different deployments.
+we follow the pattern of ``(ClusterName)-(DeploymentName)`` to assign the
+``THOTH_DEPLOYMENT_NAME`` environment variable. Ex: ocp-stage
+Some of the older deployments were `thoth-test-core`, `thoth-core-upshift-stage`,
+ and etc. These can be found in ceph bucket.
+
+ __Disclaimer__: Older deployments would be deprecated and removed. Please check
+ the existence of the deployment in ceph before using.
 
 .. code-block:: console
 
-  $ export THOTH_DEPLOYMENT_NAME=thoth-test-core
+  $ export THOTH_DEPLOYMENT_NAME=ocp-stage
 
 To browse data stored on Ceph, you can use ``awscli`` utility from `PyPI
 <https://pypi.org/project/awscli/>`_ that provides ``aws`` command (use ``aws
@@ -321,7 +328,7 @@ once your Python environment is set up:
   $ # Log in to cluster - your credentials will be used to schedule workload:
   $ oc login <cluster-url>
   $ # Make sure you adjust secrets before running Python interpreter in storages environment - you can obtain them from gopass:
-  $ PYTHONPATH=. THOTH_MIDDLETIER_NAMESPACE=thoth-middletier-stage THOTH_INFRA_NAMESPACE=thoth-infra-stage KUBERNETES_VERIFY_TLS=0 THOTH_CEPH_SECRET_KEY="***" THOTH_CEPH_KEY_ID="***" THOTH_S3_ENDPOINT_URL=https://s3.url.redhat.com THOTH_CEPH_BUCKET_PREFIX=data/thoth THOTH_CEPH_BUCKET=thoth THOTH_DEPLOYMENT_NAME=thoth-core-upshift-stage pipenv run python3
+  $ PYTHONPATH=. THOTH_MIDDLETIER_NAMESPACE=thoth-middletier-stage THOTH_INFRA_NAMESPACE=thoth-infra-stage KUBERNETES_VERIFY_TLS=0 THOTH_CEPH_SECRET_KEY="***" THOTH_CEPH_KEY_ID="***" THOTH_S3_ENDPOINT_URL=https://s3.url.redhat.com THOTH_CEPH_BUCKET_PREFIX=data THOTH_CEPH_BUCKET=thoth THOTH_DEPLOYMENT_NAME=ocp-stage pipenv run python3
 
 After running the commands above, you should see Python interpreter's prompt,
 run the following sequence of commands (you can use `help
