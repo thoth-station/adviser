@@ -58,6 +58,7 @@ Predictors
    predictors/hill_climbing
    predictors/monte_carlo
    predictors/annealing
+   predictors/rl
 
 
 Other functionality provided by thoth-adviser implementation
