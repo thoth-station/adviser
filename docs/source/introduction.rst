@@ -68,6 +68,8 @@ to expand dependency graphs (lazily), instead of directly implementing
 as in case of other resolvers. See :ref:`resolver <resolver>` documentation
 for more info.
 
+.. _introduction_rl:
+
 Prediction-based resolution using reinforcement learning
 ========================================================
 
