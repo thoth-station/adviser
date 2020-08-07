@@ -45,6 +45,14 @@ class MKLThreadsWrap(Wrap):
         }
     ]
 
+    _JUSTIFICATION_INTEL_TF = [
+        {
+            "type": "WARNING",
+            "message": "Make sure your environment has proper Intel Performance Libraries when using "
+            "Intel TensorFlow builds",
+        }
+    ]
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
         """Include this wrap in adviser, once."""
@@ -55,9 +63,8 @@ class MKLThreadsWrap(Wrap):
 
     def run(self, state: State) -> None:
         """Check for libraries using PyTorch."""
-        if (
-            "torch" in state.resolved_dependencies
-            or "pytorch" in state.resolved_dependencies
-            or "intel-tensorflow" in state.resolved_dependencies
-        ):
+        if "torch" in state.resolved_dependencies or "pytorch" in state.resolved_dependencies:
             state.add_justification(self._JUSTIFICATION)
+        elif "intel-tensorflow" in state.resolved_dependencies:
+            state.add_justification(self._JUSTIFICATION)
+            state.add_justification(self._JUSTIFICATION_INTEL_TF)
