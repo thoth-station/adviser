@@ -1085,7 +1085,10 @@ class Resolver:
                 report.add_product(product)
 
             if report.product_count() == 0:
-                raise CannotProduceStack("No stack was produced")
+                raise CannotProduceStack(
+                    "Resolver did not find any stack that would satisfy "
+                    "requirements and stack characteristics given the time allocated"
+                )
 
             if self.context.stack_info:
                 report.set_stack_info(self.context.stack_info)

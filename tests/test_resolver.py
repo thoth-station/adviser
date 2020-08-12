@@ -1549,7 +1549,11 @@ class TestResolver(AdviserTestCase):
             []
         ).once()
 
-        with pytest.raises(CannotProduceStack, match="No stack was produced"):
+        with pytest.raises(
+            CannotProduceStack,
+            match="Resolver did not find any stack that would satisfy "
+            "requirements and stack characteristics given the time allocated",
+        ):
             resolver.resolve(with_devel=False)
 
     def test_resolve(self, resolver: Resolver) -> None:
