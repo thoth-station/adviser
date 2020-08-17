@@ -5499,3 +5499,15 @@
 * Fix naming typo
 * Initial template for implementation
 * Initial project import
+
+## Release 0.14.0 (2020-08-17T10:32:30)
+* :pushpin: Automatic update of dependency matplotlib from 3.3.0 to 3.3.1 (#1114)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.0 to 0.25.1 (#1113)
+* :pushpin: Automatic update of dependency thoth-python from 0.10.0 to 0.10.1 (#1110)
+* Adjust message when resolver does not find any stack (#1109)
+* :pushpin: Automatic update of dependency hypothesis from 5.23.11 to 5.24.0 (#1107)
+* Add docs for RL based predictors (#1105)
+* :pushpin: Automatic update of dependency hypothesis from 5.23.9 to 5.23.11 (#1104)
+* updated document with ceph deployment name specification (#1103)
+* :pushpin: Automatic update of dependency hypothesis from 5.23.8 to 5.23.9 (#1102)
+* Add a pipeline unit for suggesting Intel TensorFlow builds (#1093)
