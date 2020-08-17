@@ -24,7 +24,6 @@ from typing import List
 from typing import Dict
 from typing import TYPE_CHECKING
 import logging
-import os
 
 from thoth.python import PackageVersion
 
@@ -48,18 +47,15 @@ class SecurityIndicatorStep(Step):
         {"type": "WARNING", "message": ("Package has no gathered information regarding security."),}
     ]
 
-    # Weights for Confidence
-    HIGH_CONFIDENCE_WEIGHT = float(os.environ.get("SI_STEP_HIGH_CONFIDENCE_WEIGHT", 1))
-    MEDIUM_CONFIDENCE_WEIGHT = float(os.environ.get("SI_STEP_MEDIUM_CONFIDENCE_WEIGHT", 0.5))
-    LOW_CONFIDENCE_WEIGHT = float(os.environ.get("SI_STEP_LOW_CONFIDENCE_WEIGHT", 0.1))
-
-    # Weights for Security
-    HIGH_SEVERITY_WEIGHT = float(os.environ.get("SI_STEP_HIGH_SEVERITY_WEIGHT", 100))
-    MEDIUM_SEVERITY_WEIGHT = float(os.environ.get("SI_STEP_MEDIUM_SEVERITY_WEIGHT", 10))
-    LOW_SEVERITY_WEIGHT = float(os.environ.get("SI_STEP_LOW_SEVERITY_WEIGHT", 1))
-
-    # Overall weight for security rewards
-    SI_REWARD_WEIGHT = float(os.environ.get("SI_STEP_REWARD_WEIGHT", 0.5))
+    CONFIGURATION_DEFAULT = {
+        "high_confidence_weight": 1,
+        "medium_confidence_weight": 0.5,
+        "low_confidence_weight": 0.1,
+        "high_severity_weight": 100,
+        "medium_severity_weight": 10,
+        "low_severity_weight": 1,
+        "si_reward_weight": 0.5,
+    }
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -92,26 +88,26 @@ class SecurityIndicatorStep(Step):
 
         s_score = (
             (
-                s_info["severity_high_confidence_high"] * self.HIGH_CONFIDENCE_WEIGHT
-                + s_info["severity_high_confidence_medium"] * self.MEDIUM_CONFIDENCE_WEIGHT
-                + s_info["severity_high_confidence_low"] * self.LOW_CONFIDENCE_WEIGHT
+                s_info["severity_high_confidence_high"] * self.configuration["high_confidence_weight"]
+                + s_info["severity_high_confidence_medium"] * self.configuration["medium_confidence_weight"]
+                + s_info["severity_high_confidence_low"] * self.configuration["low_confidence_weight"]
             )
-            * self.HIGH_SEVERITY_WEIGHT
+            * self.configuration["high_severity_weight"]
             + (
-                s_info["severity_medium_confidence_high"] * self.HIGH_CONFIDENCE_WEIGHT
-                + s_info["severity_medium_confidence_medium"] * self.MEDIUM_CONFIDENCE_WEIGHT
-                + s_info["severity_medium_confidence_low"] * self.LOW_CONFIDENCE_WEIGHT
+                s_info["severity_medium_confidence_high"] * self.configuration["high_confidence_weight"]
+                + s_info["severity_medium_confidence_medium"] * self.configuration["medium_confidence_weight"]
+                + s_info["severity_medium_confidence_low"] * self.configuration["low_confidence_weight"]
             )
-            * self.MEDIUM_SEVERITY_WEIGHT
+            * self.configuration["medium_severity_weight"]
             + (
-                s_info["severity_low_confidence_high"] * self.HIGH_CONFIDENCE_WEIGHT
-                + s_info["severity_low_confidence_medium"] * self.MEDIUM_CONFIDENCE_WEIGHT
-                + s_info["severity_low_confidence_low"] * self.LOW_CONFIDENCE_WEIGHT
+                s_info["severity_low_confidence_high"] * self.configuration["high_confidence_weight"]
+                + s_info["severity_low_confidence_medium"] * self.configuration["medium_confidence_weight"]
+                + s_info["severity_low_confidence_low"] * self.configuration["low_confidence_weight"]
             )
-            * self.LOW_SEVERITY_WEIGHT
+            * self.configuration["low_severity_weight"]
         )
 
         s_score = s_score / s_info["number_of_lines_with_code_in_python_files"]
         if s_score < 1:
-            return self.SI_REWARD_WEIGHT, None
-        return self.SI_REWARD_WEIGHT / s_score, None
+            return self.configuration["si_reward_weight"], None
+        return self.configuration["si_reward_weight"] / s_score, None
