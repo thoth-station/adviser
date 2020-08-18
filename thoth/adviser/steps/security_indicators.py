@@ -75,14 +75,14 @@ class SecurityIndicatorStep(Step):
         s_info = self.context.graph.get_si_aggregated_python_package_version(
             package_name=package_version.name,
             package_version=package_version.locked_version,
-            index_url=package_version.index,
+            index_url=package_version.index.url,
         )
 
         if s_info is None:
             if self.context.recommendation_type == RecommendationType.SECURE:
                 raise NotAcceptable(
                     f"No security info for {package_version.name}==={package_version.locked_version} "
-                    f"on {package_version.index}"
+                    f"on {package_version.index.url}"
                 )
             return 0, self._JUSTIFICATION_ADDITION
 

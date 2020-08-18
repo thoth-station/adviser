@@ -21,6 +21,7 @@ from .aicoe import AICoEReleasesStep
 from .cve import CvePenalizationStep
 from .dropout import DropoutStep
 from .tensorflow_avx2 import TensorFlowAVX2Step
+from .security_indicators import SecurityIndicatorStep
 
 # from .mock_score import MockScoreStep
 
@@ -33,5 +34,6 @@ __all__ = [
     "CvePenalizationStep",
     "DropoutStep",
     "TensorFlowAVX2Step",
+    "SecurityIndicatorStep",
     # "MockScoreStep",
 ]
