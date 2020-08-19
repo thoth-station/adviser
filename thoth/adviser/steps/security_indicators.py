@@ -68,6 +68,15 @@ class SecurityIndicatorStep(Step):
         else:
             return None
 
+    @staticmethod
+    def _generate_justification(name: str, version: str, index: str) -> List[Dict[str, Any]]:
+        return [
+            {
+                "type": "WARNING",
+                "message": (f"{name}==={version} on {index} has no gathered information regarding security."),
+            }
+        ]
+
     def run(
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
@@ -80,11 +89,19 @@ class SecurityIndicatorStep(Step):
 
         if s_info is None:
             if self.context.recommendation_type == RecommendationType.SECURE:
-                raise NotAcceptable(
-                    f"No security info for {package_version.name}==={package_version.locked_version} "
-                    f"on {package_version.index.url}"
+                _LOGGER.debug(
+                    "No security info for %s===%s on %s",
+                    package_version.name,
+                    package_version.locked_version,
+                    package_version.index.url,
                 )
-            return 0, self._JUSTIFICATION_ADDITION
+                raise NotAcceptable
+            return (
+                0,
+                self._generate_justification(
+                    name=package_version.name, version=package_version.locked_version, index=package_version.index.url
+                ),
+            )
 
         s_score = (
             (
