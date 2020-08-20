@@ -43,10 +43,6 @@ _LOGGER = logging.getLogger(__name__)
 class SecurityIndicatorStep(Step):
     """A step that scores a state based on security info aggregated."""
 
-    _JUSTIFICATION_ADDITION = [
-        {"type": "WARNING", "message": ("Package has no gathered information regarding security."),}
-    ]
-
     CONFIGURATION_DEFAULT = {
         "high_confidence_weight": 1,
         "medium_confidence_weight": 0.5,

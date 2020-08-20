@@ -103,6 +103,13 @@ class TestSecurityIndicatorStep(AdviserTestCase):
                 step = SecurityIndicatorStep()
                 step.run(None, package_version)
 
+    _FLASK_JUSTIFICATION = [
+        {
+            "type": "WARNING",
+            "message": (f"flask===0.12.0 on https://pypi.org/simple has no gathered information regarding security."),
+        }
+    ]
+
     @pytest.mark.parametrize("recommendation_type", [RecommendationType.STABLE])
     def test_security_indicator_scoring_missing_stable(self, recommendation_type) -> None:
         """Make sure package is kept even if no score exists for security indicators and add justification."""
@@ -124,4 +131,4 @@ class TestSecurityIndicatorStep(AdviserTestCase):
         assert result is not None
         assert isinstance(result, tuple) and len(result) == 2
         assert result[0] == 0
-        assert result[1] == SecurityIndicatorStep._JUSTIFICATION_ADDITION
+        assert result[1] == self._FLASK_JUSTIFICATION
