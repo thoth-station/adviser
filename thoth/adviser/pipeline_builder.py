@@ -253,7 +253,7 @@ class PipelineBuilder:
         try:
             unit_class = getattr(module, configuration_entry["name"])
         except AttributeError as exc:
-            raise UnknownPipelineUnitError(f"Cannot import unit {configuration_entry['name']}: %s", str(exc)) from exc
+            raise UnknownPipelineUnitError(f"Cannot import unit {configuration_entry['name']}: {str(exc)}") from exc
 
         unit: Unit = unit_class()
 
