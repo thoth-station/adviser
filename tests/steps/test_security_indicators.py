@@ -56,7 +56,7 @@ class TestSecurityIndicatorStep(AdviserTestCase):
         assert SecurityIndicatorStep.should_include(builder_context) == {}
 
     @pytest.mark.parametrize(
-        "recommendation_type", [RecommendationType.LATEST, RecommendationType.PERFORMANT, RecommendationType.TESTING]
+        "recommendation_type", [RecommendationType.LATEST, RecommendationType.PERFORMANCE, RecommendationType.TESTING]
     )
     def test_no_include(self, builder_context: PipelineBuilderContext, recommendation_type,) -> None:
         """Test not including this pipeline unit step."""
