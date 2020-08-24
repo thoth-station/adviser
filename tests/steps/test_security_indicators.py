@@ -47,7 +47,7 @@ class TestSecurityIndicatorStep(AdviserTestCase):
         "number_of_lines_with_code_in_python_files": 692,
     }
 
-    @pytest.mark.parametrize("recommendation_type", [RecommendationType.STABLE, RecommendationType.SECURE])
+    @pytest.mark.parametrize("recommendation_type", [RecommendationType.STABLE, RecommendationType.SECURITY])
     def test_include(self, builder_context: PipelineBuilderContext, recommendation_type: RecommendationType) -> None:
         """Test including this pipeline unit."""
         builder_context.decision_type = None
@@ -84,7 +84,7 @@ class TestSecurityIndicatorStep(AdviserTestCase):
         assert isinstance(result, tuple) and len(result) == 2
         assert isinstance(result[0], float)
 
-    @pytest.mark.parametrize("recommendation_type", [RecommendationType.SECURE])
+    @pytest.mark.parametrize("recommendation_type", [RecommendationType.SECURITY])
     def test_security_indicator_scoring_missing_secure(self, recommendation_type) -> None:
         """Make sure we don't accept package if si info is missing when recommendation is secure."""
         flexmock(GraphDatabase)
@@ -106,7 +106,7 @@ class TestSecurityIndicatorStep(AdviserTestCase):
     _FLASK_JUSTIFICATION = [
         {
             "type": "WARNING",
-            "message": ("flask===0.12.0 on https://pypi.org/simple has no gathered information regarding security."),
+            "message": "flask===0.12.0 on https://pypi.org/simple has no gathered information regarding security.",
         }
     ]
 
