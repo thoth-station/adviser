@@ -106,7 +106,7 @@ class TestSecurityIndicatorStep(AdviserTestCase):
     _FLASK_JUSTIFICATION = [
         {
             "type": "WARNING",
-            "message": (f"flask===0.12.0 on https://pypi.org/simple has no gathered information regarding security."),
+            "message": ("flask===0.12.0 on https://pypi.org/simple has no gathered information regarding security."),
         }
     ]
 

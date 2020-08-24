@@ -85,7 +85,7 @@ class SecurityIndicatorStep(Step):
 
         if s_info is None:
             if self.context.recommendation_type == RecommendationType.SECURE:
-                _LOGGER.debug(
+                _LOGGER.warning(
                     "No security info for %s===%s on %s",
                     package_version.name,
                     package_version.locked_version,
