@@ -132,7 +132,7 @@ def subprocess_run(
         _, exit_code = os.waitpid(pid, 0)
         if exit_code != 0:
             _LOGGER.error("Child exited with exit code %r", exit_code)
-            if exit_code == 9 or exit_code == 137:
+            if (exit_code & 0xF) == 9:
                 err_msg = "Adviser was killed as allocated memory has been exceeded (OOM)"
             elif os.path.isfile(_LIVENESS_PROBE_KILL_FILE):
                 err_msg = "Adviser was killed as allocated CPU time was exceeded"
