@@ -57,7 +57,7 @@ class SecurityIndicatorStep(Step):
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register only if we are explicitly recommending secure stacks."""
         if (
-            builder_context.recommendation_type == RecommendationType.SECURE
+            builder_context.recommendation_type == RecommendationType.SECURITY
             or builder_context.recommendation_type == RecommendationType.STABLE
         ):
             return {}
@@ -69,7 +69,7 @@ class SecurityIndicatorStep(Step):
         return [
             {
                 "type": "WARNING",
-                "message": (f"{name}==={version} on {index} has no gathered information regarding security."),
+                "message": f"{name}==={version} on {index} has no gathered information regarding security.",
             }
         ]
 
@@ -84,7 +84,7 @@ class SecurityIndicatorStep(Step):
         )
 
         if s_info is None:
-            if self.context.recommendation_type == RecommendationType.SECURE:
+            if self.context.recommendation_type == RecommendationType.SECURITY:
                 _LOGGER.warning(
                     "No security info for %s===%s on %s",
                     package_version.name,
