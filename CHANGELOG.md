@@ -5530,3 +5530,14 @@
 * :pushpin: Automatic update of dependency thoth-storages from 0.25.1 to 0.25.2 (#1121)
 * Introduce a stride for discarding non-unique stacks (#1119)
 * :pushpin: Automatic update of dependency hypothesis from 5.24.0 to 5.26.0 (#1117)
+
+## Release 0.15.0 (2020-08-26T12:09:41)
+* Fix recommendation name - use security
+* Fix performance recommendation name
+* fix test and upgrade to warning
+* clean-up tests
+* give user more information
+* add tests for si adviser step
+* use self.configuration for weights
+* include for stable recommendation and parameterize weights
+* add security indicator step
