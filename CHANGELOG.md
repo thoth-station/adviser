@@ -5541,3 +5541,7 @@
 * use self.configuration for weights
 * include for stable recommendation and parameterize weights
 * add security indicator step
+
+## Release 0.15.1 (2020-08-27T20:40:51)
+### Features
+* Fix SI step inclusion (#1146)
