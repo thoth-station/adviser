@@ -59,10 +59,10 @@ class SecurityIndicatorStep(Step):
         if (
             builder_context.recommendation_type == RecommendationType.SECURITY
             or builder_context.recommendation_type == RecommendationType.STABLE
-        ):
+        ) and not builder_context.is_included(cls):
             return {}
-        else:
-            return None
+
+        return None
 
     @staticmethod
     def _generate_justification(name: str, version: str, index: str) -> List[Dict[str, Any]]:
