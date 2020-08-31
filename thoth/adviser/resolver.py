@@ -968,11 +968,10 @@ class Resolver:
         self.stop_resolving = False
         with _sigint_handler(self):
             while not self.stop_resolving:
-                if self.context.accepted_final_states_count + self.context.discarded_final_states_count >= self.limit:
+                if self.context.accepted_final_states_count >= self.limit:
                     _LOGGER.info(
-                        "Reached limit of stacks to be generated - %r (limit is %r), stopping resolver "
+                        "Reached limit of stacks to be generated (limit is %r), stopping resolver "
                         "with the current beam size %d in iteration %d",
-                        self.context.accepted_final_states_count,
                         self.limit,
                         self.beam.size,
                         self.context.iteration,
