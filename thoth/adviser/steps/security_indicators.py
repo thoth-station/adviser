@@ -18,13 +18,15 @@
 """Score based on security indicators aggregated."""
 
 from typing import Any
-from typing import Optional
-from typing import Tuple
-from typing import List
 from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Set
+from typing import Tuple
 from typing import TYPE_CHECKING
 import logging
 
+import attr
 from thoth.python import PackageVersion
 
 from ..enums import RecommendationType
@@ -40,8 +42,11 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+@attr.s(slots=True)
 class SecurityIndicatorStep(Step):
     """A step that scores a state based on security info aggregated."""
+
+    _logged_packages = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), init=False)
 
     CONFIGURATION_DEFAULT = {
         "high_confidence_weight": 1,
@@ -52,6 +57,10 @@ class SecurityIndicatorStep(Step):
         "low_severity_weight": 1,
         "si_reward_weight": 0.5,
     }
+
+    def pre_run(self) -> None:
+        """Initialize this pipeline step before running the pipeline."""
+        self._logged_packages.clear()
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -85,12 +94,15 @@ class SecurityIndicatorStep(Step):
 
         if s_info is None:
             if self.context.recommendation_type == RecommendationType.SECURITY:
-                _LOGGER.warning(
-                    "No security info for %s===%s on %s",
-                    package_version.name,
-                    package_version.locked_version,
-                    package_version.index.url,
-                )
+                package_version_tuple = package_version.to_tuple_locked()
+                if package_version_tuple not in self._logged_packages:
+                    self._logged_packages.add(package_version_tuple)
+                    _LOGGER.warning(
+                        "No security info for %s===%s on %s",
+                        package_version.name,
+                        package_version.locked_version,
+                        package_version.index.url,
+                    )
                 raise NotAcceptable
             return (
                 0,
