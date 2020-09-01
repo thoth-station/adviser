@@ -32,6 +32,7 @@ from typing import Optional
 
 import attr
 import click
+import yaml
 from thoth.analyzer import print_command_result
 from thoth.common import init_logging
 from thoth.common import RuntimeEnvironment
@@ -137,6 +138,18 @@ def _get_dependency_monkey_predictor(predictor: str, decision_type: DecisionType
         return predictors.ApproximatingLatest
 
     raise ValueError(f"Unknown decision type: {decision_type!r}")
+
+
+def _get_predictor_kwargs(predictor_config: Optional[str]) -> Dict[str, Any]:
+    """Get kwargs for a predictor instance."""
+    if predictor_config is None:
+        return {}
+
+    if os.path.isfile(predictor_config):
+        with open(predictor_config, "r") as predictor_config_file:
+            return yaml.safe_load(predictor_config_file)
+
+    return yaml.safe_load(predictor_config)
 
 
 @click.group()
@@ -366,6 +379,14 @@ def provenance(
     help="Predictor to be used with the resolver, select the most appropriate one in case of AUTO.",
 )
 @click.option(
+    "--predictor-config",
+    envvar="THOTH_ADVISER_PREDICTOR_CONFIG",
+    default=None,
+    type=str,
+    metavar="CONFIG",
+    help="Predictor configuration - passed as a path to YAML file or as a YAML string.",
+)
+@click.option(
     "--pipeline",
     envvar="THOTH_ADVISER_PIPELINE",
     default=None,
@@ -402,6 +423,7 @@ def advise(
     requirements_format: str,
     requirements: str,
     predictor: str,
+    predictor_config: Optional[str] = None,
     library_usage: Optional[str] = None,
     limit_latest_versions: Optional[int] = None,
     no_pretty: bool = False,
@@ -437,16 +459,21 @@ def advise(
     if pipeline_config is not None:
         parameters["pipeline"] = pipeline_config.to_dict()
     predictor_class = _get_adviser_predictor(predictor, recommendation_type)
+    predictor_kwargs = _get_predictor_kwargs(predictor_config)
+    predictor_instance = predictor_class(**predictor_kwargs, keep_history=plot is not None)
 
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
     seed = seed if seed is not None else int(time.time())
     _LOGGER.info(
-        "Starting resolver using %r predictor with random seed set to %r", predictor_class.__name__, seed,
+        "Starting resolver using %r predictor with random seed set to %r, predictor parameters: %r",
+        predictor_class.__name__,
+        seed,
+        predictor_kwargs,
     )
     random.seed(seed)
 
     resolver = Resolver.get_adviser_instance(
-        predictor=predictor_class(keep_history=plot is not None),
+        predictor=predictor_instance,
         project=project,
         library_usage=library_usage,
         recommendation_type=recommendation_type,
@@ -598,6 +625,14 @@ def advise(
     help="Predictor to be used with the resolver.",
 )
 @click.option(
+    "--predictor-config",
+    envvar="THOTH_ADVISER_PREDICTOR_CONFIG",
+    default=None,
+    type=str,
+    metavar="CONFIG",
+    help="Predictor configuration - passed as a path to YAML file or as a YAML string.",
+)
+@click.option(
     "--pipeline",
     envvar="THOTH_ADVISER_PIPELINE",
     default=None,
@@ -624,6 +659,7 @@ def dependency_monkey(
     requirements: str,
     requirements_format: str,
     stack_output: str,
+    predictor_config: Optional[str] = None,
     context: Optional[str] = None,
     dry_run: bool = False,
     library_usage: Optional[str] = None,
@@ -662,13 +698,18 @@ def dependency_monkey(
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
     seed = seed if seed is not None else int(time.time())
     predictor_class = _get_dependency_monkey_predictor(predictor, decision_type)
+    predictor_kwargs = _get_predictor_kwargs(predictor_config)
+    predictor_instance = predictor_class(**predictor_kwargs, keep_history=plot is not None)
     _LOGGER.info(
-        "Starting resolver using predictor %r with random seed set to %r", predictor_class.__name__, seed,
+        "Starting resolver using predictor %r with random seed set to %r, predictor parameters: %r",
+        predictor_class.__name__,
+        seed,
+        predictor_kwargs,
     )
     random.seed(seed)
 
     resolver = Resolver.get_dependency_monkey_instance(
-        predictor=predictor_class(keep_history=plot is not None),
+        predictor=predictor_instance,
         project=project,
         library_usage=library_usage,
         count=count,
