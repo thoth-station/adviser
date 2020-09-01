@@ -17,6 +17,7 @@
 
 """File conftest.py for pytest test suite."""
 
+from typing import Callable
 from collections import OrderedDict
 
 import pytest
@@ -147,8 +148,7 @@ def resolver(pipeline_config: PipelineConfig, project: Project, predictor_mock: 
     )
 
 
-@pytest.fixture
-def state() -> State:
+def _get_state() -> State:
     """Create a fixture for a non-final state."""
     unresolved_dependency = ("flask", "1.1.1", "https://pypi.org/simple")
     unresolved_dependencies = OrderedDict([(id(unresolved_dependency), unresolved_dependency)])
@@ -160,6 +160,18 @@ def state() -> State:
     )
     state.add_justification([{"foo": "bar"}, {"bar": "baz"}])
     return state
+
+
+@pytest.fixture
+def state() -> State:
+    """Create a fixture for a non-final state."""
+    return _get_state()
+
+
+@pytest.fixture(scope="session")
+def state_factory() -> Callable[[], State]:
+    """Return a state - handy to be used in tests requiring hypothesis."""
+    return _get_state
 
 
 @pytest.fixture

@@ -17,6 +17,8 @@
 
 """Test implementation of hill climbing in the state space."""
 
+from typing import Callable
+
 import flexmock
 from hypothesis import given
 from hypothesis.strategies import integers
@@ -32,8 +34,9 @@ class TestHillClimbing(AdviserTestCase):
     """Tests related to hill climbing in the state space."""
 
     @given(integers(min_value=1, max_value=256),)
-    def test_run(self, state: State, state_count: int) -> None:
+    def test_run(self, state_factory: Callable[[], State], state_count: int) -> None:
         """Test running the hill climbing method."""
+        state = state_factory()
         beam = Beam()
         for _ in range(state_count):
             cloned_state = state.clone()
