@@ -114,6 +114,18 @@ class State:
         for dependency_name, dependency_tuples in dependencies.items():
             self.unresolved_dependencies[dependency_name] = {hash(d): d for d in dependency_tuples}
 
+    def update_unresolved_dependencies(self, dependencies: Dict[str, List[Tuple[str, str, str]]]) -> None:
+        """Update unresolved dependencies respecting the ones passed in as parameters."""
+        for dependency_name, dependency_tuples in dependencies.items():
+            if not dependency_tuples:
+                continue
+
+            if dependency_name not in self.unresolved_dependencies:
+                self.unresolved_dependencies[dependency_name] = {}
+
+            for d in dependency_tuples:
+                self.unresolved_dependencies[dependency_name][hash(d)] = d
+
     def remove_unresolved_dependency(self, package_tuple: Tuple[str, str, str]) -> None:
         """Remove the given unresolved dependency from state."""
         self.unresolved_dependencies[package_tuple[0]].pop(hash(package_tuple))
