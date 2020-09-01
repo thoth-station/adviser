@@ -290,8 +290,13 @@ class TestResolver(AdviserTestCase):
 
         state = State()
 
-        state.add_resolved_dependency(package_version.to_tuple())
-        state.add_unresolved_dependency(package_version.to_tuple())
+        package_version_tuple = package_version.to_tuple()
+        state.add_resolved_dependency(package_version_tuple)
+        state.add_unresolved_dependency(package_version_tuple)
+        # Discard optimization path which reuses already existing state.
+        state.add_unresolved_dependency(
+            (package_version_tuple[0], package_version_tuple[1] + "dev0", package_version_tuple[2])
+        )
 
         resolver.pipeline.steps = [steps.Step1(), steps.Step2()]
 
@@ -775,22 +780,18 @@ class TestResolver(AdviserTestCase):
         resolver.context.iteration = state.iteration + 1
         state_returned = resolver._expand_state(state, to_expand_package_tuple)
         assert state_returned is not None
-        assert state_returned is not state
+        # An optimization that reuses object previously allocated as no dependencies were added by get_depends_on.
+        assert state_returned is state
 
-        assert resolver.beam.get_last() is not state
         assert resolver.beam.get_last() is state_returned
-        assert resolver.beam.size == 2
+        assert resolver.beam.size == 1
 
-        assert to_expand_package_tuple not in state.iter_resolved_dependencies()
+        assert state.iteration == resolver.context.iteration
+        assert to_expand_package_tuple in state.iter_resolved_dependencies()
         assert to_expand_package_tuple not in state.iter_unresolved_dependencies()
         assert additional_package_tuple in state.iter_unresolved_dependencies()
-        assert len(state.resolved_dependencies) == original_resolved_count
+        assert len(state.resolved_dependencies) == original_resolved_count + 1
         assert len(state.unresolved_dependencies) == original_unresolved_count - 1
-
-        assert to_expand_package_tuple in list(state_returned.iter_resolved_dependencies())
-        assert to_expand_package_tuple not in list(state_returned.iter_unresolved_dependencies())
-        assert len(state_returned.resolved_dependencies) == original_resolved_count + 1
-        assert len(state_returned.unresolved_dependencies) == original_unresolved_count - 1
 
     def test_expand_state_no_dependencies_final_multiple_different(self, resolver: Resolver, state: State) -> None:
         """Test state expansion with multiple dependencies of a same type."""
@@ -1091,6 +1092,7 @@ class TestResolver(AdviserTestCase):
         # No intersected dependencies.
         state.add_unresolved_dependency(("absl-py", "0.8.0", "https://pypi.org/simple"))
         state.add_unresolved_dependency(("absl-py", "0.6.0", "https://pypi.org/simple"))
+        state.add_unresolved_dependency(("tensorflow", "0.6.0", "https://pypi.org/simple"))
 
         resolver.graph.should_receive("get_python_package_version_records").with_args(
             package_name="absl-py",
@@ -1186,18 +1188,16 @@ class TestResolver(AdviserTestCase):
 
         last_state_added = resolver.beam.get_last()
 
-        assert resolver.beam.size == 2
+        assert resolver.beam.size == 1
         assert last_state_added in resolver.beam.iter_states()
         assert state in resolver.beam.iter_states()
         assert last_state_added is not None
         assert returned_state is not None
-        assert returned_state.parent is state
+        assert returned_state is state
         assert returned_state is last_state_added
-        assert to_expand_package_tuple in last_state_added.iter_resolved_dependencies()
-        assert to_expand_package_tuple not in last_state_added.iter_unresolved_dependencies()
-        assert to_expand_package_tuple not in state.iter_resolved_dependencies()
+        assert to_expand_package_tuple in state.iter_resolved_dependencies()
         assert to_expand_package_tuple not in state.iter_unresolved_dependencies()
-        assert len(state.resolved_dependencies) == original_resolved_count
+        assert len(state.resolved_dependencies) == original_resolved_count + 1
         assert "flask" in state.unresolved_dependencies
 
     def test_expand_state_add_dependencies_call(self, resolver: Resolver, state: State) -> None:
@@ -1726,6 +1726,8 @@ class TestResolver(AdviserTestCase):
         package_tuple = ("hexsticker", "1.0.0", "https://pypi.org/simple")
         state = State(score=1.0)
         state.add_unresolved_dependency(package_tuple)
+        # To prevent from state allocation optimizations.
+        state.add_unresolved_dependency(("hexsticker", "1.1.0", "https://pypi.org/simple"))
         state.add_unresolved_dependency(("selinon", "1.0.0", "https://pypi.org/simple"))
 
         resolver._init_context()
