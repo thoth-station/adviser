@@ -39,6 +39,8 @@ _LOGGER = logging.getLogger(__name__)
 class RandomWalk(Predictor):
     """Implementation of a Random Walk based dependency graph sampling predictor."""
 
+    prioritized_packages = attr.ib(type=List[str], default=attr.Factory(list), kw_only=True)
+    prefer_recent = attr.ib(type=bool, default=False, kw_only=True)
     _history = attr.ib(type=List[Tuple[float, int]], default=attr.Factory(list), init=False)
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
@@ -50,7 +52,14 @@ class RandomWalk(Predictor):
         if self.keep_history:
             self._history.append((state.score, self.context.accepted_final_states_count))
 
-        return state, state.get_random_unresolved_dependency(prefer_recent=False)
+        for prioritized_package in self.prioritized_packages:
+            if prioritized_package in state.unresolved_dependencies:
+                return (
+                    state,
+                    state.get_random_unresolved_dependency(prioritized_package, prefer_recent=self.prefer_recent),
+                )
+
+        return state, state.get_random_unresolved_dependency(prefer_recent=self.prefer_recent)
 
     def pre_run(self) -> None:
         """Initialize before the random walk run."""

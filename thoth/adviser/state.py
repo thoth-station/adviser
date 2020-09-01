@@ -144,21 +144,21 @@ class State:
         # The logic behind state manipulation makes sure there is no package version or package source clash.
         self.add_resolved_dependency(package_tuple)
 
-    def get_first_unresolved_dependency(self) -> Tuple[str, str, str]:
+    def get_first_unresolved_dependency(self, dependency_name: Optional[str] = None) -> Tuple[str, str, str]:
         """Get a very first unresolved dependency tuple."""
         try:
-            unresolved_dependency_name = next(iter(self.unresolved_dependencies))
-            unresolved_dependency_id = next(iter(self.unresolved_dependencies[unresolved_dependency_name]))
-            return self.unresolved_dependencies[unresolved_dependency_name][unresolved_dependency_id]
+            dependency_name = dependency_name or next(iter(self.unresolved_dependencies))
+            unresolved_dependency_id = next(iter(self.unresolved_dependencies[dependency_name]))
+            return self.unresolved_dependencies[dependency_name][unresolved_dependency_id]
         except StopIteration as exc:
             raise ValueError(f"No unresolved dependency found in state: {self!r}") from exc
 
-    def get_random_first_unresolved_dependency(self) -> Tuple[str, str, str]:
+    def get_random_first_unresolved_dependency(self, dependency_name: Optional[str] = None) -> Tuple[str, str, str]:
         """Get a very first unresolved dependency tuple."""
-        unresolved_dependency_name = random.choice(list(self.unresolved_dependencies))
+        dependency_name = dependency_name or random.choice(list(self.unresolved_dependencies))
         try:
-            unresolved_dependency_id = next(iter(self.unresolved_dependencies[unresolved_dependency_name]))
-            return self.unresolved_dependencies[unresolved_dependency_name][unresolved_dependency_id]
+            unresolved_dependency_id = next(iter(self.unresolved_dependencies[dependency_name]))
+            return self.unresolved_dependencies[dependency_name][unresolved_dependency_id]
         except StopIteration as exc:
             raise ValueError(f"No unresolved dependency found in state: {self!r}") from exc
 
@@ -239,11 +239,13 @@ class State:
         x = cls._termial_function(n)
         return n - 1 - cls._termial_function_solution(random.randrange(0, x))
 
-    def get_random_unresolved_dependency(self, prefer_recent: bool = True) -> Tuple[str, str, str]:
+    def get_random_unresolved_dependency(
+        self, dependency_name: Optional[str] = None, prefer_recent: bool = True
+    ) -> Tuple[str, str, str]:
         """Get a very first unresolved dependency tuple."""
-        unresolved_dependency_name = random.choice(list(self.unresolved_dependencies))
+        dependency_name = dependency_name or random.choice(list(self.unresolved_dependencies))
 
-        choices = list(self.unresolved_dependencies[unresolved_dependency_name])
+        choices = list(self.unresolved_dependencies[dependency_name])
         if prefer_recent:
             # perform multi-armed bandit - epsilon-greedy strategy
             unresolved_dependency_id = None
@@ -255,7 +257,7 @@ class State:
         else:
             unresolved_dependency_id = random.choice(choices)
 
-        return self.unresolved_dependencies[unresolved_dependency_name][unresolved_dependency_id]
+        return self.unresolved_dependencies[dependency_name][unresolved_dependency_id]
 
     def iter_unresolved_dependencies(self) -> Generator[Tuple[str, str, str], None, None]:
         """Iterate over unresolved dependencies."""
