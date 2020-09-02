@@ -25,6 +25,7 @@ from typing import Optional
 from typing import Tuple
 from typing import Set
 from typing import Any
+from typing import List
 
 from .hill_climbing import HillClimbing
 from ..state import State
@@ -42,6 +43,7 @@ class ApproximatingLatest(HillClimbing):
     if resolution to all latest cannot be satisfied.
     """
 
+    prioritized_packages = attr.ib(type=List[str], default=attr.Factory(list), kw_only=True)
     _hop = attr.ib(type=bool, default=False, init=False)
     _hop_logged = attr.ib(type=bool, default=False, init=False)
     _packages_heated_up = attr.ib(type=Set[str], factory=set, init=False)
@@ -125,6 +127,14 @@ class ApproximatingLatest(HillClimbing):
             self._history.append((state.score, self.context.accepted_final_states_count))
 
         if self._hop:
+            for prioritized_package in self.prioritized_packages:
+                if prioritized_package in state.unresolved_dependencies:
+                    return state, state.get_random_unresolved_dependency(prioritized_package, prefer_recent=True)
+
             return state, state.get_random_unresolved_dependency(prefer_recent=True)
+
+        for prioritized_package in self.prioritized_packages:
+            if prioritized_package in state.unresolved_dependencies:
+                return state, state.get_first_unresolved_dependency(prioritized_package)
 
         return state, state.get_first_unresolved_dependency()
