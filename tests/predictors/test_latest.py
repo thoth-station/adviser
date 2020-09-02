@@ -17,6 +17,7 @@
 
 """Test implementation of predictor approximating latest resolution."""
 
+from typing import Callable
 from collections import OrderedDict
 
 import flexmock
@@ -34,8 +35,9 @@ class TestApproximatingLatest(AdviserTestCase):
     """Test implementation of predictor approximating latest resolution."""
 
     @given(integers(min_value=1, max_value=256),)
-    def test_run(self, state: State, state_count: int) -> None:
+    def test_run(self, state_factory: Callable[[], State], state_count: int) -> None:
         """Test running the approximating latest method."""
+        state = state_factory()
         beam = Beam()
         for _ in range(state_count):
             cloned_state = state.clone()

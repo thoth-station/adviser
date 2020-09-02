@@ -17,6 +17,8 @@
 
 """Test implementation of random walk in the dependency graph."""
 
+from typing import Callable
+
 import flexmock
 from hypothesis import given
 from hypothesis.strategies import integers
@@ -34,8 +36,9 @@ class TestRandomWalk(AdviserTestCase):
     """Tests related to random walk in the dependency graph."""
 
     @given(integers(min_value=1, max_value=256),)
-    def test_run(self, state: State, state_count: int) -> None:
+    def test_run(self, state_factory: Callable[[], State], state_count: int) -> None:
         """Test running the random walk method."""
+        state = state_factory()
         beam = Beam()
         for _ in range(state_count):
             cloned_state = state.clone()

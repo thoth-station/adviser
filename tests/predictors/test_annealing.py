@@ -17,6 +17,8 @@
 
 """Test implementation of Adaptive Simulated Annealing (ASA)."""
 
+from typing import Callable
+
 import flexmock
 
 from hypothesis import given
@@ -89,10 +91,17 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
         integers(min_value=0, max_value=1024),
     )
     def test_run(
-        self, state: State, state_count: int, limit: int, count: int, iteration: int, accepted_final_states: int
+        self,
+        state_factory: Callable[[], State],
+        state_count: int,
+        limit: int,
+        count: int,
+        iteration: int,
+        accepted_final_states: int,
     ) -> None:
         """Test running the annealing."""
         beam = Beam()
+        state = state_factory()
         for _ in range(state_count):
             cloned_state = state.clone()
             cloned_state.iteration = state.iteration + 1
