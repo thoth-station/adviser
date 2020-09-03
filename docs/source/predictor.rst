@@ -81,6 +81,13 @@ guarantee on order of states in the beam, unless sorted states are requested.
 The beam will always hold at least one state. With at least one unresolved
 dependency.
 
+.. note::
+
+  Raising exception :class:`EagerStopPipeline
+  <thoth.adviser.exceptions.EagerStopPipeline>` will stop the resolution process.
+
+  Raising any other exception has undefined behaviour.
+
 Another example shows expansion of a random state and iteration over all the
 states present in the beam:
 
