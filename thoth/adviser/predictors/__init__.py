@@ -20,18 +20,20 @@
 from .annealing import AdaptiveSimulatedAnnealing
 from .hill_climbing import HillClimbing
 from .latest import ApproximatingLatest
+from .mcts import MCTS
+from .package_combinations import PackageCombinations
 from .random_walk import RandomWalk
 from .sampling import Sampling
 from .td import TemporalDifference
-from .mcts import MCTS
 
 
 __all__ = [
     "AdaptiveSimulatedAnnealing",
     "ApproximatingLatest",
     "HillClimbing",
+    "MCTS",
+    "PackageCombinations",
     "RandomWalk",
     "Sampling",
     "TemporalDifference",
-    "MCTS",
 ]
