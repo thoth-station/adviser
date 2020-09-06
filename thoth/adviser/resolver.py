@@ -395,7 +395,7 @@ class Resolver:
                 self.beam.remove(cloned_state)
 
         if unresolved_dependencies:
-            cloned_state.update_unresolved_dependencies(unresolved_dependencies)
+            cloned_state.set_unresolved_dependencies(unresolved_dependencies)
 
         cloned_state.remove_unresolved_dependency_subtree(package_version_tuple[0])
         cloned_state.add_resolved_dependency(package_version_tuple)

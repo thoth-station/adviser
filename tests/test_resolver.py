@@ -1137,6 +1137,7 @@ class TestResolver(AdviserTestCase):
         state1 = resolver.beam.get(1)
 
         assert state0 is state
+        assert state_returned is state1
 
         assert ("absl-py", "0.8.0", "https://pypi.org/simple",) in state.iter_unresolved_dependencies()
         assert ("absl-py", "0.6.0", "https://pypi.org/simple",) in state.iter_unresolved_dependencies()
@@ -1145,8 +1146,8 @@ class TestResolver(AdviserTestCase):
         # Only ("absl-py", "0.8.0", "https://pypi.org/simple") is in intersection.
 
         assert ("absl-py", "0.8.0", "https://pypi.org/simple",) in state1.iter_unresolved_dependencies()
-        assert ("absl-py", "0.6.0", "https://pypi.org/simple",) not in state1.iter_unresolved_dependencies()
         assert ("absl-py", "0.9.0", "https://pypi.org/simple",) not in state1.iter_unresolved_dependencies()
+        assert ("absl-py", "0.6.0", "https://pypi.org/simple",) not in state1.iter_unresolved_dependencies()
 
     def test_expand_state_no_dependencies_not_final(self, resolver: Resolver, state: State) -> None:
         """Test expanding a state when the given package has no dependencies producing not final state."""
