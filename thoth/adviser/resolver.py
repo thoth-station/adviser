@@ -383,13 +383,15 @@ class Resolver:
                 if step_justification_addition is not None:
                     justification_addition.extend(step_justification_addition)
 
-        if state.unresolved_dependencies:
+        if state.unresolved_dependencies and package_version_tuple[0] in state.unresolved_dependencies:
             cloned_state = state.clone()
             weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state)).atexit = False
         else:
             # Optimization - reuse the old one as it would be discarded anyway.
             cloned_state = state
-            if not user_stack_scoring and (score_addition != 0.0 or not unresolved_dependencies):
+            if not user_stack_scoring and (
+                score_addition != 0.0 or (not state.unresolved_dependencies and not unresolved_dependencies)
+            ):
                 self.beam.remove(cloned_state)
 
         if unresolved_dependencies:
