@@ -5545,3 +5545,23 @@
 ## Release 0.15.1 (2020-08-27T20:40:51)
 ### Features
 * Fix SI step inclusion (#1146)
+
+## Release 0.16.0 (2020-09-07T18:41:30)
+### Features
+* Unresolved dependencies have to be set due to intersected deps
+* Implement a predictor that generates package combinations
+* Implement a predictor that generates package combinations
+* Document raising EagerStopPipeline in predictor
+* Fix issue caused when last unresolved dependency is removed
+* Update unresolved dependencies during the resolution process
+* Introduce prioritized packages to predictors (#1160)
+* Introduce a way to parametrize predictor (#1159)
+* Log warning about no SI just once per pipeline run (#1154)
+* Apply limit of stacks only for the accepted stacks (#1155)
+### Bug Fixes
+* Adjust testsuite to the unresolved optimization fix
+### Improvements
+* Fix warnings produced during executing the test suite (#1162)
+### Automatic Updates
+* :pushpin: Automatic update of dependency hypothesis from 5.29.4 to 5.30.0 (#1153)
+* :pushpin: Automatic update of dependency hypothesis from 5.29.3 to 5.29.4 (#1152)
