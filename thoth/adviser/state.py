@@ -44,6 +44,19 @@ class State:
     resolved_dependencies = attr.ib(default=attr.Factory(dict))  # type: Dict[str, Tuple[str, str, str]]
     _parent = attr.ib(default=None)  # type: weakref.ReferenceType['State']
     advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], kw_only=True, default=None)
+    # an example for a manifest change:
+    #   [
+    #     {
+    #       "apiVersion:": "apps.openshift.io/v1",
+    #       "kind": "DeploymentConfig",
+    #       "patch": {
+    #         "op": "add",
+    #         "path": "spec.template.spec.containers[0].env",
+    #         "value": {"name": "OMP_NUM_THREADS", "value": "1"},
+    #     }
+    #   ]
+    # See available yaml-patch operations at https://python-json-patch.readthedocs.io/en/latest/tutorial.html
+    advised_manifest_changes = attr.ib(type=List[Dict[str, Any]], kw_only=True, default=attr.Factory(list))
     justification = attr.ib(type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True)
 
     _EPSILON = 0.1
@@ -86,6 +99,7 @@ class State:
 
         # Parent is removed intentionally.
         return {
+            "advised_manifest_changes": self.advised_manifest_changes,
             "advised_runtime_environment": advised_runtime_environment,
             "iteration": self.iteration,
             "justification": self.justification,
