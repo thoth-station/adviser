@@ -20,6 +20,8 @@
 from typing import TYPE_CHECKING
 from typing import Optional, Dict, Any
 
+from thoth.common import get_justification_link as jl
+
 from ..state import State
 from ..wrap import Wrap
 
@@ -30,7 +32,13 @@ if TYPE_CHECKING:
 class NoObservationWrap(Wrap):
     """A wrap that notifies about missing observations."""
 
-    _JUSTIFICATION = [{"type": "INFO", "message": "No observations spotted for this stack in Thoth's database",}]
+    _JUSTIFICATION = [
+        {
+            "type": "INFO",
+            "message": "No observations spotted for this stack in Thoth's database",
+            "link": jl("no_observations"),
+        }
+    ]
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
