@@ -27,6 +27,7 @@ from typing import Tuple
 from typing import TYPE_CHECKING
 
 import attr
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
 from ..enums import RecommendationType
@@ -44,7 +45,13 @@ class AICoEReleasesStep(Step):
     """Prioritize releases from AICoE."""
 
     _SCORE_ADDITION = 0.1
-    _JUSTIFICATION = [{"type": "INFO", "message": "Builds produced by AICoE are optimized for performance"}]
+    _JUSTIFICATION = [
+        {
+            "type": "INFO",
+            "message": "Builds produced by AICoE are optimized for performance",
+            "link": jl("aicoe_tf_releases"),
+        }
+    ]
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
