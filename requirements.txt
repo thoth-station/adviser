@@ -3,9 +3,10 @@ click
 contoml==0.30
 fext>=0.2.0
 matplotlib
+packaging
+pyyaml
 thoth-python
 thoth-solver
 thoth-storages
 toml
-pyyaml
 voluptuous
