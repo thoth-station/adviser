@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING
 import logging
 
 import attr
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
 from ..enums import RecommendationType
@@ -57,6 +58,7 @@ class SecurityIndicatorStep(Step):
         "low_severity_weight": 1,
         "si_reward_weight": 0.5,
     }
+    _JUSTIFICATION_LINK = jl("security")
 
     def pre_run(self) -> None:
         """Initialize this pipeline step before running the pipeline."""
@@ -73,12 +75,13 @@ class SecurityIndicatorStep(Step):
 
         return None
 
-    @staticmethod
-    def _generate_justification(name: str, version: str, index: str) -> List[Dict[str, Any]]:
+    @classmethod
+    def _generate_justification(cls, name: str, version: str, index: str) -> List[Dict[str, Any]]:
         return [
             {
                 "type": "WARNING",
                 "message": f"{name}==={version} on {index} has no gathered information regarding security.",
+                "link": cls._JUSTIFICATION_LINK,
             }
         ]
 
