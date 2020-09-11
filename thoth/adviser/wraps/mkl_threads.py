@@ -23,8 +23,6 @@ https://software.intel.com/en-us/mkl-linux-developer-guide-setting-the-number-of
 from typing import TYPE_CHECKING
 from typing import Optional, Dict, Any
 
-from thoth.common import get_justification_link as jl
-
 from ..state import State
 from ..wrap import Wrap
 
@@ -44,7 +42,6 @@ class MKLThreadsWrap(Wrap):
             "message": "Consider adjusting OMP_NUM_THREADS environment variable for containerized deployments, "
             "one or more libraries use Intel's MKL that does not detect correctly "
             "resource allocation in the cluster",
-            "link": jl("mkl_threads"),
         }
     ]
 

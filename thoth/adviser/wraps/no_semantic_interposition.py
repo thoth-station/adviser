@@ -22,8 +22,6 @@ from typing import Dict
 from typing import Optional
 from typing import TYPE_CHECKING
 
-from thoth.common import get_justification_link as jl
-
 from ..state import State
 from ..wrap import Wrap
 
@@ -42,7 +40,6 @@ class NoSemanticInterpositionWrap(Wrap):
             "type": "INFO",
             "message": "Consider using UBI or RHEL 8.2 with Python 3.8 that has optimized Python interpreter with "
             "performance gain up to 30%",
-            "link": jl("no_semantic_interposition"),
         }
     ]
 

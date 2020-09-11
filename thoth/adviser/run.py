@@ -33,8 +33,6 @@ import logging
 import os
 import time
 
-from thoth.common import get_justification_link as jl
-
 from .exceptions import AdviserRunException
 from .exceptions import UnresolvedDependencies
 from .dependency_monkey import DependencyMonkey
@@ -135,14 +133,11 @@ def subprocess_run(
         if exit_code != 0:
             _LOGGER.error("Child exited with exit code %r", exit_code)
             if (exit_code & 0xF) == 9:
-                err_msg = f"Adviser was killed as allocated memory has been exceeded (OOM) - {jl('oom')}"
+                err_msg = "Adviser was killed as allocated memory has been exceeded (OOM)"
             elif os.path.isfile(_LIVENESS_PROBE_KILL_FILE):
-                err_msg = f"Adviser was killed as allocated CPU time was exceeded - {jl('cpu_time_exceeded')}"
+                err_msg = "Adviser was killed as allocated CPU time was exceeded"
             else:
-                err_msg = (
-                    f"Resolution was terminated based on errors encountered; "
-                    f"see logs for more info - {jl('error_logs')}"
-                )
+                err_msg = "Resolution was terminated based on errors encountered; see logs for more info"
 
             _LOGGER.error(err_msg)
 
