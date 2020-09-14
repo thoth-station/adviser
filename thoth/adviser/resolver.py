@@ -554,8 +554,8 @@ class Resolver:
             [
                 {
                     "type": "INFO",
-                    "message": "Score of the supplied lock file is the highest possible \
-                according to the current knowledge in Thoth and the parameters used to solve the stack.",
+                    "message": "Score of the supplied lock file is the highest possible "
+                    "according to the current knowledge in Thoth and the parameters used to solve the stack.",
                 }
             ]
         )
