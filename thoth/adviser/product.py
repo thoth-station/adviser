@@ -46,10 +46,10 @@ class Product:
 
     _LOG_HASHES: Set[Tuple[str, str, str]] = set()
 
-    project = attr.ib(type=Project)
-    score = attr.ib(type=float)
-    justification = attr.ib(type=List[Dict[str, str]])
-    advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], default=None)
+    project = attr.ib(type=Project, kw_only=True)
+    score = attr.ib(type=float, kw_only=True)
+    justification = attr.ib(type=List[Dict[str, str]], kw_only=True)
+    advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], default=None, kw_only=True)
     advised_manifest_changes = attr.ib(type=List[Dict[str, Any]], kw_only=True, default=attr.Factory(list))
 
     @classmethod
