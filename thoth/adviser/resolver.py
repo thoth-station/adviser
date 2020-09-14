@@ -35,6 +35,7 @@ import contextlib
 import signal
 import weakref
 
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.python import Project
 from thoth.storages import GraphDatabase
@@ -604,6 +605,7 @@ class Resolver:
             )
 
         if unresolved:
+            _LOGGER.warning("Resolver failed as it was unable to resolve direct dependencies, see %s", jl("unresolved"))
             raise UnresolvedDependencies("Unable to resolve all direct dependencies", unresolved=unresolved)
 
         # Now we are free to de-instantiate solver.
