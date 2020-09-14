@@ -131,4 +131,6 @@ class TestSecurityIndicatorStep(AdviserTestCase):
         assert result is not None
         assert isinstance(result, tuple) and len(result) == 2
         assert result[0] == 0
+        assert len(result[1]) == 1
+        assert result[1][0].pop("link", None) is not None, "No link to justification document provided"
         assert result[1] == self._FLASK_JUSTIFICATION

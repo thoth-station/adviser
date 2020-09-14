@@ -22,6 +22,8 @@ from typing import Dict
 from typing import Optional
 from typing import TYPE_CHECKING
 
+from thoth.common import get_justification_link as jl
+
 from ..state import State
 from ..wrap import Wrap
 
@@ -62,6 +64,7 @@ class IntelTensorFlowWrap(Wrap):
         {
             "type": "INFO",
             "message": "Consider using intel-tensorflow which is optimized for CPU detected in your environment",
+            "link": jl("intel_tensorflow"),
         }
     ]
 

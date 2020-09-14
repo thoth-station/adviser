@@ -47,5 +47,6 @@ class TestMKLThreadsWrap(AdviserTestCase):
         unit.run(state)
 
         assert len(state.justification) == 1
-        assert set(state.justification[0].keys()) == {"type", "message"}
+        assert set(state.justification[0].keys()) == {"type", "message", "link"}
         assert state.justification[0]["type"] == "WARNING"
+        assert state.justification[0]["link"], "Empty link to justification document provided"

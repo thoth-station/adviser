@@ -83,7 +83,10 @@ class TestTensorFlowAVX2Step(AdviserTestCase):
         state, context = flexmock(), flexmock()
         with TensorFlowAVX2Step.assigned_context(context):
             unit = TensorFlowAVX2Step()
-            assert unit.run(state, package_version) == (
+            result = unit.run(state, package_version)
+            assert len(result[1]) == 1
+            assert result[1][0].pop("link", None) is not None, "No link to justification document provided"
+            assert result == (
                 0.2,
                 [
                     {

@@ -25,6 +25,7 @@ from typing import Dict
 from typing import TYPE_CHECKING
 import logging
 
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
 from ..enums import RecommendationType
@@ -49,6 +50,7 @@ class TensorFlowAVX2Step(Step):
             "message": (
                 "AICoE TensorFlow builds are optimized for AVX2 instruction sets supported in the CPU identified"
             ),
+            "link": jl("aicoe_tf_avx2"),
         }
     ]
 
