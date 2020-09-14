@@ -38,7 +38,6 @@ class TestNoObservationWrap(AdviserTestCase):
 
         assert len(state.justification) == 1
         assert set(state.justification[0].keys()) == {"type", "message"}
-        assert state.justification[0]["type"] == "INFO"
 
     def test_run_no_justification(self) -> None:
         """Test adding information about justification."""
@@ -49,5 +48,6 @@ class TestNoObservationWrap(AdviserTestCase):
         unit.run(state)
 
         assert len(state.justification) == 1
-        assert set(state.justification[0].keys()) == {"type", "message"}
+        assert set(state.justification[0].keys()) == {"type", "message", "link"}
         assert state.justification[0]["type"] == "INFO"
+        assert state.justification[0]["link"], "Empty link to justification document provided"
