@@ -183,11 +183,26 @@ python_version = "3.7"
         advised_runtime_environment = flexmock()
         advised_runtime_environment.should_receive("to_dict").with_args().and_return({"hello": "thoth"}).once()
 
+        advised_manifest_changes = [
+            [
+                {
+                    "apiVersion:": "apps.openshift.io/v1",
+                    "kind": "DeploymentConfig",
+                    "patch": {
+                        "op": "add",
+                        "path": "spec.template.spec.containers[0].env",
+                        "value": {"name": "OMP_NUM_THREADS", "value": "1"},
+                    },
+                }
+            ]
+        ]
+
         product = Product(
-            score=0.999,
-            project=project,
-            justification=[{"foo": "bar"}],
+            advised_manifest_changes=advised_manifest_changes,
             advised_runtime_environment=advised_runtime_environment,
+            justification=[{"foo": "bar"}],
+            project=project,
+            score=0.999,
         )
 
         assert product.to_dict() == {
@@ -195,6 +210,7 @@ python_version = "3.7"
             "project": {"baz": "bar"},
             "justification": [{"foo": "bar"}],
             "advised_runtime_environment": {"hello": "thoth"},
+            "advised_manifest_changes": advised_manifest_changes,
         }
 
     def test_environment_markers(self, context: Context) -> None:
@@ -252,6 +268,7 @@ python_version = "3.7"
 
         product = Product.from_final_state(context=context, state=state)
         expected = {
+            "advised_manifest_changes": [],
             "advised_runtime_environment": None,
             "justification": [],
             "project": {

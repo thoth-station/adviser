@@ -138,4 +138,5 @@ class Product:
             "score": self.score,
             "justification": self.justification,
             "advised_runtime_environment": advised_runtime_environment,
+            "advised_manifest_changes": self.advised_manifest_changes,
         }
