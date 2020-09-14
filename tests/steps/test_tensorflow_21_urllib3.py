@@ -20,9 +20,9 @@
 import flexmock
 import pytest
 
+from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.steps import TensorFlow21Urllib3Step
 from thoth.adviser.state import State
-from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.python import Source
 
@@ -53,17 +53,11 @@ class TestTensorFlow21Urllib32Step(AdviserTestCase):
         context = flexmock()
         with TensorFlow21Urllib3Step.assigned_context(context):
             unit = TensorFlow21Urllib3Step()
-            assert unit.run(state, urllib3_package_version) == (
-                -0.8,
-                [
-                    {
-                        "message": "TensorFlow in version 2.1 can cause runtime errors when "
-                        "imported, caused by incompatibility between urllib3 and six packages",
-                        "type": "WARNING",
-                        "link": jl("tf_21_urllib3"),
-                    }
-                ],
-            )
+            unit.pre_run()
+            assert unit._message_logged is False
+            with pytest.raises(NotAcceptable):
+                assert unit.run(state, urllib3_package_version)
+                assert unit._message_logged is True
 
     @pytest.mark.parametrize("urllib3_version,tf_version", [("1.2", "2.2.0"), ("1.25.10", "2.1")])
     def test_no_tf_21(self, urllib3_version: str, tf_version: str) -> None:
