@@ -44,7 +44,9 @@ class State:
     resolved_dependencies = attr.ib(default=attr.Factory(dict))  # type: Dict[str, Tuple[str, str, str]]
     _parent = attr.ib(default=None)  # type: weakref.ReferenceType['State']
     advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], kw_only=True, default=None)
-    # an example for a manifest change:
+    # See RFC-6902:
+    #   https://tools.ietf.org/html/rfc6902
+    # An example entry for a manifest change:
     #   [
     #     {
     #       "apiVersion:": "apps.openshift.io/v1",
@@ -57,7 +59,13 @@ class State:
     #     }
     #   ]
     # See available yaml-patch operations at https://python-json-patch.readthedocs.io/en/latest/tutorial.html
-    advised_manifest_changes = attr.ib(type=List[Dict[str, Any]], kw_only=True, default=attr.Factory(list))
+    #
+    # Each entry is a list of JSON patches to be applied. If any entry fails to
+    # patch, the patching can continue with the subsequent JSON patch as each
+    # entry corresponds to a list of atomic changes to be applied:
+    #
+    #  https://tools.ietf.org/html/rfc6902#section-5
+    advised_manifest_changes = attr.ib(type=List[List[Dict[str, Any]]], kw_only=True, default=attr.Factory(list))
     justification = attr.ib(type=List[Dict[str, str]], default=attr.Factory(list), kw_only=True)
 
     _EPSILON = 0.1

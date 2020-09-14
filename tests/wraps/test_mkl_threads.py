@@ -17,6 +17,9 @@
 
 """Test wrap adding information about Intel's MKL env variable configuration."""
 
+import jsonpatch
+import yaml
+
 from thoth.adviser.state import State
 from thoth.adviser.wraps import MKLThreadsWrap
 
@@ -25,6 +28,25 @@ from ..base import AdviserTestCase
 
 class TestMKLThreadsWrap(AdviserTestCase):
     """Test Intel's MKL thread env info wrap."""
+
+    _DEPLOYMENT_CONFIG = """\
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: foo
+  namespace: some-namespace
+spec:
+  replicas: 1
+  selector:
+    service: foo
+  template:
+    spec:
+      containers:
+      - image: "foo:latest"
+        env:
+        - name: APP_MODULE
+          value: "foo"
+"""
 
     def test_run_justification_noop(self) -> None:
         """Test no operation when PyTorch is not present."""
@@ -41,6 +63,7 @@ class TestMKLThreadsWrap(AdviserTestCase):
         """Test adding information Intel's MKL environment variable."""
         state = State()
         state.add_resolved_dependency(("pytorch", "1.4.0", "https://pypi.org/simple"))
+        assert len(state.advised_manifest_changes) == 0
         assert not state.justification
 
         unit = MKLThreadsWrap()
@@ -50,3 +73,39 @@ class TestMKLThreadsWrap(AdviserTestCase):
         assert set(state.justification[0].keys()) == {"type", "message", "link"}
         assert state.justification[0]["type"] == "WARNING"
         assert state.justification[0]["link"], "Empty link to justification document provided"
+        assert len(state.advised_manifest_changes) == 1
+        assert state.advised_manifest_changes[0] == [
+            {
+                "apiVersion:": "apps.openshift.io/v1",
+                "kind": "DeploymentConfig",
+                "patch": {
+                    "op": "add",
+                    "path": "/spec/template/spec/containers/0/env/0",
+                    "value": {"name": "OMP_NUM_THREADS", "value": "1"},
+                },
+            }
+        ]
+        patch = jsonpatch.JsonPatch(obj["patch"] for obj in state.advised_manifest_changes[0])
+        deployment_config = yaml.safe_load(self._DEPLOYMENT_CONFIG)
+        assert jsonpatch.apply_patch(deployment_config, patch) == {
+            "apiVersion": "apps.openshift.io/v1",
+            "kind": "DeploymentConfig",
+            "metadata": {"name": "foo", "namespace": "some-namespace"},
+            "spec": {
+                "replicas": 1,
+                "selector": {"service": "foo"},
+                "template": {
+                    "spec": {
+                        "containers": [
+                            {
+                                "env": [
+                                    {"name": "OMP_NUM_THREADS", "value": "1"},
+                                    {"name": "APP_MODULE", "value": "foo"},
+                                ],
+                                "image": "foo:latest",
+                            }
+                        ]
+                    }
+                },
+            },
+        }
