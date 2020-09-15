@@ -57,7 +57,7 @@ class MKLThreadsWrap(Wrap):
                 "op": "add",
                 "path": "/spec/template/spec/containers/0/env/0",
                 "value": {"name": "OMP_NUM_THREADS", "value": "1"},
-            }
+            },
         }
     ]
 
