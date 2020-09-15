@@ -81,7 +81,13 @@ class TensorFlow22ProbabilityStep(Step):
         if package_version.name != "tensorflow-probability":
             return None
 
-        if "tensorflow" not in state.resolved_dependencies or state.resolved_dependencies["tensorflow"][1][:3] != "2.2":
+        tensorflow_any = (
+            state.resolved_dependencies.get("tensorflow")
+            or state.resolved_dependencies.get("tensorflow-cpu")
+            or state.resolved_dependencies.get("tensorflow-gpu")
+        )
+
+        if not tensorflow_any or tensorflow_any[1][:3] != "2.2":
             return None
 
         if not self._message_logged:
