@@ -51,7 +51,8 @@ class TensorFlow21Urllib3Step(Step):
         {
             "type": "WARNING",
             "message": (
-                "TensorFlow in version 2.1 can cause runtime errors when imported, caused by incompatibility between urllib3 and six packages"
+                "TensorFlow in version 2.1 can cause runtime errors when imported, caused by "
+                "incompatibility between urllib3 and six packages"
             ),
             "link": jl("tf_21_urllib3"),
         }
