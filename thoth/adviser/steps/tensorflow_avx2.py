@@ -64,7 +64,7 @@ class TensorFlowAVX2Step(Step):
             (0x6, 0xA),  # Ice Lake
             (0x6, 0xC),  # Ice Lake, Tiger Lake
             (0x6, 0xD),  # Ice Lake
-            (0x6, 0xE),  # Skylake, Keby Lake, Coffee Lake, Ice Lake, Comet Lake
+            (0x6, 0xE),  # Skylake, Kaby Lake, Coffee Lake, Ice Lake, Comet Lake, Whiskey Lake
             (0x6, 0xF),  # Haswell
         }
     )
