@@ -22,6 +22,7 @@ from .no_onservation import NoObservationWrap
 from .no_semantic_interposition import NoSemanticInterpositionWrap
 from .intel_tensorflow import IntelTensorFlowWrap
 from .tf_accuracy import TensorFlow23Accuracy
+from .tf_23_dict_bug import TensorFlow23DictSummary
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -33,4 +34,5 @@ __all__ = [
     "NoSemanticInterpositionWrap",
     "IntelTensorFlowWrap",
     "TensorFlow23Accuracy",
+    "TensorFlow23DictSummary",
 ]
