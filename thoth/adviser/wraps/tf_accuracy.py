@@ -43,7 +43,7 @@ class TensorFlow23Accuracy(Wrap):
         {
             "type": "WARNING",
             "message": "TensorFlow in version 2.3 produces wrong model accuracy when the model is "
-                       "serialized using `accuracy`, use `sparse_categorical_accuracy` instead",
+            "serialized using `accuracy`, use `sparse_categorical_accuracy` instead",
             "link": jl("tf_42045"),
         }
     ]
