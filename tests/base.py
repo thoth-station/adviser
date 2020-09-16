@@ -25,6 +25,7 @@ from typing import Optional
 import os
 
 from voluptuous import All
+from voluptuous import Any as SchemaAny
 from voluptuous import Optional as SchemaOptional
 from voluptuous import Invalid
 from voluptuous import Length
@@ -36,7 +37,7 @@ class AdviserTestCaseException(Exception):
 
 
 class AdviserJustificationSchemaError(AdviserTestCaseException):
-    """An exception raiased when the justification reported violates schema."""
+    """An exception raised when the justification reported violates schema."""
 
 
 class AdviserTestCase:
@@ -48,7 +49,7 @@ class AdviserTestCase:
         [
             {
                 "message": All(str, Length(min=1)),
-                "type": All(str, Length(min=1)),
+                "type": SchemaAny("INFO", "WARNING", "ERROR", "LATEST", "CVE"),
                 "link": All(str, Length(min=1)),
                 SchemaOptional("advisory"): All(str, Length(min=1)),
                 SchemaOptional("cve_id"): All(str, Length(min=1)),
