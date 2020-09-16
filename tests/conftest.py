@@ -158,7 +158,7 @@ def _get_state() -> State:
         resolved_dependencies=OrderedDict({"hexsticker": ("hexsticker", "1.0.0", "https://pypi.org/simple")}),
         advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
     )
-    state.add_justification([{"foo": "bar"}, {"bar": "baz"}])
+    state.add_justification(AdviserTestCase.JUSTIFICATION_SAMPLE_1)
     return state
 
 
@@ -187,3 +187,15 @@ def builder_context(project: Project) -> PipelineBuilderContext:
         decision_type=None,
         recommendation_type=RecommendationType.LATEST,
     )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def state_verify_justification_schema() -> None:
+    """Sets automatic checks for schema validation for justifications added to states by pipeline units."""
+
+    def patched_add_justification(self, justification):
+        AdviserTestCase.verify_justification_schema(justification)
+        add_justification_func(self, justification)
+
+    add_justification_func = State.add_justification
+    State.add_justification = patched_add_justification

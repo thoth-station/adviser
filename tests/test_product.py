@@ -64,7 +64,7 @@ python_version = "3.7"
             unresolved_dependencies=OrderedDict(),
             advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
         )
-        state.add_justification([{"foo": "bar"}])
+        state.add_justification(self.JUSTIFICATION_SAMPLE_1)
 
         pypi = Source("https://pypi.org/simple")
 

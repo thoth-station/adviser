@@ -237,7 +237,7 @@ class TestResolver(AdviserTestCase):
         """Test running steps when not acceptable is raised."""
         state1 = State()
         state1.score = 0.1
-        state1.add_justification([{"hello": "thoth"}])
+        state1.add_justification(self.JUSTIFICATION_SAMPLE_1)
         state1.add_resolved_dependency(("hexsticker", "1.2.0", "https://pypi.org/simple"))
 
         flexmock(steps.Step1)
@@ -266,7 +266,7 @@ class TestResolver(AdviserTestCase):
         """Test raising a step error when a step raises an unexpected error."""
         state = State()
         state.score = 0.1
-        state.add_justification([{"hello": "thoth"}])
+        state.add_justification(self.JUSTIFICATION_SAMPLE_1)
         state.add_unresolved_dependency(("hexsticker", "1.2.0", "https://pypi.org/simple"))
 
         original_state = deepcopy(state)
@@ -330,7 +330,7 @@ class TestResolver(AdviserTestCase):
         """Test running steps produces a step specific error."""
         state = State()
         state.score = 0.1
-        state.add_justification([{"hello": "thoth"}])
+        state.add_justification(self.JUSTIFICATION_SAMPLE_1)
         state.resolved_dependencies["hexsticker"] = (
             "hexsticker",
             "1.2.0",
@@ -356,7 +356,7 @@ class TestResolver(AdviserTestCase):
         """Run tests for inf and NaN."""
         state = State()
         state.score = 0.1
-        state.add_justification([{"hello": "thoth"}])
+        state.add_justification(self.JUSTIFICATION_SAMPLE_1)
         state.resolved_dependencies["hexsticker"] = (
             "hexsticker",
             "1.2.0",
@@ -381,7 +381,7 @@ class TestResolver(AdviserTestCase):
         """Test running pipeline strides."""
         state = State()
         state.score = 0.1
-        state.add_justification([{"ehlo": "esmtp"}])
+        state.add_justification(self.JUSTIFICATION_SAMPLE_1)
 
         original_state = deepcopy(state)
 
@@ -400,7 +400,7 @@ class TestResolver(AdviserTestCase):
         """Test running pipeline strides."""
         state = State()
         state.score = 0.1
-        state.add_justification([{"khoor": "zruogv"}])
+        state.add_justification(self.JUSTIFICATION_SAMPLE_1)
 
         original_state = deepcopy(state)
 
@@ -420,7 +420,7 @@ class TestResolver(AdviserTestCase):
         """Test running pipeline strides."""
         state = State()
         state.score = 0.1
-        state.add_justification([{"khoor": "zruogv"}])
+        state.add_justification(self.JUSTIFICATION_SAMPLE_1)
 
         original_state = deepcopy(state)
 
@@ -438,7 +438,7 @@ class TestResolver(AdviserTestCase):
         """Test running pipeline wraps."""
         state = State()
         state.score = 0.01
-        state.add_justification([{"uhg": "kdw"}])
+        state.add_justification(self.JUSTIFICATION_SAMPLE_2)
 
         original_state = deepcopy(state)
 
@@ -456,7 +456,7 @@ class TestResolver(AdviserTestCase):
         """Test running pipeline wraps and raising a wrap error."""
         state = State()
         state.score = 0.42
-        state.add_justification([{"iulgrolq": "srnruqb"}])
+        state.add_justification(self.JUSTIFICATION_SAMPLE_2)
 
         original_state = deepcopy(state)
 

@@ -164,15 +164,15 @@ class TestBeam(AdviserTestCase):
         beam = Beam(width=2)
 
         state01 = State(score=0.0)
-        state01.add_justification([{"state": "01"}])
+        state01.add_justification(self.JUSTIFICATION_SAMPLE_1)
         beam.add_state(state01)
 
         state02 = State(score=0.0)
-        state02.add_justification([{"state": "02"}])
+        state02.add_justification(self.JUSTIFICATION_SAMPLE_2)
         beam.add_state(state02)
 
         state03 = State(score=0.0)
-        state03.add_justification([{"state": "03"}])
+        state03.add_justification(self.JUSTIFICATION_SAMPLE_3)
         beam.add_state(state03)
 
         assert list(beam.iter_states_sorted()) == [state01, state02]
@@ -184,11 +184,11 @@ class TestBeam(AdviserTestCase):
         beam = Beam(width=1)
 
         state01 = State(score=0.0, iteration=1,)
-        state01.add_justification([{"state": "01"}])
+        state01.add_justification(self.JUSTIFICATION_SAMPLE_1)
         beam.add_state(state01)
 
         state02 = State(score=0.0, iteration=0,)
-        state02.add_justification([{"state": "02"}])
+        state02.add_justification(self.JUSTIFICATION_SAMPLE_2)
         beam.add_state(state02)
 
         assert list(beam.iter_states()) == [state01]
