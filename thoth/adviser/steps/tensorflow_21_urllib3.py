@@ -17,6 +17,7 @@
 
 """Suggest not to use TensorFlow 2.1 with specific urllib3 versions that cause six import issues."""
 
+import attr
 from typing import Any
 from typing import Optional
 from typing import Tuple
@@ -29,6 +30,7 @@ from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
 from ..enums import RecommendationType
+from ..exceptions import NotAcceptable
 from ..state import State
 from ..step import Step
 
@@ -40,25 +42,22 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+@attr.s(slots=True)
 class TensorFlow21Urllib3Step(Step):
     """A step that suggests not to use TensorFlow 2.1 with specific urllib3 versions that cause six import issues."""
+
+    _message_logged = attr.ib(type=bool, default=False, init=False)
 
     # Run this step each time, regardless of when TensorFlow and urllib3 are resolved.
     MULTI_PACKAGE_RESOLUTIONS = True
 
-    _SCORE_ADDITION = -0.8
-    _JUSTIFICATION_ADDITION = [
-        {
-            "type": "WARNING",
-            "message": (
-                "TensorFlow in version 2.1 can cause runtime errors when imported, caused by "
-                "incompatibility between urllib3 and six packages"
-            ),
-            "link": jl("tf_21_urllib3"),
-        }
-    ]
-
+    _MESSAGE = f"TensorFlow in version 2.1 can cause runtime errors when imported, caused by " \
+               f"incompatibility between urllib3 and six packages - see {jl('tf_21_urllib3')}"
     _AFFECTED_URLLIB3_VERSIONS = frozenset({(1, 2), (1, 3), (1, 4), (1, 5)})
+
+    def pre_run(self) -> None:
+        """Initialize this pipeline unit before each run."""
+        self._message_logged = False
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -87,4 +86,8 @@ class TensorFlow21Urllib3Step(Step):
         if "tensorflow" not in state.resolved_dependencies or state.resolved_dependencies["tensorflow"][1][:3] != "2.1":
             return None
 
-        return self._SCORE_ADDITION, self._JUSTIFICATION_ADDITION
+        if not self._message_logged:
+            self._message_logged = True
+            _LOGGER.warning(self._MESSAGE)
+
+        raise NotAcceptable
