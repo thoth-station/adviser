@@ -29,6 +29,7 @@ from .backports import Functools32BackportSieve
 from .backports import ImportlibMetadataBackportSieve
 from .backports import ImportlibResourcesBackportSieve
 from .backports import MockBackportSieve
+from .tensorflow import TensorFlowCUDASieve
 from .setuptools import Py36SetuptoolsSieve
 
 
@@ -49,4 +50,5 @@ __all__ = [
     "ImportlibResourcesBackportSieve",
     "MockBackportSieve",
     "Py36SetuptoolsSieve",
+    "TensorFlowCUDASieve",
 ]
