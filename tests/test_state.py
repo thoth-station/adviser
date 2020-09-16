@@ -21,7 +21,6 @@ import gc
 import pytest
 import random
 import string
-from collections import OrderedDict
 from itertools import chain
 
 from hypothesis import given
