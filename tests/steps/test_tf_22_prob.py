@@ -54,14 +54,15 @@ class TestTensorFlow22ProbabilityStep(AdviserTestCase):
         builder_context.recommendation_type = recommendation_type
         assert TensorFlow22ProbabilityStep.should_include(builder_context) is None
 
-    def test_run(self) -> None:
+    @pytest.mark.parametrize("package_name", ["tensorflow", "tensorflow-cpu", "tensorflow-gpu"])
+    def test_run(self, package_name: str) -> None:
         """Test recommending not to use TensorFlow 2.2 with tensorflow-probability."""
         package_version = PackageVersion(
             name="tensorflow-probability", version="==0.11.0", develop=False, index=Source("https://pypi.org/simple"),
         )
 
         state = State()
-        state.add_resolved_dependency(("tensorflow", "2.2.0", "https://pypi.org/simple"))
+        state.add_resolved_dependency((package_name, "2.2.0", "https://pypi.org/simple"))
 
         unit = TensorFlow22ProbabilityStep()
 
