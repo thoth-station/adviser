@@ -192,6 +192,7 @@ def builder_context(project: Project) -> PipelineBuilderContext:
 @pytest.fixture(scope="session", autouse=True)
 def state_verify_justification_schema() -> None:
     """Sets automatic checks for schema validation for justifications added to states by pipeline units."""
+
     def patched_add_justification(self, justification):
         AdviserTestCase.verify_justification_schema(justification)
         add_justification_func(self, justification)
