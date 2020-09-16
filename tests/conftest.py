@@ -189,6 +189,7 @@ def builder_context(project: Project) -> PipelineBuilderContext:
         recommendation_type=RecommendationType.LATEST,
     )
 
+
 def _patched_add_justification(add_justification_func, self, justification):
     """Patch State.add_justification."""
     AdviserTestCase.verify_justification_schema(justification)
