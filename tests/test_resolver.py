@@ -22,7 +22,6 @@ import flexmock
 
 import gc
 import math
-from collections import OrderedDict
 from copy import deepcopy
 import itertools
 from typing import List
@@ -139,13 +138,11 @@ def final_state() -> State:
     """Return a final state."""
     return State(
         score=0.5,
-        unresolved_dependencies=OrderedDict(
-            (
-                ("tensorflow", ("tensorflow", "2.0.0", "https://pypi.org/simple")),
-                ("numpy", ("numpy", "1.17.4", "https://pypi.org/simple")),
-            )
-        ),
-        resolved_dependencies=OrderedDict(),
+        unresolved_dependencies={
+            "tensorflow": ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+            "numpy": ("numpy", "1.17.4", "https://pypi.org/simple"),
+        },
+        resolved_dependencies={},
         advised_runtime_environment=RuntimeEnvironment.from_dict({}),
     )
 
@@ -867,7 +864,7 @@ class TestResolver(AdviserTestCase):
         )
 
         # Discard any present.
-        state.unresolved_dependencies = OrderedDict()
+        state.unresolved_dependencies = {}
         state.add_unresolved_dependency(to_expand_package_tuple)
         state.add_unresolved_dependency(additional_package_tuple)
 

@@ -36,8 +36,8 @@ def final_state() -> State:  # noqa: D401
     """A fixture for a final state."""
     state = State(
         score=0.5,
-        resolved_dependencies=OrderedDict({"daiquiri": ("daiquiri", "1.6.0", "https://pypi.org/simple")}),
-        unresolved_dependencies=OrderedDict(),
+        resolved_dependencies={"daiquiri": ("daiquiri", "1.6.0", "https://pypi.org/simple")},
+        unresolved_dependencies={},
         advised_runtime_environment=None,
     )
     state.add_justification(AdviserTestCase.JUSTIFICATION_SAMPLE_1)

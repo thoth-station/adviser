@@ -17,7 +17,6 @@
 
 """Test manipulation with a pipeline product."""
 
-from collections import OrderedDict
 
 import flexmock
 
@@ -54,14 +53,12 @@ python_version = "3.7"
         """Test instantiating product from a final state."""
         state = State(
             score=0.5,
-            resolved_dependencies=OrderedDict(
-                {
-                    "daiquiri": ("daiquiri", "1.6.0", "https://pypi.org/simple"),
-                    "numpy": ("numpy", "1.17.4", "https://pypi.org/simple"),
-                    "tensorflow": ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                }
-            ),
-            unresolved_dependencies=OrderedDict(),
+            resolved_dependencies={
+                "daiquiri": ("daiquiri", "1.6.0", "https://pypi.org/simple"),
+                "numpy": ("numpy", "1.17.4", "https://pypi.org/simple"),
+                "tensorflow": ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+            },
+            unresolved_dependencies={},
             advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
         )
         state.add_justification(self.JUSTIFICATION_SAMPLE_1)
@@ -217,13 +214,11 @@ python_version = "3.7"
         """Test handling of environment markers across multiple runs."""
         state = State(
             score=0.0,
-            resolved_dependencies=OrderedDict(
-                {
-                    "numpy": ("numpy", "1.0.0", "https://pypi.org/simple"),
-                    "tensorflow": ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                }
-            ),
-            unresolved_dependencies=OrderedDict(),
+            resolved_dependencies={
+                "numpy": ("numpy", "1.0.0", "https://pypi.org/simple"),
+                "tensorflow": ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+            },
+            unresolved_dependencies={},
         )
 
         context.graph.should_receive("get_python_package_hashes_sha256").with_args(
