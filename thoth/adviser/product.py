@@ -46,10 +46,11 @@ class Product:
 
     _LOG_HASHES: Set[Tuple[str, str, str]] = set()
 
-    project = attr.ib(type=Project)
-    score = attr.ib(type=float)
-    justification = attr.ib(type=List[Dict[str, str]])
-    advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], default=None)
+    project = attr.ib(type=Project, kw_only=True)
+    score = attr.ib(type=float, kw_only=True)
+    justification = attr.ib(type=List[Dict[str, str]], kw_only=True)
+    advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], default=None, kw_only=True)
+    advised_manifest_changes = attr.ib(type=List[Dict[str, Any]], kw_only=True, default=attr.Factory(list))
 
     @classmethod
     def from_final_state(cls, *, context: Context, state: State) -> "Product":
@@ -123,6 +124,7 @@ class Product:
             score=state.score,
             justification=state.justification,
             advised_runtime_environment=state.advised_runtime_environment,
+            advised_manifest_changes=state.advised_manifest_changes,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -136,4 +138,5 @@ class Product:
             "score": self.score,
             "justification": self.justification,
             "advised_runtime_environment": advised_runtime_environment,
+            "advised_manifest_changes": self.advised_manifest_changes,
         }
