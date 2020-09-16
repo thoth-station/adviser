@@ -50,7 +50,7 @@ class Product:
     score = attr.ib(type=float, kw_only=True)
     justification = attr.ib(type=List[Dict[str, str]], kw_only=True)
     advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], default=None, kw_only=True)
-    advised_manifest_changes = attr.ib(type=List[Dict[str, Any]], kw_only=True, default=attr.Factory(list))
+    advised_manifest_changes = attr.ib(type=List[List[Dict[str, Any]]], kw_only=True, default=attr.Factory(list))
 
     @classmethod
     def from_final_state(cls, *, context: Context, state: State) -> "Product":
