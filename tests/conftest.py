@@ -17,6 +17,7 @@
 
 """File conftest.py for pytest test suite."""
 
+from functools import partial
 from typing import Callable
 
 import pytest
@@ -188,13 +189,14 @@ def builder_context(project: Project) -> PipelineBuilderContext:
     )
 
 
+def _patched_add_justification(add_justification_func, self, justification):
+    """Patch State.add_justification."""
+    AdviserTestCase.verify_justification_schema(justification)
+    add_justification_func(self, justification)
+
+
 @pytest.fixture(scope="session", autouse=True)
 def state_verify_justification_schema() -> None:
-    """Sets automatic checks for schema validation for justifications added to states by pipeline units."""
-
-    def patched_add_justification(self, justification):
-        AdviserTestCase.verify_justification_schema(justification)
-        add_justification_func(self, justification)
-
+    """Set automatic checks for schema validation for justifications added to states by pipeline units."""
     add_justification_func = State.add_justification
-    State.add_justification = patched_add_justification
+    State.add_justification = partial(_patched_add_justification, add_justification_func)
