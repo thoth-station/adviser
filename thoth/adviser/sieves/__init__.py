@@ -18,18 +18,14 @@
 """Implementation of sieves used in adviser pipeline."""
 
 from .abi_compat import AbiCompatibilitySieve
-from .backports import Enum34BackportSieve
-from .backports import Functools32BackportSieve
-from .backports import ImportlibMetadataBackportSieve
-from .backports import ImportlibResourcesBackportSieve
-from .backports import MockBackportSieve
 from .filter_index import FilterIndexSieve
 from .index_enabled import PackageIndexSieve
 from .locked import CutLockedSieve
 from .prereleases import CutPreReleasesSieve
-from .py36_setuptools import Py36SetuptoolsSieve
 from .solved import SolvedSieve
 from .version_constraint import VersionConstraintSieve
+from .setuptools import __all__ as setuptools_sieves
+from .backports import __all__ as backport_sieves
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -37,16 +33,12 @@ from .version_constraint import VersionConstraintSieve
 # can be mentioned here.
 __all__ = [
     "CutPreReleasesSieve",
-    "Functools32BackportSieve",
-    "ImportlibMetadataBackportSieve",
-    "ImportlibResourcesBackportSieve",
-    "Enum34BackportSieve",
-    "MockBackportSieve",
     "CutLockedSieve",
-    "Py36SetuptoolsSieve",
     "PackageIndexSieve",
     "SolvedSieve",
     "VersionConstraintSieve",
     "AbiCompatibilitySieve",
     "FilterIndexSieve",
+    *setuptools_sieves,
+    *backport_sieves,
 ]

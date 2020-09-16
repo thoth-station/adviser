@@ -17,22 +17,18 @@
 
 """Wrap units implemented in adviser."""
 
-from .mkl_threads import MKLThreadsWrap
 from .no_onservation import NoObservationWrap
-from .no_semantic_interposition import NoSemanticInterpositionWrap
-from .intel_tensorflow import IntelTensorFlowWrap
-from .tf_accuracy import TensorFlow23Accuracy
-from .tf_23_dict_bug import TensorFlow23DictSummary
+from .python import __all__ as python_units
+from .pytorch import __all__ as pytorch_wraps
+from .tensorflow import __all__ as tensorflow_wraps
 
 
 # Relative ordering of units is relevant, as the order specifies order
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
 __all__ = [
-    "MKLThreadsWrap",
     "NoObservationWrap",
-    "NoSemanticInterpositionWrap",
-    "IntelTensorFlowWrap",
-    "TensorFlow23Accuracy",
-    "TensorFlow23DictSummary",
+    *python_units,
+    *pytorch_wraps,
+    *tensorflow_wraps,
 ]

@@ -15,25 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of steps used during resolution."""
-
-from .aicoe import AICoEReleasesStep
-from .cve import CvePenalizationStep
-from .dropout import DropoutStep
-from .security_indicators import SecurityIndicatorStep
-from .tensorflow import __all__ as tensorflow_steps
-
-# from .mock_score import MockScoreStep
+"""Implementation of steps used, specific for setuptools package."""
 
 
 # Relative ordering of units is relevant, as the order specifies order
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
 __all__ = [
-    "AICoEReleasesStep",
-    "CvePenalizationStep",
-    "DropoutStep",
-    "SecurityIndicatorStep",
-    # "MockScoreStep",
-    *tensorflow_steps,
 ]
