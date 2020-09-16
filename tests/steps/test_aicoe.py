@@ -52,6 +52,7 @@ class TestAICoEReleasesStep(AdviserTestCase):
         assert isinstance(result[1][0], dict)
         assert result[1][0].get("type") == "INFO"
         assert result[1][0].get("message"), "No message for user produced"
+        assert self.verify_justification_schema(result[1])
 
     def test_no_aicoe_release(self) -> None:
         """Make sure the stack score is untouched if not an AICoE release."""

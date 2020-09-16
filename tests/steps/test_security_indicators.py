@@ -83,6 +83,7 @@ class TestSecurityIndicatorStep(AdviserTestCase):
         assert result is not None
         assert isinstance(result, tuple) and len(result) == 2
         assert isinstance(result[0], float)
+        assert self.verify_justification_schema(result[1])
 
     @pytest.mark.parametrize("recommendation_type", [RecommendationType.SECURITY])
     def test_security_indicator_scoring_missing_secure(self, recommendation_type) -> None:
@@ -102,13 +103,6 @@ class TestSecurityIndicatorStep(AdviserTestCase):
             with SecurityIndicatorStep.assigned_context(context):
                 step = SecurityIndicatorStep()
                 step.run(None, package_version)
-
-    _FLASK_JUSTIFICATION = [
-        {
-            "type": "WARNING",
-            "message": "flask===0.12.0 on https://pypi.org/simple has no gathered information regarding security.",
-        }
-    ]
 
     @pytest.mark.parametrize("recommendation_type", [RecommendationType.STABLE])
     def test_security_indicator_scoring_missing_stable(self, recommendation_type) -> None:
@@ -132,5 +126,9 @@ class TestSecurityIndicatorStep(AdviserTestCase):
         assert isinstance(result, tuple) and len(result) == 2
         assert result[0] == 0
         assert len(result[1]) == 1
-        assert result[1][0].pop("link", None) is not None, "No link to justification document provided"
-        assert result[1] == self._FLASK_JUSTIFICATION
+        assert self.verify_justification_schema(result[1])
+        assert result[1][0]["type"] == "WARNING"
+        assert (
+            result[1][0]["message"] == "flask===0.12.0 on https://pypi.org/simple has no "
+            "gathered information regarding security."
+        )

@@ -96,6 +96,7 @@ class TestTensorFlowAVX2Step(AdviserTestCase):
                     }
                 ],
             )
+            assert self.verify_justification_schema(result[1])
 
     def test_no_tf_avx2(self) -> None:
         """Test not recommending TensorFlow without AVX2 support."""
