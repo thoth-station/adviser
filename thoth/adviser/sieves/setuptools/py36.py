@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 import attr
 from thoth.python import PackageVersion
 
-from ..sieve import Sieve
+from ...sieve import Sieve
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext

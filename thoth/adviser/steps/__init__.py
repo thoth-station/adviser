@@ -21,9 +21,11 @@ from .aicoe import AICoEReleasesStep
 from .cve import CvePenalizationStep
 from .dropout import DropoutStep
 from .security_indicators import SecurityIndicatorStep
-from .tensorflow import __all__ as tensorflow_steps
+from .tensorflow import TensorFlow21Urllib3Step
+from .tensorflow import TensorFlow22ProbabilityStep
+from .tensorflow import TensorFlowAVX2Step
 
-# from .mock_score import MockScoreStep
+# from ._debug import MockScoreStep
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -35,5 +37,7 @@ __all__ = [
     "DropoutStep",
     "SecurityIndicatorStep",
     # "MockScoreStep",
-    *tensorflow_steps,
+    "TensorFlow21Urllib3Step",
+    "TensorFlow22ProbabilityStep",
+    "TensorFlowAVX2Step",
 ]

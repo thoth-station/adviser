@@ -32,8 +32,8 @@ import logging
 import attr
 from thoth.python import PackageVersion
 
-from ..state import State
-from ..step import Step
+from ...state import State
+from ...step import Step
 
 
 if TYPE_CHECKING:

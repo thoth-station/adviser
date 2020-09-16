@@ -25,7 +25,7 @@ from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.state import State
 from thoth.adviser.wraps import NoSemanticInterpositionWrap
 
-from ..base import AdviserTestCase
+from ...base import AdviserTestCase
 
 
 class TestNoSemanticInterpositionWrap(AdviserTestCase):

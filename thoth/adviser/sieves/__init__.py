@@ -24,8 +24,12 @@ from .locked import CutLockedSieve
 from .prereleases import CutPreReleasesSieve
 from .solved import SolvedSieve
 from .version_constraint import VersionConstraintSieve
-from .setuptools import __all__ as setuptools_sieves
-from .backports import __all__ as backport_sieves
+from .backports import Enum34BackportSieve
+from .backports import Functools32BackportSieve
+from .backports import ImportlibMetadataBackportSieve
+from .backports import ImportlibResourcesBackportSieve
+from .backports import MockBackportSieve
+from .setuptools import Py36SetuptoolsSieve
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -39,6 +43,10 @@ __all__ = [
     "VersionConstraintSieve",
     "AbiCompatibilitySieve",
     "FilterIndexSieve",
-    *setuptools_sieves,
-    *backport_sieves,
+    "Enum34BackportSieve",
+    "Functools32BackportSieve",
+    "ImportlibMetadataBackportSieve",
+    "ImportlibResourcesBackportSieve",
+    "MockBackportSieve",
+    "Py36SetuptoolsSieve",
 ]

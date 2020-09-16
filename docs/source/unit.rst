@@ -118,6 +118,9 @@ Any other modules that are generic enough should be placed inside the top-level
 module for the pipeline unit (e.g. inside ``thoth.adviser.sieves`` for a sieve
 specific units not specific to any Python interpreter or any Python package).
 
+An exception are also units used for debugging that should go to ``_debug``
+module of the respective pipeline unit type module.
+
 Afterword for pipeline units
 ============================
 

@@ -27,7 +27,7 @@ from thoth.adviser.sieves import Py36SetuptoolsSieve
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ..base import AdviserTestCase
+from ...base import AdviserTestCase
 
 
 class TestPy36SetuptoolsSieve(AdviserTestCase):

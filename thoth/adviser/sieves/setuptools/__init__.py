@@ -17,9 +17,8 @@
 
 """Implementation of steps used, specific for setuptools package."""
 
+from .py36 import Py36SetuptoolsSieve
 
-# Relative ordering of units is relevant, as the order specifies order
-# in which the asked to be registered - any dependencies between them
-# can be mentioned here.
 __all__ = [
+    "Py36SetuptoolsSieve",
 ]
