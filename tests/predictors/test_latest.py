@@ -18,7 +18,6 @@
 """Test implementation of predictor approximating latest resolution."""
 
 from typing import Callable
-from collections import OrderedDict
 
 import flexmock
 from hypothesis import given
@@ -67,30 +66,15 @@ class TestApproximatingLatest(AdviserTestCase):
 
         state = State(
             score=0.999,
-            resolved_dependencies=OrderedDict(),
-            unresolved_dependencies=OrderedDict(
-                (
-                    (
-                        "tensorflow",
-                        OrderedDict(
-                            (
-                                (hash(dependency_tuple_1), dependency_tuple_1),
-                                (hash(dependency_tuple_2), dependency_tuple_2),
-                                (hash(dependency_tuple_3), dependency_tuple_3),
-                            )
-                        ),
-                    ),
-                    (
-                        "flask",
-                        OrderedDict(
-                            (
-                                (hash(dependency_tuple_4), dependency_tuple_4),
-                                (hash(dependency_tuple_5), dependency_tuple_5),
-                            )
-                        ),
-                    ),
-                )
-            ),
+            resolved_dependencies={},
+            unresolved_dependencies={
+                "tensorflow": {
+                    hash(dependency_tuple_1): dependency_tuple_1,
+                    hash(dependency_tuple_2): dependency_tuple_2,
+                    hash(dependency_tuple_3): dependency_tuple_3,
+                },
+                "flask": {hash(dependency_tuple_4): dependency_tuple_4, hash(dependency_tuple_5): dependency_tuple_5,},
+            },
         )
 
         beam.add_state(state)
@@ -127,30 +111,15 @@ class TestApproximatingLatest(AdviserTestCase):
 
         state = State(
             score=0.999,
-            resolved_dependencies=OrderedDict(),
-            unresolved_dependencies=OrderedDict(
-                (
-                    (
-                        "tensorflow",
-                        OrderedDict(
-                            (
-                                (hash(dependency_tuple_1), dependency_tuple_1),
-                                (hash(dependency_tuple_2), dependency_tuple_2),
-                                (hash(dependency_tuple_3), dependency_tuple_3),
-                            )
-                        ),
-                    ),
-                    (
-                        "flask",
-                        OrderedDict(
-                            (
-                                (hash(dependency_tuple_4), dependency_tuple_4),
-                                (hash(dependency_tuple_5), dependency_tuple_5),
-                            )
-                        ),
-                    ),
-                )
-            ),
+            resolved_dependencies={},
+            unresolved_dependencies={
+                "tensorflow": {
+                    hash(dependency_tuple_1): dependency_tuple_1,
+                    hash(dependency_tuple_2): dependency_tuple_2,
+                    hash(dependency_tuple_3): dependency_tuple_3,
+                },
+                "flask": {hash(dependency_tuple_4): dependency_tuple_4, hash(dependency_tuple_5): dependency_tuple_5,},
+            },
         )
 
         beam.add_state(state)

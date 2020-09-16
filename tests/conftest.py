@@ -18,7 +18,6 @@
 """File conftest.py for pytest test suite."""
 
 from typing import Callable
-from collections import OrderedDict
 
 import pytest
 import flexmock
@@ -151,11 +150,11 @@ def resolver(pipeline_config: PipelineConfig, project: Project, predictor_mock: 
 def _get_state() -> State:
     """Create a fixture for a non-final state."""
     unresolved_dependency = ("flask", "1.1.1", "https://pypi.org/simple")
-    unresolved_dependencies = OrderedDict([(id(unresolved_dependency), unresolved_dependency)])
+    unresolved_dependencies = {id(unresolved_dependency): unresolved_dependency}
     state = State(
         score=0.1,
-        unresolved_dependencies=OrderedDict({"flask": unresolved_dependencies}),
-        resolved_dependencies=OrderedDict({"hexsticker": ("hexsticker", "1.0.0", "https://pypi.org/simple")}),
+        unresolved_dependencies={"flask": unresolved_dependencies},
+        resolved_dependencies={"hexsticker": ("hexsticker", "1.0.0", "https://pypi.org/simple")},
         advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
     )
     state.add_justification([{"foo": "bar"}, {"bar": "baz"}])
