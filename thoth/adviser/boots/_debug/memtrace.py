@@ -35,7 +35,7 @@ import attr
 from voluptuous import Optional as SchemaOptional
 from voluptuous import Schema
 
-from ..boot import Boot
+from ...boot import Boot
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext

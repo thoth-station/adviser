@@ -23,7 +23,7 @@ import yaml
 from thoth.adviser.state import State
 from thoth.adviser.wraps import MKLThreadsWrap
 
-from ..base import AdviserTestCase
+from ...base import AdviserTestCase
 
 
 class TestMKLThreadsWrap(AdviserTestCase):

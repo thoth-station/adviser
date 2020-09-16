@@ -96,6 +96,31 @@ very first pipeline unit on which the pre-run method was called will be
 notified as last after the pipeline finishes in its respective post-run method
 implementation.
 
+Pipeline unit module implementation placement
+=============================================
+
+To enable scaling adviser to cover specific nuances and to keep adviser
+implementation clean, follow already created structure for pipeline units.
+
+If a pipeline unit is pecific to a package, place it to a module named after
+this package. An example can be a ``tf_21_urllib3`` module implementing
+:class:`thoth.adviser.steps.tensorflow.tf_21_urllib3.TensorFlow21Urllib3Step`
+step. As this unit is a type of "step", it is placed in
+``thoth.adviser.steps``, subsequently ``thoth.adviser.steps.tensorflow`` states
+this step is specific to `TensorFlow <https://pypi.org/project/tensorflow>`_
+package.
+
+All pipeline units specific to Python interpreter should go to ``python``
+module under the respective pipeline unit type module (e.g.
+``thoth.adviser.wraps.python`` for Python interpreter specific wraps).
+
+Any other modules that are generic enough should be placed inside the top-level
+module for the pipeline unit (e.g. inside ``thoth.adviser.sieves`` for a sieve
+specific units not specific to any Python interpreter or any Python package).
+
+An exception are also units used for debugging that should go to ``_debug``
+module of the respective pipeline unit type module.
+
 Afterword for pipeline units
 ============================
 

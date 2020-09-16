@@ -22,7 +22,7 @@ import pytest
 from thoth.adviser.state import State
 from thoth.adviser.wraps import TensorFlow23DictSummary
 
-from ..base import AdviserTestCase
+from ...base import AdviserTestCase
 
 
 class TestTensorFlow23DictSummary(AdviserTestCase):

@@ -25,8 +25,8 @@ from typing import Optional, Dict, Any
 
 from thoth.common import get_justification_link as jl
 
-from ..state import State
-from ..wrap import Wrap
+from ...state import State
+from ...wrap import Wrap
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext

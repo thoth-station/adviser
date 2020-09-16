@@ -26,7 +26,7 @@ from thoth.adviser.state import State
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ..base import AdviserTestCase
+from ...base import AdviserTestCase
 
 
 class TestTensorFlow21Urllib32Step(AdviserTestCase):

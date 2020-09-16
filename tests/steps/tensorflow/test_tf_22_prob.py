@@ -28,7 +28,7 @@ from thoth.adviser.steps import TensorFlow22ProbabilityStep
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ..base import AdviserTestCase
+from ...base import AdviserTestCase
 
 
 class TestTensorFlow22ProbabilityStep(AdviserTestCase):

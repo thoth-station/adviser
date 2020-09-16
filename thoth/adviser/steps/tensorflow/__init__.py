@@ -15,24 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Wrap units implemented in adviser."""
+"""Implementation of steps used, specific for TensorFlow."""
 
-from .no_onservation import NoObservationWrap
-from .python import NoSemanticInterpositionWrap
-from .tensorflow import TensorFlow23DictSummary
-from .tensorflow import TensorFlow23Accuracy
-from .tensorflow import IntelTensorFlowWrap
-from .tensorflow import MKLThreadsWrap
+from .tf_21_urllib3 import TensorFlow21Urllib3Step
+from .tf_22_prob import TensorFlow22ProbabilityStep
+from .tf_avx2 import TensorFlowAVX2Step
 
 
-# Relative ordering of units is relevant, as the order specifies order
-# in which the asked to be registered - any dependencies between them
-# can be mentioned here.
 __all__ = [
-    "NoObservationWrap",
-    "NoSemanticInterpositionWrap",
-    "TensorFlow23DictSummary",
-    "TensorFlow23Accuracy",
-    "IntelTensorFlowWrap",
-    "MKLThreadsWrap",
+    "TensorFlow21Urllib3Step",
+    "TensorFlow22ProbabilityStep",
+    "TensorFlowAVX2Step",
 ]

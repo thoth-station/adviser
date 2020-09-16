@@ -15,24 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Wrap units implemented in adviser."""
+"""Implementation of wraps used, specific for pytorch package."""
 
-from .no_onservation import NoObservationWrap
-from .python import NoSemanticInterpositionWrap
-from .tensorflow import TensorFlow23DictSummary
-from .tensorflow import TensorFlow23Accuracy
-from .tensorflow import IntelTensorFlowWrap
-from .tensorflow import MKLThreadsWrap
+from typing import List
 
 
-# Relative ordering of units is relevant, as the order specifies order
-# in which the asked to be registered - any dependencies between them
-# can be mentioned here.
-__all__ = [
-    "NoObservationWrap",
-    "NoSemanticInterpositionWrap",
-    "TensorFlow23DictSummary",
-    "TensorFlow23Accuracy",
-    "IntelTensorFlowWrap",
-    "MKLThreadsWrap",
-]
+__all__: List[str] = []

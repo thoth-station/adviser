@@ -28,9 +28,9 @@ import logging
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
-from ..enums import RecommendationType
-from ..state import State
-from ..step import Step
+from ...enums import RecommendationType
+from ...state import State
+from ...step import Step
 
 
 if TYPE_CHECKING:

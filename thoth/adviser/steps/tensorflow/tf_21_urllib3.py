@@ -29,10 +29,10 @@ import logging
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
-from ..enums import RecommendationType
-from ..exceptions import NotAcceptable
-from ..state import State
-from ..step import Step
+from ...enums import RecommendationType
+from ...exceptions import NotAcceptable
+from ...state import State
+from ...step import Step
 
 
 if TYPE_CHECKING:
@@ -51,8 +51,10 @@ class TensorFlow21Urllib3Step(Step):
     # Run this step each time, regardless of when TensorFlow and urllib3 are resolved.
     MULTI_PACKAGE_RESOLUTIONS = True
 
-    _MESSAGE = f"TensorFlow in version 2.1 can cause runtime errors when imported, caused by " \
-               f"incompatibility between urllib3 and six packages - see {jl('tf_21_urllib3')}"
+    _MESSAGE = (
+        f"TensorFlow in version 2.1 can cause runtime errors when imported, caused by "
+        f"incompatibility between urllib3 and six packages - see {jl('tf_21_urllib3')}"
+    )
     _AFFECTED_URLLIB3_VERSIONS = frozenset({(1, 2), (1, 3), (1, 4), (1, 5)})
 
     def pre_run(self) -> None:

@@ -15,17 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of steps used during simulated annealing."""
+"""Implementation of steps used during resolution."""
 
 from .aicoe import AICoEReleasesStep
 from .cve import CvePenalizationStep
 from .dropout import DropoutStep
-from .tensorflow_avx2 import TensorFlowAVX2Step
-from .tensorflow_21_urllib3 import TensorFlow21Urllib3Step
 from .security_indicators import SecurityIndicatorStep
-from .tf_22_prob import TensorFlow22ProbabilityStep
+from .tensorflow import TensorFlow21Urllib3Step
+from .tensorflow import TensorFlow22ProbabilityStep
+from .tensorflow import TensorFlowAVX2Step
 
-# from .mock_score import MockScoreStep
+# from ._debug import MockScoreStep
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -35,9 +35,9 @@ __all__ = [
     "AICoEReleasesStep",
     "CvePenalizationStep",
     "DropoutStep",
-    "TensorFlow21Urllib3Step",
-    "TensorFlowAVX2Step",
     "SecurityIndicatorStep",
-    "TensorFlow22ProbabilityStep",
     # "MockScoreStep",
+    "TensorFlow21Urllib3Step",
+    "TensorFlow22ProbabilityStep",
+    "TensorFlowAVX2Step",
 ]
