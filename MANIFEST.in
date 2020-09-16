@@ -4,6 +4,8 @@ exclude *.sh
 exclude thoth-adviser
 exclude *.toml
 exclude *.yaml
+exclude tests/wraps/pytorch/test_mkl_threads.txt
+exclude thoth/adviser/wraps/pytorch/mkl_threads.txt
 include LICENSE
 include mypy.ini
 include OWNERS
