@@ -48,6 +48,19 @@ class MKLThreadsWrap(Wrap):
         }
     ]
 
+    # As JSON patch does not have any direct way to test presence of an item in an array, we preprend the configuration.
+    _ADVISED_MANIFEST_CHANGE_PREPEND = [
+        {
+            "apiVersion:": "apps.openshift.io/v1",
+            "kind": "DeploymentConfig",
+            "patch": {
+                "op": "add",
+                "path": "/spec/template/spec/containers/0/env/0",
+                "value": {"name": "OMP_NUM_THREADS", "value": "1"},
+            },
+        }
+    ]
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
         """Include this wrap in adviser, once."""
@@ -63,4 +76,5 @@ class MKLThreadsWrap(Wrap):
             or "pytorch" in state.resolved_dependencies
             or "intel-tensorflow" in state.resolved_dependencies
         ):
+            state.advised_manifest_changes.append(self._ADVISED_MANIFEST_CHANGE_PREPEND)
             state.add_justification(self._JUSTIFICATION)
