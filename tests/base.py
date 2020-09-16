@@ -59,13 +59,14 @@ class AdviserTestCase:
         ]
     )
 
-    def verify_justification_schema(self, justification: Optional[List[Dict[str, Any]]]) -> bool:
+    @classmethod
+    def verify_justification_schema(cls, justification: Optional[List[Dict[str, Any]]]) -> bool:
         """Verify the justification schema is correct."""
         if justification is None:
             return True
 
         try:
-            self._JUSTIFICATION_SCHEMA(justification)
+            cls._JUSTIFICATION_SCHEMA(justification)
         except Invalid as exc:
             raise AdviserJustificationSchemaError(exc.msg) from exc
         else:

@@ -187,3 +187,14 @@ def builder_context(project: Project) -> PipelineBuilderContext:
         decision_type=None,
         recommendation_type=RecommendationType.LATEST,
     )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def state_verify_justification_schema() -> None:
+    """Setup automatic checks for schema validation for justifications added to states by pipeline units."""
+    def patched_add_justification(self, justification):
+        AdviserTestCase.verify_justification_schema(justification)
+        add_justification_func(self, justification)
+
+    add_justification_func = State.add_justification
+    State.add_justification = patched_add_justification
