@@ -122,6 +122,7 @@ class TestState(AdviserTestCase):
         assert cloned_state.advised_runtime_environment == state.advised_runtime_environment
         assert cloned_state.justification is not state.justification
         assert cloned_state.justification == state.justification
+        assert cloned_state.advised_manifest_changes is not state.advised_manifest_changes
 
     def test_parent(self) -> None:
         """Test referencing parent and weak reference handling."""

@@ -53,6 +53,7 @@ class State:
     #         "op": "add",
     #         "path": "spec.template.spec.containers[0].env",
     #         "value": {"name": "OMP_NUM_THREADS", "value": "1"},
+    #       }
     #     }
     #   ]
     # See available yaml-patch operations at https://python-json-patch.readthedocs.io/en/latest/tutorial.html
@@ -310,6 +311,7 @@ class State:
             unresolved_dependencies=unresolved_dependencies,
             resolved_dependencies=self.resolved_dependencies.copy(),
             advised_runtime_environment=cloned_advised_environment,
+            advised_manifest_changes=self.advised_manifest_changes.copy(),
             justification=self.justification.copy(),
             parent=weakref.ref(self),
         )
