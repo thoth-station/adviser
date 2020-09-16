@@ -55,6 +55,15 @@ class TensorFlow23DictSummary(Wrap):
 
     def run(self, state: State) -> None:
         """Notify about a bug in summary output spotted on TensorFlow 2.3."""
-        resolved_tensorflow = state.resolved_dependencies.get("tensorflow")
-        if resolved_tensorflow and resolved_tensorflow[1][:3] == "2.3":
+        tensorflow_any = (
+            state.resolved_dependencies.get("tensorflow")
+            or state.resolved_dependencies.get("tensorflow-cpu")
+            or state.resolved_dependencies.get("tensorflow-gpu")
+            or state.resolved_dependencies.get("intel-tensorflow")
+        )
+
+        if tensorflow_any is None:
+            return None
+
+        if tensorflow_any[1] == "2.3" or tensorflow_any[1].startswith("2.3."):
             state.add_justification(self._JUSTIFICATION)
