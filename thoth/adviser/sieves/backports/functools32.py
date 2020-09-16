@@ -58,8 +58,7 @@ class Functools32BackportSieve(Sieve):
         if builder_context.is_included(cls) or builder_context.project.runtime_environment.python_version is None:
             return None
 
-        python_version = tuple(map(int, builder_context.project.runtime_environment.python_version.split(".")))
-        if python_version >= (3, 2):
+        if builder_context.project.runtime_environment.get_python_version_tuple() >= (3, 2):
             return {}
 
         return None
