@@ -87,7 +87,7 @@ class TensorFlow22ProbabilityStep(Step):
             or state.resolved_dependencies.get("tensorflow-gpu")
         )
 
-        if not tensorflow_any or tensorflow_any[1][:3] != "2.2":
+        if not tensorflow_any or (tensorflow_any[1] != "2.2" and not tensorflow_any[1].startswith("2.2.")):
             return None
 
         if not self._message_logged:

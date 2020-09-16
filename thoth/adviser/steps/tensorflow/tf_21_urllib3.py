@@ -85,7 +85,14 @@ class TensorFlow21Urllib3Step(Step):
         ):
             return None
 
-        if "tensorflow" not in state.resolved_dependencies or state.resolved_dependencies["tensorflow"][1][:3] != "2.1":
+        tensorflow_any = (
+            state.resolved_dependencies.get("tensorflow")
+            or state.resolved_dependencies.get("tensorflow-cpu")
+            or state.resolved_dependencies.get("tensorflow-gpu")
+            or state.resolved_dependencies.get("intel-tensorflow")
+        )
+
+        if not tensorflow_any or (tensorflow_any[1] != "2.1" and not tensorflow_any[1].startswith("2.1.")):
             return None
 
         if not self._message_logged:
