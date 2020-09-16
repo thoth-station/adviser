@@ -158,7 +158,7 @@ def _get_state() -> State:
         resolved_dependencies=OrderedDict({"hexsticker": ("hexsticker", "1.0.0", "https://pypi.org/simple")}),
         advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
     )
-    state.add_justification([{"foo": "bar"}, {"bar": "baz"}])
+    state.add_justification(AdviserTestCase.JUSTIFICATION_SAMPLE_1)
     return state
 
 

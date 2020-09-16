@@ -44,6 +44,31 @@ class AdviserTestCase:
 
     data_dir = Path(os.path.dirname(os.path.realpath(__file__))) / "data"
 
+    JUSTIFICATION_SAMPLE_1 = [
+        {"message": "Justification sample 1", "type": "WARNING", "link": "https://thoth-station.ninja"},
+        {"message": "Justification sample 1", "type": "INFO", "link": "https://thoth-station.ninja"},
+        {"message": "Justification sample 1", "type": "ERROR", "link": "https://thoth-station.ninja"},
+    ]
+
+    JUSTIFICATION_SAMPLE_2 = [
+        {
+            "message": "Justification sample 2",
+            "type": "INFO",
+            "link": "https://thoth-station.ninja",
+            "advisory": "Bark!",
+        },
+    ]
+
+    JUSTIFICATION_SAMPLE_3 = [
+        {
+            "message": "Justification sample 2",
+            "type": "INFO",
+            "link": "https://thoth-station.ninja",
+            "package_name": "tensorflow",
+            "version_range": "<2.3>=",
+        },
+    ]
+
     _JUSTIFICATION_SCHEMA = Schema(
         [
             {

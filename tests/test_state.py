@@ -19,9 +19,10 @@
 
 import gc
 import pytest
-from collections import OrderedDict
 import random
 import string
+from collections import OrderedDict
+from itertools import chain
 
 from hypothesis import given
 from hypothesis.strategies import integers
@@ -39,7 +40,7 @@ def final_state() -> State:  # noqa: D401
         unresolved_dependencies=OrderedDict(),
         advised_runtime_environment=None,
     )
-    state.add_justification([{"foo": "bar"}])
+    state.add_justification(AdviserTestCase.JUSTIFICATION_SAMPLE_1)
     return state
 
 
@@ -48,9 +49,9 @@ class TestState(AdviserTestCase):
 
     def test_justification(self, final_state: State) -> None:
         """Test manipulation with state justification."""
-        assert final_state.justification == [{"foo": "bar"}]
-        final_state.add_justification([{"hello": "thoth"}])
-        assert final_state.justification == [{"foo": "bar"}, {"hello": "thoth"}]
+        assert final_state.justification == self.JUSTIFICATION_SAMPLE_1
+        final_state.add_justification(self.JUSTIFICATION_SAMPLE_2)
+        assert final_state.justification == list(chain(self.JUSTIFICATION_SAMPLE_1, self.JUSTIFICATION_SAMPLE_2))
 
     def test_is_final(self, state: State, final_state: State) -> None:
         """Test checks for final states."""
