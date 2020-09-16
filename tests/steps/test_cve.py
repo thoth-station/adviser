@@ -67,6 +67,7 @@ class TestCvePenalizationStep(AdviserTestCase):
         assert result[0] == 1 * CvePenalizationStep.CONFIGURATION_DEFAULT["cve_penalization"]
         assert isinstance(result[1], list)
         assert result[1] == [self._FLASK_CVE]
+        assert self.verify_justification_schema(result[1])
 
     def test_no_cve_record(self) -> None:
         """Make sure no CVEs do not affect CVE scoring."""

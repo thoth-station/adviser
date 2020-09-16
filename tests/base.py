@@ -17,11 +17,56 @@
 
 """A base class for implementing adviser's test cases."""
 
-import os
 from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+import os
+
+from voluptuous import All
+from voluptuous import Optional as SchemaOptional
+from voluptuous import Invalid
+from voluptuous import Length
+from voluptuous import Schema
+
+
+class AdviserTestCaseException(Exception):
+    """A base class for exceptions that can occur in the test suite."""
+
+
+class AdviserJustificationSchemaError(AdviserTestCaseException):
+    """An exception raiased when the justification reported violates schema."""
 
 
 class AdviserTestCase:
     """A base class for implementing adviser's test cases."""
 
     data_dir = Path(os.path.dirname(os.path.realpath(__file__))) / "data"
+
+    _JUSTIFICATION_SCHEMA = Schema(
+        [
+            {
+                "message": All(str, Length(min=1)),
+                "type": All(str, Length(min=1)),
+                "link": All(str, Length(min=1)),
+                SchemaOptional("advisory"): All(str, Length(min=1)),
+                SchemaOptional("cve_id"): All(str, Length(min=1)),
+                SchemaOptional("cve_name"): All(str, Length(min=1)),
+                SchemaOptional("package_name"): All(str, Length(min=1)),
+                SchemaOptional("version_range"): All(str, Length(min=1)),
+            }
+        ]
+    )
+
+    def verify_justification_schema(self, justification: Optional[List[Dict[str, Any]]]) -> bool:
+        """Verify the justification schema is correct."""
+        if justification is None:
+            return True
+
+        try:
+            self._JUSTIFICATION_SCHEMA(justification)
+        except Invalid as exc:
+            raise AdviserJustificationSchemaError(exc.msg) from exc
+        else:
+            return True
