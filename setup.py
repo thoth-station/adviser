@@ -88,6 +88,7 @@ setup(
         "thoth.adviser.predictors",
         "thoth.adviser.sieves",
         "thoth.adviser.sieves.backports",
+        "thoth.adviser.sieves.tensorflow",
         "thoth.adviser.sieves.setuptools",
         "thoth.adviser.steps",
         "thoth.adviser.steps",
