@@ -49,7 +49,7 @@ class TensorFlowCUDASieve(Sieve):
     See supported matrix at https://www.tensorflow.org/install/source#linux
     """
 
-    _MESSAGE = f"Recommended TensorFlow that supports CUDA present in the runtime environmen - see {jl('tf_cuda')}"
+    _MESSAGE = f"Recommended TensorFlow that supports CUDA present in the runtime environment - see {jl('tf_cuda')}"
 
     _EMPTY: FrozenSet[Tuple[int, int]] = frozenset()
     _TF_1_CUDA_8_SUPPORT = frozenset({(1, 0), (1, 1), (1, 2), (1, 3), (1, 4)})
