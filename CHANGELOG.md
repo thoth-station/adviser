@@ -5565,3 +5565,63 @@
 ### Automatic Updates
 * :pushpin: Automatic update of dependency hypothesis from 5.29.4 to 5.30.0 (#1153)
 * :pushpin: Automatic update of dependency hypothesis from 5.29.3 to 5.29.4 (#1152)
+
+## Release 0.17.0 (2020-09-17T06:28:26)
+### Features
+* Fix version checks - be accurate about TensorFlow versions (#1224)
+* Fix the testsuite issue
+* Make black happy
+* Implement automatic schema checks in the testsuite (#1217)
+* Be more specific about justification types provided
+* Provide mechanism to verify justification schema
+* Use cached Python version tuples
+* Exclude test files from the package
+* Additional changes to the implementation
+* State unit implementation placemenet in docs
+* Fix typing of advised manifest changes
+* Fix rebase issue
+* Make pre-commit happy
+* Advise to add OMP_NUM_THREADS environment variable when MKL is used
+* State advised manifest changes in the final product report
+* Use kw_only parameters in product
+* State manifest changes in the pipeline product
+* include whiskey_lake microarch to list of avx2 containing archs
+* Make pre-commit happy
+* Restrict resolutions of tensorflow==2.2 with tensorflow-probability (#1202)
+* Link to justification document when unresolved dependencies
+* Perform copy of the manifest changes for each state clone
+* Perform copy of the advised manifest changes on state clone
+* Correct messages printed to users
+* Fix message formatting
+* Adjust testsuite to check for justification link
+* Add an ability to specify manifest changes
+* Provide a link to justification to pipeline units
+* Revert "Provide a link to justification to each pipeline unit"
+* Provide a link to justification to pipeline units
+* Introduce a step prevents from resolving some combinations of urllib3 with TensorFlow=2.1
+### Bug Fixes
+* Do not accept stacks with TF 2.1 and urllib3 that cause issues
+* Extend the tf-probability import error to all tensorflow-packages
+* Add a wrap that notifies about a bug in the summary output
+* Notify users about accuracy bug when TensorFlow 2.3 is used (#1200)
+### Improvements
+* Rephrase code to make pydocstyle and black happy at the same time
+* Restructure how unit modules are shipped within the package
+### Non-functional
+* State is no longer using OrderedDict to gain performance
+### Automatic Updates
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.9 to 0.25.10 (#1223)
+* :pushpin: Automatic update of dependency hypothesis from 5.35.2 to 5.35.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.8 to 0.25.9 (#1209)
+* :pushpin: Automatic update of dependency hypothesis from 5.35.0 to 5.35.2 (#1203)
+* :pushpin: Automatic update of dependency matplotlib from 3.3.1 to 3.3.2 (#1201)
+* :pushpin: Automatic update of dependency pytest from 6.0.1 to 6.0.2 (#1193)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.7 to 0.25.8 (#1192)
+* :pushpin: Automatic update of dependency hypothesis from 5.34.1 to 5.35.0 (#1187)
+* :pushpin: Automatic update of dependency hypothesis from 5.33.2 to 5.34.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.6 to 0.25.7 (#1185)
+* :pushpin: Automatic update of dependency hypothesis from 5.33.1 to 5.33.2 (#1181)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.5 to 0.25.6 (#1180)
+* :pushpin: Automatic update of dependency attrs from 20.1.0 to 20.2.0 (#1179)
+* :pushpin: Automatic update of dependency attrs from 20.1.0 to 20.2.0 (#1175)
+* :pushpin: Automatic update of dependency hypothesis from 5.30.0 to 5.33.1 (#1170)
