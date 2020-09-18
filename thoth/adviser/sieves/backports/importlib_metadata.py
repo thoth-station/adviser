@@ -25,6 +25,7 @@ from typing import Optional
 from typing import TYPE_CHECKING
 
 import attr
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
 from ...exceptions import SkipPackage
@@ -46,7 +47,7 @@ class ImportlibMetadataBackportSieve(Sieve):
 
     _MESSAGE = (
         "Dependency 'importlib-metadata' removed: importlib.metadata is available in "
-        "Python standard library starting Python 3.8"
+        f"Python standard library starting Python 3.8 - see {jl('backports')}"
     )
 
     _logged = attr.ib(default=False, type=bool, init=False)

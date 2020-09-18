@@ -582,7 +582,8 @@ class Resolver:
                 # database but none was matching the given version range.
                 unresolved.append(package_version.name)
 
-                error_msg = f"No versions were found for direct dependency {package_version.name!r}"
+                error_msg = f"No versions were found for direct dependency "\
+                            f"{package_version.name!r} - see {jl('solve_direct')}"
                 runtime_environment = self.project.runtime_environment
                 if runtime_environment.operating_system.name:
                     error_msg += f"; operating system {runtime_environment.operating_system.name!r}"
@@ -950,9 +951,12 @@ class Resolver:
 
         if not self.project.runtime_environment.is_fully_specified():
             _LOGGER.warning(
-                "Environment is not fully specified, pre-computed environment markers will not be " "taken into account"
+                "Environment is not fully specified, pre-computed environment markers will "
+                "not be taken into account - see %s",
+                jl("spec_env")
             )
 
+        _LOGGER.info("Scoring user's stack - see %s", jl("user_stack"))
         if user_stack_scoring:
             try:
                 user_stack = self._maybe_score_user_lock_file(with_devel=with_devel)

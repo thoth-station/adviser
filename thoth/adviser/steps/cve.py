@@ -27,6 +27,7 @@ from typing import Tuple
 from typing import TYPE_CHECKING
 
 import attr
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.storages.exceptions import NotFoundError
 
@@ -45,6 +46,7 @@ class CvePenalizationStep(Step):
     """Penalization based on CVE being present in stack."""
 
     CONFIGURATION_DEFAULT = {"cve_penalization": -0.2}
+    _JUSTIFICATION_LINK = {"link": jl("cve")}
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -78,6 +80,6 @@ class CvePenalizationStep(Step):
             for record in cve_records:
                 record["package_name"] = package_version.name
 
-            return penalization, cve_records
+            return penalization, cve_records.update(self._JUSTIFICATION_LINK)
 
         return None

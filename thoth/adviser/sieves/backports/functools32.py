@@ -25,6 +25,7 @@ from typing import Optional
 from typing import TYPE_CHECKING
 
 import attr
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
 from ...exceptions import SkipPackage
@@ -44,7 +45,8 @@ class Functools32BackportSieve(Sieve):
     https://docs.python.org/3/library/functools.html
     """
 
-    _MESSAGE = "Dependency 'functools32' removed: functools is available in Python standard library starting Python 3.2"
+    _MESSAGE = f"Dependency 'functools32' removed: functools is available in Python standard "\
+               f"library starting Python 3.2 - {jl('backports')}"
 
     _logged = attr.ib(default=False, type=bool, init=False)
 

@@ -25,6 +25,7 @@ from typing import Optional
 from typing import TYPE_CHECKING
 
 import attr
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
 from ...exceptions import SkipPackage
@@ -44,7 +45,8 @@ class Enum34BackportSieve(Sieve):
     https://docs.python.org/3/library/enum.html
     """
 
-    _MESSAGE = "Dependency 'enum34' removed: emum34 is available in Python standard library starting Python 3.4"
+    _MESSAGE = f"Dependency 'enum34' removed: emum34 is available in Python "\
+               f"standard library starting Python 3.4 - see {jl('backports')}"
 
     _logged = attr.ib(default=False, type=bool, init=False)
 
