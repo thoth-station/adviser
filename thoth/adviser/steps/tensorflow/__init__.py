@@ -20,10 +20,12 @@
 from .tf_21_urllib3 import TensorFlow21Urllib3Step
 from .tf_22_prob import TensorFlow22ProbabilityStep
 from .tf_avx2 import TensorFlowAVX2Step
+from .tf_113_numpy import TensorFlow113NumPyStep
 
 
 __all__ = [
     "TensorFlow21Urllib3Step",
     "TensorFlow22ProbabilityStep",
     "TensorFlowAVX2Step",
+    "TensorFlow113NumPyStep",
 ]
