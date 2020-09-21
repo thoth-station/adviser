@@ -27,6 +27,8 @@ from typing import Set
 from typing import Any
 from typing import List
 
+from thoth.common import get_justification_list as jl
+
 from .hill_climbing import HillClimbing
 from ..state import State
 
@@ -57,7 +59,10 @@ class ApproximatingLatest(HillClimbing):
         if math.isnan(reward):
             self._hop = True
             if not self._hop_logged:
-                _LOGGER.warning("The latest stack couldn't be resolved, performing hops across package versions")
+                _LOGGER.warning(
+                    "The latest stack couldn't be resolved, performing hops across package versions -see %s",
+                    jl("latest_hops"),
+                )
                 self._hop_logged = True
 
         if math.isinf(reward):
