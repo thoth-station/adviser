@@ -24,6 +24,7 @@ from typing import Any
 from typing import TYPE_CHECKING
 
 import attr
+from thoth.common import get_justification_link as jl
 
 from ..boot import Boot
 from ..exceptions import NotAcceptable
@@ -62,7 +63,7 @@ class SolvedSoftwareEnvironmentBoot(Boot):
         msg = (
             f"No observations found for {runtime_environment.operating_system.name!r} in "
             f"version {runtime_environment.operating_system.version!r} using "
-            f"Python {runtime_environment.python_version!r}"
+            f"Python {runtime_environment.python_version!r} - see {jl('solved_sw_env')}"
         )
 
         _LOGGER.warning(msg)

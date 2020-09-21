@@ -59,7 +59,7 @@ def subprocess_run(
 ) -> int:
     """Run the given function (partial annealing method) in a subprocess and output the produced report."""
     if not with_devel:
-        _LOGGER.warning("Development dependencies will not be taken into account")
+        _LOGGER.warning("Development dependencies will not be taken into account - see %s", jl("no_dev"))
 
     start_time = time.monotonic()
 
