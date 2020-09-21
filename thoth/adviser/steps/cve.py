@@ -46,7 +46,7 @@ class CvePenalizationStep(Step):
     """Penalization based on CVE being present in stack."""
 
     CONFIGURATION_DEFAULT = {"cve_penalization": -0.2}
-    _JUSTIFICATION_LINK = {"link": jl("cve")}
+    _JUSTIFICATION_LINK = jl("cve")
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -79,7 +79,8 @@ class CvePenalizationStep(Step):
             # Note down package causing this CVE.
             for record in cve_records:
                 record["package_name"] = package_version.name
+                record["link"] = self._JUSTIFICATION_LINK
 
-            return penalization, cve_records.update(self._JUSTIFICATION_LINK)
+            return penalization, cve_records
 
         return None
