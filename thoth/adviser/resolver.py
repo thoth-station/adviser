@@ -988,8 +988,9 @@ class Resolver:
 
                 if self.beam.size == 0:
                     _LOGGER.warning(
-                        "No more possible paths found for resolution, terminating resolver in iteration %d",
+                        "No more possible paths found for resolution, terminating resolver in iteration %d, see - %s",
                         self.context.iteration,
+                        jl("no_paths"),
                     )
                     break
 
@@ -1094,7 +1095,8 @@ class Resolver:
             if report.product_count() == 0:
                 raise CannotProduceStack(
                     "Resolver did not find any stack that would satisfy "
-                    "requirements and stack characteristics given the time allocated"
+                    "requirements and stack characteristics given the time allocated - see %s",
+                    jl("no_stack"),
                 )
 
             if self.context.stack_info:
