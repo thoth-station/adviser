@@ -106,17 +106,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:2bead722a2b91d11faad0479eadf57283c864a40687100d0f5829e6a4242ccb1",
-                "sha256:74e0058e373d64e23dea639fc7bcd3d83d08e091a044f32513d13cc4a03d7fe5"
+                "sha256:44073b1b1823ffc9edcf9027afbca908dad6bd5000f512ca73f929f6a604ae24",
+                "sha256:888be45e289ba56c4e47cfae5d6b08f097bc981d077fbe6521a6d3dc7a4d757e"
             ],
-            "version": "==1.14.62"
+            "version": "==1.15.1"
         },
         "botocore": {
             "hashes": [
-                "sha256:8712b69f6e4abd9a5ef52b20fb5b9ca545cda335ee1b106fc68dd7786c7c78ae",
-                "sha256:a47ec927517403c6711f0cf7c51207f45b5aa4875791527a395a6402bd146514"
+                "sha256:6bdf60281c2e80360fe904851a1a07df3dcfe066fe88dc7fba2b5e626ac05c8c",
+                "sha256:d6bdf51c8880aa9974e6b61d2f7d9d1debe407287e2e9e60f36c789fe8ba6790"
             ],
-            "version": "==1.17.62"
+            "version": "==1.18.1"
         },
         "cachetools": {
             "hashes": [
@@ -196,14 +196,6 @@
                 "sha256:df74eed763e18d10d0da624258524ae80486432cd17392d9c3d96f5e83cd2799"
             ],
             "version": "==1.5.0"
-        },
-        "docutils": {
-            "hashes": [
-                "sha256:6c4f696463b79f1fb8ba0c594b63840ebd41f059e92b31957c46b74a4599b6d0",
-                "sha256:9e4d7ecfc600058e07ba661411a2b7de2fd0fafa17d1a7f7361cd47b1175c827",
-                "sha256:a2aeea129088da402665e92e0b25b04b073c04b2dce4ab65caaa38b7ce2e1a99"
-            ],
-            "version": "==0.15.2"
         },
         "fext": {
             "hashes": [
@@ -1014,11 +1006,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:a480386934cdfb2e69adb3333e7156ad9149b1935a910e44041a87c5bd8374dd",
-                "sha256:ee7bad5a617beed17090375f6e8e0f4f06677e9db92eaf598a186e69479843fa"
+                "sha256:049398bc481fbc22d5cbf65aca0de421d09e332cd40ded7ab25fba4bd32edc3d",
+                "sha256:72988c3cf29a89d2b506ffa2c6a1e90bbf1388ea35bac9096079457ed6107062"
             ],
             "index": "pypi",
-            "version": "==5.35.3"
+            "version": "==5.35.4"
         },
         "hypothesis-auto": {
             "hashes": [
