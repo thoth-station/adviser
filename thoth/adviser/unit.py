@@ -146,7 +146,7 @@ class Unit(metaclass=abc.ABCMeta):
         if len(conf_parts) == 3:
             # No OS specific release - e.g. manylinux compliant release.
             if not conf_parts[0].startswith("manylinux"):
-                _LOGGER.warning("Failed to parse a platform tag")
+                _LOGGER.error("Failed to parse a platform tag, unknown AICoE Index URL: %r", package_version.index.url)
                 return None
 
             return {
@@ -158,7 +158,9 @@ class Unit(metaclass=abc.ABCMeta):
         elif len(conf_parts) == 5:
             # TODO: We have dropped OS-specific builds, so this can go away in future releases...
             if conf_parts[0] != "os":
-                _LOGGER.warning("Failed to parse operating system specific URL of AICoE index")
+                _LOGGER.error(
+                    "Failed to parse operating system specific URL of AICoE index: %r", package_version.index.url
+                )
                 return None
 
             return {
