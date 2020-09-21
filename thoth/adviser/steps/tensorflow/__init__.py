@@ -23,6 +23,7 @@ from .tf_avx2 import TensorFlowAVX2Step
 from .tf_113_numpy import TensorFlow113NumPyStep
 from .tf_114_gast import TensorFlow114GastStep
 from .tf_22_numpy import TensorFlow22NumPyStep
+from .tf_rm_scipy import TensorFlowRemoveSciPyStep
 
 
 __all__ = [
@@ -32,4 +33,5 @@ __all__ = [
     "TensorFlow113NumPyStep",
     "TensorFlow114GastStep",
     "TensorFlow22NumPyStep",
+    "TensorFlowRemoveSciPyStep",
 ]
