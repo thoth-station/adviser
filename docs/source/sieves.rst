@@ -57,8 +57,9 @@ Main usage
     <thoth.adviser.exceptions.EagerStopPipeline>` will cause stopping the whole
     resolver run and causing resolver to return products computed so far
 
-* Removing a library from a stack even though it is stated as a dependency by
-  raising :class:`SkipPackage <thoth.adviser.exceptions.SkipPackage>`
+* Removing a library from a stack even though it is stated as a dependency
+  (directly or transitively) by raising :class:`SkipPackage
+  <thoth.adviser.exceptions.SkipPackage>`
 
 .. note::
 
