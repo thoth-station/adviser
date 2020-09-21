@@ -507,13 +507,13 @@ class Resolver:
         try to find a better stack than the one user is using.
         """
         if not self.project.pipfile_lock:
-            _LOGGER.info("Cannot score user's stack - no user's stack provided")
+            _LOGGER.info("Cannot score user's stack - no user's stack provided - see %s", jl("user_stack"))
             return None
 
         self._prepare_user_lock_file(with_devel=True)
 
         skipped_packages: List[PackageVersion] = []
-        _LOGGER.info("Scoring user's stack based on the lock file submitted")
+        _LOGGER.info("Scoring user's stack based on the lock file submitted - see %s", jl("user_stack"))
         for package_version in self.project.iter_dependencies_locked(with_devel=with_devel):
             # First time seen, register this package for pipeline units.
             self.context.register_package_version(package_version)
@@ -525,7 +525,7 @@ class Resolver:
                 continue
 
             if not package_version:
-                _LOGGER.info("User's stack was removed based on sieves")
+                _LOGGER.info("User's stack was removed based on sieves - see %s", jl("rm_user_stack"))
                 return None
 
         for skipped_package in skipped_packages:
@@ -548,7 +548,7 @@ class Resolver:
         state = State()
         for package_version in self.project.iter_dependencies_locked(with_devel=with_devel):
             if not self._run_steps(state, package_version, user_stack_scoring=True, log_level=logging.INFO):
-                _LOGGER.info("User's stack was removed based on steps")
+                _LOGGER.info("User's stack was removed based on steps - see %s", jl("rm_user_stack"))
                 return None
 
         state.add_justification(
@@ -562,7 +562,7 @@ class Resolver:
         )
         self._run_wraps(state)
         self.beam.add_state(state)
-        _LOGGER.info("User's software stack has a score of %g", state.score)
+        _LOGGER.info("User's software stack has a score of %g - see %s", state.score, jl("user_stack"))
         return state
 
     def _resolve_direct_dependencies(self, *, with_devel: bool) -> Dict[str, List[PackageVersion]]:
@@ -582,8 +582,10 @@ class Resolver:
                 # database but none was matching the given version range.
                 unresolved.append(package_version.name)
 
-                error_msg = f"No versions were found for direct dependency "\
-                            f"{package_version.name!r} - see {jl('solve_direct')}"
+                error_msg = (
+                    f"No versions were found for direct dependency "
+                    f"{package_version.name!r} - see {jl('solve_direct')}"
+                )
                 runtime_environment = self.project.runtime_environment
                 if runtime_environment.operating_system.name:
                     error_msg += f"; operating system {runtime_environment.operating_system.name!r}"
@@ -953,7 +955,7 @@ class Resolver:
             _LOGGER.warning(
                 "Environment is not fully specified, pre-computed environment markers will "
                 "not be taken into account - see %s",
-                jl("spec_env")
+                jl("spec_env"),
             )
 
         _LOGGER.info("Scoring user's stack - see %s", jl("user_stack"))
