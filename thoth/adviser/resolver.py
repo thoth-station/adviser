@@ -1094,9 +1094,8 @@ class Resolver:
 
             if report.product_count() == 0:
                 raise CannotProduceStack(
-                    "Resolver did not find any stack that would satisfy "
-                    "requirements and stack characteristics given the time allocated - see %s",
-                    jl("no_stack"),
+                    f"Resolver did not find any stack that would satisfy "
+                    f"requirements and stack characteristics given the time allocated - see {jl('no_stack')}"
                 )
 
             if self.context.stack_info:
