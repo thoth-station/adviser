@@ -27,7 +27,7 @@ from typing import Set
 from typing import Any
 from typing import List
 
-from thoth.common import get_justification_list as jl
+from thoth.common import get_justification_link as jl
 
 from .hill_climbing import HillClimbing
 from ..state import State
