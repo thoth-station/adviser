@@ -45,8 +45,10 @@ class Functools32BackportSieve(Sieve):
     https://docs.python.org/3/library/functools.html
     """
 
-    _MESSAGE = f"Dependency 'functools32' removed: functools is available in Python standard "\
-               f"library starting Python 3.2 - {jl('backports')}"
+    _MESSAGE = (
+        f"Dependency 'functools32' removed: functools is available in Python standard "
+        f"library starting Python 3.2 - {jl('backports')}"
+    )
 
     _logged = attr.ib(default=False, type=bool, init=False)
 
