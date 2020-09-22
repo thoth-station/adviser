@@ -104,7 +104,7 @@ def subprocess_run(
                 _LOGGER.error(
                     "Resolver failed due to unsolved dependencies for packages %s; these dependencies will be "
                     "automatically marked for solving by the system for future resolutions",
-                    ", ".join(exc.unresolved)
+                    ", ".join(exc.unresolved),
                 )
                 return_code = 2
             else:
