@@ -30,11 +30,19 @@ from thoth.adviser.context import Context
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlowCUDASieve(AdviserTestCase):
+class TestTensorFlowCUDASieve(AdviserUnitTestCase):
     """Test using the right TensorFlow release for specific CUDA releases."""
+
+    UNIT_TESTED = TensorFlowCUDASieve
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.STABLE
+        builder_context.project.runtime_environment.cuda_version = "10.1"
+        self.verify_multiple_should_include(builder_context)
 
     def test_recommendation_types_considered(self) -> None:
         """Test recommendation types that were considered during implementation of this pipeline unit.

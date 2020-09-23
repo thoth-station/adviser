@@ -31,11 +31,18 @@ from thoth.adviser.steps import TensorFlow22NumPyStep
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlow22NumPyStep(AdviserTestCase):
+class TestTensorFlow22NumPyStep(AdviserUnitTestCase):
     """TensorFlow <2.3>=2.0 states NumPy<2.0.0 as a dependency, but is compatible with NumPy<1.19.0."""
+
+    UNIT_TESTED = TensorFlow22NumPyStep
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.STABLE
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize(
         "recommendation_type",

@@ -20,6 +20,8 @@
 import flexmock
 from typing import Tuple
 
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.sieves import SolvedSieve
 from thoth.adviser.context import Context
 from thoth.common import RuntimeEnvironment
@@ -29,10 +31,10 @@ from thoth.python import Project
 from thoth.storages import GraphDatabase
 from thoth.storages.exceptions import NotFoundError
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestSolvedSieve(AdviserTestCase):
+class TestSolvedSieve(AdviserUnitTestCase):
     """Test removing dependencies based on information coming from Thoth's solver capturing installation issues."""
 
     _CASE_PIPFILE = """
@@ -44,6 +46,13 @@ name = "pypi"
 [packages]
 tensorflow = "*"
 """
+
+    UNIT_TESTED = SolvedSieve
+
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
+        self.verify_multiple_should_include(builder_context)
 
     def _get_case(self) -> Tuple[PackageVersion, Project]:
         """Get all the objects needed for a test case for this sieve."""

@@ -17,16 +17,23 @@
 
 """Test sieve for filtering packages coming from a specific index."""
 
+import pytest
 
 from thoth.adviser.sieves import FilterIndexSieve
 from thoth.python import Source
 from thoth.python import PackageVersion
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestFilterIndexSieve(AdviserTestCase):
+class TestFilterIndexSieve(AdviserUnitTestCase):
     """Test package index sieve."""
+
+    UNIT_TESTED = FilterIndexSieve
+
+    @pytest.mark.skip(reason="Index filtering sieve is never registered.")
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
 
     def test_default_configuration(self) -> None:
         """Test obtaining default configuration."""

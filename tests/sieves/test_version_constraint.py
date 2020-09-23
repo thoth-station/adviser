@@ -24,11 +24,17 @@ from thoth.adviser.exceptions import SieveError
 from thoth.python import Source
 from thoth.python import PackageVersion
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestVersionConstrainSieve(AdviserTestCase):
+class TestVersionConstrainSieve(AdviserUnitTestCase):
     """Test version constraint sieve."""
+
+    UNIT_TESTED = VersionConstraintSieve
+
+    @pytest.mark.skip(reason="Version constrain sieve is never registered.")
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
 
     def test_configuration_error(self) -> None:
         """Test removing a locked package based on direct dependencies."""

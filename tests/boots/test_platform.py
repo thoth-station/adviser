@@ -21,13 +21,21 @@ import pytest
 
 from thoth.adviser.boots import PlatformBoot
 from thoth.adviser.context import Context
+from thoth.adviser.enums import RecommendationType
 from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestPlatformBoot(AdviserTestCase):
+class TestPlatformBoot(AdviserUnitTestCase):
     """Test platform boot."""
+
+    UNIT_TESTED = PlatformBoot
+
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
+        self.verify_multiple_should_include(builder_context)
 
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test registering this unit."""

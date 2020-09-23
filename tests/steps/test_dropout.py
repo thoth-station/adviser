@@ -23,11 +23,17 @@ import pytest
 from thoth.adviser.steps import DropoutStep
 from thoth.adviser.exceptions import NotAcceptable
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestDropoutStep(AdviserTestCase):
+class TestDropoutStep(AdviserUnitTestCase):
     """Test dropout step."""
+
+    UNIT_TESTED = DropoutStep
+
+    @pytest.mark.skip(reason="Stride for a unique stack is never registered.")
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
 
     def test_run_accept(self) -> None:
         """Test accepting a new state."""

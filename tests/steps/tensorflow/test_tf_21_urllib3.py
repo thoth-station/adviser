@@ -21,17 +21,26 @@ import flexmock
 import pytest
 
 from thoth.adviser.context import Context
+from thoth.adviser.enums import RecommendationType
 from thoth.adviser.exceptions import NotAcceptable
-from thoth.adviser.steps import TensorFlow21Urllib3Step
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.state import State
+from thoth.adviser.steps import TensorFlow21Urllib3Step
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlow21Urllib32Step(AdviserTestCase):
+class TestTensorFlow21Urllib32Step(AdviserUnitTestCase):
     """Test a step that suggests not to use TensorFlow 2.1 as issues with six were spotted on imports."""
+
+    UNIT_TESTED = TensorFlow21Urllib3Step
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.STABLE
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize(
         "urllib3_version,tf_version",

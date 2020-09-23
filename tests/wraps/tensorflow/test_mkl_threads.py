@@ -20,13 +20,15 @@
 import jsonpatch
 import yaml
 
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.state import State
 from thoth.adviser.wraps import MKLThreadsWrap
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestMKLThreadsWrap(AdviserTestCase):
+class TestMKLThreadsWrap(AdviserUnitTestCase):
     """Test Intel's MKL thread env info wrap."""
 
     _DEPLOYMENT_CONFIG = """\
@@ -47,6 +49,13 @@ spec:
         - name: APP_MODULE
           value: "foo"
 """
+
+    UNIT_TESTED = MKLThreadsWrap
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.LATEST
+        self.verify_multiple_should_include(builder_context)
 
     def test_run_justification_noop(self) -> None:
         """Test no operation when PyTorch is not present."""

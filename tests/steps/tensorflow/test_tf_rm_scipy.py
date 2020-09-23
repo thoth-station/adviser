@@ -31,11 +31,18 @@ from thoth.adviser.exceptions import SkipPackage
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlowRemoveSciPyStep(AdviserTestCase):
+class TestTensorFlowRemoveSciPyStep(AdviserUnitTestCase):
     """Test related to removing SciPy from a TensorFlow>=2.1<2.3 stack."""
+
+    UNIT_TESTED = TensorFlowRemoveSciPyStep
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.STABLE
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize(
         "recommendation_type", [RecommendationType.STABLE, RecommendationType.PERFORMANCE, RecommendationType.SECURITY]

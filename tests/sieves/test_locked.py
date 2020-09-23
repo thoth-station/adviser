@@ -19,15 +19,17 @@
 
 import flexmock
 
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.sieves import CutLockedSieve
 from thoth.python import Source
 from thoth.python import PackageVersion
 from thoth.python import Project
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestCutPreReleasesSieve(AdviserTestCase):
+class TestCutPreReleasesSieve(AdviserUnitTestCase):
     """Test removing pinned versions in direct dependencies."""
 
     _CASE_PIPFILE_LOCKED = """
@@ -58,6 +60,13 @@ pytest = "*"
 [pipenv]
 allow_prereleases = true
 """
+
+    UNIT_TESTED = CutLockedSieve
+
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
+        self.verify_multiple_should_include(builder_context)
 
     def test_cut_locked(self) -> None:
         """Test removing a locked package based on direct dependencies."""

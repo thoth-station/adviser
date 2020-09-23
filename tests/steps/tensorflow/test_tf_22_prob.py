@@ -29,11 +29,18 @@ from thoth.adviser.steps import TensorFlow22ProbabilityStep
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlow22ProbabilityStep(AdviserTestCase):
+class TestTensorFlow22ProbabilityStep(AdviserUnitTestCase):
     """Test suggesting not to use TensorFlow 2.2 with tensorflow-probability."""
+
+    UNIT_TESTED = TensorFlow22ProbabilityStep
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.STABLE
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize("recommendation_type", [RecommendationType.STABLE, RecommendationType.TESTING])
     def test_include(self, builder_context: PipelineBuilderContext, recommendation_type: RecommendationType) -> None:

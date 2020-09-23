@@ -28,11 +28,13 @@ from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages import GraphDatabase
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestSecurityIndicatorStep(AdviserTestCase):
+class TestSecurityIndicatorStep(AdviserUnitTestCase):
     """Test different aspects of si pipeline step."""
+
+    UNIT_TESTED = SecurityIndicatorStep
 
     _SECURITY_INFO_EXISTS = {
         "severity_high_confidence_high": 1,
@@ -46,6 +48,11 @@ class TestSecurityIndicatorStep(AdviserTestCase):
         "severity_low_confidence_low": 0,
         "number_of_lines_with_code_in_python_files": 692,
     }
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.SECURITY
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize("recommendation_type", [RecommendationType.STABLE, RecommendationType.SECURITY])
     def test_include(self, builder_context: PipelineBuilderContext, recommendation_type: RecommendationType) -> None:

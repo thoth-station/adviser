@@ -19,15 +19,24 @@
 
 import pytest
 
-from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.boots import SolvedSoftwareEnvironmentBoot
 from thoth.adviser.context import Context
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestSolvedSoftwareEnvironmentBoot(AdviserTestCase):
+class TestSolvedSoftwareEnvironmentBoot(AdviserUnitTestCase):
     """Test solved software environment boot."""
+
+    UNIT_TESTED = SolvedSoftwareEnvironmentBoot
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.project.runtime_environment.should_receive("is_fully_specified").with_args().and_return(True)
+        self.verify_multiple_should_include(builder_context)
 
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test registering this unit if supplied software environment is fully specified."""

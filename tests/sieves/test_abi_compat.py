@@ -19,20 +19,30 @@
 
 import flexmock
 
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.sieves import AbiCompatibilitySieve
 from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages import GraphDatabase
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 _SYSTEM_SYMBOLS = ["GLIBC_2.0", "GLIBC_2.1", "GLIBC_2.2", "GLIBC_2.3", "GLIBC_2.4", "GLIBC_2.5", "GCC_3.4", "X_2.21"]
 _REQUIRED_SYMBOLS_A = ["GLIBC_2.9"]
 _REQUIRED_SYMBOLS_B = ["GLIBC_2.4"]
 
 
-class TestAbiCompatSieve(AdviserTestCase):
+class TestAbiCompatSieve(AdviserUnitTestCase):
     """Test filtering out packages based on symbols required."""
+
+    UNIT_TESTED = AbiCompatibilitySieve
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.project.runtime_environment.should_receive("is_fully_specified").with_args().and_return(True)
+        self.verify_multiple_should_include(builder_context)
 
     def test_abi_compat_symbols_present(self) -> None:
         """Test if required symbols are correctly identified."""

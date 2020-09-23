@@ -20,13 +20,15 @@
 import flexmock
 
 from thoth.adviser.boots import PythonVersionBoot
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.common import get_justification_link as jl
 from thoth.python import Project
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestPythonVersionBoot(AdviserTestCase):
+class TestPythonVersionBoot(AdviserUnitTestCase):
     """Test changes to runtime environment or configuration done with respect to configured Python."""
 
     _CASE_PIPFILE_NO_PYTHON = """
@@ -51,6 +53,13 @@ tensorflow = "*"
 [requires]
 python_version = "3.6"
 """
+
+    UNIT_TESTED = PythonVersionBoot
+
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
+        self.verify_multiple_should_include(builder_context)
 
     def test_no_python_config(self) -> None:
         """Test assigning Python version from Thoth's config file."""

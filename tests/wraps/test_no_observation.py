@@ -17,14 +17,23 @@
 
 """Test wrap adding information about no justification."""
 
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.state import State
 from thoth.adviser.wraps import NoObservationWrap
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestNoObservationWrap(AdviserTestCase):
+class TestNoObservationWrap(AdviserUnitTestCase):
     """Test dropout step."""
+
+    UNIT_TESTED = NoObservationWrap
+
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
+        self.verify_multiple_should_include(builder_context)
 
     def test_run_justification_noop(self) -> None:
         """Test no operation when justification is present."""

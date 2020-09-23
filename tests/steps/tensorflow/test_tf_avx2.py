@@ -29,11 +29,20 @@ from thoth.adviser.steps import TensorFlowAVX2Step
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlowAVX2Step(AdviserTestCase):
+class TestTensorFlowAVX2Step(AdviserUnitTestCase):
     """Test TensorFlow AVX2 step recommending AICoE TensorFlow builds."""
+
+    UNIT_TESTED = TensorFlowAVX2Step
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.STABLE
+        builder_context.project.runtime_environment.hardware.cpu_family = 0x6
+        builder_context.project.runtime_environment.hardware.cpu_model = 0xF
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize("recommendation_type", [RecommendationType.STABLE, RecommendationType.TESTING])
     def test_include(self, builder_context: PipelineBuilderContext, recommendation_type: RecommendationType) -> None:
