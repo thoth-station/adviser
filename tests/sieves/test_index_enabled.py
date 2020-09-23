@@ -25,10 +25,10 @@ from thoth.python import Source
 from thoth.storages import GraphDatabase
 from thoth.storages.exceptions import NotFoundError
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestPackageIndexSieve(AdviserTestCase):
+class TestPackageIndexSieve(AdviserUnitTestCase):
     """Test filtering out packages based on enabled or disabled Python package index."""
 
     def test_sieve_index_enabled(self) -> None:

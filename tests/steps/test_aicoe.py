@@ -23,10 +23,10 @@ from thoth.adviser.steps import AICoEReleasesStep
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestAICoEReleasesStep(AdviserTestCase):
+class TestAICoEReleasesStep(AdviserUnitTestCase):
     """A test for prioritizing releases from AICoE."""
 
     def test_aicoe_release(self) -> None:

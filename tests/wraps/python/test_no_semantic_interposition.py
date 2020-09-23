@@ -25,10 +25,10 @@ from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.state import State
 from thoth.adviser.wraps import NoSemanticInterpositionWrap
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestNoSemanticInterpositionWrap(AdviserTestCase):
+class TestNoSemanticInterpositionWrap(AdviserUnitTestCase):
     """Test recommending Python3.8 on RHEL/UBI 8.2."""
 
     @pytest.mark.parametrize("os_name,os_version,python_version", [("rhel", "8.2", "3.6"), ("ubi", "8.2", "3.7"),])

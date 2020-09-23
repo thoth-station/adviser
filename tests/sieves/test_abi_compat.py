@@ -24,14 +24,14 @@ from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages import GraphDatabase
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 _SYSTEM_SYMBOLS = ["GLIBC_2.0", "GLIBC_2.1", "GLIBC_2.2", "GLIBC_2.3", "GLIBC_2.4", "GLIBC_2.5", "GCC_3.4", "X_2.21"]
 _REQUIRED_SYMBOLS_A = ["GLIBC_2.9"]
 _REQUIRED_SYMBOLS_B = ["GLIBC_2.4"]
 
 
-class TestAbiCompatSieve(AdviserTestCase):
+class TestAbiCompatSieve(AdviserUnitTestCase):
     """Test filtering out packages based on symbols required."""
 
     def test_abi_compat_symbols_present(self) -> None:

@@ -27,13 +27,13 @@ from thoth.adviser.exceptions import SkipPackage
 from thoth.adviser.sieves import MockBackportSieve
 from thoth.adviser.context import Context
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 from thoth.python import PackageVersion
 from thoth.python import Source
 
 
-class TestMockBackportSieve(AdviserTestCase):
+class TestMockBackportSieve(AdviserUnitTestCase):
     """Test sieve removing mock backport."""
 
     @pytest.mark.parametrize(

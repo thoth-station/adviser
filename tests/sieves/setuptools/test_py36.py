@@ -27,10 +27,10 @@ from thoth.adviser.sieves import Py36SetuptoolsSieve
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestPy36SetuptoolsSieve(AdviserTestCase):
+class TestPy36SetuptoolsSieve(AdviserUnitTestCase):
     """Test sieve to filter out old setuptools that do not work with Python 3.6."""
 
     @pytest.mark.parametrize(

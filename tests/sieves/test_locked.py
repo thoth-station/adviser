@@ -24,10 +24,10 @@ from thoth.python import Source
 from thoth.python import PackageVersion
 from thoth.python import Project
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestCutPreReleasesSieve(AdviserTestCase):
+class TestCutPreReleasesSieve(AdviserUnitTestCase):
     """Test removing pinned versions in direct dependencies."""
 
     _CASE_PIPFILE_LOCKED = """

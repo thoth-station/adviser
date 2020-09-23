@@ -24,10 +24,10 @@ from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages import GraphDatabase
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestCvePenalizationStep(AdviserTestCase):
+class TestCvePenalizationStep(AdviserUnitTestCase):
     """Test scoring (penalization) based on a CVE."""
 
     _CASE_CANDIDATES = [

@@ -27,10 +27,10 @@ from thoth.adviser.state import State
 from thoth.adviser.strides import UniqueStackStride
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestUniqueStackStride(AdviserTestCase):
+class TestUniqueStackStride(AdviserUnitTestCase):
     """Test filtering duplicate stacks."""
 
     @pytest.mark.parametrize(

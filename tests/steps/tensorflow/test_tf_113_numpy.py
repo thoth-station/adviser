@@ -30,10 +30,10 @@ from thoth.adviser.steps import TensorFlow113NumPyStep
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlow113NumPyStep(AdviserTestCase):
+class TestTensorFlow113NumPyStep(AdviserUnitTestCase):
     """TensorFlow 1.13.1 is compatible with NumPy>=1.16.0, not with >=1.13.3 as stated in setup.py."""
 
     @pytest.mark.parametrize(

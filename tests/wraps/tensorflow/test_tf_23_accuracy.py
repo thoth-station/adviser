@@ -22,10 +22,10 @@ import pytest
 from thoth.adviser.state import State
 from thoth.adviser.wraps import TensorFlow23Accuracy
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlow23Accuracy(AdviserTestCase):
+class TestTensorFlow23Accuracy(AdviserUnitTestCase):
     """Test wrap that notifies about accuracy bug on safe()/load_model() calls."""
 
     def test_run_noop(self) -> None:

@@ -23,10 +23,10 @@ import pytest
 from thoth.adviser.steps import DropoutStep
 from thoth.adviser.exceptions import NotAcceptable
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestDropoutStep(AdviserTestCase):
+class TestDropoutStep(AdviserUnitTestCase):
     """Test dropout step."""
 
     def test_run_accept(self) -> None:

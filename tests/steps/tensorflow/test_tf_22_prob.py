@@ -28,10 +28,10 @@ from thoth.adviser.steps import TensorFlow22ProbabilityStep
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlow22ProbabilityStep(AdviserTestCase):
+class TestTensorFlow22ProbabilityStep(AdviserUnitTestCase):
     """Test suggesting not to use TensorFlow 2.2 with tensorflow-probability."""
 
     @pytest.mark.parametrize("recommendation_type", [RecommendationType.STABLE, RecommendationType.TESTING])

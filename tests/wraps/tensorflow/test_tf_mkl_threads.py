@@ -59,7 +59,7 @@ spec:
 
         assert len(state.justification) == 0
 
-    def test_run_add_justification(self) -> None:
+    def test_run_add_justification_all(self) -> None:
         """Test adding information Intel's MKL environment variable."""
         state = State()
         state.add_resolved_dependency(("pytorch", "1.4.0", "https://pypi.org/simple"))

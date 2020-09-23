@@ -26,10 +26,10 @@ from thoth.adviser.state import State
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlow21Urllib32Step(AdviserTestCase):
+class TestTensorFlow21Urllib32Step(AdviserUnitTestCase):
     """Test a step that suggests not to use TensorFlow 2.1 as issues with six were spotted on imports."""
 
     @pytest.mark.parametrize(

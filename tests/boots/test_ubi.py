@@ -22,10 +22,10 @@ import flexmock
 from thoth.adviser.boots import UbiBoot
 from thoth.python import Project
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestUbiBoot(AdviserTestCase):
+class TestUbiBoot(AdviserUnitTestCase):
     """Test UBI to RHEL mapping boot."""
 
     _CASE_PIPFILE = """

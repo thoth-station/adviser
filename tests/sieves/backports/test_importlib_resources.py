@@ -27,13 +27,13 @@ from thoth.adviser.exceptions import SkipPackage
 from thoth.adviser.sieves import ImportlibResourcesBackportSieve
 from thoth.adviser.context import Context
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 from thoth.python import PackageVersion
 from thoth.python import Source
 
 
-class TestImportlibResourcesBackportSieve(AdviserTestCase):
+class TestImportlibResourcesBackportSieve(AdviserUnitTestCase):
     """Test sieve removing importlib-resources backport."""
 
     @pytest.mark.parametrize(

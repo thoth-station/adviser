@@ -20,10 +20,10 @@
 from thoth.adviser.state import State
 from thoth.adviser.wraps import NoObservationWrap
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestNoObservationWrap(AdviserTestCase):
+class TestNoObservationWrap(AdviserUnitTestCase):
     """Test dropout step."""
 
     def test_run_justification_noop(self) -> None:

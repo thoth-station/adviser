@@ -28,10 +28,10 @@ from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages import GraphDatabase
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestSecurityIndicatorStep(AdviserTestCase):
+class TestSecurityIndicatorStep(AdviserUnitTestCase):
     """Test different aspects of si pipeline step."""
 
     _SECURITY_INFO_EXISTS = {

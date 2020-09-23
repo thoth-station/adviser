@@ -30,10 +30,10 @@ from thoth.adviser.context import Context
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlowCUDASieve(AdviserTestCase):
+class TestTensorFlowCUDASieve(AdviserUnitTestCase):
     """Test using the right TensorFlow release for specific CUDA releases."""
 
     def test_recommendation_types_considered(self) -> None:

@@ -24,10 +24,10 @@ from thoth.adviser.exceptions import SieveError
 from thoth.python import Source
 from thoth.python import PackageVersion
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestVersionConstrainSieve(AdviserTestCase):
+class TestVersionConstrainSieve(AdviserUnitTestCase):
     """Test version constraint sieve."""
 
     def test_configuration_error(self) -> None:

@@ -26,7 +26,7 @@ from thoth.adviser.context import Context
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.exceptions import SkipPackage
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import RecommendationType
@@ -34,7 +34,7 @@ from thoth.python import PackageVersion
 from thoth.python import Source
 
 
-class TestEnum34BackportSieve(AdviserTestCase):
+class TestEnum34BackportSieve(AdviserUnitTestCase):
     """Test sieve removing enum34 backport."""
 
     @pytest.mark.parametrize(

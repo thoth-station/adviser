@@ -27,13 +27,13 @@ from thoth.adviser.exceptions import SkipPackage
 from thoth.adviser.sieves import ImportlibMetadataBackportSieve
 from thoth.adviser.context import Context
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 from thoth.python import PackageVersion
 from thoth.python import Source
 
 
-class TestImportlibMetadataBackportSieve(AdviserTestCase):
+class TestImportlibMetadataBackportSieve(AdviserUnitTestCase):
     """Test sieve removing importlib-metadata backport."""
 
     @pytest.mark.parametrize(

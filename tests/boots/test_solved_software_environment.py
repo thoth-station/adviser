@@ -23,10 +23,10 @@ from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.boots import SolvedSoftwareEnvironmentBoot
 from thoth.adviser.context import Context
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestSolvedSoftwareEnvironmentBoot(AdviserTestCase):
+class TestSolvedSoftwareEnvironmentBoot(AdviserUnitTestCase):
     """Test solved software environment boot."""
 
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:

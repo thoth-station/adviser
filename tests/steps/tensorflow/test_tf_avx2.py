@@ -29,10 +29,10 @@ from thoth.adviser.steps import TensorFlowAVX2Step
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlowAVX2Step(AdviserTestCase):
+class TestTensorFlowAVX2Step(AdviserUnitTestCase):
     """Test TensorFlow AVX2 step recommending AICoE TensorFlow builds."""
 
     @pytest.mark.parametrize("recommendation_type", [RecommendationType.STABLE, RecommendationType.TESTING])

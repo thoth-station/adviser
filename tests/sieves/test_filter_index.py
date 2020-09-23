@@ -22,10 +22,10 @@ from thoth.adviser.sieves import FilterIndexSieve
 from thoth.python import Source
 from thoth.python import PackageVersion
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestFilterIndexSieve(AdviserTestCase):
+class TestFilterIndexSieve(AdviserUnitTestCase):
     """Test package index sieve."""
 
     def test_default_configuration(self) -> None:

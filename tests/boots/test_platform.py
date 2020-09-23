@@ -23,10 +23,10 @@ from thoth.adviser.boots import PlatformBoot
 from thoth.adviser.context import Context
 from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestPlatformBoot(AdviserTestCase):
+class TestPlatformBoot(AdviserUnitTestCase):
     """Test platform boot."""
 
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:

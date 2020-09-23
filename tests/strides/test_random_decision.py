@@ -24,10 +24,10 @@ from thoth.adviser.exceptions import NotAcceptable  # type: ignore
 from thoth.adviser.state import State  # type: ignore
 from thoth.adviser.strides import RandomDecisionStride
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestRandomDecision(AdviserTestCase):
+class TestRandomDecision(AdviserUnitTestCase):
     """Test randomly pickling up a stack coming out of pipeline.."""
 
     def test_accept(self) -> None:

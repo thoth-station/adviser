@@ -31,6 +31,8 @@ from voluptuous import Invalid
 from voluptuous import Length
 from voluptuous import Schema
 
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
+
 
 class AdviserTestCaseException(Exception):
     """A base class for exceptions that can occur in the test suite."""
@@ -97,3 +99,17 @@ class AdviserTestCase:
             raise AdviserJustificationSchemaError(exc.msg) from exc
         else:
             return True
+
+
+class AdviserUnitTestCase(AdviserTestCase):
+    """A base class for implementing pipeline unit specific test cases."""
+
+    @staticmethod
+    def verify_multiple_should_include(builder_context: PipelineBuilderContext) -> bool:
+        """Check multiple should_include calls do not end in an infinite loop."""
+
+    def test_verify_multiple_should_include(self) -> bool:
+        """Check multiple should_include calls do not end in an infinite loop."""
+        raise NotImplementedError(
+                "Implement a test that makes sure multiple calls of should include do not loop endlessly"
+        )

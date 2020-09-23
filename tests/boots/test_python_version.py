@@ -22,10 +22,10 @@ import flexmock
 from thoth.adviser.boots import PythonVersionBoot
 from thoth.python import Project
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestPythonVersionBoot(AdviserTestCase):
+class TestPythonVersionBoot(AdviserUnitTestCase):
     """Test changes to runtime environment or configuration done with respect to configured Python."""
 
     _CASE_PIPFILE_NO_PYTHON = """

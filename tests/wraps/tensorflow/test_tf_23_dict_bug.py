@@ -22,10 +22,10 @@ import pytest
 from thoth.adviser.state import State
 from thoth.adviser.wraps import TensorFlow23DictSummary
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlow23DictSummary(AdviserTestCase):
+class TestTensorFlow23DictSummary(AdviserUnitTestCase):
     """Test a wrap that notifies a bug in summary output spotted on TensorFlow 2.3."""
 
     def test_run_noop(self) -> None:

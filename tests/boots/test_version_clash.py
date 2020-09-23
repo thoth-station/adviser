@@ -24,10 +24,10 @@ from thoth.adviser.exceptions import CannotProduceStack
 from thoth.adviser.boots import VersionClashBoot
 from thoth.python import Project
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestVersionClashBoot(AdviserTestCase):
+class TestVersionClashBoot(AdviserUnitTestCase):
     """Test version clash boot."""
 
     _CASE_PIPFILE_CLASHED = """

@@ -22,10 +22,10 @@ import flexmock
 from thoth.adviser.boots import RHELVersionBoot
 from thoth.python import Project
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestRHELVersionBoot(AdviserTestCase):
+class TestRHELVersionBoot(AdviserUnitTestCase):
     """Test changes to RHEL version for major RHEL releases."""
 
     _CASE_PIPFILE = """

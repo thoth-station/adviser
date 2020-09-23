@@ -28,10 +28,10 @@ from thoth.python import Project
 from thoth.storages import GraphDatabase
 from thoth.storages.exceptions import NotFoundError
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestSolvedSieve(AdviserTestCase):
+class TestSolvedSieve(AdviserUnitTestCase):
     """Test removing dependencies based on information coming from Thoth's solver capturing installation issues."""
 
     _CASE_PIPFILE = """

@@ -28,10 +28,10 @@ from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.state import State
 from thoth.adviser.wraps import IntelTensorFlowWrap
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestIntelTensorflowWrap(AdviserTestCase):
+class TestIntelTensorflowWrap(AdviserUnitTestCase):
     """Test recommending Intel TensorFlow build optimized for specific CPU architectures."""
 
     @pytest.mark.parametrize(

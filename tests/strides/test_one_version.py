@@ -25,10 +25,10 @@ from thoth.adviser.state import State
 from thoth.adviser.strides import OneVersionStride
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestOneVersionStride(AdviserTestCase):
+class TestOneVersionStride(AdviserUnitTestCase):
     """Test filtering out software stacks based on version seen."""
 
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:
