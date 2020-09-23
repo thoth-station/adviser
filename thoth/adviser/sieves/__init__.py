@@ -18,19 +18,20 @@
 """Implementation of sieves used in adviser pipeline."""
 
 from .abi_compat import AbiCompatibilitySieve
-from .filter_index import FilterIndexSieve
-from .index_enabled import PackageIndexSieve
-from .locked import CutLockedSieve
-from .prereleases import CutPreReleasesSieve
-from .solved import SolvedSieve
-from .version_constraint import VersionConstraintSieve
 from .backports import Enum34BackportSieve
 from .backports import Functools32BackportSieve
 from .backports import ImportlibMetadataBackportSieve
 from .backports import ImportlibResourcesBackportSieve
 from .backports import MockBackportSieve
-from .tensorflow import TensorFlowCUDASieve
+from .filter_index import FilterIndexSieve
+from .index_enabled import PackageIndexSieve
+from .locked import CutLockedSieve
+from .pandas import PandasPy36Drop
+from .prereleases import CutPreReleasesSieve
 from .setuptools import Py36SetuptoolsSieve
+from .solved import SolvedSieve
+from .tensorflow import TensorFlowCUDASieve
+from .version_constraint import VersionConstraintSieve
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -51,4 +52,5 @@ __all__ = [
     "MockBackportSieve",
     "Py36SetuptoolsSieve",
     "TensorFlowCUDASieve",
+    "PandasPy36Drop",
 ]
