@@ -25,6 +25,7 @@ from .tensorflow import TensorFlow21Urllib3Step
 from .tensorflow import TensorFlow22ProbabilityStep
 from .tensorflow import TensorFlowAVX2Step
 from .tensorflow import TensorFlow113NumPyStep
+from .tensorflow import TensorFlow114GastStep
 from .tensorflow import TensorFlow22NumPyStep
 
 # from ._debug import MockScoreStep
@@ -43,5 +44,6 @@ __all__ = [
     "TensorFlow22ProbabilityStep",
     "TensorFlowAVX2Step",
     "TensorFlow113NumPyStep",
+    "TensorFlow114GastStep",
     "TensorFlow22NumPyStep",
 ]
