@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019, 2020 Fridolin Pokorny
+# Copyright(C) 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,21 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Implementation of steps used, specific for TensorFlow."""
-
-from .tf_21_urllib3 import TensorFlow21Urllib3Step
-from .tf_22_prob import TensorFlow22ProbabilityStep
-from .tf_avx2 import TensorFlowAVX2Step
-from .tf_113_numpy import TensorFlow113NumPyStep
-from .tf_114_gast import TensorFlow114GastStep
-from .tf_22_numpy import TensorFlow22NumPyStep
-
-
-__all__ = [
-    "TensorFlow21Urllib3Step",
-    "TensorFlow22ProbabilityStep",
-    "TensorFlowAVX2Step",
-    "TensorFlow113NumPyStep",
-    "TensorFlow114GastStep",
-    "TensorFlow22NumPyStep",
-]
+"""Tests for sieve units for Pandas."""

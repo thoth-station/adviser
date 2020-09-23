@@ -18,7 +18,10 @@
 """Test scoring (penalization) based on a CVE."""
 
 import flexmock
+import pytest
 
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.steps import CvePenalizationStep
 from thoth.python import PackageVersion
 from thoth.python import Source
@@ -56,7 +59,7 @@ class TestCvePenalizationStep(AdviserTestCase):
             name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
         )
 
-        context = flexmock(graph=GraphDatabase())
+        context = flexmock(graph=GraphDatabase(), recommendation_type=RecommendationType.TESTING)
         with CvePenalizationStep.assigned_context(context):
             step = CvePenalizationStep()
             result = step.run(None, package_version)
@@ -86,3 +89,24 @@ class TestCvePenalizationStep(AdviserTestCase):
             result = step.run(None, package_version)
 
         assert result is None
+
+    def test_cve_not_acceptable(self) -> None:
+        """Test raising an exception if a secure software stack should be resolved."""
+        flexmock(GraphDatabase)
+        GraphDatabase.should_receive("get_python_cve_records_all").with_args(
+            package_name="flask", package_version="0.12.0"
+        ).and_return([self._FLASK_CVE]).once()
+
+        package_version = PackageVersion(
+            name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
+        )
+
+        context = flexmock(graph=GraphDatabase(), recommendation_type=RecommendationType.SECURITY)
+        step = CvePenalizationStep()
+        with CvePenalizationStep.assigned_context(context):
+            assert not step._messages_logged
+            with pytest.raises(NotAcceptable):
+                step.run(None, package_version)
+
+        assert len(step._messages_logged) == 1
+        assert ("flask", "0.12.0", "https://pypi.org/simple") in step._messages_logged

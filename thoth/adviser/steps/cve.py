@@ -23,6 +23,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Set
 from typing import Tuple
 from typing import TYPE_CHECKING
 
@@ -31,6 +32,7 @@ from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.storages.exceptions import NotFoundError
 
+from ..exceptions import NotAcceptable
 from ..enums import RecommendationType
 from ..step import Step
 from ..state import State
@@ -47,6 +49,12 @@ class CvePenalizationStep(Step):
 
     CONFIGURATION_DEFAULT = {"cve_penalization": -0.2}
     _JUSTIFICATION_LINK = jl("cve")
+
+    _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
+
+    def pre_run(self) -> None:
+        """Initialize this pipeline unit before running."""
+        self._messages_logged.clear()
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -73,7 +81,22 @@ class CvePenalizationStep(Step):
             return None
 
         if cve_records:
-            _LOGGER.debug("Found a CVEs for %r: %r", package_version.to_tuple(), cve_records)
+            package_version_tuple = package_version.to_tuple()
+            _LOGGER.debug("Found a CVEs for %r: %r", package_version_tuple, cve_records)
+
+            if self.context.recommendation_type == RecommendationType.SECURITY:
+                if package_version_tuple not in self._messages_logged:
+                    self._messages_logged.add(package_version_tuple)
+                    for cve_record in cve_records:
+                        _LOGGER.warning(
+                            "Skipping including package %r as a CVE %s was found: %s",
+                            package_version_tuple,
+                            cve_record.get("cve_name") or cve_record.get("cve_id"),
+                            cve_record["advisory"],
+                        )
+
+                raise NotAcceptable
+
             penalization = len(cve_records) * self.configuration["cve_penalization"]
 
             # Note down package causing this CVE.
