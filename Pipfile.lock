@@ -56,10 +56,10 @@
         },
         "argo-workflows": {
             "hashes": [
-                "sha256:00a0c0e14ecccd9694b14cce9895e83a161929818ccf2c4c6d1e3681762d9539",
-                "sha256:1d36d0e56c472c9af98cdfc21a0a9d3087227ee8d118310f2ac6649df124c5d5"
+                "sha256:5198066fb57fff325332b8a897c018df8ec6a61aef972676f9c7b04ff8327fdf",
+                "sha256:d77b58a13f5a63515fe6ce2c9f2301cbb1c37fee9fe38d906ebd1e8fb557c935"
             ],
-            "version": "==2.1.4"
+            "version": "==3.5.1"
         },
         "async-timeout": {
             "hashes": [
@@ -176,13 +176,6 @@
             ],
             "version": "==0.1.1"
         },
-        "dictdiffer": {
-            "hashes": [
-                "sha256:1adec0d67cdf6166bda96ae2934ddb5e54433998ceab63c984574d187cc563d2",
-                "sha256:d79d9a39e459fe33497c858470ca0d2e93cb96621751de06d631856adfd9c390"
-            ],
-            "version": "==0.8.1"
-        },
         "distlib": {
             "hashes": [
                 "sha256:8c09de2c67b3e7deef7184574fc060ab8a793e7adbb183d942c389c8b13c52fb",
@@ -295,10 +288,10 @@
         },
         "kubernetes": {
             "hashes": [
-                "sha256:0e24771ceb63ae18ab0d6a7b31e208a0ace7941adae785260840b123888f706c",
-                "sha256:70bff95703a09f0a67473a22d13be36a158ab6e8facc59e64454a26b14690908"
+                "sha256:1a2472f8b01bc6aa87e3a34781f859bded5a5c8ff791a53d889a8bd6cc550430",
+                "sha256:4af81201520977139a143f96123fb789fa351879df37f122916b9b6ed050bbaf"
             ],
-            "version": "==10.0.0"
+            "version": "==11.0.0"
         },
         "lxml": {
             "hashes": [
@@ -474,9 +467,9 @@
         },
         "openshift": {
             "hashes": [
-                "sha256:d8462c4bc3eaaa5a11623d6d67048c3e0b16558fa23675ffd85157d66696ff39"
+                "sha256:110b0d3c84a83500f0fd150ab26dee29615157e6659bf72808788aa79fc17afc"
             ],
-            "version": "==0.10.3"
+            "version": "==0.11.2"
         },
         "packaging": {
             "hashes": [
@@ -815,10 +808,10 @@
         },
         "thoth-common": {
             "hashes": [
-                "sha256:56113cd0cc49a23ca404bb5121ecf0e9876e4bf4d7cbbaa3cf553d9c8e64d0b7",
-                "sha256:714eeeb98e110798114185c82d37f62971885aee1778f09789f0ef5411a1ec1b"
+                "sha256:1c4e439b4c54630ec9b14fff91a8f74d1d97cce8d023276d1baa1b6417fc63dd",
+                "sha256:7b7ac7c34a1b67c394d5082b94d44ea0fc25a6405e058c5968c1ad2f2b0f5a0d"
             ],
-            "version": "==0.19.0"
+            "version": "==0.20.0"
         },
         "thoth-python": {
             "hashes": [
