@@ -40,7 +40,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class PandasPy36Drop(Sieve):
+class PandasPy36Sieve(Sieve):
     """A sieve that makes sure Pandas>=1.2 is not used on Python 3.6 or older.
 
     See https://github.com/pandas-dev/pandas/pull/35214

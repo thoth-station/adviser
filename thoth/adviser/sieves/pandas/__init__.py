@@ -17,9 +17,9 @@
 
 """Implementation of sieves used, specific for Pandas package."""
 
-from .py36_drop import PandasPy36Drop
+from .py36_drop import PandasPy36Sieve
 
 
 __all__ = [
-    "PandasPy36Drop",
+    "PandasPy36Sieve",
 ]

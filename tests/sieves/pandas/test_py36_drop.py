@@ -23,7 +23,7 @@ import pytest
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
-from thoth.adviser.sieves import PandasPy36Drop
+from thoth.adviser.sieves import PandasPy36Sieve
 from thoth.adviser.context import Context
 from thoth.python import PackageVersion
 from thoth.python import Source
@@ -31,7 +31,7 @@ from thoth.python import Source
 from ...base import AdviserTestCase
 
 
-class TestPandasPy36DropSieve(AdviserTestCase):
+class TestPandasPy36Sieve(AdviserTestCase):
     """Test sieve to filter out Pandas>=1.2 on Python 3.6."""
 
     @pytest.mark.parametrize(
@@ -44,7 +44,7 @@ class TestPandasPy36DropSieve(AdviserTestCase):
         builder_context.project.runtime_environment.python_version = "3.6"
 
         assert builder_context.is_adviser_pipeline()
-        assert PandasPy36Drop.should_include(builder_context) == {}
+        assert PandasPy36Sieve.should_include(builder_context) == {}
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type,python_version",
@@ -67,7 +67,7 @@ class TestPandasPy36DropSieve(AdviserTestCase):
         builder_context.decision_type = decision_type
         builder_context.recommendation_type = recommendation_type
         builder_context.project.runtime_environment.python_version = python_version
-        assert PandasPy36Drop.should_include(builder_context) is None
+        assert PandasPy36Sieve.should_include(builder_context) is None
 
     @pytest.mark.parametrize("pandas_version", ["1.2.0", "2.0.0"])
     def test_run(self, context: Context, pandas_version: str) -> None:
@@ -76,9 +76,9 @@ class TestPandasPy36DropSieve(AdviserTestCase):
             name="pandas", version=f"=={pandas_version}", develop=False, index=Source("https://pypi.org/simple"),
         )
 
-        unit = PandasPy36Drop()
+        unit = PandasPy36Sieve()
         unit.pre_run()
-        with PandasPy36Drop.assigned_context(context):
+        with PandasPy36Sieve.assigned_context(context):
             assert unit._message_logged is False
             assert list(unit.run(p for p in [package_version])) == []
             assert unit._message_logged is True
@@ -94,9 +94,9 @@ class TestPandasPy36DropSieve(AdviserTestCase):
         pkgs = [pkg1, pkg2, pkg3]
 
         context = flexmock()
-        unit = PandasPy36Drop()
+        unit = PandasPy36Sieve()
         unit.pre_run()
-        with PandasPy36Drop.assigned_context(context):
+        with PandasPy36Sieve.assigned_context(context):
             assert unit._message_logged is False
             assert list(unit.run(p for p in pkgs)) == pkgs
             assert unit._message_logged is False
