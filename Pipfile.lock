@@ -999,11 +999,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:049398bc481fbc22d5cbf65aca0de421d09e332cd40ded7ab25fba4bd32edc3d",
-                "sha256:72988c3cf29a89d2b506ffa2c6a1e90bbf1388ea35bac9096079457ed6107062"
+                "sha256:a473b8428d13a695129e94bf17c43fa6c8a75449ef9121edb32b5ccaf862f16b",
+                "sha256:ce97675bb09d3ee843421e030d31dc9613145faee91c3fa7879bdb15af0acbd3"
             ],
             "index": "pypi",
-            "version": "==5.35.4"
+            "version": "==5.36.0"
         },
         "hypothesis-auto": {
             "hashes": [
