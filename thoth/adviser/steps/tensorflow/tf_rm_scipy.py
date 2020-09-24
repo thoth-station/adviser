@@ -99,8 +99,12 @@ class TensorFlowRemoveSciPyStep(Step):
         if not tensorflow_any:
             return None
 
-        tf_package_version = self.context.get_package_version(tensorflow_any).semantic_version.release[:2]
-        if not tf_package_version or tf_package_version < (2, 1) or tf_package_version >= (2, 3):
+        tf_package_version = self.context.get_package_version(tensorflow_any)
+        if not tf_package_version:
+            return None
+
+        tf_release = tf_package_version.semantic_version.release[:2]
+        if tf_release < (2, 1) or tf_release >= (2, 3):
             return None
 
         # Now check what package introduced the SciPy dependency. If it is solely TensorFlow, we can
