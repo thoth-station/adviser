@@ -5625,3 +5625,63 @@
 * :pushpin: Automatic update of dependency attrs from 20.1.0 to 20.2.0 (#1179)
 * :pushpin: Automatic update of dependency attrs from 20.1.0 to 20.2.0 (#1175)
 * :pushpin: Automatic update of dependency hypothesis from 5.30.0 to 5.33.1 (#1170)
+
+## Release 0.18.0 (2020-09-24T19:44:26)
+### Features
+* Fix black complains (#1291)
+* Fix master branch
+* Rename sieve to conform naming convention
+* Provide stack info in step pipeline units
+* Provide stack info in pipeline sieves
+* Add stack information in boots
+* Fix complains of pre-commit (#1280)
+* Introduce a step for removing scipy for TF>=2.1<2.3 releases (#1249)
+* Add a link to Python version justification (#1273)
+* Add a mechanism to skip packages from a stack based on pipeline steps
+* Do not recommend using TensorFlow<2.3>=2.0 with NumPy>=1.19.0 (#1262)
+* Prevent resolving TF<=1.14 with gast>0.2.2
+* Implement a sieve that drops Pandas>=1.2 on Python 3.6 (#1264)
+* Fix pre-commit issues reported (#1254)
+* Fix formatting in backports
+* Fix message printed
+* Fix providing justification to CVE step
+* Add justification links related to user stack scoring
+* Add a step to make sure the correct version of NumPy is used for TF==1.13.1 (#1236)
+* Link justification documents related to resolver messages (#1232)
+* Fix wrong import
+* Provide justification links to various parts of the resolution process
+* Link justification for the approximating latest predictor
+* Recommend TensorFlow release based on CUDA present in environment (#1225)
+* Notify about proper usage of Intel's MKL
+### Bug Fixes
+* Do not accept CVEs when recommendation type is set to security
+### Improvements
+* Include pre-releases pipeline unit only if pre-releases are disabled (#1284)
+* Turn warnings into errors reported when AICoE index cannot be parsed
+* Add test for intel TensorFlow (#1231)
+### Automatic Updates
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1299)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1297)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1296)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1295)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1294)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1289)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1278)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1277)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1276)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1274)
+* :pushpin: Automatic update of dependency thoth-python from 0.10.1 to 0.10.2 (#1272)
+* :pushpin: Automatic update of dependency hypothesis from 5.35.4 to 5.36.0 (#1271)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1270)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1269)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1267)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1265)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1259)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1258)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1257)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1256)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1255)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1251)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.10 to 0.25.11 (#1250)
+* :pushpin: Automatic update of dependency hypothesis from 5.35.3 to 5.35.4
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0
