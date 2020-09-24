@@ -44,7 +44,7 @@ class PlatformBoot(Boot):
 
     CONFIGURATION_DEFAULT = {"default_platform": "linux-x86_64"}
     CONFIGURATION_SCHEMA = Schema({Required("default_platform"): str,})
-    _JUSTIFICATION_LINK = jl('platform')
+    _JUSTIFICATION_LINK = jl("platform")
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -57,7 +57,10 @@ class PlatformBoot(Boot):
     def run(self) -> None:
         """Check for platform configured and adjust to the default one if not provided by user."""
         if self.context.project.runtime_environment.platform is None:
-            msg = f"No platform provided in the configuration, setting to {self.configuration['default_platform']!r} implicitly"
+            msg = (
+                f"No platform provided in the configuration, setting to "
+                f"{self.configuration['default_platform']!r} implicitly"
+            )
 
             _LOGGER.warning("%s - see %s", msg, self._JUSTIFICATION_LINK)
             self.context.project.runtime_environment.platform = self.configuration["default_platform"]

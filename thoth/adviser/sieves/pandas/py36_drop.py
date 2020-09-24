@@ -46,7 +46,8 @@ class PandasPy36Drop(Sieve):
     See https://github.com/pandas-dev/pandas/pull/35214
     """
 
-    _MESSAGE = f"Pandas in versions >=1.2 dropped Python 3.6 support - see {jl('pandas_py36_drop')}"
+    _MESSAGE = f"Pandas in versions >=1.2 dropped Python 3.6 support"
+    _JUSTIFICATION_LINK = jl("pandas_py36_drop")
 
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
@@ -76,4 +77,7 @@ class PandasPy36Drop(Sieve):
                 yield package_version
             elif not self._message_logged:
                 self._message_logged = True
-                _LOGGER.warning(self._MESSAGE)
+                _LOGGER.warning("%s - see %s", self._MESSAGE, self._JUSTIFICATION_LINK)
+                self.context.stack_info.append(
+                    {"type": "WARNING", "message": self._MESSAGE, "link": self._JUSTIFICATION_LINK}
+                )
