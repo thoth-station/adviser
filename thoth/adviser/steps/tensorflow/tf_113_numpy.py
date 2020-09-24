@@ -98,8 +98,6 @@ class TensorFlow113NumPyStep(Step):
         if not self._message_logged:
             self._message_logged = True
             _LOGGER.warning("%s - see %s", self._MESSAGE, self._LINK)
-            self.context.stack_info.append(
-                {"type": "WARNING", "message": self._MESSAGE, "link": self._LINK}
-            )
+            self.context.stack_info.append({"type": "WARNING", "message": self._MESSAGE, "link": self._LINK})
 
         raise NotAcceptable
