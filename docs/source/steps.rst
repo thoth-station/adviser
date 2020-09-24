@@ -67,6 +67,10 @@ Main usage
     <thoth.adviser.exceptions.EagerStopPipeline>` will cause stopping the whole
     resolver run and causing resolver to return products computed so far
 
+* Removing a library from a stack even though it is stated as a dependency
+  (directly or transitively) by raising :class:`SkipPackage
+  <thoth.adviser.exceptions.SkipPackage>` based on the resolution process.
+
 Real world examples
 ===================
 
@@ -83,6 +87,9 @@ Real world examples
   * Packages that have security vulnerabilities (CVE) can be penalized during
     resolution so that they do not occur in the resolved software stack, unless
     there is no better candidate based on scoring in other pipeline steps
+
+  * Prevent adding ``scipy`` to a TensorFlow>2.1<=2.3 unless introduced
+    explictly in the stack. It is not needed (it was introduced accidentally).
 
 An example implementation
 =========================

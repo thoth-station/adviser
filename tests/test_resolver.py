@@ -24,8 +24,11 @@ import gc
 import math
 from copy import deepcopy
 import itertools
-from typing import List
 from typing import Generator
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Dict
 import random
 
 from thoth.adviser.beam import Beam
@@ -156,6 +159,16 @@ class _Functools32SkipPackageSieve(Sieve):
                 raise SkipPackage
 
             yield pv
+
+
+class _SciPySkipPackageStep(Step):
+    """A mock to skip a package."""
+
+    def run(self, _: State, package_version: PackageVersion) -> Optional[Tuple[float, List[Dict[str, str]]]]:
+        if package_version.name == "scipy":
+            raise SkipPackage
+
+        return None
 
 
 class TestResolver(AdviserTestCase):
@@ -2006,7 +2019,7 @@ class TestResolver(AdviserTestCase):
         resolver._prepare_user_lock_file()
         assert package_version.index == thoth_station_source
 
-    def test_skip_package_exception(self, resolver: Resolver, tf_package_versions: List[PackageVersion]) -> None:
+    def test_sieve_skip_package_exception(self, resolver: Resolver, tf_package_versions: List[PackageVersion]) -> None:
         """Test propagation of an exception caused to skip a package."""
         flexmock(sieves.Sieve1)
         flexmock(sieves.Sieve2)
@@ -2019,7 +2032,7 @@ class TestResolver(AdviserTestCase):
         with pytest.raises(SkipPackage):
             list(resolver._run_sieves(tf_package_versions))
 
-    def test_skip_package(self, resolver: Resolver, state: State) -> None:
+    def test_sieve_skip_package(self, resolver: Resolver, state: State) -> None:
         """Test raising a SkipPackage exception causes a dependency to be excluded."""
         flexmock(sieves.Sieve1)
         sieves.Sieve1.should_call("run").times(1)
@@ -2101,7 +2114,7 @@ class TestResolver(AdviserTestCase):
         assert state_returned is state
         assert not state.unresolved_dependencies
 
-    def test_skip_package_unresolved(self, resolver: Resolver, state: State) -> None:
+    def test_sieve_skip_package_unresolved(self, resolver: Resolver, state: State) -> None:
         """Test raising a SkipPackage exception causes a dependency to be excluded."""
         flexmock(sieves.Sieve1)
         sieves.Sieve1.should_call("run").times(2)
@@ -2184,7 +2197,7 @@ class TestResolver(AdviserTestCase):
         assert len(state_returned.unresolved_dependencies["absl-py"]) == 1
         assert "functools32" not in state_returned.unresolved_dependencies
 
-    def test_skip_package_direct(self, resolver: Resolver, numpy_package_versions: List[PackageVersion],) -> None:
+    def test_sieve_skip_package_direct(self, resolver: Resolver, numpy_package_versions: List[PackageVersion],) -> None:
         """Test raising a SkipPackage exception causes a direct dependency to be excluded."""
         flexmock(sieves.Sieve1)
         sieves.Sieve1.should_call("run").times(2)
@@ -2212,7 +2225,7 @@ class TestResolver(AdviserTestCase):
         assert "numpy" in initial_state.unresolved_dependencies
         assert len(initial_state.unresolved_dependencies["numpy"]) == len(numpy_package_versions)
 
-    def test_skip_package_user_stack(self, resolver: Resolver) -> None:
+    def test_sieve_skip_package_user_stack(self, resolver: Resolver) -> None:
         """Test skipping a package on the supplied user stack."""
         flexmock(sieves.Sieve1)
         sieves.Sieve1.should_call("run").times(2)
@@ -2244,7 +2257,7 @@ class TestResolver(AdviserTestCase):
         assert "tensorflow" in (pv.name for pv in resolver.project.iter_dependencies(with_devel=False))
         assert "tensorflow" in (pv.name for pv in resolver.project.iter_dependencies_locked(with_devel=False))
 
-    def test_skip_package_user_stack_direct(self, resolver: Resolver) -> None:
+    def test_sieve_skip_package_user_stack_direct(self, resolver: Resolver) -> None:
         """Test skipping a package on the supplied user stack, the package is a direct dependency."""
         flexmock(sieves.Sieve1)
         sieves.Sieve1.should_call("run").times(2)
@@ -2280,3 +2293,25 @@ class TestResolver(AdviserTestCase):
 
         assert "thoth-glyph" in (pv.name for pv in resolver.project.iter_dependencies(with_devel=False))
         assert "thoth-glyph" in (pv.name for pv in resolver.project.iter_dependencies_locked(with_devel=False))
+
+    def test_step_skip_package_run_steps(self, resolver: Resolver, state: State) -> None:
+        """Test skipping a package from within a step."""
+        flexmock(steps.Step1)
+        flexmock(steps.Step2)
+        steps.Step1.should_call("run").times(1)
+        steps.Step2.should_call("run").times(0)
+        resolver.pipeline.steps = [steps.Step1(), _SciPySkipPackageStep(), steps.Step2()]
+
+        package_version = PackageVersion(
+            name="scipy", version="==1.2.2", index=Source("https://pypi.org/simple"), develop=False,
+        )
+
+        unresolved_dependencies = {
+            "numpy": [("numpy", "1.19.2", "https://pypi.org/simple"), ("numpy", "1.19.1", "https://pypi.org/simple")]
+        }
+
+        assert "numpy" not in state.unresolved_dependencies
+
+        resolver._init_context()
+        assert resolver._run_steps(state, package_version, unresolved_dependencies) is state
+        assert "numpy" not in state.unresolved_dependencies
