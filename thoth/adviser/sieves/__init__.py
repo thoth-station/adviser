@@ -26,7 +26,7 @@ from .backports import MockBackportSieve
 from .filter_index import FilterIndexSieve
 from .index_enabled import PackageIndexSieve
 from .locked import CutLockedSieve
-from .pandas import PandasPy36Drop
+from .pandas import PandasPy36Sieve
 from .prereleases import CutPreReleasesSieve
 from .setuptools import Py36SetuptoolsSieve
 from .solved import SolvedSieve
@@ -52,5 +52,5 @@ __all__ = [
     "MockBackportSieve",
     "Py36SetuptoolsSieve",
     "TensorFlowCUDASieve",
-    "PandasPy36Drop",
+    "PandasPy36Sieve",
 ]
