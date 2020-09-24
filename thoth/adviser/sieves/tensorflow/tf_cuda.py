@@ -117,25 +117,26 @@ class TensorFlowCUDASieve(Sieve):
 
     def _log_unknown_tf_version(self, package_version: PackageVersion) -> None:
         """Log an unhandled TensorFlow release, this pipeline unit needs an update in such cases."""
-        _LOGGER.error(
-            "Unhandled TensorFlow release %r, gracefully giving up recommending based "
-            "TensorFlow based on CUDA version %s - see %s",
-            package_version.to_tuple(),
-            self.context.project.runtime_environment.cuda_version,
-            jl("cuda_unknown_tf"),
+        message = (
+            f"Unhandled TensorFlow release {package_version.to_tuple()}, gracefully giving up recommending "
+            f"TensorFlow based on CUDA version {self.context.project.runtime_environment.cuda_version!r}"
+        )
+        _LOGGER.error("%s - see %s", message, jl("cuda_unknown_tf"))
+        self.context.stack_info.append(
+            {"type": "ERROR", "message": message, "link": jl("cuda_unknown_tf"),}
         )
 
     def _maybe_log_no_recommendations(self, package_version: PackageVersion) -> None:
         """Log no recommendations are given for the given configuration."""
         if package_version.locked_version not in self._messages_logged:
-            _LOGGER.warning(
-                "Not recommending TensorFlow in version %r as this version is not supported on "
-                "CUDA in version %r - see %s",
-                package_version.locked_version,
-                self.context.project.runtime_environment.cuda_version,
-                jl("tf_no_cuda"),
+            message = (
+                f"Not recommending TensorFlow in version {package_version.locked_version!r} as this version "
+                f"is not supported on CUDA in version {self.context.project.runtime_environment.cuda_version!r}"
             )
+            link = jl("tf_no_cuda")
+            _LOGGER.warning("%s - see %s", message, link)
             self._messages_logged.add(package_version.locked_version)
+            self.context.stack_info.append({"type": "ERROR", "message": message, "link": link})
 
     def _yield_tensorflow(self, package_version: PackageVersion) -> bool:
         """Handle a tensorflow release."""

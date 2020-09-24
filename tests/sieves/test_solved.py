@@ -21,6 +21,7 @@ import flexmock
 from typing import Tuple
 
 from thoth.adviser.sieves import SolvedSieve
+from thoth.adviser.context import Context
 from thoth.common import RuntimeEnvironment
 from thoth.python import Source
 from thoth.python import PackageVersion
@@ -77,7 +78,7 @@ tensorflow = "*"
             sieve = SolvedSieve()
             assert list(sieve.run(p for p in [package_version])) == []
 
-    def test_not_solved_without_error(self) -> None:
+    def test_not_solved_without_error(self, context: Context) -> None:
         """Test a not found package is not accepted by sieve."""
         package_version, project = self._get_case()
         (
@@ -94,12 +95,19 @@ tensorflow = "*"
             .once()
         )
 
-        context = flexmock(
-            graph=GraphDatabase(), project=flexmock(runtime_environment=RuntimeEnvironment.from_dict({})),
-        )
+        context.graph = GraphDatabase()
+        context.project = flexmock(runtime_environment=RuntimeEnvironment.from_dict({}))
+
+        assert not context.stack_info, "No stack info should be provided before test run"
+
+        sieve = SolvedSieve()
+        sieve.pre_run()
+
         with SolvedSieve.assigned_context(context):
-            sieve = SolvedSieve()
             assert list(sieve.run(p for p in [package_version])) == []
+
+        assert context.stack_info, "No stack info provided by the pipeline unit"
+        assert self.verify_justification_schema(context.stack_info) is True
 
     def test_acceptable_with_error(self) -> None:
         """Test accepted with an error."""

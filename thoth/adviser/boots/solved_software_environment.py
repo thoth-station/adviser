@@ -39,7 +39,7 @@ _LOGGER = logging.getLogger(__name__)
 class SolvedSoftwareEnvironmentBoot(Boot):
     """A boot to check for solved software environment before running any resolution."""
 
-    _JUSTIFICATION_LINK = jl('solved_sw_env')
+    _JUSTIFICATION_LINK = jl("solved_sw_env")
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

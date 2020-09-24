@@ -20,11 +20,14 @@
 import logging
 from typing import Any
 from typing import Dict
-from typing import Optional
 from typing import Generator
+from typing import Optional
+from typing import Set
+from typing import Tuple
 from typing import TYPE_CHECKING
 
 import attr
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.storages.exceptions import NotFoundError
 
@@ -41,6 +44,9 @@ class SolvedSieve(Sieve):
     """Filter out build time/installation errors of Python packages."""
 
     CONFIGURATION_DEFAULT = {"without_error": True}
+    _JUSTIFICATION_LINK = jl("buildtime_error")
+
+    _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -50,9 +56,15 @@ class SolvedSieve(Sieve):
 
         return None
 
+    def pre_run(self) -> None:
+        """Initialize this pipeline unit before each run."""
+        self._messages_logged.clear()
+
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages based on build time/installation issues.."""
         for package_version in package_versions:
+            package_tuple = package_version.to_tuple()
+
             try:
                 has_error = self.context.graph.has_python_solver_error(
                     package_version.name,
@@ -64,15 +76,18 @@ class SolvedSieve(Sieve):
                 )
             except NotFoundError as exc:
                 _LOGGER.debug(
-                    "Removing package %r as it was not solved: %s", package_version.to_tuple(), str(exc),
+                    "Removing package %r as it was not solved: %s", package_tuple, str(exc),
                 )
                 continue
 
             if has_error and self.configuration["without_error"]:
-                _LOGGER.debug(
-                    "Removing package %r due to build time error in the software environment",
-                    package_version.to_tuple(),
-                )
+                if package_tuple not in self._messages_logged:
+                    self._messages_logged.add(package_tuple)
+                    message = f"Removing package {package_tuple} due to build time error in the software environment"
+                    _LOGGER.warning("%s - see %s", message, self._JUSTIFICATION_LINK)
+                    self.context.stack_info.append(
+                        {"type": "WARNING", "message": message, "link": self._JUSTIFICATION_LINK,}
+                    )
                 continue
 
             yield package_version

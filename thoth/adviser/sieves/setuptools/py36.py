@@ -25,6 +25,7 @@ from typing import Generator
 from typing import TYPE_CHECKING
 
 import attr
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
 from ...sieve import Sieve
@@ -43,6 +44,11 @@ class Py36SetuptoolsSieve(Sieve):
     https://github.com/thoth-station/solver/issues/350
     """
 
+    _MESSAGE = "Package setuptools in versions <=17 do not work with Python 3.6"
+    _JUSTIFICATION_LINK = jl("setuptools_py38")
+
+    _message_logged = attr.ib(type=bool, default=False, init=False)
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include for Python 3.6 and adviser/dependency monkey runs."""
@@ -54,8 +60,17 @@ class Py36SetuptoolsSieve(Sieve):
 
         return None
 
+    def pre_run(self) -> None:
+        """Initialize this pipeline unit before each run."""
+        self._message_logged = False
+
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out old setuptools that do not work with Python 3.6."""
         for package_version in package_versions:
             if package_version.name != "setuptools" or package_version.semantic_version.major >= 17:
                 yield package_version
+            elif package_version.name == "setuptools" and not self._message_logged:
+                self._message_logged = True
+                self.context.stack_info.append(
+                    {"type": "WARNING", "message": self._MESSAGE, "link": self._JUSTIFICATION_LINK}
+                )

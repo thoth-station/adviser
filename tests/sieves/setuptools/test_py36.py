@@ -24,6 +24,7 @@ from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.sieves import Py36SetuptoolsSieve
+from thoth.adviser.context import Context
 from thoth.python import PackageVersion
 from thoth.python import Source
 
@@ -77,16 +78,20 @@ class TestPy36SetuptoolsSieve(AdviserTestCase):
         builder_context.project.runtime_environment.python_version = python_version
         assert Py36SetuptoolsSieve.should_include(builder_context) is None
 
-    def test_filter(self) -> None:
+    def test_filter(self, context: Context) -> None:
         """Test filtering out setuptools that do not work with Python 3.6."""
         package_version = PackageVersion(
             name="setuptools", version="==14.2", develop=False, index=Source("https://pypi.org/simple"),
         )
 
-        context = flexmock()
+        unit = Py36SetuptoolsSieve()
+        unit.pre_run()
         with Py36SetuptoolsSieve.assigned_context(context):
-            unit = Py36SetuptoolsSieve()
+            assert unit._message_logged is False
             assert list(unit.run(p for p in [package_version])) == []
+            assert unit._message_logged is True
+            assert context.stack_info, "No stack guidance provided"
+            assert self.verify_justification_schema(context.stack_info)
 
     def test_no_filter(self) -> None:
         """Test not filtering packages that can be included."""
