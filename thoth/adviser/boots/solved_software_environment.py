@@ -39,6 +39,8 @@ _LOGGER = logging.getLogger(__name__)
 class SolvedSoftwareEnvironmentBoot(Boot):
     """A boot to check for solved software environment before running any resolution."""
 
+    _JUSTIFICATION_LINK = jl('solved_sw_env')
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, always."""
@@ -63,10 +65,10 @@ class SolvedSoftwareEnvironmentBoot(Boot):
         msg = (
             f"No observations found for {runtime_environment.operating_system.name!r} in "
             f"version {runtime_environment.operating_system.version!r} using "
-            f"Python {runtime_environment.python_version!r} - see {jl('solved_sw_env')}"
+            f"Python {runtime_environment.python_version!r} - see {self._JUSTIFICATION_LINK}"
         )
 
-        _LOGGER.warning(msg)
+        _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_LINK)
         _LOGGER.warning("Available configurations:")
 
         configurations = self.context.graph.get_solved_python_package_versions_software_environment_all()

@@ -25,6 +25,8 @@ from typing import TYPE_CHECKING
 
 import attr
 
+from thoth.common import get_justification_link as jl
+
 from ..boot import Boot
 
 if TYPE_CHECKING:
@@ -40,6 +42,9 @@ class UbiBoot(Boot):
     As UBI has ABI compatibility with RHEL, remap any UBI to RHEL.
     """
 
+    _MESSAGE = "Using observations for RHEL instead of UBI, RHEL is ABI compatible with UBI"
+    _JUSTIFICATION_LINK = jl("rhel_ubi")
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, always."""
@@ -51,5 +56,8 @@ class UbiBoot(Boot):
     def run(self) -> None:
         """Remap UBI to RHEL as Thoth keeps track of RHEL and UBI is ABI compatible."""
         if self.context.project.runtime_environment.operating_system.name == "ubi":
-            _LOGGER.info("Using observations for RHEL instead of UBI, RHEL is ABI compatible with UBI")
+            _LOGGER.info("%s - see %s", self._MESSAGE, self._JUSTIFICATION_LINK)
+            self.context.stack_info.append(
+                {"type": "WARNING", "message": self._MESSAGE, "link": self._JUSTIFICATION_LINK}
+            )
             self.context.project.runtime_environment.operating_system.name = "rhel"

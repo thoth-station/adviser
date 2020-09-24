@@ -25,6 +25,8 @@ from typing import TYPE_CHECKING
 
 import attr
 
+from thoth.common import get_justification_link as jl
+
 from ..boot import Boot
 
 if TYPE_CHECKING:
@@ -57,7 +59,8 @@ class RHELVersionBoot(Boot):
             if len(version_parts) > 1:
                 _LOGGER.info(
                     "RHEL major releases guarantee ABI compatibility across minor releases; "
-                    "discarding minor release information and using RHEL version %r",
+                    "discarding minor release information and using RHEL version %r - see %s",
                     version_parts[0],
+                    jl("rhel_version"),
                 )
                 self.context.project.runtime_environment.operating_system.version = version_parts[0]

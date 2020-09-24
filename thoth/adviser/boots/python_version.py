@@ -62,7 +62,7 @@ class PythonVersionBoot(Boot):
                 f"No version of Python specified in the configuration, using Python version "
                 f"found in Pipfile: {pipfile_python_version!r}"
             )
-            _LOGGER.warning(msg)
+            _LOGGER.warning("%s - see %s", msg, self._LINK_PY_VER_PIPFILE)
             self.context.project.runtime_environment.python_version = pipfile_python_version
             self.context.stack_info.append({"type": "WARNING", "message": msg, "link": self._LINK_PY_VER_PIPFILE})
         elif python_version is not None and pipfile_python_version is None:
@@ -70,6 +70,6 @@ class PythonVersionBoot(Boot):
                 f"No version of Python specified explicitly, assigning the one found in "
                 f"Thoth's configuration: {python_version!r}"
             )
-            _LOGGER.warning(msg)
+            _LOGGER.warning("%s - see %s", msg, self._LINK_PY_VER_THOTH_CONF)
             self.context.project.pipfile.meta.requires["python_version"] = python_version
             self.context.stack_info.append({"type": "WARNING", "message": msg, "link": self._LINK_PY_VER_THOTH_CONF})
