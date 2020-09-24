@@ -54,10 +54,8 @@ class TensorFlowRemoveSciPyStep(Step):
 
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
-    _MESSAGE = (
-        f"TensorFlow in versions >=2.1<=2.3 stated SciPy as a dependency but it is "
-        f"not used in the codebase - see {jl('tf_rm_scipy')}"
-    )
+    _MESSAGE = "TensorFlow in versions >=2.1<=2.3 stated SciPy as a dependency but it is not used in the codebase"
+    _LINK = jl("tf_rm_scipy")
 
     _RECOMMENDATION_TYPES = {RecommendationType.LATEST, RecommendationType.TESTING}
 
@@ -113,8 +111,11 @@ class TensorFlowRemoveSciPyStep(Step):
         introduced_by = scipy_dependents & set(state.resolved_dependencies.values())
         if len(introduced_by) == 1 and next(iter(introduced_by)) == tensorflow_any:
             if not self._message_logged:
-                _LOGGER.warning(self._MESSAGE)
                 self._message_logged = True
+                _LOGGER.warning("%s - see %s", self._MESSAGE, self._LINK)
+                self.context.stack_info.append(
+                    {"type": "WARNING", "message": self._MESSAGE, "link": self._LINK}
+                )
 
             raise SkipPackage
 

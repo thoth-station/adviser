@@ -52,9 +52,10 @@ class TensorFlow21Urllib3Step(Step):
     MULTI_PACKAGE_RESOLUTIONS = True
 
     _MESSAGE = (
-        f"TensorFlow in version 2.1 can cause runtime errors when imported, caused by "
-        f"incompatibility between urllib3 and six packages - see {jl('tf_21_urllib3')}"
+        "TensorFlow in version 2.1 can cause runtime errors when imported, caused by "
+        "incompatibility between urllib3 and six packages"
     )
+    _LINK = jl('tf_21_urllib3')
     _AFFECTED_URLLIB3_VERSIONS = frozenset({(1, 2), (1, 3), (1, 4), (1, 5)})
 
     def pre_run(self) -> None:
@@ -97,6 +98,9 @@ class TensorFlow21Urllib3Step(Step):
 
         if not self._message_logged:
             self._message_logged = True
-            _LOGGER.warning(self._MESSAGE)
+            _LOGGER.warning("%s - see %s", self._MESSAGE, self._LINK)
+            self.context.stack_info.append(
+                {"type": "WARNING", "message": self._MESSAGE, "link": self._LINK}
+            )
 
         raise NotAcceptable

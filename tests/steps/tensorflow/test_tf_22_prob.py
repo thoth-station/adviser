@@ -19,6 +19,7 @@
 
 import pytest
 
+from thoth.adviser.context import Context
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.exceptions import NotAcceptable
@@ -55,7 +56,7 @@ class TestTensorFlow22ProbabilityStep(AdviserTestCase):
         assert TensorFlow22ProbabilityStep.should_include(builder_context) is None
 
     @pytest.mark.parametrize("package_name", ["tensorflow", "tensorflow-cpu", "tensorflow-gpu"])
-    def test_run(self, package_name: str) -> None:
+    def test_run(self, context: Context, package_name: str) -> None:
         """Test recommending not to use TensorFlow 2.2 with tensorflow-probability."""
         package_version = PackageVersion(
             name="tensorflow-probability", version="==0.11.0", develop=False, index=Source("https://pypi.org/simple"),
@@ -65,11 +66,18 @@ class TestTensorFlow22ProbabilityStep(AdviserTestCase):
         state.add_resolved_dependency((package_name, "2.2.0", "https://pypi.org/simple"))
 
         unit = TensorFlow22ProbabilityStep()
+        unit.pre_run()
 
-        with pytest.raises(NotAcceptable):
-            assert unit._message_logged is False
-            unit.run(state, package_version)
-            assert unit._message_logged is True
+        assert not context.stack_info
+
+        with unit.assigned_context(context):
+            with pytest.raises(NotAcceptable):
+                assert unit._message_logged is False
+                unit.run(state, package_version)
+                assert unit._message_logged is True
+
+        assert context.stack_info
+        assert self.verify_justification_schema(context.stack_info) is True
 
     def test_run_acceptable_tf(self) -> None:
         """Test noop for this pipeline unit."""

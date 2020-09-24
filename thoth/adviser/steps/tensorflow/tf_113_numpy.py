@@ -52,7 +52,8 @@ class TensorFlow113NumPyStep(Step):
     # Run this step each time, regardless of when tensorflow and tensorflow-probability are resolved.
     MULTI_PACKAGE_RESOLUTIONS = True
 
-    _MESSAGE = f"TensorFlow in version 1.13.1 is compatible with NumPy>=1.16.0 - see {jl('tf_25636')}"
+    _MESSAGE = "TensorFlow in version 1.13.1 is compatible with NumPy>=1.16.0"
+    _LINK = jl("tf_25636")
 
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
@@ -95,7 +96,10 @@ class TensorFlow113NumPyStep(Step):
             return None
 
         if not self._message_logged:
-            _LOGGER.warning(self._MESSAGE)
             self._message_logged = True
+            _LOGGER.warning("%s - see %s", self._MESSAGE, self._LINK)
+            self.context.stack_info.append(
+                {"type": "WARNING", "message": self._MESSAGE, "link": self._LINK}
+            )
 
         raise NotAcceptable
