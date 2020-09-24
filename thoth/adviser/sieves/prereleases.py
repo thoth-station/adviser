@@ -42,6 +42,10 @@ class CutPreReleasesSieve(Sieve):
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include cut-prereleases pipeline sieve for adviser or Dependency Monkey if pre-releases are not allowed."""
+        if builder_context.project.prereleases_allowed:
+            _LOGGER.info("Project accepts pre-releases, skipping cutting pre-releases step")
+            return None
+
         if not builder_context.is_included(cls) and not builder_context.project.prereleases_allowed:
             return {}
 
@@ -50,10 +54,6 @@ class CutPreReleasesSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Cut-off pre-releases if project does not explicitly allows them."""
         for package_version in package_versions:
-            if self.context.project.prereleases_allowed:
-                _LOGGER.info("Project accepts pre-releases, skipping cutting pre-releases step")
-                yield package_version
-
             if package_version.semantic_version.is_prerelease:
                 _LOGGER.debug(
                     "Removing package %s - pre-releases are disabled", package_version.to_tuple(),
