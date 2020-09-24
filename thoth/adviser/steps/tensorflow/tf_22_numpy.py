@@ -55,7 +55,7 @@ class TensorFlow22NumPyStep(Step):
     MULTI_PACKAGE_RESOLUTIONS = True
 
     _MESSAGE = "TensorFlow <2.3>=2.0 states NumPy<2.0.0 as a dependency, but is compatible with NumPy<1.19.0"
-    _LINK = jl('tf_41902')
+    _LINK = jl("tf_41902")
 
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
@@ -99,9 +99,7 @@ class TensorFlow22NumPyStep(Step):
             if not self._message_logged:
                 self._message_logged = True
                 _LOGGER.warning("%s - see %s", self._MESSAGE, self._LINK)
-                self.context.stack_info.append(
-                    {"type": "WARNING", "message": self._MESSAGE, "link": self._LINK}
-                )
+                self.context.stack_info.append({"type": "WARNING", "message": self._MESSAGE, "link": self._LINK})
 
             raise NotAcceptable
 
