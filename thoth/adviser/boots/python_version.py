@@ -25,6 +25,8 @@ from typing import TYPE_CHECKING
 
 import attr
 
+from thoth.common import get_justification_link as jl
+
 from ..boot import Boot
 
 if TYPE_CHECKING:
@@ -36,6 +38,9 @@ _LOGGER = logging.getLogger(__name__)
 @attr.s(slots=True)
 class PythonVersionBoot(Boot):
     """A boot that checks Python3 configuration used by user."""
+
+    _LINK_PY_VER_PIPFILE = jl("py_version")
+    _LINK_PY_VER_THOTH_CONF = jl("py_version")
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -59,7 +64,7 @@ class PythonVersionBoot(Boot):
             )
             _LOGGER.warning(msg)
             self.context.project.runtime_environment.python_version = pipfile_python_version
-            self.context.stack_info.append({"type": "WARNING", "Message": msg})
+            self.context.stack_info.append({"type": "WARNING", "message": msg, "link": self._LINK_PY_VER_PIPFILE})
         elif python_version is not None and pipfile_python_version is None:
             msg = (
                 f"No version of Python specified explicitly, assigning the one found in "
@@ -67,4 +72,4 @@ class PythonVersionBoot(Boot):
             )
             _LOGGER.warning(msg)
             self.context.project.pipfile.meta.requires["python_version"] = python_version
-            self.context.stack_info.append({"type": "WARNING", "Message": msg})
+            self.context.stack_info.append({"type": "WARNING", "message": msg, "link": self._LINK_PY_VER_THOTH_CONF})
