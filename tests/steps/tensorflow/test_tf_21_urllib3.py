@@ -20,6 +20,7 @@
 import flexmock
 import pytest
 
+from thoth.adviser.context import Context
 from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.steps import TensorFlow21Urllib3Step
 from thoth.adviser.state import State
@@ -36,7 +37,7 @@ class TestTensorFlow21Urllib32Step(AdviserTestCase):
         "urllib3_version,tf_version",
         [("1.2", "2.1"), ("1.2.1", "2.1.1"), ("1.2.2", "2.1.0"), ("1.3", "2.1"), ("1.4", "2.1"), ("1.5", "2.1.dev")],
     )
-    def test_tf_21(self, urllib3_version: str, tf_version: str) -> None:
+    def test_tf_21(self, context: Context, urllib3_version: str, tf_version: str) -> None:
         """Test penalizing TensorFlow in version 2.1."""
         tf_package_version = PackageVersion(
             name="tensorflow", version=f"=={tf_version}", develop=False, index=Source("https://pypi.org/simple"),
@@ -49,8 +50,8 @@ class TestTensorFlow21Urllib32Step(AdviserTestCase):
         state = State()
         state.resolved_dependencies["tensorflow"] = tf_package_version.to_tuple()
 
-        # Context is not used during the actual pipeline run.
-        context = flexmock()
+        assert not context.stack_info
+
         with TensorFlow21Urllib3Step.assigned_context(context):
             unit = TensorFlow21Urllib3Step()
             unit.pre_run()
@@ -58,6 +59,9 @@ class TestTensorFlow21Urllib32Step(AdviserTestCase):
             with pytest.raises(NotAcceptable):
                 assert unit.run(state, urllib3_package_version)
                 assert unit._message_logged is True
+
+        assert context.stack_info
+        assert self.verify_justification_schema(context.stack_info)
 
     @pytest.mark.parametrize("urllib3_version,tf_version", [("1.2", "2.2.0"), ("1.25.10", "2.1")])
     def test_no_tf_21(self, urllib3_version: str, tf_version: str) -> None:

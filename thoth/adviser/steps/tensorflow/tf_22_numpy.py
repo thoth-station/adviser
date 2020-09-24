@@ -54,8 +54,8 @@ class TensorFlow22NumPyStep(Step):
     # Run this step each time, regardless of when tensorflow and tensorflow-probability are resolved.
     MULTI_PACKAGE_RESOLUTIONS = True
 
-    _MESSAGE = f"TensorFlow <2.3>=2.0 states NumPy<2.0.0 as a dependency, but is compatible with "
-    f"NumPy<1.19.0 - see {jl('tf_41902')}"
+    _MESSAGE = "TensorFlow <2.3>=2.0 states NumPy<2.0.0 as a dependency, but is compatible with NumPy<1.19.0"
+    _LINK = jl('tf_41902')
 
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
@@ -97,8 +97,11 @@ class TensorFlow22NumPyStep(Step):
         tf_package_version = self.context.get_package_version(tensorflow_any)
         if tf_package_version and (2, 0) <= tf_package_version.semantic_version.release[:2] < (2, 3):
             if not self._message_logged:
-                _LOGGER.warning(self._MESSAGE)
                 self._message_logged = True
+                _LOGGER.warning("%s - see %s", self._MESSAGE, self._LINK)
+                self.context.stack_info.append(
+                    {"type": "WARNING", "message": self._MESSAGE, "link": self._LINK}
+                )
 
             raise NotAcceptable
 

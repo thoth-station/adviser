@@ -55,10 +55,8 @@ class TensorFlow114GastStep(Step):
     # Run this step each time, regardless of when TensorFlow and urllib3 are resolved.
     MULTI_PACKAGE_RESOLUTIONS = True
 
-    _MESSAGE = (
-        f"TensorFlow in version <=1.14 used overpinned gast package, using gast in version <=0.2.2 "
-        f"- see {jl('tf_114_gast')}"
-    )
+    _MESSAGE = "TensorFlow in version <=1.14 used overpinned gast package, using gast in version <=0.2.2"
+    _LINK = jl("tf_114_gast")
 
     def pre_run(self) -> None:
         """Initialize this pipeline unit before each run."""
@@ -102,6 +100,9 @@ class TensorFlow114GastStep(Step):
 
         if not self._message_logged:
             self._message_logged = True
-            _LOGGER.warning(self._MESSAGE)
+            _LOGGER.warning("%s - see %s", self._MESSAGE, self._LINK)
+            self.context.stack_info.append(
+                {"type": "WARNING", "message": self._MESSAGE, "link": self._LINK}
+            )
 
         raise NotAcceptable

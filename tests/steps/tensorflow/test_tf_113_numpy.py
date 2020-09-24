@@ -21,6 +21,7 @@ from itertools import product
 
 import pytest
 
+from thoth.adviser.context import Context
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.exceptions import NotAcceptable
@@ -68,7 +69,7 @@ class TestTensorFlow113NumPyStep(AdviserTestCase):
         "tf_name,np_version",
         list(product(["tensorflow", "tensorflow-cpu", "tensorflow-gpu"], ["1.13.3", "1.14.0", "1.15.0", "1.15.5"])),
     )
-    def test_run_not_acceptable(self, tf_name: str, np_version: str) -> None:
+    def test_run_not_acceptable(self, context: Context, tf_name: str, np_version: str) -> None:
         """Test wrong resolutions are not acceptable."""
         package_version = PackageVersion(
             name="numpy", version=f"=={np_version}", develop=False, index=Source("https://pypi.org/simple"),
@@ -78,12 +79,18 @@ class TestTensorFlow113NumPyStep(AdviserTestCase):
         state.add_resolved_dependency((tf_name, "1.13.1", "https://pypi.org/simple"))
 
         unit = TensorFlow113NumPyStep()
+        unit.pre_run()
 
-        with pytest.raises(NotAcceptable):
-            assert unit._message_logged is False
-            unit.run(state, package_version)
+        assert not context.stack_info
+
+        with unit.assigned_context(context):
+            with pytest.raises(NotAcceptable):
+                assert unit._message_logged is False
+                unit.run(state, package_version)
 
         assert unit._message_logged is True
+        assert context.stack_info
+        assert self.verify_justification_schema(context.stack_info) is True
 
     @pytest.mark.parametrize(
         "tf_name,np_version",

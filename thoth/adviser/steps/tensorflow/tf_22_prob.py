@@ -52,7 +52,8 @@ class TensorFlow22ProbabilityStep(Step):
     # Run this step each time, regardless of when tensorflow and tensorflow-probability are resolved.
     MULTI_PACKAGE_RESOLUTIONS = True
 
-    _MESSAGE = f"TensorFlow in version 2.2 and tensorflow-probability cause runtime errors - see {jl('tf_40584')}"
+    _MESSAGE = "TensorFlow in version 2.2 and tensorflow-probability cause runtime errors"
+    _LINK = jl('tf_40584')
 
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
@@ -91,7 +92,10 @@ class TensorFlow22ProbabilityStep(Step):
             return None
 
         if not self._message_logged:
-            _LOGGER.warning(self._MESSAGE)
             self._message_logged = True
+            _LOGGER.warning("%s - see %s", self._MESSAGE, self._LINK)
+            self.context.stack_info.append(
+                {"type": "WARNING", "message": self._MESSAGE, "link": self._LINK}
+            )
 
         raise NotAcceptable
