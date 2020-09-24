@@ -23,6 +23,8 @@ from typing import Dict
 from typing import Any
 from typing import TYPE_CHECKING
 
+from thoth.common import get_justification_link as jl
+
 import attr
 from voluptuous import Required
 from voluptuous import Schema
@@ -42,6 +44,7 @@ class PlatformBoot(Boot):
 
     CONFIGURATION_DEFAULT = {"default_platform": "linux-x86_64"}
     CONFIGURATION_SCHEMA = Schema({Required("default_platform"): str,})
+    _JUSTIFICATION_LINK = jl('platform')
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -54,11 +57,11 @@ class PlatformBoot(Boot):
     def run(self) -> None:
         """Check for platform configured and adjust to the default one if not provided by user."""
         if self.context.project.runtime_environment.platform is None:
-            _LOGGER.warning(
-                "No platform provided in the configuration, setting to %r implicitly",
-                self.configuration["default_platform"],
-            )
+            msg = f"No platform provided in the configuration, setting to {self.configuration['default_platform']!r} implicitly"
+
+            _LOGGER.warning("%s - see %s", msg, self._JUSTIFICATION_LINK)
             self.context.project.runtime_environment.platform = self.configuration["default_platform"]
+            self.context.stack_info.append({"type": "WARNING", "message": msg, "link": self._JUSTIFICATION_LINK})
 
         platform = self.context.project.runtime_environment.platform
         if not self.context.graph.python_package_version_depends_on_platform_exists(platform):

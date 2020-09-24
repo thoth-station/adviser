@@ -20,6 +20,7 @@
 import flexmock
 
 from thoth.adviser.boots import UbiBoot
+from thoth.adviser.context import Context
 from thoth.python import Project
 
 from ..base import AdviserTestCase
@@ -38,9 +39,9 @@ name = "pypi"
 tensorflow = "*"
 """
 
-    def test_rhel_assign(self) -> None:
+    def test_rhel_assign(self, context: Context) -> None:
         """Test remapping UBI to RHEL."""
-        context = flexmock(project=Project.from_strings(self._CASE_PIPFILE))
+        context.project = Project.from_strings(self._CASE_PIPFILE)
         context.project.runtime_environment.operating_system.name = "ubi"
 
         boot = UbiBoot()
@@ -48,6 +49,8 @@ tensorflow = "*"
             boot.run()
 
         assert context.project.runtime_environment.operating_system.name == "rhel"
+        assert context.stack_info, "No stack info provided"
+        assert self.verify_justification_schema(context.stack_info) is True
 
     def test_no_rhel_assign(self) -> None:
         """Test no change made if operating system is not UBI."""
