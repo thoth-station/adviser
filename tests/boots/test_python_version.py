@@ -20,6 +20,7 @@
 import flexmock
 
 from thoth.adviser.boots import PythonVersionBoot
+from thoth.common import get_justification_link as jl
 from thoth.python import Project
 
 from ..base import AdviserTestCase
@@ -68,9 +69,10 @@ python_version = "3.6"
         assert context.project.runtime_environment.python_version == "3.6"
         assert context.stack_info == [
             {
-                "Message": "No version of Python specified in the configuration, using "
+                "message": "No version of Python specified in the configuration, using "
                 "Python version found in Pipfile: '3.6'",
                 "type": "WARNING",
+                "link": jl("py_version"),
             },
         ]
 
@@ -90,8 +92,9 @@ python_version = "3.6"
         assert context.project.runtime_environment.python_version == "3.6"
         assert context.stack_info == [
             {
-                "Message": "No version of Python specified explicitly, assigning the one "
+                "message": "No version of Python specified explicitly, assigning the one "
                 "found in Thoth's configuration: '3.6'",
                 "type": "WARNING",
+                "link": jl("py_version"),
             }
         ]
