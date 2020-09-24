@@ -181,6 +181,7 @@ class Resolver:
     _log_unresolved = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
     _log_unsolved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
     _log_sieved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
+    _log_step_skip_package = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
     _log_step_not_acceptable = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
     _log_no_intersected = attr.ib(type=Set[Tuple[Tuple[str, str, str], str]], default=attr.Factory(set), kw_only=True)
 
@@ -315,6 +316,7 @@ class Resolver:
 
         score_addition = 0.0
         justification_addition = []
+        skip_package = False
         for step in self.pipeline.steps:
             _LOGGER.debug("Running step %r for %r", step.__class__.__name__, package_version_tuple)
 
@@ -329,6 +331,20 @@ class Resolver:
 
             try:
                 step_result = step.run(state, package_version)
+            except SkipPackage as exc:
+                # This should be fine also for user-stacks steps. They will just adjusted.
+                log_once(
+                    _LOGGER,
+                    self._log_step_skip_package,
+                    package_version_tuple,
+                    "Step %r discarded addition of package %r: %s",
+                    step.__class__.__name__,
+                    package_version_tuple,
+                    str(exc),
+                    level=log_level,
+                )
+                skip_package = True
+                break
             except NotAcceptable as exc:
                 log_once(
                     _LOGGER,
@@ -384,25 +400,33 @@ class Resolver:
                 if step_justification_addition is not None:
                     justification_addition.extend(step_justification_addition)
 
-        if state.unresolved_dependencies and package_version_tuple[0] in state.unresolved_dependencies:
+        if (
+            state.unresolved_dependencies
+            and package_version_tuple[0] in state.unresolved_dependencies
+            and not skip_package
+        ):
             cloned_state = state.clone()
             weakref.finalize(cloned_state, self.predictor.finalize_state, id(cloned_state)).atexit = False
         else:
             # Optimization - reuse the old one as it would be discarded anyway.
             cloned_state = state
-            if not user_stack_scoring and (
-                score_addition != 0.0 or (not state.unresolved_dependencies and not unresolved_dependencies)
+            if (
+                not user_stack_scoring
+                and not skip_package
+                and (score_addition != 0.0 or (not state.unresolved_dependencies and not unresolved_dependencies))
             ):
                 self.beam.remove(cloned_state)
 
-        if unresolved_dependencies:
+        if unresolved_dependencies and not skip_package:
             cloned_state.set_unresolved_dependencies(unresolved_dependencies)
 
         cloned_state.remove_unresolved_dependency_subtree(package_version_tuple[0])
-        cloned_state.add_resolved_dependency(package_version_tuple)
+        if not skip_package:
+            cloned_state.add_justification(justification_addition)
+            cloned_state.add_resolved_dependency(package_version_tuple)
+            cloned_state.score += score_addition
+
         cloned_state.iteration = self.context.iteration
-        cloned_state.add_justification(justification_addition)
-        cloned_state.score += score_addition
 
         if not user_stack_scoring:
             if cloned_state.unresolved_dependencies:

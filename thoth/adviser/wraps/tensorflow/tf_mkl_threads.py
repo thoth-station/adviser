@@ -38,13 +38,22 @@ class MKLThreadsWrap(Wrap):
     https://software.intel.com/en-us/mkl-linux-developer-guide-setting-the-number-of-openmp-threads
     """
 
-    _JUSTIFICATION = [
+    _JUSTIFICATION_MKL_ENV = [
         {
             "type": "WARNING",
             "message": "Consider adjusting OMP_NUM_THREADS environment variable for containerized deployments, "
             "one or more libraries use Intel's MKL that does not detect correctly "
             "resource allocation in the cluster",
             "link": jl("mkl_threads"),
+        }
+    ]
+
+    _JUSTIFICATION_INTEL_TF = [
+        {
+            "type": "WARNING",
+            "message": "Make sure your environment has proper Intel Performance Libraries when using "
+            "Intel TensorFlow builds",
+            "link": jl("mkl_libs"),
         }
     ]
 
@@ -71,10 +80,10 @@ class MKLThreadsWrap(Wrap):
 
     def run(self, state: State) -> None:
         """Check for libraries using PyTorch."""
-        if (
-            "torch" in state.resolved_dependencies
-            or "pytorch" in state.resolved_dependencies
-            or "intel-tensorflow" in state.resolved_dependencies
-        ):
+        if "torch" in state.resolved_dependencies or "pytorch" in state.resolved_dependencies:
+            state.add_justification(self._JUSTIFICATION_MKL_ENV)
             state.advised_manifest_changes.append(self._ADVISED_MANIFEST_CHANGE_PREPEND)
-            state.add_justification(self._JUSTIFICATION)
+        elif "intel-tensorflow" in state.resolved_dependencies:
+            state.add_justification(self._JUSTIFICATION_MKL_ENV)
+            state.add_justification(self._JUSTIFICATION_INTEL_TF)
+            state.advised_manifest_changes.append(self._ADVISED_MANIFEST_CHANGE_PREPEND)
