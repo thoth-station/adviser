@@ -20,12 +20,14 @@
 import flexmock
 
 from thoth.adviser.boots import RHELVersionBoot
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
+from thoth.adviser.enums import RecommendationType
 from thoth.python import Project
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestRHELVersionBoot(AdviserTestCase):
+class TestRHELVersionBoot(AdviserUnitTestCase):
     """Test changes to RHEL version for major RHEL releases."""
 
     _CASE_PIPFILE = """
@@ -37,6 +39,13 @@ name = "pypi"
 [packages]
 tensorflow = "*"
 """
+
+    UNIT_TESTED = RHELVersionBoot
+
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
+        self.verify_multiple_should_include(builder_context)
 
     def test_version_change(self) -> None:
         """Test changing RHEL version to its major version."""

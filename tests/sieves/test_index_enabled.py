@@ -19,17 +19,26 @@
 
 import flexmock
 
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.sieves import PackageIndexSieve
 from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages import GraphDatabase
 from thoth.storages.exceptions import NotFoundError
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestPackageIndexSieve(AdviserTestCase):
+class TestPackageIndexSieve(AdviserUnitTestCase):
     """Test filtering out packages based on enabled or disabled Python package index."""
+
+    UNIT_TESTED = PackageIndexSieve
+
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
+        self.verify_multiple_should_include(builder_context)
 
     def test_sieve_index_enabled(self) -> None:
         """Test no-op when the given Python package index used to obtain package is enabled."""

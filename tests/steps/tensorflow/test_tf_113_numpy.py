@@ -31,11 +31,18 @@ from thoth.adviser.steps import TensorFlow113NumPyStep
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlow113NumPyStep(AdviserTestCase):
+class TestTensorFlow113NumPyStep(AdviserUnitTestCase):
     """TensorFlow 1.13.1 is compatible with NumPy>=1.16.0, not with >=1.13.3 as stated in setup.py."""
+
+    UNIT_TESTED = TensorFlow113NumPyStep
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.STABLE
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize(
         "recommendation_type",

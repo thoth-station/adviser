@@ -22,16 +22,19 @@ import pytest
 
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.exceptions import NotAcceptable
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.steps import CvePenalizationStep
 from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages import GraphDatabase
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestCvePenalizationStep(AdviserTestCase):
+class TestCvePenalizationStep(AdviserUnitTestCase):
     """Test scoring (penalization) based on a CVE."""
+
+    UNIT_TESTED = CvePenalizationStep
 
     _CASE_CANDIDATES = [
         ("flask", "0.12.0", "https://pypi.org/simple"),
@@ -47,6 +50,11 @@ class TestCvePenalizationStep(AdviserTestCase):
         "version_range": "<0.12.3",
         "cve_id": "pyup.io-36388",
     }
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.SECURITY
+        self.verify_multiple_should_include(builder_context)
 
     def test_cve_penalization(self) -> None:
         """Make sure a CVE affects stack score."""

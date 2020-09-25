@@ -31,11 +31,18 @@ from thoth.adviser.steps import TensorFlow114GastStep
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlow114GastStep(AdviserTestCase):
+class TestTensorFlow114GastStep(AdviserUnitTestCase):
     """Test a step suggesting not to use gast>0.2.2 with TensorFlow<=1.14."""
+
+    UNIT_TESTED = TensorFlow114GastStep
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.STABLE
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize(
         "recommendation_type",

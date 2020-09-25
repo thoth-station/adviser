@@ -25,11 +25,17 @@ from thoth.adviser.state import State
 from thoth.adviser.strides import OneVersionStride
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestOneVersionStride(AdviserTestCase):
+class TestOneVersionStride(AdviserUnitTestCase):
     """Test filtering out software stacks based on version seen."""
+
+    UNIT_TESTED = OneVersionStride
+
+    @pytest.mark.skip(reason="Stride for ensuring one version is never registered.")
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
 
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test no inclusion of this pipeline unit."""

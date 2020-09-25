@@ -24,11 +24,17 @@ from thoth.adviser.exceptions import NotAcceptable  # type: ignore
 from thoth.adviser.state import State  # type: ignore
 from thoth.adviser.strides import RandomDecisionStride
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestRandomDecision(AdviserTestCase):
+class TestRandomDecision(AdviserUnitTestCase):
     """Test randomly pickling up a stack coming out of pipeline.."""
+
+    UNIT_TESTED = RandomDecisionStride
+
+    @pytest.mark.skip(reason="Stride for random decision is never registered.")
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
 
     def test_accept(self) -> None:
         """Check that a stack is randomly accepted randomly (initialized with a seed)."""

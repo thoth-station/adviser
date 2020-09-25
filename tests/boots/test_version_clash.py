@@ -22,12 +22,14 @@ import pytest
 
 from thoth.adviser.exceptions import CannotProduceStack
 from thoth.adviser.boots import VersionClashBoot
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.python import Project
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestVersionClashBoot(AdviserTestCase):
+class TestVersionClashBoot(AdviserUnitTestCase):
     """Test version clash boot."""
 
     _CASE_PIPFILE_CLASHED = """
@@ -57,6 +59,13 @@ tensorflow = "*"
 [dev-packages]
 click = "==6.9"
 """
+
+    UNIT_TESTED = VersionClashBoot
+
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
+        self.verify_multiple_should_include(builder_context)
 
     def test_clash(self) -> None:
         """Test raising an exception if a version clash occurs."""

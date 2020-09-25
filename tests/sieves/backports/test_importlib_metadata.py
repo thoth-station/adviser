@@ -27,14 +27,22 @@ from thoth.adviser.exceptions import SkipPackage
 from thoth.adviser.sieves import ImportlibMetadataBackportSieve
 from thoth.adviser.context import Context
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 from thoth.python import PackageVersion
 from thoth.python import Source
 
 
-class TestImportlibMetadataBackportSieve(AdviserTestCase):
+class TestImportlibMetadataBackportSieve(AdviserUnitTestCase):
     """Test sieve removing importlib-metadata backport."""
+
+    UNIT_TESTED = ImportlibMetadataBackportSieve
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.project.runtime_environment.python_version = "3.8"
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize(
         "python_version,recommendation_type,decision_type,develop",

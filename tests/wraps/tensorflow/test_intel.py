@@ -28,11 +28,21 @@ from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.state import State
 from thoth.adviser.wraps import IntelTensorFlowWrap
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestIntelTensorflowWrap(AdviserTestCase):
+class TestIntelTensorflowWrap(AdviserUnitTestCase):
     """Test recommending Intel TensorFlow build optimized for specific CPU architectures."""
+
+    UNIT_TESTED = IntelTensorFlowWrap
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.STABLE
+        builder_context.project.runtime_environment.hardware.cpu_model = 13
+        builder_context.project.runtime_environment.hardware.cpu_family = 6
+        builder_context.project.runtime_environment.platform = "linux-x86_64"
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize(
         "cpu_model,cpu_family,recommendation_type", [(13, 6, rt) for rt in RecommendationType],

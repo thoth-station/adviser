@@ -26,7 +26,7 @@ from thoth.adviser.context import Context
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.exceptions import SkipPackage
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import RecommendationType
@@ -34,8 +34,16 @@ from thoth.python import PackageVersion
 from thoth.python import Source
 
 
-class TestEnum34BackportSieve(AdviserTestCase):
+class TestEnum34BackportSieve(AdviserUnitTestCase):
     """Test sieve removing enum34 backport."""
+
+    UNIT_TESTED = Enum34BackportSieve
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.project.runtime_environment.python_version = "3.6"
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize(
         "python_version,recommendation_type,decision_type,develop",

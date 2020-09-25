@@ -21,12 +21,14 @@ import flexmock
 
 from thoth.adviser.boots import UbiBoot
 from thoth.adviser.context import Context
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.python import Project
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestUbiBoot(AdviserTestCase):
+class TestUbiBoot(AdviserUnitTestCase):
     """Test UBI to RHEL mapping boot."""
 
     _CASE_PIPFILE = """
@@ -38,6 +40,13 @@ name = "pypi"
 [packages]
 tensorflow = "*"
 """
+
+    UNIT_TESTED = UbiBoot
+
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
+        self.verify_multiple_should_include(builder_context)
 
     def test_rhel_assign(self, context: Context) -> None:
         """Test remapping UBI to RHEL."""

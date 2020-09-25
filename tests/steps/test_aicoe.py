@@ -19,15 +19,24 @@
 
 import flexmock
 
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.steps import AICoEReleasesStep
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestAICoEReleasesStep(AdviserTestCase):
+class TestAICoEReleasesStep(AdviserUnitTestCase):
     """A test for prioritizing releases from AICoE."""
+
+    UNIT_TESTED = AICoEReleasesStep
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.STABLE
+        self.verify_multiple_should_include(builder_context)
 
     def test_aicoe_release(self) -> None:
         """Make sure an AICoE release affects stack score."""

@@ -19,14 +19,23 @@
 
 import pytest
 
+from thoth.adviser.enums import RecommendationType
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.state import State
 from thoth.adviser.wraps import TensorFlow23DictSummary
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestTensorFlow23DictSummary(AdviserTestCase):
+class TestTensorFlow23DictSummary(AdviserUnitTestCase):
     """Test a wrap that notifies a bug in summary output spotted on TensorFlow 2.3."""
+
+    UNIT_TESTED = TensorFlow23DictSummary
+
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
+        self.verify_multiple_should_include(builder_context)
 
     def test_run_noop(self) -> None:
         """Test no justification added if TensorFlow 2.3 is not resolved."""

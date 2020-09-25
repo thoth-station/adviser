@@ -31,6 +31,8 @@ from voluptuous import Invalid
 from voluptuous import Length
 from voluptuous import Schema
 
+from thoth.adviser.pipeline_builder import PipelineBuilderContext
+
 
 class AdviserTestCaseException(Exception):
     """A base class for exceptions that can occur in the test suite."""
@@ -97,3 +99,34 @@ class AdviserTestCase:
             raise AdviserJustificationSchemaError(exc.msg) from exc
         else:
             return True
+
+
+class AdviserUnitTestCase(AdviserTestCase):
+    """A base class for implementing pipeline unit specific test cases."""
+
+    UNIT_TESTED = None
+
+    @classmethod
+    def verify_multiple_should_include(cls, builder_context: PipelineBuilderContext) -> bool:
+        """Check multiple should_include calls do not end in an infinite loop."""
+        assert cls.UNIT_TESTED is not None, "No unit assigned for testing"
+        pipeline_config = cls.UNIT_TESTED.should_include(builder_context)
+        assert pipeline_config is not None, "First call to should_include should be always non-None"
+
+        unit = cls.UNIT_TESTED()
+        if pipeline_config:
+            unit.update_configuration(pipeline_config)
+
+        builder_context.add_unit(unit)
+        assert (
+            cls.UNIT_TESTED.should_include(builder_context) is None
+        ), "Make sure the pipeline unit does not loop endlessly on multiple should_include calls"
+        return True
+
+    def test_verify_multiple_should_include(self, *args, **kwargs) -> bool:
+        """Check multiple should_include calls do not end in an infinite loop."""
+        # Construct a builder context that should always include a pipeline unit and pass
+        # it to verify_multiple_should_include
+        raise NotImplementedError(
+            "Implement a test that makes sure multiple calls of should include do not loop endlessly"
+        )

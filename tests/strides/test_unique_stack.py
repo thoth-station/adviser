@@ -27,11 +27,17 @@ from thoth.adviser.state import State
 from thoth.adviser.strides import UniqueStackStride
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestUniqueStackStride(AdviserTestCase):
+class TestUniqueStackStride(AdviserUnitTestCase):
     """Test filtering duplicate stacks."""
+
+    UNIT_TESTED = UniqueStackStride
+
+    @pytest.mark.skip(reason="Stride for a unique stack is never registered.")
+    def test_verify_multiple_should_include(self) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type",

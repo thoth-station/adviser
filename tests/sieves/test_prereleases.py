@@ -27,11 +27,13 @@ from thoth.python import Source
 from thoth.python import PackageVersion
 from thoth.python import Project
 
-from ..base import AdviserTestCase
+from ..base import AdviserUnitTestCase
 
 
-class TestCutPreReleasesSieve(AdviserTestCase):
+class TestCutPreReleasesSieve(AdviserUnitTestCase):
     """Test removing dependencies based on pre-releases configuration."""
+
+    UNIT_TESTED = CutPreReleasesSieve
 
     _CASE_DISALLOWED_PIPFILE = """
 [[source]]
@@ -106,6 +108,23 @@ allow_prereleases = true
 
         assert builder_context.is_adviser_pipeline()
         assert CutPreReleasesSieve.should_include(builder_context) is None
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.project = Project.from_strings(self._CASE_DISALLOWED_PIPFILE)
+        self.verify_multiple_should_include(builder_context)
+
+    def test_remove_pre_releases_disallowed_noop(self) -> None:
+        """Test removing dependencies not hitting limit causes a noop."""
+        tf_2_0_0 = PackageVersion(
+            name="tensorflow", version="==2.0.0", index=Source("https://pypi.org/simple"), develop=False,
+        )
+
+        context = flexmock(project=Project.from_strings(self._CASE_DISALLOWED_PIPFILE))
+        with CutPreReleasesSieve.assigned_context(context):
+            sieve = CutPreReleasesSieve()
+            assert list(sieve.run(p for p in [tf_2_0_0])) == [tf_2_0_0]
 
     def test_pre_releases_disallowed_removal(self) -> None:
         """Test no removals if pre-releases are allowed."""

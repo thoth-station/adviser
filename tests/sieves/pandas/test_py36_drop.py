@@ -28,11 +28,19 @@ from thoth.adviser.context import Context
 from thoth.python import PackageVersion
 from thoth.python import Source
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestPandasPy36Sieve(AdviserTestCase):
+class TestPandasPy36Sieve(AdviserUnitTestCase):
     """Test sieve to filter out Pandas>=1.2 on Python 3.6."""
+
+    UNIT_TESTED = PandasPy36Sieve
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.STABLE
+        builder_context.project.runtime_environment.python_version = "3.6"
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize(
         "recommendation_type",

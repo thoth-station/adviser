@@ -25,11 +25,21 @@ from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.state import State
 from thoth.adviser.wraps import NoSemanticInterpositionWrap
 
-from ...base import AdviserTestCase
+from ...base import AdviserUnitTestCase
 
 
-class TestNoSemanticInterpositionWrap(AdviserTestCase):
+class TestNoSemanticInterpositionWrap(AdviserUnitTestCase):
     """Test recommending Python3.8 on RHEL/UBI 8.2."""
+
+    UNIT_TESTED = NoSemanticInterpositionWrap
+
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Verify multiple should_include calls do not loop endlessly."""
+        builder_context.recommendation_type = RecommendationType.STABLE
+        builder_context.project.runtime_environment.operating_system.name = "rhel"
+        builder_context.project.runtime_environment.operating_system.version = "8.2"
+        builder_context.project.runtime_environment.python_version = "3.6"
+        self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize("os_name,os_version,python_version", [("rhel", "8.2", "3.6"), ("ubi", "8.2", "3.7"),])
     def test_include(
