@@ -26,6 +26,7 @@ from typing import Generator
 from typing import List
 from typing import Optional
 from typing import Set
+from itertools import chain
 
 import attr
 from thoth.python import Project
@@ -38,6 +39,7 @@ from .exceptions import InternalError
 from .exceptions import UnknownPipelineUnitError
 from .exceptions import PipelineConfigurationError
 from .pipeline_config import PipelineConfig
+from .pseudonym import Pseudonym
 from .boot import Boot
 from .sieve import Sieve
 from .step import Step
@@ -59,11 +61,13 @@ class PipelineBuilderContext:
     recommendation_type = attr.ib(type=Optional[RecommendationType], kw_only=True, default=None)
 
     _boots = attr.ib(type=List[Boot], default=attr.Factory(list), kw_only=True)
+    _pseudonyms = attr.ib(type=Dict[str, List[Pseudonym]], default=attr.Factory(dict), kw_only=True)
     _sieves = attr.ib(type=List[Sieve], default=attr.Factory(list), kw_only=True)
     _steps = attr.ib(type=List[Step], default=attr.Factory(list), kw_only=True)
     _strides = attr.ib(type=List[Stride], default=attr.Factory(list), kw_only=True)
     _wraps = attr.ib(type=List[Wrap], default=attr.Factory(list), kw_only=True)
     _boots_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
+    _pseudonyms_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
     _sieves_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
     _steps_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
     _strides_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
@@ -73,6 +77,16 @@ class PipelineBuilderContext:
     def boots(self) -> List[Boot]:
         """Get all boots registered to this pipeline builder context."""
         return self._boots
+
+    @property
+    def pseudonyms(self) -> List[Pseudonym]:
+        """Get all pseudonyms registered to this pipeline builder context."""
+        return list(chain(*self._pseudonyms.values()))
+
+    @property
+    def pseudonyms_dict(self) -> Dict[str, List[Pseudonym]]:
+        """Get pseudonyms as a dictionary mapping."""
+        return self._pseudonyms
 
     @property
     def sieves(self) -> List[Sieve]:
@@ -106,7 +120,9 @@ class PipelineBuilderContext:
         """Check if the given pipeline unit is already included in the pipeline configuration."""
         if issubclass(unit_class, Boot):
             return unit_class in self._boots_included
-        if issubclass(unit_class, Sieve):
+        elif issubclass(unit_class, Pseudonym):
+            return unit_class in self._pseudonyms_included
+        elif issubclass(unit_class, Sieve):
             return unit_class in self._sieves_included
         elif issubclass(unit_class, Step):
             return unit_class in self._steps_included
@@ -131,7 +147,13 @@ class PipelineBuilderContext:
             self._boots_included.add(unit.__class__)
             self._boots.append(unit)
             return
-        if isinstance(unit, Sieve):
+        elif isinstance(unit, Pseudonym):
+            if unit.PACKAGE_NAME not in self._pseudonyms:
+                self._pseudonyms[unit.PACKAGE_NAME] = []
+            self._pseudonyms_included.add(unit.__class__)
+            self._pseudonyms[unit.PACKAGE_NAME].append(unit)
+            return
+        elif isinstance(unit, Sieve):
             self._sieves_included.add(unit.__class__)
             self._sieves.append(unit)
             return
@@ -165,6 +187,7 @@ class PipelineBuilder:
         """Iterate over pipeline units available in this implementation."""
         # Imports placed here to simplify tests.
         import thoth.adviser.boots
+        import thoth.adviser.pseudonyms
         import thoth.adviser.sieves
         import thoth.adviser.steps
         import thoth.adviser.strides
@@ -172,6 +195,9 @@ class PipelineBuilder:
 
         for boot_name in thoth.adviser.boots.__all__:
             yield getattr(thoth.adviser.boots, boot_name)
+
+        for pseudonym_name in thoth.adviser.pseudonyms.__all__:
+            yield getattr(thoth.adviser.pseudonyms, pseudonym_name)
 
         for sieve_name in thoth.adviser.sieves.__all__:
             yield getattr(thoth.adviser.sieves, sieve_name)
@@ -237,11 +263,19 @@ class PipelineBuilder:
                 ctx.add_unit(unit_instance)
 
         pipeline = PipelineConfig(
-            boots=ctx.boots, sieves=ctx.sieves, steps=ctx.steps, strides=ctx.strides, wraps=ctx.wraps,
+            boots=ctx.boots,
+            pseudonyms=ctx.pseudonyms_dict,
+            sieves=ctx.sieves,
+            steps=ctx.steps,
+            strides=ctx.strides,
+            wraps=ctx.wraps,
         )
-        _LOGGER.debug(
-            "Pipeline configuration creation ended, configuration:\n%s", json.dumps(pipeline.to_dict(), indent=2),
-        )
+
+        if _LOGGER.getEffectiveLevel() <= logging.DEBUG:
+            _LOGGER.debug(
+                "Pipeline configuration creation ended, configuration:\n%s", json.dumps(pipeline.to_dict(), indent=2),
+            )
+
         return pipeline
 
     @staticmethod
@@ -273,6 +307,7 @@ class PipelineBuilder:
         """Instantiate pipeline configuration based on dictionary supplied."""
         # Imports placed here to simplify tests.
         import thoth.adviser.boots
+        import thoth.adviser.pseudonyms
         import thoth.adviser.sieves
         import thoth.adviser.steps
         import thoth.adviser.strides
@@ -281,6 +316,13 @@ class PipelineBuilder:
         boots = []
         for boot_entry in dict_.pop("boots", []):
             boots.append(cls._do_instantiate_from_dict(thoth.adviser.boots, boot_entry))
+
+        pseudonyms: Dict[str, List[Pseudonym]] = {}
+        for pseudonym_entry in dict_.pop("pseudonyms", []):
+            unit: Pseudonym = cls._do_instantiate_from_dict(thoth.adviser.pseudonyms, pseudonym_entry)  # type: ignore
+            if unit.PACKAGE_NAME not in pseudonyms:
+                pseudonyms[unit.PACKAGE_NAME] = []
+            pseudonyms[unit.PACKAGE_NAME].append(unit)
 
         sieves = []
         for sieve_entry in dict_.pop("sieves", []):
@@ -303,6 +345,7 @@ class PipelineBuilder:
 
         pipeline = PipelineConfig(
             boots=boots,  # type: ignore
+            pseudonyms=pseudonyms,
             sieves=sieves,  # type: ignore
             steps=steps,  # type: ignore
             strides=strides,  # type: ignore

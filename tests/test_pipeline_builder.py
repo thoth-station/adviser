@@ -32,6 +32,7 @@ from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.pipeline_builder import PipelineBuilder
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
+from thoth.adviser.pseudonym import Pseudonym
 from thoth.adviser.sieve import Sieve
 from thoth.adviser.step import Step
 from thoth.adviser.stride import Stride
@@ -54,6 +55,7 @@ def builder_context() -> PipelineBuilderContext:
         graph=None, project=None, library_usage=None, decision_type=DecisionType.RANDOM, recommendation_type=None,
     )
     builder_context.add_unit(units.boots.Boot1())
+    builder_context.add_unit(units.pseudonyms.Pseudonym1())
     builder_context.add_unit(units.sieves.Sieve1())
     builder_context.add_unit(units.steps.Step1())
     builder_context.add_unit(units.strides.Stride1())
@@ -68,6 +70,8 @@ class TestPipelineBuilderContext(AdviserTestCase):
         """Test check if the given pipeline unit is included."""
         assert builder_context.is_included(units.boots.Boot1)
         assert not builder_context.is_included(units.boots.Boot2)
+        assert builder_context.is_included(units.pseudonyms.Pseudonym1)
+        assert not builder_context.is_included(units.pseudonyms.Pseudonym2)
         assert builder_context.is_included(units.sieves.Sieve1)
         assert not builder_context.is_included(units.sieves.Sieve2)
         assert builder_context.is_included(units.steps.Step1)
@@ -118,6 +122,7 @@ class TestPipelineBuilderContext(AdviserTestCase):
         "unit_class,builder_context_attr",
         [
             (units.boots.Boot2, "boots"),
+            (units.pseudonyms.Pseudonym2, "pseudonyms"),
             (units.sieves.Sieve2, "sieves"),
             (units.steps.Step2, "steps"),
             (units.strides.Stride2, "strides"),
@@ -155,6 +160,9 @@ class TestPipelineBuilder(AdviserTestCase):
         flexmock(units.boots.Boot1).should_receive("should_include").and_return({"some_parameter": 1.0}).and_return(
             None
         ).and_return(None).times(3)
+        flexmock(units.pseudonyms.Pseudonym2).should_receive("should_include").and_return({}).and_return(
+            None
+        ).and_return(None).times(3)
         flexmock(units.sieves.Sieve2).should_receive("should_include").and_return({"foo": "bar"}).and_return(
             None
         ).and_return(None).times(3)
@@ -179,6 +187,7 @@ class TestPipelineBuilder(AdviserTestCase):
         assert pipeline.to_dict() == {
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": 1.0}}],
             "sieves": [{"name": "Sieve2", "configuration": {"date": "2015-09-15", "foo": "bar"},}],
+            "pseudonyms": [{"name": "Pseudonym2", "configuration": {}}],
             "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
             "strides": [
                 {"name": "Stride2", "configuration": {"foo": None}},
@@ -224,6 +233,7 @@ class TestPipelineBuilder(AdviserTestCase):
         """Test instantiation of a pipeline from a dictionary."""
         dict_ = {
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": 1.0}}],
+            "pseudonyms": [{"name": "Pseudonym2", "configuration": {},}],
             "sieves": [{"name": "Sieve2", "configuration": {"date": "2015-09-15", "foo": "bar"},}],
             "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
             "strides": [
@@ -236,6 +246,7 @@ class TestPipelineBuilder(AdviserTestCase):
         pipeline = PipelineBuilder.from_dict(dict(dict_))
         assert pipeline.to_dict() == dict_
         assert isinstance(pipeline.boots[0], Boot)
+        assert isinstance(pipeline.pseudonyms[0], Pseudonym)
         assert isinstance(pipeline.sieves[0], Sieve)
         assert isinstance(pipeline.steps[0], Step)
         assert isinstance(pipeline.strides[0], Stride)
@@ -247,6 +258,7 @@ class TestPipelineBuilder(AdviserTestCase):
         """Test instantiation of a pipeline from a dictionary."""
         expected_dict_ = {
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": -0.2}}],
+            "pseudonyms": [],
             "sieves": [],
             "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
             "strides": [{"name": "Stride2", "configuration": {"foo": None}}],
@@ -255,6 +267,7 @@ class TestPipelineBuilder(AdviserTestCase):
 
         dict_ = {
             "boots": [{"name": "Boot1"}],
+            "pseudonyms": [],
             "sieves": [],
             "steps": [{"name": "Step1"}],
             "strides": [{"name": "Stride2"}],
@@ -268,6 +281,7 @@ class TestPipelineBuilder(AdviserTestCase):
         pipeline = PipelineBuilder.load(yaml_path)
 
         assert isinstance(pipeline.boots[0], Boot)
+        assert not pipeline.pseudonyms
         assert not pipeline.sieves
         assert isinstance(pipeline.steps[0], Step)
         assert isinstance(pipeline.strides[0], Stride)
@@ -280,6 +294,7 @@ class TestPipelineBuilder(AdviserTestCase):
 
         pipeline = PipelineBuilder.load(json_path)
         assert isinstance(pipeline.boots[0], Boot)
+        assert not pipeline.pseudonyms
         assert not pipeline.sieves
         assert isinstance(pipeline.steps[0], Step)
         assert isinstance(pipeline.strides[0], Stride)

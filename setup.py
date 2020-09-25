@@ -86,6 +86,7 @@ setup(
         "thoth.adviser.boots",
         "thoth.adviser.boots._debug",
         "thoth.adviser.predictors",
+        "thoth.adviser.pseudonyms",
         "thoth.adviser.sieves",
         "thoth.adviser.sieves.backports",
         "thoth.adviser.sieves.tensorflow",

@@ -610,7 +610,7 @@ class TestResolver(AdviserTestCase):
         flexmock(Beam)
         resolver.beam.should_receive("wipe").with_args().and_return(None).once()
         resolver._init_context()
-        assert resolver._prepare_initial_state(with_devel=True) is None
+        resolver._prepare_initial_state(with_devel=True)
 
         for package_version in itertools.chain(numpy_package_versions, tf_package_versions):
             assert (
@@ -1336,7 +1336,7 @@ class TestResolver(AdviserTestCase):
         state2 = State(score=1.0)
         state2.add_unresolved_dependency(("selinon", "1.0.0", "https://pypi.org/simple"))
         state3 = State(score=2.0)
-        state2.add_unresolved_dependency(("hexsticker", "1.0.0", "https://pypi.org/simple"))
+        state3.add_unresolved_dependency(("hexsticker", "1.0.0", "https://pypi.org/simple"))
 
         resolver.beam.should_receive("new_iteration").and_return(None).times(2)
         resolver.beam.add_state(state1)
@@ -1357,7 +1357,7 @@ class TestResolver(AdviserTestCase):
         for wrap in resolver.pipeline.wraps:
             wrap.should_receive("run").with_args(final_state).and_return(None).once()
 
-        resolver.should_receive("_prepare_initial_state").with_args(with_devel=True).and_return(resolver.beam).once()
+        resolver.should_receive("_prepare_initial_state").with_args(with_devel=True).and_return(final_state).once()
 
         to_expand_package_tuple2 = state2.get_random_unresolved_dependency()
         to_expand_package_tuple1 = state1.get_random_unresolved_dependency()
@@ -1474,7 +1474,8 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
         resolver.beam.wipe()
 
-        resolver.should_receive("_prepare_initial_state").with_args(with_devel=True).and_return(None).once()
+        state = State()
+        resolver.should_receive("_prepare_initial_state").with_args(with_devel=True).and_return(state).once()
 
         states = list(resolver._do_resolve_states(with_devel=True, user_stack_scoring=True))
         assert states == []
@@ -2218,7 +2219,7 @@ class TestResolver(AdviserTestCase):
 
         resolver.pipeline.sieves = [sieves.Sieve1(), _Functools32SkipPackageSieve()]
 
-        assert resolver._prepare_initial_state(with_devel=True) is None
+        assert resolver._prepare_initial_state(with_devel=True) is not None
         assert resolver.beam.size == 1
         initial_state = resolver.beam.get(0)
         assert "functools32" not in initial_state.unresolved_dependencies

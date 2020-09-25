@@ -34,6 +34,7 @@ from thoth.common import RuntimeEnvironment
 from thoth.python import Project
 
 from .units.boots import Boot1
+from .units.pseudonyms import Pseudonym1
 from .units.sieves import Sieve1
 from .units.steps import Step1
 from .units.strides import Stride1
@@ -76,12 +77,20 @@ def pipeline_config() -> PipelineConfig:
     flexmock(PipelineConfig)
 
     flexmock(Boot1)
+    flexmock(Pseudonym1)
     flexmock(Sieve1)
     flexmock(Step1)
     flexmock(Stride1)
     flexmock(Wrap1)
 
-    return PipelineConfig(boots=[Boot1()], sieves=[Sieve1()], steps=[Step1()], strides=[Stride1()], wraps=[Wrap1()],)
+    return PipelineConfig(
+        boots=[Boot1()],
+        pseudonyms={Pseudonym1.PACKAGE_NAME: [Pseudonym1()]},
+        sieves=[Sieve1()],
+        steps=[Step1()],
+        strides=[Stride1()],
+        wraps=[Wrap1()],
+    )
 
 
 @pytest.fixture

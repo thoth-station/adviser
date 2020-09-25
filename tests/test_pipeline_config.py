@@ -32,6 +32,7 @@ class TestPipelineConfig(AdviserTestCase):
         """Test serialization of pipeline configuration."""
         assert pipeline_config.to_dict() == {
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": -0.2}}],
+            "pseudonyms": [{"name": "Pseudonym1", "configuration": {"another_parameter": 0.33}}],
             "sieves": [{"name": "Sieve1", "configuration": {"flying_circus": 1969}}],
             "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
             "strides": [
@@ -50,13 +51,13 @@ class TestPipelineConfig(AdviserTestCase):
 
     def test_iter_units(self, pipeline_config: PipelineConfig) -> None:
         """Test iteration over all units present in the pipeline configuration."""
-        visited = dict.fromkeys(("Boot1", "Sieve1", "Step1", "Stride1", "Wrap1"), 0)
+        visited = dict.fromkeys(("Boot1", "Pseudonym1", "Sieve1", "Step1", "Stride1", "Wrap1"), 0)
         for unit in pipeline_config.iter_units():
             assert unit.__class__.__name__ in visited, f"Unknown unit {unit.__class__.__name__!r}"
             visited[unit.__class__.__name__] += 1
 
-        assert len(visited) == 5
-        assert list(visited.values()) == [1] * 5
+        assert len(visited) == 6
+        assert list(visited.values()) == [1] * 6
 
     def test_call_pre_run(self, pipeline_config: PipelineConfig) -> None:
         """Test calling pre-run method on units."""
