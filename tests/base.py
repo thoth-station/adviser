@@ -146,12 +146,11 @@ class AdviserUnitTestCase(AdviserTestCase):
             self.UNIT_TESTED, (Boot, Sieve, Pseudonym, Step, Stride, Wrap)
         ), f"Assigned unit for testing {self.UNIT_TESTED.__name__!r} does not inherit from any known pipeline unit type"
 
-    @pytest.mark.skipif(
-        UNIT_TESTED is None or not issubclass(UNIT_TESTED, Pseudonym),
-        reason="Unit does not type is not specific for any package version",
-    )
     def test_provided_package_version(self) -> None:
-        """Test the unit provides PACKAGE_VERSION."""
+        """Test the unit provides PACKAGE_NAME."""
+        if self.UNIT_TESTED is None or not issubclass(self.UNIT_TESTED, Pseudonym):
+            return pytest.skip("Unit does not type is not specific for any package version")
+
         assert (
-            self.UNIT_TESTED.PACKAGE_VERSION
+            isinstance(self.UNIT_TESTED.PACKAGE_NAME, str) and len(self.UNIT_TESTED.PACKAGE_NAME) > 0
         ), f"Unit {self.UNIT_TESTED.__name__!r} does not provide required PACKAGE_VERSION attribute"
