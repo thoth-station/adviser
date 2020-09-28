@@ -36,7 +36,6 @@ from thoth.adviser.resolver import Resolver
 from thoth.adviser.state import State
 from thoth.adviser.predictor import Predictor
 from thoth.adviser.product import Product
-from thoth.adviser.pseudonym import Pseudonym
 from thoth.adviser.pipeline_config import PipelineConfig
 from thoth.adviser.pipeline_builder import PipelineBuilder
 from thoth.adviser.enums import RecommendationType
