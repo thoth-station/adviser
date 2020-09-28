@@ -205,7 +205,7 @@ class Resolver:
     def context(self) -> Context:
         """Retrieve context bound to the current resolver."""
         if self._context is None:
-            raise ValueError("Context not assigned yes to the current resolver instance")
+            raise ValueError("Context not assigned yet to the current resolver instance")
 
         return self._context
 
@@ -250,7 +250,7 @@ class Resolver:
         )
 
     def _run_boots(self) -> None:
-        """Run all boots bound to the current annealing run context."""
+        """Run all boots bound to the current run context."""
         for boot in self.pipeline.boots:
             _LOGGER.debug("Running boot %r", boot.__class__.__name__)
             try:
@@ -290,6 +290,7 @@ class Resolver:
         state: State,
         package_version: PackageVersion,
         unresolved_dependencies: Optional[Dict[str, List[Tuple[str, str, str]]]] = None,
+        newly_added: Optional[List[Tuple[str, str, str]]] = None,
         *,
         user_stack_scoring: bool = False,
         log_level: int = logging.DEBUG,
@@ -419,6 +420,7 @@ class Resolver:
 
         if unresolved_dependencies and not skip_package:
             cloned_state.set_unresolved_dependencies(unresolved_dependencies)
+            self._run_pseudonyms(cloned_state, newly_added)
 
         cloned_state.remove_unresolved_dependency_subtree(package_version_tuple[0])
         if not skip_package:
@@ -455,7 +457,7 @@ class Resolver:
         return True
 
     def _run_wraps(self, state: State) -> None:
-        """Run all wraps bound to the current annealing run context."""
+        """Run all wraps bound to the current run context."""
         for wrap in self.pipeline.wraps:
             _LOGGER.debug("Running wrap %r", wrap.__class__.__name__)
             try:
@@ -640,7 +642,7 @@ class Resolver:
 
         return resolved_direct_dependencies
 
-    def _prepare_initial_state(self, *, with_devel: bool) -> None:
+    def _prepare_initial_state(self, *, with_devel: bool) -> State:
         """Prepare initial state for resolver."""
         direct_dependencies = self._resolve_direct_dependencies(with_devel=with_devel)
 
@@ -684,6 +686,55 @@ class Resolver:
         state = State.from_direct_dependencies(direct_dependencies)
         weakref.finalize(state, self.predictor.finalize_state, id(state)).atexit = False
         self.beam.add_state(state)
+        return state
+
+    def _run_pseudonyms(self, state: State, package_tuples: Optional[List[Tuple[str, str, str]]] = None) -> None:
+        """Run pseudonyms for the given package, clone state and add it to beam if needed."""
+        for package_tuple in package_tuples or []:
+            self._run_pseudonym_units(state, package_tuple)
+
+    def _run_pseudonym_units(self, state: State, package_tuple: Tuple[str, str, str]) -> None:
+        """Run pseudonym units the given package tuple."""
+        package_version: PackageVersion = self.context.get_package_version(package_tuple)
+        for unit in self.pipeline.pseudonyms_dict.get(package_tuple[0], []):
+            for pseudonym_package_tuple in unit.run(package_version):
+                # Pseudonyms introduced do not have dependents (we work on direct dependencies - initial state).
+                if pseudonym_package_tuple[0] in state.resolved_dependencies:
+                    _LOGGER.warning(
+                        "Pseudonym %r already present in resolved form, skipping pseudonym creation",
+                        pseudonym_package_tuple,
+                        state.resolved_dependencies[pseudonym_package_tuple[0]],
+                    )
+                    continue
+
+                if (
+                    pseudonym_package_tuple
+                    in state.unresolved_dependencies.get(pseudonym_package_tuple[0], {}).values()
+                ):
+                    _LOGGER.debug(
+                        "Pseudonym %r already present in state in unresolved form, not creating a new state",
+                        pseudonym_package_tuple,
+                    )
+                    continue
+
+                self.context.register_package_tuple(
+                    pseudonym_package_tuple,
+                    develop=package_version.develop,
+                    os_name=None,  # TODO: pass based on the package_tuple
+                    os_version=None,
+                    python_version=None,
+                )
+                new_state = state.clone()
+                new_state.remove_unresolved_dependency_subtree(package_tuple[0])
+                new_state.add_unresolved_dependency(pseudonym_package_tuple)
+                self.beam.add_state(new_state)
+
+    def _run_pseudonyms_initial_state(self, state: State) -> None:
+        """Run pseudonyms on an initial state."""
+        to_run_pseudonyms = state.unresolved_dependencies.keys() & self.pipeline.pseudonyms_dict.keys()
+        for pseudonym_name in to_run_pseudonyms:
+            for package_tuple in state.unresolved_dependencies[pseudonym_name].values():
+                self._run_pseudonym_units(state, package_tuple)
 
     def _expand_state(self, state: State, package_tuple: Tuple[str, str, str]) -> Optional[State]:
         """Expand the given state, generate new states respecting the pipeline configuration.
@@ -797,6 +848,7 @@ class Resolver:
 
         package_tuple = package_version.to_tuple()
         all_dependencies: Dict[str, List[Tuple[str, str, str]]] = {}
+        newly_added: List[Tuple[str, str, str]] = []
         for dependency_name, dependency_version in dependencies:
             records = self.graph.get_python_package_version_records(
                 package_name=dependency_name,
@@ -837,6 +889,7 @@ class Resolver:
                     os_version=record["os_version"],
                     python_version=record["python_version"],
                 )
+                newly_added.append(dependency_tuple)
 
                 if dependency_tuple not in all_dependencies[dependency_tuple[0]]:
                     all_dependencies[dependency_tuple[0]].append(dependency_tuple)
@@ -966,7 +1019,7 @@ class Resolver:
         for skipped_package in skipped_packages:
             all_dependencies.pop(skipped_package)
 
-        return self._run_steps(state, package_version, all_dependencies)
+        return self._run_steps(state, package_version, all_dependencies, newly_added)
 
     def _do_resolve_states(
         self, *, with_devel: bool = True, user_stack_scoring: bool = True,
@@ -994,7 +1047,9 @@ class Resolver:
                 if user_stack:
                     yield user_stack
 
-        self._prepare_initial_state(with_devel=with_devel)
+        _LOGGER.info("Preparing initial states for the resolution pipeline")
+        state = self._prepare_initial_state(with_devel=with_devel)
+        self._run_pseudonyms_initial_state(state)
 
         _LOGGER.info("Hold tight, Thoth is computing recommendations for your application...")
 

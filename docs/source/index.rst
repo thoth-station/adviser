@@ -42,6 +42,7 @@ Pipeline units
 
    unit
    boots
+   pseudonyms
    sieves
    steps
    strides

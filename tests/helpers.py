@@ -33,6 +33,8 @@ def use_test_units(func: Any) -> Any:
         """Substitute implemented units with the testing ones."""
         sys.modules["thoth.adviser"].boots = units.boots
         sys.modules["thoth.adviser.boots"] = units.boots
+        sys.modules["thoth.adviser"].pseudonyms = units.pseudonyms
+        sys.modules["thoth.adviser.pseudonyms"] = units.pseudonyms
         sys.modules["thoth.adviser"].sieves = units.sieves
         sys.modules["thoth.adviser.sieves"] = units.sieves
         sys.modules["thoth.adviser"].steps = units.steps
@@ -46,6 +48,8 @@ def use_test_units(func: Any) -> Any:
         finally:
             sys.modules["thoth.adviser"].boots = thoth.adviser.boots
             sys.modules["thoth.adviser.boots"] = thoth.adviser.boots
+            sys.modules["thoth.adviser"].pseudonyms = thoth.adviser.pseudonyms
+            sys.modules["thoth.adviser.pseudonyms"] = thoth.adviser.pseudonyms
             sys.modules["thoth.adviser"].sieves = thoth.adviser.sieves
             sys.modules["thoth.adviser.sieves"] = thoth.adviser.sieves
             sys.modules["thoth.adviser"].steps = thoth.adviser.steps

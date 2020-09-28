@@ -44,7 +44,7 @@ class TestReport(AdviserTestCase):
 
         assert report.product_count() == 0
         assert report.to_dict() == {
-            "pipeline": {"boots": [], "sieves": [], "steps": [], "strides": [], "wraps": [],},
+            "pipeline": {"boots": [], "pseudonyms": [], "sieves": [], "steps": [], "strides": [], "wraps": [],},
             "products": [],
             "stack_info": [{"foo": "bar"}],
         }

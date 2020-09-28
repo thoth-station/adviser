@@ -26,12 +26,20 @@ import os
 
 from voluptuous import All
 from voluptuous import Any as SchemaAny
-from voluptuous import Optional as SchemaOptional
 from voluptuous import Invalid
 from voluptuous import Length
+from voluptuous import Optional as SchemaOptional
 from voluptuous import Schema
+import pytest
 
+from thoth.adviser.boot import Boot
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
+from thoth.adviser.pseudonym import Pseudonym
+from thoth.adviser.sieve import Sieve
+from thoth.adviser.step import Step
+from thoth.adviser.stride import Stride
+from thoth.adviser.unit import Unit
+from thoth.adviser.wrap import Wrap
 
 
 class AdviserTestCaseException(Exception):
@@ -104,7 +112,7 @@ class AdviserTestCase:
 class AdviserUnitTestCase(AdviserTestCase):
     """A base class for implementing pipeline unit specific test cases."""
 
-    UNIT_TESTED = None
+    UNIT_TESTED: Optional[Unit] = None
 
     @classmethod
     def verify_multiple_should_include(cls, builder_context: PipelineBuilderContext) -> bool:
@@ -130,3 +138,20 @@ class AdviserUnitTestCase(AdviserTestCase):
         raise NotImplementedError(
             "Implement a test that makes sure multiple calls of should include do not loop endlessly"
         )
+
+    def test_provided_unit_tested(self):
+        """Check proper manipulation of the unit tested."""
+        assert self.UNIT_TESTED is not None, "Unit tested not provided for the test base"
+        assert issubclass(
+            self.UNIT_TESTED, (Boot, Sieve, Pseudonym, Step, Stride, Wrap)
+        ), f"Assigned unit for testing {self.UNIT_TESTED.__name__!r} does not inherit from any known pipeline unit type"
+
+    @pytest.mark.skipif(
+        UNIT_TESTED is None or not issubclass(UNIT_TESTED, Pseudonym),
+        reason="Unit does not type is not specific for any package version",
+    )
+    def test_provided_package_version(self) -> None:
+        """Test the unit provides PACKAGE_VERSION."""
+        assert (
+            self.UNIT_TESTED.PACKAGE_VERSION
+        ), f"Unit {self.UNIT_TESTED.__name__!r} does not provide required PACKAGE_VERSION attribute"

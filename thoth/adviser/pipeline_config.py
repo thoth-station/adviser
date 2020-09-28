@@ -29,6 +29,7 @@ import attr
 from .boot import Boot
 from .dm_report import DependencyMonkeyReport
 from .exceptions import PipelineUnitError
+from .pseudonym import Pseudonym
 from .sieve import Sieve
 from .step import Step
 from .stride import Stride
@@ -46,15 +47,28 @@ class PipelineConfig:
     """A configuration of a pipeline for dependency-monkey and for adviser."""
 
     boots = attr.ib(type=List[Boot], default=attr.Factory(list))
+    # Use a dict to have O(1) access when applying pseudonyms.
+    _pseudonyms = attr.ib(type=Dict[str, List[Pseudonym]], default=attr.Factory(dict))
     sieves = attr.ib(type=List[Sieve], default=attr.Factory(list))
     steps = attr.ib(type=List[Step], default=attr.Factory(list))
     strides = attr.ib(type=List[Stride], default=attr.Factory(list))
     wraps = attr.ib(type=List[Wrap], default=attr.Factory(list))
 
+    @property
+    def pseudonyms(self) -> List[Pseudonym]:
+        """Get all pseudonyms."""
+        return list(chain(*self._pseudonyms.values()))
+
+    @property
+    def pseudonyms_dict(self) -> Dict[str, List[Pseudonym]]:
+        """Get pseudonyms as a dictionary mapping."""
+        return self._pseudonyms
+
     def to_dict(self) -> Dict[str, List[Dict[str, Any]]]:
         """Return this pipeline configuration in a dict representation."""
         return {
             "boots": [boot.to_dict() for boot in self.boots],
+            "pseudonyms": [pseudonym.to_dict() for pseudonym in self.pseudonyms],
             "sieves": [sieve.to_dict() for sieve in self.sieves],
             "steps": [step.to_dict() for step in self.steps],
             "strides": [stride.to_dict() for stride in self.strides],
@@ -64,7 +78,7 @@ class PipelineConfig:
     def iter_units(self):
         # type:('PipelineConfig') -> Generator[Unit, None, None]
         """Iterate over units present in the configuration."""
-        yield from chain(self.boots, self.sieves, self.steps, self.strides, self.wraps)
+        yield from chain(self.boots, self.pseudonyms, self.sieves, self.steps, self.strides, self.wraps)
 
     def iter_units_reversed(self):
         # type:('PipelineConfig') -> Generator[Unit, None, None]
@@ -73,6 +87,7 @@ class PipelineConfig:
         yield from reversed(self.strides)
         yield from reversed(self.steps)
         yield from reversed(self.sieves)
+        yield from reversed(self.pseudonyms)
         yield from reversed(self.boots)
 
     def call_pre_run(self) -> None:
