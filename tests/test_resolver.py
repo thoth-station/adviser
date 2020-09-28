@@ -36,6 +36,7 @@ from thoth.adviser.resolver import Resolver
 from thoth.adviser.state import State
 from thoth.adviser.predictor import Predictor
 from thoth.adviser.product import Product
+from thoth.adviser.pseudonym import Pseudonym
 from thoth.adviser.pipeline_config import PipelineConfig
 from thoth.adviser.pipeline_builder import PipelineBuilder
 from thoth.adviser.enums import RecommendationType
@@ -2316,3 +2317,152 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
         assert resolver._run_steps(state, package_version, unresolved_dependencies) is state
         assert "numpy" not in state.unresolved_dependencies
+
+    def test_run_pseudonyms(self, resolver: Resolver) -> None:
+        """Test triggering run of pseudonyms."""
+        state = flexmock()
+        package_tuples = [
+            ("tensorflow", "2.2.0", "https://pypi.org/simple"),
+            ("tensorflow", "2.3.0", "https://pypi.org/simple"),
+        ]
+
+        resolver.should_receive("_run_pseudonym_units").with_args(state, package_tuples[0],).and_return(None).ordered()
+
+        resolver.should_receive("_run_pseudonym_units").with_args(state, package_tuples[1],).and_return(None).ordered()
+
+        resolver._init_context()
+        resolver._run_pseudonyms(state, package_tuples)
+
+    def test_run_pseudonyms_initial_state(self, resolver: Resolver, state: State) -> None:
+        """Test triggering run of pseudonyms for an initial state."""
+        state.resolved_dependencies.clear()
+        state.unresolved_dependencies.clear()
+
+        package_tuples = [
+            ("tensorflow", "2.2.0", "https://pypi.org/simple"),
+            ("tensorflow", "2.3.0", "https://pypi.org/simple"),
+            ("flask", "1.1.2", "https://pypi.org/simple"),
+        ]
+
+        state.add_unresolved_dependency(package_tuples[0])
+        state.add_unresolved_dependency(package_tuples[1])
+        state.add_unresolved_dependency(package_tuples[2])
+
+        resolver.should_receive("_run_pseudonym_units").with_args(state, package_tuples[0],).and_return(None).ordered()
+
+        resolver.should_receive("_run_pseudonym_units").with_args(state, package_tuples[1],).and_return(None).ordered()
+
+        assert "tensorflow" in resolver.pipeline.pseudonyms_dict
+        assert "flask" not in resolver.pipeline.pseudonyms_dict
+
+        resolver._init_context()
+        resolver._run_pseudonyms_initial_state(state)
+
+    def test_run_pseudonym_units(self, state: State, resolver: Resolver) -> None:
+        """Test running pseudonym units."""
+        resolver._init_context()
+
+        resolver.beam.wipe()
+        state.resolved_dependencies.clear()
+        state.unresolved_dependencies.clear()
+
+        package_version = PackageVersion(
+            name="tensorflow", version="==2.3.0", index=Source("https://pypi.org/simple"), develop=False
+        )
+        state.add_unresolved_dependency(package_version.to_tuple())
+        state.add_unresolved_dependency(("flask", "1.1.2", "https://pypi.org/simple"))
+        state.add_resolved_dependency(("click", "7.1.2", "https://pypi.org/simple"))
+
+        resolver.context.register_package_version(package_version)
+
+        resolver.pipeline.pseudonyms[0].should_receive("run").with_args(package_version).and_yield(
+            ("tensorflow-cpu", "2.3.0", "https://pypi.org/simple")
+        ).once()
+
+        assert resolver._run_pseudonym_units(state, package_version.to_tuple()) is None
+        last_state = resolver.beam.get_last()
+        assert last_state is not None
+        assert last_state is not state
+        assert {"click"} == {*last_state.resolved_dependencies.keys()}
+        assert {"flask", "tensorflow-cpu"} == {*last_state.unresolved_dependencies.keys()}
+        assert "tensorflow" not in last_state.unresolved_dependencies
+
+        # The original state should be kept untouched.
+        assert {"click"} == {*state.resolved_dependencies.keys()}
+        assert {"flask", "tensorflow"} == {*state.unresolved_dependencies.keys()}
+        assert "tensorflow-cpu" not in state.unresolved_dependencies
+
+    def test_run_pseudonym_units_no_return(self, state: State, resolver: Resolver) -> None:
+        """Test running pseudonym units when no package is returned."""
+        resolver._init_context()
+
+        resolver.beam.wipe()
+        state.resolved_dependencies.clear()
+        state.unresolved_dependencies.clear()
+
+        package_version = PackageVersion(
+            name="tensorflow", version="==2.3.0", index=Source("https://pypi.org/simple"), develop=False
+        )
+        state.add_unresolved_dependency(package_version.to_tuple())
+        state.add_resolved_dependency(("click", "7.1.2", "https://pypi.org/simple"))
+
+        resolver.context.register_package_version(package_version)
+
+        resolver.pipeline.pseudonyms[0].should_receive("run").with_args(package_version).and_yield().once()
+
+        assert resolver._run_pseudonym_units(state, package_version.to_tuple()) is None
+        assert resolver.beam.size == 0, "No new state should be added"
+        assert {"click"} == {*state.resolved_dependencies.keys()}
+        assert {"tensorflow"} == {*state.unresolved_dependencies.keys()}
+
+    def test_run_pseudonym_units_already_resolved(self, state: State, resolver: Resolver) -> None:
+        """Test running pseudonym units when a package returned is already in resolved set."""
+        resolver._init_context()
+
+        resolver.beam.wipe()
+        state.resolved_dependencies.clear()
+        state.unresolved_dependencies.clear()
+
+        package_version = PackageVersion(
+            name="tensorflow", version="==2.3.0", index=Source("https://pypi.org/simple"), develop=False
+        )
+        state.add_unresolved_dependency(package_version.to_tuple())
+        state.add_unresolved_dependency(("flask", "1.1.2", "https://pypi.org/simple"))
+        state.add_resolved_dependency(("click", "7.1.2", "https://pypi.org/simple"))
+
+        resolver.context.register_package_version(package_version)
+
+        resolver.pipeline.pseudonyms[0].should_receive("run").with_args(package_version).and_yield(
+            ("click", "7.1.2", "https://pypi.org/simple")  # Already in the resolved listing.
+        ).once()
+
+        assert resolver._run_pseudonym_units(state, package_version.to_tuple()) is None
+        assert resolver.beam.size == 0, "No new state should be added"
+        assert {"click"} == {*state.resolved_dependencies.keys()}
+        assert {"flask", "tensorflow"} == {*state.unresolved_dependencies.keys()}
+
+    def test_run_pseudonym_units_already_unresolved(self, state: State, resolver: Resolver) -> None:
+        """Test running pseudonym units when a package returned is already in unresolved set."""
+        resolver._init_context()
+
+        resolver.beam.wipe()
+        state.resolved_dependencies.clear()
+        state.unresolved_dependencies.clear()
+
+        package_version = PackageVersion(
+            name="tensorflow", version="==2.3.0", index=Source("https://pypi.org/simple"), develop=False
+        )
+        state.add_unresolved_dependency(package_version.to_tuple())
+        state.add_unresolved_dependency(("flask", "1.1.2", "https://pypi.org/simple"))
+        state.add_resolved_dependency(("click", "7.1.2", "https://pypi.org/simple"))
+
+        resolver.context.register_package_version(package_version)
+
+        resolver.pipeline.pseudonyms[0].should_receive("run").with_args(package_version).and_yield(
+            ("flask", "1.1.2", "https://pypi.org/simple")  # Already in the unresolved listing.
+        ).once()
+
+        assert resolver._run_pseudonym_units(state, package_version.to_tuple()) is None
+        assert resolver.beam.size == 0, "No new state should be added"
+        assert {"click"} == {*state.resolved_dependencies.keys()}
+        assert {"flask", "tensorflow"} == {*state.unresolved_dependencies.keys()}

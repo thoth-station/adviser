@@ -41,7 +41,7 @@ class Pseudonym1(Pseudonym):
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
 
-    def run(self) -> None:
+    def run(self, package_version: PackageVersion) -> Generator[Tuple[str, str, str], None, None]:
         """Run noop method."""
 
 
