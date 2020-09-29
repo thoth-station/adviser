@@ -31,6 +31,8 @@ import attr
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.storages.exceptions import NotFoundError
+from voluptuous import Required
+from voluptuous import Schema
 
 from ..exceptions import NotAcceptable
 from ..enums import RecommendationType
@@ -48,6 +50,7 @@ class CvePenalizationStep(Step):
     """Penalization based on CVE being present in stack."""
 
     CONFIGURATION_DEFAULT = {"package_name": None, "cve_penalization": -0.2}
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): None, Required("cve_penalization"): float})
     _JUSTIFICATION_LINK = jl("cve")
 
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
