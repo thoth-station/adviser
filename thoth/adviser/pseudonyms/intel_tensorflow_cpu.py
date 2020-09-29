@@ -30,4 +30,4 @@ _LOGGER = logging.getLogger(__name__)
 class IntelTensorFlowCPUPseudonym(IntelTensorFlowPseudonym):
     """A TensorFlow pseudonym to map intel-tensorflow to tensorflow-cpu packages."""
 
-    PACKAGE_NAME: str = "tensorflow-cpu"
+    CONFIGURATION_DEFAULT = {"package_name": "tensorflow-cpu"}

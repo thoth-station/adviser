@@ -26,6 +26,8 @@ from typing import TYPE_CHECKING
 
 from thoth.adviser.pseudonym import Pseudonym
 from thoth.python import PackageVersion
+from voluptuous import Schema
+from voluptuous import Required
 
 if TYPE_CHECKING:
     from thoth.adviser.pipeline_builder import PipelineBuilderContext
@@ -34,8 +36,8 @@ if TYPE_CHECKING:
 class Pseudonym1(Pseudonym):
     """A testing boot implementation."""
 
-    PACKAGE_NAME = "tensorflow"
-    CONFIGURATION_DEFAULT = {"another_parameter": 0.33}
+    CONFIGURATION_DEFAULT = {"another_parameter": 0.33, "package_name": "tensorflow"}
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str, Required("another_parameter"): float})
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -48,7 +50,8 @@ class Pseudonym1(Pseudonym):
 class Pseudonym2(Pseudonym):
     """A testing boot implementation."""
 
-    PACKAGE_NAME = "flask"
+    CONFIGURATION_DEFAULT = {"package_name": "flask"}
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str})
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

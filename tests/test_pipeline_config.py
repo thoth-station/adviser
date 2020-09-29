@@ -32,7 +32,9 @@ class TestPipelineConfig(AdviserTestCase):
         """Test serialization of pipeline configuration."""
         assert pipeline_config.to_dict() == {
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": -0.2}}],
-            "pseudonyms": [{"name": "Pseudonym1", "configuration": {"another_parameter": 0.33}}],
+            "pseudonyms": [
+                {"name": "Pseudonym1", "configuration": {"another_parameter": 0.33, "package_name": "tensorflow"}}
+            ],
             "sieves": [{"name": "Sieve1", "configuration": {"flying_circus": 1969}}],
             "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
             "strides": [

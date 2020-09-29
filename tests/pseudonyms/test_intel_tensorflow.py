@@ -110,8 +110,10 @@ class TestIntelTensorFlowPseudonym(AdviserUnitTestCase):
 
     def test_run_pseudonym(self, context: Context) -> None:
         """Test adding a pseudonym for TensorFlow."""
+        unit = self.UNIT_TESTED()
+
         package_version = PackageVersion(
-            name=self.UNIT_TESTED.PACKAGE_NAME,
+            name=unit.configuration["package_name"],
             version="==1.0.0",
             develop=False,
             index=Source("https://pypi.org/simple"),
@@ -134,7 +136,6 @@ class TestIntelTensorFlowPseudonym(AdviserUnitTestCase):
             ]
         ).once()
 
-        unit = self.UNIT_TESTED()
         with unit.assigned_context(context):
             unit.pre_run()
             result = unit.run(package_version)
@@ -143,8 +144,10 @@ class TestIntelTensorFlowPseudonym(AdviserUnitTestCase):
     @pytest.mark.parametrize("tf_versions", [[], ["2.0.0"]])
     def test_run_noop(self, context: Context, tf_versions: List[str]) -> None:
         """Test not adding a pseudonym for TensorFlow if no alternative releases found."""
+        unit = self.UNIT_TESTED()
+
         package_version = PackageVersion(
-            name=self.UNIT_TESTED.PACKAGE_NAME,
+            name=unit.configuration["package_name"],
             version="==1.0.0",
             develop=False,
             index=Source("https://pypi.org/simple"),
@@ -162,7 +165,6 @@ class TestIntelTensorFlowPseudonym(AdviserUnitTestCase):
             is_missing=False,
         ).and_return(tf_versions).once()
 
-        unit = self.UNIT_TESTED()
         with unit.assigned_context(context):
             unit.pre_run()
             assert list(unit.run(package_version)) == []
