@@ -39,6 +39,8 @@ _LOGGER = logging.getLogger(__name__)
 class CutPreReleasesSieve(Sieve):
     """Cut-off pre-releases if project does not explicitly allows them."""
 
+    CONFIGURATION_DEFAULT = {"package_name": None}
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include cut-prereleases pipeline sieve for adviser or Dependency Monkey if pre-releases are not allowed."""

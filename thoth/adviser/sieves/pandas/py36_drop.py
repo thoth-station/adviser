@@ -46,6 +46,7 @@ class PandasPy36Sieve(Sieve):
     See https://github.com/pandas-dev/pandas/pull/35214
     """
 
+    CONFIGURATION_DEFAULT = {"package_name": "pandas"}
     _MESSAGE = f"Pandas in versions >=1.2 dropped Python 3.6 support"
     _JUSTIFICATION_LINK = jl("pandas_py36_drop")
 
@@ -54,6 +55,7 @@ class PandasPy36Sieve(Sieve):
     def pre_run(self) -> None:
         """Initialize this pipeline unit before each run."""
         self._message_logged = False
+        super().pre_run()
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

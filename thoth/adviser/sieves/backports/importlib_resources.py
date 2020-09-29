@@ -46,6 +46,7 @@ class ImportlibResourcesBackportSieve(Sieve):
     https://docs.python.org/3/library/importlib.metadata.html
     """
 
+    CONFIGURATION_DEFAULT = {"package_name": "importlib-resources"}
     _MESSAGE = (
         f"Dependency 'importlib-resources' removed: importlib.pkg_resources is available "
         f"in Python standard library starting Python 3.8 - see {jl('backports')}"
@@ -56,6 +57,7 @@ class ImportlibResourcesBackportSieve(Sieve):
     def pre_run(self) -> None:
         """Initialize self before running."""
         self._logged = False
+        super().pre_run()
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

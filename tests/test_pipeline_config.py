@@ -33,10 +33,26 @@ class TestPipelineConfig(AdviserTestCase):
         assert pipeline_config.to_dict() == {
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": -0.2}}],
             "pseudonyms": [
-                {"name": "Pseudonym1", "configuration": {"another_parameter": 0.33, "package_name": "tensorflow"}}
+                {
+                    "name": "Pseudonym1",
+                    "configuration": {"another_parameter": 0.33, "package_name": "tensorflow"},
+                    "unit_run": False,
+                }
             ],
-            "sieves": [{"name": "Sieve1", "configuration": {"flying_circus": 1969}}],
-            "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
+            "sieves": [
+                {
+                    "configuration": {"flying_circus": 1969, "package_name": "tensorflow"},
+                    "name": "Sieve1",
+                    "unit_run": False,
+                }
+            ],
+            "steps": [
+                {
+                    "name": "Step1",
+                    "unit_run": False,
+                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
+                }
+            ],
             "strides": [
                 {
                     "name": "Stride1",

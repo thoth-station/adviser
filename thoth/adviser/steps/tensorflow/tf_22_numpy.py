@@ -62,6 +62,7 @@ class TensorFlow22NumPyStep(Step):
     def pre_run(self) -> None:
         """Initialize this pipeline unit before each run."""
         self._message_logged = False
+        super().pre_run()
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

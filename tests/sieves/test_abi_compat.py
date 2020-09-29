@@ -19,6 +19,7 @@
 
 import flexmock
 
+from thoth.adviser.context import Context
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.sieves import AbiCompatibilitySieve
@@ -85,3 +86,17 @@ class TestAbiCompatSieve(AdviserUnitTestCase):
             sieve = AbiCompatibilitySieve()
             sieve.pre_run()
             assert list(sieve.run((p for p in [package_version]))) == []
+
+    def test_super_pre_run(self, context: Context) -> None:
+        """Make sure the pre-run method of the base is called."""
+        context.graph.should_receive("get_analyzed_image_symbols_all").with_args(
+            os_name=context.project.runtime_environment.operating_system.name,
+            os_version=context.project.runtime_environment.operating_system.version,
+            cuda_version=context.project.runtime_environment.cuda_version,
+            python_version=context.project.runtime_environment.python_version,
+        ).and_return(set()).once()
+        unit = self.UNIT_TESTED()
+        assert unit.unit_run is False
+        with unit.assigned_context(context):
+            unit.pre_run()
+        assert unit.unit_run is False

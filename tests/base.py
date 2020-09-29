@@ -33,6 +33,7 @@ from voluptuous import Schema
 import pytest
 
 from thoth.adviser.boot import Boot
+from thoth.adviser.context import Context
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.pseudonym import Pseudonym
 from thoth.adviser.sieve import Sieve
@@ -148,11 +149,42 @@ class AdviserUnitTestCase(AdviserTestCase):
 
     def test_provided_package_version(self) -> None:
         """Test the unit provides package_name."""
-        if self.UNIT_TESTED is None or not issubclass(self.UNIT_TESTED, Pseudonym):
+        if self.UNIT_TESTED is None or not issubclass(self.UNIT_TESTED, (Pseudonym, Sieve, Step)):
             return pytest.skip("Unit does not type is not specific for any package version")
 
         unit = self.UNIT_TESTED()
 
+        if isinstance(unit, Pseudonym):
+            assert (
+                isinstance(unit.configuration.get("package_name"), str) and len(unit.configuration["package_name"]) > 0
+            ), (
+                f"Pseudonym unit {self.UNIT_TESTED.__name__!r} does not provide required "
+                "package_version configuration option"
+            )
+        else:
+            assert (
+                "package_name" in unit.configuration
+            ), "It's a good practice to state package_name in the unit configuration"
+
+            package_name = unit.configuration["package_name"]
+            if package_name is not None:
+                assert (
+                    isinstance(package_name, str) and len(unit.configuration["package_name"]) > 0
+                ), f"Unit {self.UNIT_TESTED.__name__!r} does not provide required package_version configuration option"
+
+    def test_super_pre_run(self, context: Context) -> None:
+        """Make sure the pre-run method of the base is called."""
+        if self.UNIT_TESTED is None or not issubclass(self.UNIT_TESTED, (Pseudonym, Sieve, Step)):
+            return pytest.skip("Unit does not type is not specific for any package version")
+
+        unit = self.UNIT_TESTED()
+
+        assert unit.unit_run is False
+        unit.unit_run = True
+
+        with unit.assigned_context(context):
+            unit.pre_run()
+
         assert (
-            isinstance(unit.configuration.get("package_name"), str) and len(unit.configuration["package_name"]) > 0
-        ), f"Unit {self.UNIT_TESTED.__name__!r} does not provide required package_version configuration option"
+            unit.unit_run is False
+        ), "Unit flag unit_run not reset, is super().pre_run() called in sources when providing pre_run method!?"

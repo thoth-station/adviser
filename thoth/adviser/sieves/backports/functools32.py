@@ -45,6 +45,7 @@ class Functools32BackportSieve(Sieve):
     https://docs.python.org/3/library/functools.html
     """
 
+    CONFIGURATION_DEFAULT = {"package_name": "functools32"}
     _MESSAGE = (
         f"Dependency 'functools32' removed: functools is available in Python standard "
         f"library starting Python 3.2 - {jl('backports')}"
@@ -55,6 +56,7 @@ class Functools32BackportSieve(Sieve):
     def pre_run(self) -> None:
         """Initialize self before running."""
         self._logged = False
+        super().pre_run()
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

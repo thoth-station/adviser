@@ -91,11 +91,26 @@ Real world examples
   * Prevent adding ``scipy`` to a TensorFlow>2.1<=2.3 unless introduced
     explictly in the stack. It is not needed (it was introduced accidentally).
 
+Triggering unit for a specific package
+======================================
+
+To help with scaling the recommendation engine when it comes to number of
+pipeline units possibly registered, it is a good practice to state to which
+package the given unit corresponds. To run the pipeline unit for a specific
+package, this fact should be reflected in the pipeline unit configuration by
+stating ``package_name`` configuration option. An example can be a pipeline
+unit specific for TensorFlow packages, which should state ``package_name:
+"tensorflow"`` in the pipeline configuration.
+
+If the pipeline unit is generic for any package, the ``package_name``
+configuration has to default to ``None``.
+
 An example implementation
 =========================
 
 .. code-block:: python
 
+  from typing import Any
   from typing import Dict
   from typing import List
   from typing import Optional
@@ -110,6 +125,8 @@ An example implementation
   class StepExample(Step):
       """Filter out numpy causing issues in upstream TensorFlow==1.9.0."""
 
+      # This pipeline unit is specific for "numpy".
+      CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": "numpy"}
       MULTI_PACKAGE_RESOLUTIONS = False
 
       def run(self, state: State, package_version: PackageVersion) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:

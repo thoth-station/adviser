@@ -57,10 +57,6 @@ class TensorFlow113NumPyStep(Step):
 
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
-    def pre_run(self) -> None:
-        """Initialize this pipeline unit before each run."""
-        self._message_logged = False
-
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register this pipeline unit for adviser if not using latest recommendations."""
@@ -74,6 +70,11 @@ class TensorFlow113NumPyStep(Step):
             return {}
 
         return None
+
+    def pre_run(self) -> None:
+        """Initialize this pipeline unit before each run."""
+        self._message_logged = False
+        super().pre_run()
 
     def run(
         self, state: State, package_version: PackageVersion

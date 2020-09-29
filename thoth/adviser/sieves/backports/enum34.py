@@ -45,6 +45,7 @@ class Enum34BackportSieve(Sieve):
     https://docs.python.org/3/library/enum.html
     """
 
+    CONFIGURATION_DEFAULT = {"package_name": "enum34"}
     _MESSAGE = (
         f"Dependency 'enum34' removed: emum34 is available in Python "
         f"standard library starting Python 3.4 - see {jl('backports')}"
@@ -55,6 +56,7 @@ class Enum34BackportSieve(Sieve):
     def pre_run(self) -> None:
         """Initialize self before running."""
         self._logged = False
+        super().pre_run()
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

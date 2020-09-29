@@ -265,23 +265,27 @@ class Resolver:
     ) -> Generator[PackageVersion, None, None]:
         """Run sieves on each package tuple."""
         result = (pv for pv in package_versions)
-        for sieve in self.pipeline.sieves:
-            _LOGGER.debug("Running sieve %r", sieve.__class__.__name__)
-            try:
-                result = sieve.run(result)
-            except SkipPackage:
-                raise
-            except NotAcceptable as exc:
-                _LOGGER.log(
-                    log_level, "Sieve %r removed packages %r: %s", sieve.__class__.__name__, str(exc),
-                )
-                result = []  # type: ignore
-                break
-            except Exception as exc:
-                raise SieveError(
-                    f"Failed to run sieve {sieve.__class__.__name__!r} for "
-                    f"Python packages {[pv.to_tuple() for pv in package_versions]}: {str(exc)}"
-                ) from exc
+        if package_versions:
+            for sieve in chain(
+                self.pipeline.sieves_dict.get(package_versions[0].name, []), self.pipeline.sieves_dict.get(None, [])
+            ):
+                _LOGGER.debug("Running sieve %r", sieve.__class__.__name__)
+                sieve.unit_run = True
+                try:
+                    result = sieve.run(result)
+                except SkipPackage:
+                    raise
+                except NotAcceptable as exc:
+                    _LOGGER.log(
+                        log_level, "Sieve %r removed packages %r: %s", sieve.__class__.__name__, str(exc),
+                    )
+                    result = []  # type: ignore
+                    break
+                except Exception as exc:
+                    raise SieveError(
+                        f"Failed to run sieve {sieve.__class__.__name__!r} for "
+                        f"Python packages {[pv.to_tuple() for pv in package_versions]}: {str(exc)}"
+                    ) from exc
 
         yield from result
 
@@ -318,8 +322,11 @@ class Resolver:
         score_addition = 0.0
         justification_addition = []
         skip_package = False
-        for step in self.pipeline.steps:
+        for step in chain(
+            self.pipeline.steps_dict.get(package_version.name, []), self.pipeline.steps_dict.get(None, [])
+        ):
             _LOGGER.debug("Running step %r for %r", step.__class__.__name__, package_version_tuple)
+            step.unit_run = True
 
             if multi_package_resolution and not step.MULTI_PACKAGE_RESOLUTIONS:
                 _LOGGER.debug(
@@ -697,6 +704,8 @@ class Resolver:
         """Run pseudonym units the given package tuple."""
         package_version: PackageVersion = self.context.get_package_version(package_tuple)
         for unit in self.pipeline.pseudonyms_dict.get(package_tuple[0], []):
+            _LOGGER.debug("Running pseudonym %r", unit.__class__.__name__)
+            unit.unit_run = True
             for pseudonym_package_tuple in unit.run(package_version):
                 # Pseudonyms introduced do not have dependents (we work on direct dependencies - initial state).
                 if pseudonym_package_tuple[0] in state.resolved_dependencies:

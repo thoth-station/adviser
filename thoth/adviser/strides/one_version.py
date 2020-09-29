@@ -45,7 +45,7 @@ _LOGGER = logging.getLogger(__name__)
 class OneVersionStride(Stride):
     """Filter out software stacks allowing the pipeline to produce just one software stack with specific package."""
 
-    version_seen = attr.ib(type=Optional[str], default=None)  # type: ignore
+    version_seen = attr.ib(type=Optional[str], default=None, init=False)
 
     CONFIGURATION_DEFAULT = {
         "package_name": None,

@@ -110,6 +110,11 @@ the pipeline. This can be handy if an issue with a unit arises in a deployment -
 operator can remove pipeline unit by adjusting adviser template and provide
 this configuration without a need to deploy a new version of adviser.
 
+For prod-like deployments, you can disable pipeline unit validation. By doing
+so, the pipeline unit configuration can be constructed faster. Provide
+``THOTH_ADVISER_VALIDATE_UNIT_CONFIGURATION_SCHEMA=0`` environment variable to
+disable pipeline unit configuration validation.
+
 Running adviser locally
 =======================
 

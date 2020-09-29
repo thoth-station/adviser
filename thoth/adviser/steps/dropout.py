@@ -44,7 +44,7 @@ _LOGGER = logging.getLogger(__name__)
 class DropoutStep(Step):
     """A step that drops a state transition with a certain probability."""
 
-    CONFIGURATION_DEFAULT = {"probability": 0.9}
+    CONFIGURATION_DEFAULT = {"package_name": None, "probability": 0.9}
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

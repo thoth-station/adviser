@@ -45,6 +45,7 @@ class ImportlibMetadataBackportSieve(Sieve):
     https://docs.python.org/3/library/importlib.metadata.html
     """
 
+    CONFIGURATION_DEFAULT = {"package_name": "importlib-metadata"}
     _MESSAGE = (
         "Dependency 'importlib-metadata' removed: importlib.metadata is available in "
         f"Python standard library starting Python 3.8 - see {jl('backports')}"
@@ -55,6 +56,7 @@ class ImportlibMetadataBackportSieve(Sieve):
     def pre_run(self) -> None:
         """Initialize self before running."""
         self._logged = False
+        super().pre_run()
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

@@ -57,6 +57,7 @@ class MockScoreStep(Step):
     def pre_run(self) -> None:
         """Initialize self, before each run."""
         self._score_history.clear()
+        super().pre_run()
 
     def post_run(self) -> None:
         """Print the generated history after the run."""

@@ -146,4 +146,4 @@ tensorflow = "*"
     def test_default_configuration(self) -> None:
         """Test default configuration for an instantiated sieve."""
         sieve = SolvedSieve()
-        assert sieve.configuration == {"without_error": True}
+        assert sieve.configuration == {"without_error": True, "package_name": None}

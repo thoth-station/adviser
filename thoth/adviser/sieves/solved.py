@@ -30,6 +30,9 @@ import attr
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.storages.exceptions import NotFoundError
+from voluptuous import Any as SchemaAny
+from voluptuous import Required
+from voluptuous import Schema
 
 from ..sieve import Sieve
 
@@ -43,7 +46,10 @@ _LOGGER = logging.getLogger(__name__)
 class SolvedSieve(Sieve):
     """Filter out build time/installation errors of Python packages."""
 
-    CONFIGURATION_DEFAULT = {"without_error": True}
+    CONFIGURATION_DEFAULT = {"package_name": None, "without_error": True}
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {Required("package_name"): SchemaAny(str, None), Required("without_error"): bool}
+    )
     _JUSTIFICATION_LINK = jl("buildtime_error")
 
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
@@ -59,6 +65,7 @@ class SolvedSieve(Sieve):
     def pre_run(self) -> None:
         """Initialize this pipeline unit before each run."""
         self._messages_logged.clear()
+        super().pre_run()
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages based on build time/installation issues.."""

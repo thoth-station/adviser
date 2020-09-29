@@ -40,6 +40,7 @@ _LOGGER = logging.getLogger(__name__)
 class PackageIndexSieve(Sieve):
     """Filter out disabled Python package indexes."""
 
+    CONFIGURATION_DEFAULT = {"package_name": None}
     _cached_records: Dict[str, Optional[bool]] = attr.ib(default=attr.Factory(dict), kw_only=True)
 
     @classmethod

@@ -50,6 +50,7 @@ class SecurityIndicatorStep(Step):
     _logged_packages = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), init=False)
 
     CONFIGURATION_DEFAULT = {
+        "package_name": None,
         "high_confidence_weight": 1,
         "medium_confidence_weight": 0.5,
         "low_confidence_weight": 0.1,
@@ -59,10 +60,6 @@ class SecurityIndicatorStep(Step):
         "si_reward_weight": 0.5,
     }
     _JUSTIFICATION_LINK = jl("security")
-
-    def pre_run(self) -> None:
-        """Initialize this pipeline step before running the pipeline."""
-        self._logged_packages.clear()
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -84,6 +81,11 @@ class SecurityIndicatorStep(Step):
                 "link": cls._JUSTIFICATION_LINK,
             }
         ]
+
+    def pre_run(self) -> None:
+        """Initialize this pipeline step before running the pipeline."""
+        self._logged_packages.clear()
+        super().pre_run()
 
     def run(
         self, state: State, package_version: PackageVersion

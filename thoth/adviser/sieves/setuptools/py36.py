@@ -44,6 +44,7 @@ class Py36SetuptoolsSieve(Sieve):
     https://github.com/thoth-station/solver/issues/350
     """
 
+    CONFIGURATION_DEFAULT = {"package_name": "setuptools"}
     _MESSAGE = "Package setuptools in versions <=17 do not work with Python 3.6"
     _JUSTIFICATION_LINK = jl("setuptools_py38")
 
@@ -63,6 +64,7 @@ class Py36SetuptoolsSieve(Sieve):
     def pre_run(self) -> None:
         """Initialize this pipeline unit before each run."""
         self._message_logged = False
+        super().pre_run()
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out old setuptools that do not work with Python 3.6."""
