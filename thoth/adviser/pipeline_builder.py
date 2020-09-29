@@ -148,10 +148,14 @@ class PipelineBuilderContext:
             self._boots.append(unit)
             return
         elif isinstance(unit, Pseudonym):
-            if unit.PACKAGE_NAME not in self._pseudonyms:
-                self._pseudonyms[unit.PACKAGE_NAME] = []
+            package_name = unit.configuration.get("package_name")
+            if not package_name:
+                raise PipelineConfigurationError(
+                    f"Pipeline cannot be constructed as unit {unit.__class__.__name__!r} of type Pseudonym "
+                    f"did not provide any package name configuration: {unit.configuration!r}"
+                )
+            self._pseudonyms.setdefault(package_name, []).append(unit)
             self._pseudonyms_included.add(unit.__class__)
-            self._pseudonyms[unit.PACKAGE_NAME].append(unit)
             return
         elif isinstance(unit, Sieve):
             self._sieves_included.add(unit.__class__)
@@ -320,9 +324,15 @@ class PipelineBuilder:
         pseudonyms: Dict[str, List[Pseudonym]] = {}
         for pseudonym_entry in dict_.pop("pseudonyms", []):
             unit: Pseudonym = cls._do_instantiate_from_dict(thoth.adviser.pseudonyms, pseudonym_entry)  # type: ignore
-            if unit.PACKAGE_NAME not in pseudonyms:
-                pseudonyms[unit.PACKAGE_NAME] = []
-            pseudonyms[unit.PACKAGE_NAME].append(unit)
+
+            package_name = unit.configuration.get("package_name")
+            if not package_name:
+                raise PipelineConfigurationError(
+                    f"Pipeline cannot be constructed as unit {unit.__class__.__name__!r} of type Pseudonym "
+                    f"did not provide any package name configuration: {unit.configuration!r}"
+                )
+
+            pseudonyms.setdefault(package_name, []).append(unit)
 
         sieves = []
         for sieve_entry in dict_.pop("sieves", []):

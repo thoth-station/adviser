@@ -43,7 +43,7 @@ _LOGGER = logging.getLogger(__name__)
 class TensorFlowGPUPseudonym(Pseudonym):
     """A TensorFlow pseudonym to map tensorflow to tensorflow-gpu packages."""
 
-    PACKAGE_NAME: str = "tensorflow"
+    CONFIGURATION_DEFAULT = {"package_name": "tensorflow"}
     _LINK = jl("tf_gpu_alt")
 
     _pseudonyms = attr.ib(type=Optional[FrozenSet[str]], default=None, init=False)

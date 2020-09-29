@@ -21,8 +21,10 @@ import abc
 from typing import Generator
 from typing import Tuple
 
-import attr
 from thoth.python import PackageVersion
+from voluptuous import Schema
+from voluptuous import Required
+import attr
 
 from .unit import Unit
 
@@ -31,7 +33,7 @@ from .unit import Unit
 class Pseudonym(Unit):
     """Pseudonym base class implementation."""
 
-    PACKAGE_NAME: str = ""
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str})
 
     @abc.abstractmethod
     def run(self, package_version: PackageVersion) -> Generator[Tuple[str, str, str], None, None]:

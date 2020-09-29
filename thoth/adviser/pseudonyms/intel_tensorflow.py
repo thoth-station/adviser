@@ -43,7 +43,7 @@ _LOGGER = logging.getLogger(__name__)
 class IntelTensorFlowPseudonym(Pseudonym):
     """A TensorFlow pseudonym to map intel-tensorflow to tensorflow packages."""
 
-    PACKAGE_NAME: str = "tensorflow"
+    CONFIGURATION_DEFAULT = {"package_name": "tensorflow"}
     _LINK = jl("tf_intel")
 
     _pseudonyms = attr.ib(type=Optional[FrozenSet[str]], default=None, init=False)

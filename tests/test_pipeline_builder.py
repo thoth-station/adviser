@@ -187,7 +187,7 @@ class TestPipelineBuilder(AdviserTestCase):
         assert pipeline.to_dict() == {
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": 1.0}}],
             "sieves": [{"name": "Sieve2", "configuration": {"date": "2015-09-15", "foo": "bar"},}],
-            "pseudonyms": [{"name": "Pseudonym2", "configuration": {}}],
+            "pseudonyms": [{"name": "Pseudonym2", "configuration": {"package_name": "flask"}}],
             "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
             "strides": [
                 {"name": "Stride2", "configuration": {"foo": None}},
@@ -233,7 +233,7 @@ class TestPipelineBuilder(AdviserTestCase):
         """Test instantiation of a pipeline from a dictionary."""
         dict_ = {
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": 1.0}}],
-            "pseudonyms": [{"name": "Pseudonym2", "configuration": {},}],
+            "pseudonyms": [{"name": "Pseudonym2", "configuration": {"package_name": "tensorflow"},}],
             "sieves": [{"name": "Sieve2", "configuration": {"date": "2015-09-15", "foo": "bar"},}],
             "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
             "strides": [

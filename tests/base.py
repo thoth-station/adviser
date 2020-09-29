@@ -147,10 +147,12 @@ class AdviserUnitTestCase(AdviserTestCase):
         ), f"Assigned unit for testing {self.UNIT_TESTED.__name__!r} does not inherit from any known pipeline unit type"
 
     def test_provided_package_version(self) -> None:
-        """Test the unit provides PACKAGE_NAME."""
+        """Test the unit provides package_name."""
         if self.UNIT_TESTED is None or not issubclass(self.UNIT_TESTED, Pseudonym):
             return pytest.skip("Unit does not type is not specific for any package version")
 
+        unit = self.UNIT_TESTED()
+
         assert (
-            isinstance(self.UNIT_TESTED.PACKAGE_NAME, str) and len(self.UNIT_TESTED.PACKAGE_NAME) > 0
-        ), f"Unit {self.UNIT_TESTED.__name__!r} does not provide required PACKAGE_VERSION attribute"
+            isinstance(unit.configuration.get("package_name"), str) and len(unit.configuration["package_name"]) > 0
+        ), f"Unit {self.UNIT_TESTED.__name__!r} does not provide required package_version configuration option"
