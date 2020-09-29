@@ -75,6 +75,10 @@ class PipelineUnitError(AdviserPipelineException):
     """An exception raised when there is an error during pipeline run, unexpectedly."""
 
 
+class PipelineUnitConfigurationSchemaError(PipelineUnitError):
+    """An exception raised when pipeline unit configuration does not match schema declared."""
+
+
 class BootError(PipelineUnitError):
     """An exception raised when pipeline boot unit fails unexpectedly."""
 

@@ -186,12 +186,24 @@ class TestPipelineBuilder(AdviserTestCase):
 
         assert pipeline.to_dict() == {
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": 1.0}}],
-            "sieves": [{"name": "Sieve2", "configuration": {"date": "2015-09-15", "foo": "bar"},}],
-            "pseudonyms": [{"name": "Pseudonym2", "configuration": {"package_name": "flask"}}],
-            "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
+            "sieves": [
+                {
+                    "name": "Sieve2",
+                    "configuration": {"date": "2015-09-15", "foo": "bar", "package_name": "selinon"},
+                    "unit_run": False,
+                }
+            ],
+            "pseudonyms": [{"name": "Pseudonym2", "configuration": {"package_name": "flask"}, "unit_run": False}],
+            "steps": [
+                {
+                    "name": "Step1",
+                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
+                    "unit_run": False,
+                }
+            ],
             "strides": [
-                {"name": "Stride2", "configuration": {"foo": None}},
-                {"name": "Stride1", "configuration": {"linus": "torvalds"}},
+                {"name": "Stride2", "configuration": {"foo": None},},
+                {"name": "Stride1", "configuration": {"linus": "torvalds"},},
             ],
             "wraps": [{"name": "Wrap2", "configuration": {}}],
         }
@@ -233,9 +245,21 @@ class TestPipelineBuilder(AdviserTestCase):
         """Test instantiation of a pipeline from a dictionary."""
         dict_ = {
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": 1.0}}],
-            "pseudonyms": [{"name": "Pseudonym2", "configuration": {"package_name": "tensorflow"},}],
-            "sieves": [{"name": "Sieve2", "configuration": {"date": "2015-09-15", "foo": "bar"},}],
-            "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
+            "pseudonyms": [{"name": "Pseudonym2", "configuration": {"package_name": "tensorflow"}, "unit_run": False}],
+            "sieves": [
+                {
+                    "name": "Sieve2",
+                    "configuration": {"date": "2015-09-15", "foo": "bar", "package_name": "selinon"},
+                    "unit_run": False,
+                }
+            ],
+            "steps": [
+                {
+                    "name": "Step1",
+                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
+                    "unit_run": False,
+                }
+            ],
             "strides": [
                 {"name": "Stride2", "configuration": {"foo": None}},
                 {"name": "Stride1", "configuration": {"linus": "torvalds"}},
@@ -260,7 +284,13 @@ class TestPipelineBuilder(AdviserTestCase):
             "boots": [{"name": "Boot1", "configuration": {"some_parameter": -0.2}}],
             "pseudonyms": [],
             "sieves": [],
-            "steps": [{"name": "Step1", "configuration": {"guido_retirement": 2019}}],
+            "steps": [
+                {
+                    "name": "Step1",
+                    "unit_run": False,
+                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
+                }
+            ],
             "strides": [{"name": "Stride2", "configuration": {"foo": None}}],
             "wraps": [],
         }
@@ -269,8 +299,14 @@ class TestPipelineBuilder(AdviserTestCase):
             "boots": [{"name": "Boot1"}],
             "pseudonyms": [],
             "sieves": [],
-            "steps": [{"name": "Step1"}],
-            "strides": [{"name": "Stride2"}],
+            "steps": [
+                {
+                    "name": "Step1",
+                    "unit_run": False,
+                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
+                }
+            ],
+            "strides": [{"name": "Stride2", "unit_run": False}],
             "wraps": [],
         }
 

@@ -44,6 +44,8 @@ class CutLockedSieve(Sieve):
     N latest versions and the pinned version is >=N+1 version.
     """
 
+    CONFIGURATION_DEFAULT = {"package_name": None}
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include cut-locked pipeline sieve for adviser or Dependency Monkey, always."""

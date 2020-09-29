@@ -47,14 +47,10 @@ _LOGGER = logging.getLogger(__name__)
 class CvePenalizationStep(Step):
     """Penalization based on CVE being present in stack."""
 
-    CONFIGURATION_DEFAULT = {"cve_penalization": -0.2}
+    CONFIGURATION_DEFAULT = {"package_name": None, "cve_penalization": -0.2}
     _JUSTIFICATION_LINK = jl("cve")
 
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
-
-    def pre_run(self) -> None:
-        """Initialize this pipeline unit before running."""
-        self._messages_logged.clear()
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -69,6 +65,11 @@ class CvePenalizationStep(Step):
             return {}
 
         return None
+
+    def pre_run(self) -> None:
+        """Initialize this pipeline unit before running."""
+        self._messages_logged.clear()
+        super().pre_run()
 
     def run(self, _: State, package_version: PackageVersion) -> Optional[Tuple[float, List[Dict[str, str]]]]:
         """Penalize stacks with a CVE."""

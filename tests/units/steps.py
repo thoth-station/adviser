@@ -25,8 +25,10 @@ from typing import Tuple
 from typing import TYPE_CHECKING
 from thoth.python import PackageVersion
 
-from thoth.adviser.step import Step
 from thoth.adviser.state import State
+from thoth.adviser.step import Step
+from voluptuous import Required
+from voluptuous import Schema
 
 if TYPE_CHECKING:
     from thoth.adviser.pipeline_builder import PipelineBuilderContext
@@ -35,7 +37,8 @@ if TYPE_CHECKING:
 class Step1(Step):
     """A testing step implementation."""
 
-    CONFIGURATION_DEFAULT = {"guido_retirement": 2019}
+    CONFIGURATION_DEFAULT = {"guido_retirement": 2019, "package_name": "tensorflow"}
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str, Required("guido_retirement"): int})
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -50,7 +53,8 @@ class Step1(Step):
 class Step2(Step):
     """A testing step implementation."""
 
-    CONFIGURATION_DEFAULT = {"lyrics": ".. drifting further everyday..."}
+    CONFIGURATION_DEFAULT = {"lyrics": ".. drifting further everyday...", "package_name": "thoth-adviser"}
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str, Required("lyrics"): str})
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

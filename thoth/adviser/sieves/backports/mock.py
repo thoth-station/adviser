@@ -45,6 +45,7 @@ class MockBackportSieve(Sieve):
     https://docs.python.org/3/library/unittest.mock.html
     """
 
+    CONFIGURATION_DEFAULT = {"package_name": "mock"}
     _MESSAGE = (
         f"Dependency 'mock' removed: unittest.mock is available in Python "
         f"standard library starting Python 3.3 - see {jl('backports')}"
@@ -55,6 +56,7 @@ class MockBackportSieve(Sieve):
     def pre_run(self) -> None:
         """Initialize self before running."""
         self._logged = False
+        super().pre_run()
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

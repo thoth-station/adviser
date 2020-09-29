@@ -17,9 +17,10 @@
 
 """A base class for implementing pipeline units - strides and steps."""
 
-import re
 import abc
 import logging
+import os
+import re
 from typing import Any
 from typing import Dict
 from typing import Generator
@@ -29,9 +30,12 @@ from contextlib import contextmanager
 
 import attr
 from voluptuous import Schema
+from voluptuous import Required
+from voluptuous import Any as SchemaAny
 from thoth.python import PackageVersion
 
 from .context import Context
+from .exceptions import PipelineUnitConfigurationSchemaError
 from .dm_report import DependencyMonkeyReport
 
 from typing import TYPE_CHECKING
@@ -58,6 +62,7 @@ class Unit(metaclass=abc.ABCMeta):
 
     _RE_CAMEL2SNAKE = re.compile("(?!^)([A-Z]+)")
     _AICOE_PYTHON_PACKAGE_INDEX_URL = "https://tensorflow.pypi.thoth-station.ninja/index/"
+    _VALIDATE_UNIT_CONFIGURATION_SCHEMA = bool(int(os.getenv("THOTH_ADVISER_VALIDATE_UNIT_CONFIGURATION_SCHEMA", 1)))
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -115,7 +120,7 @@ class Unit(metaclass=abc.ABCMeta):
         If setting configuration fails due to schema checks, configuration are kept in an invalid state.
         """
         self.configuration.update(configuration_dict)
-        if self.CONFIGURATION_SCHEMA:
+        if self._VALIDATE_UNIT_CONFIGURATION_SCHEMA and self.CONFIGURATION_SCHEMA:
             _LOGGER.debug("Validating configuration for pipeline unit %r", self.name)
             try:
                 self.CONFIGURATION_SCHEMA(self.configuration)
@@ -123,7 +128,7 @@ class Unit(metaclass=abc.ABCMeta):
                 _LOGGER.exception(
                     "Failed to validate schema for pipeline unit %r: %s", self.name, str(exc),
                 )
-                raise
+                raise PipelineUnitConfigurationSchemaError(str(exc))
 
     def to_dict(self) -> Dict[str, Any]:
         """Turn this pipeline step into its dictionary representation."""
@@ -193,3 +198,26 @@ class Unit(metaclass=abc.ABCMeta):
 
         This method should not raise any exception.
         """
+
+
+class UnitPackageVersion(Unit, metaclass=abc.ABCMeta):
+    """A pipeline unit that can be spefici to a package version."""
+
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): SchemaAny(str, None)})
+    CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None}
+
+    unit_run = attr.ib(type=bool, default=False, kw_only=True)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Turn this pipeline step into its dictionary representation."""
+        return {"name": self.__class__.__name__, "configuration": self.configuration, "unit_run": self.unit_run}
+
+    def __attrs_post_init__(self) -> None:
+        """Initialize post-init attributes."""
+        # Initialize unit_run always to False so the pipeline unit JSON report can be reused across
+        # multiple pipeline unit runs.
+        self.unit_run = False
+
+    def pre_run(self) -> None:
+        """Initialize pre-run attributes before each pipeline run."""
+        self.unit_run = False

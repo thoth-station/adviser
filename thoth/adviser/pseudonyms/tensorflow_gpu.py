@@ -66,6 +66,7 @@ class TensorFlowGPUPseudonym(Pseudonym):
     def pre_run(self) -> None:
         """Initialize this pipeline unit before each run."""
         self._pseudonyms = None
+        super().pre_run()
 
     def run(self, package_version: PackageVersion) -> Generator[Tuple[str, str, str], None, None]:
         """Map TensorFlow packages to their alternatives."""

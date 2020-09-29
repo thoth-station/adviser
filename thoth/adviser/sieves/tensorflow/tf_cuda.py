@@ -49,6 +49,7 @@ class TensorFlowCUDASieve(Sieve):
     See supported matrix at https://www.tensorflow.org/install/source#linux
     """
 
+    CONFIGURATION_DEFAULT = {"package_name": "tensorflow"}  # TODO: add tensorflow-gpu
     _MESSAGE = f"Recommended TensorFlow that supports CUDA present in the runtime environment - see {jl('tf_cuda')}"
 
     _EMPTY: FrozenSet[Tuple[int, int]] = frozenset()
@@ -86,6 +87,8 @@ class TensorFlowCUDASieve(Sieve):
             _LOGGER.error("Unsupported CUDA version, cannot provide recommendations for TensorFlow")
             self._tf_1_cuda_support = self._EMPTY
             self._tf_2_cuda_support = self._EMPTY
+
+        super().pre_run()
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

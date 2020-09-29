@@ -31,7 +31,7 @@ from .base import AdviserTestCase
 @pytest.fixture
 def pipeline_config() -> PipelineConfig:  # noqa: D401
     """A fixture for a pipeline config."""
-    return PipelineConfig(boots=[], sieves=[], steps=[], strides=[], wraps=[])
+    return PipelineConfig(boots=[], pseudonyms={}, sieves={}, steps={}, strides=[], wraps=[])
 
 
 class TestReport(AdviserTestCase):

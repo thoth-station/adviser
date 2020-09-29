@@ -62,8 +62,8 @@ class PipelineBuilderContext:
 
     _boots = attr.ib(type=List[Boot], default=attr.Factory(list), kw_only=True)
     _pseudonyms = attr.ib(type=Dict[str, List[Pseudonym]], default=attr.Factory(dict), kw_only=True)
-    _sieves = attr.ib(type=List[Sieve], default=attr.Factory(list), kw_only=True)
-    _steps = attr.ib(type=List[Step], default=attr.Factory(list), kw_only=True)
+    _sieves = attr.ib(type=Dict[Optional[str], List[Sieve]], default=attr.Factory(dict), kw_only=True)
+    _steps = attr.ib(type=Dict[Optional[str], List[Step]], default=attr.Factory(dict), kw_only=True)
     _strides = attr.ib(type=List[Stride], default=attr.Factory(list), kw_only=True)
     _wraps = attr.ib(type=List[Wrap], default=attr.Factory(list), kw_only=True)
     _boots_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
@@ -91,11 +91,21 @@ class PipelineBuilderContext:
     @property
     def sieves(self) -> List[Sieve]:
         """Get all sieves registered to this pipeline builder context."""
+        return list(chain(*self._sieves.values()))
+
+    @property
+    def sieves_dict(self) -> Dict[Optional[str], List[Sieve]]:
+        """Get sieves as a dictionary mapping."""
         return self._sieves
 
     @property
     def steps(self) -> List[Step]:
         """Get all steps registered to this pipeline builder context."""
+        return list(chain(*self._steps.values()))
+
+    @property
+    def steps_dict(self) -> Dict[Optional[str], List[Step]]:
+        """Get steps as a dictionary mapping."""
         return self._steps
 
     @property
@@ -158,12 +168,14 @@ class PipelineBuilderContext:
             self._pseudonyms_included.add(unit.__class__)
             return
         elif isinstance(unit, Sieve):
+            package_name = unit.configuration.get("package_name")
             self._sieves_included.add(unit.__class__)
-            self._sieves.append(unit)
+            self._sieves.setdefault(package_name, []).append(unit)
             return
         elif isinstance(unit, Step):
+            package_name = unit.configuration.get("package_name")
             self._steps_included.add(unit.__class__)
-            self._steps.append(unit)
+            self._steps.setdefault(package_name, []).append(unit)
             return
         elif isinstance(unit, Stride):
             self._strides_included.add(unit.__class__)
@@ -255,22 +267,22 @@ class PipelineBuilder:
                 )
                 unit_instance = unit_class()
 
-                if unit_configuration:
-                    try:
-                        unit_instance.update_configuration(unit_configuration)
-                    except Exception as exc:
-                        raise PipelineConfigurationError(
-                            f"Filed to initialize pipeline unit configuration for {unit_class.__name__!r} "
-                            f"with configuration {unit_configuration!r}: {str(exc)}"
-                        ) from exc
+                # Always perform update, even with an empty dict. Update triggers a schema check.
+                try:
+                    unit_instance.update_configuration(unit_configuration)
+                except Exception as exc:
+                    raise PipelineConfigurationError(
+                        f"Filed to initialize pipeline unit configuration for {unit_class.__name__!r} "
+                        f"with configuration {unit_configuration!r}: {str(exc)}"
+                    ) from exc
 
                 ctx.add_unit(unit_instance)
 
         pipeline = PipelineConfig(
             boots=ctx.boots,
             pseudonyms=ctx.pseudonyms_dict,
-            sieves=ctx.sieves,
-            steps=ctx.steps,
+            sieves=ctx.sieves_dict,
+            steps=ctx.steps_dict,
             strides=ctx.strides,
             wraps=ctx.wraps,
         )
@@ -334,13 +346,17 @@ class PipelineBuilder:
 
             pseudonyms.setdefault(package_name, []).append(unit)
 
-        sieves = []
+        sieves: Dict[Optional[str], List[Sieve]] = {}
         for sieve_entry in dict_.pop("sieves", []):
-            sieves.append(cls._do_instantiate_from_dict(thoth.adviser.sieves, sieve_entry))
+            sieve_unit: Sieve = cls._do_instantiate_from_dict(thoth.adviser.sieves, sieve_entry)  # type: ignore
+            package_name = sieve_unit.configuration.get("package_name")
+            sieves.setdefault(package_name, []).append(sieve_unit)
 
-        steps = []
+        steps: Dict[Optional[str], List[Step]] = {}
         for step_entry in dict_.pop("steps", []):
-            steps.append(cls._do_instantiate_from_dict(thoth.adviser.steps, step_entry))
+            step_unit: Step = cls._do_instantiate_from_dict(thoth.adviser.steps, step_entry)  # type: ignore
+            package_name = step_unit.configuration.get("package_name")
+            steps.setdefault(package_name, []).append(step_unit)
 
         strides = []
         for stride_entry in dict_.pop("strides", []):
@@ -356,8 +372,8 @@ class PipelineBuilder:
         pipeline = PipelineConfig(
             boots=boots,  # type: ignore
             pseudonyms=pseudonyms,
-            sieves=sieves,  # type: ignore
-            steps=steps,  # type: ignore
+            sieves=sieves,
+            steps=steps,
             strides=strides,  # type: ignore
             wraps=wraps,  # type: ignore
         )

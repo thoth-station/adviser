@@ -25,6 +25,9 @@ from typing import TYPE_CHECKING
 from thoth.python import PackageVersion
 
 from thoth.adviser.sieve import Sieve
+from voluptuous import Optional as SchemaOptional
+from voluptuous import Required
+from voluptuous import Schema
 
 if TYPE_CHECKING:
     from thoth.adviser.pipeline_builder import PipelineBuilderContext
@@ -33,7 +36,8 @@ if TYPE_CHECKING:
 class Sieve1(Sieve):
     """A testing sieve implementation."""
 
-    CONFIGURATION_DEFAULT = {"flying_circus": 1969}
+    CONFIGURATION_DEFAULT = {"flying_circus": 1969, "package_name": "tensorflow"}
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str, Required("flying_circus"): str})
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -47,7 +51,10 @@ class Sieve1(Sieve):
 class Sieve2(Sieve):
     """A testing sieve implementation."""
 
-    CONFIGURATION_DEFAULT = {"date": "2015-09-15"}
+    CONFIGURATION_DEFAULT = {"date": "2015-09-15", "package_name": "selinon"}
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {Required("package_name"): str, Required("date"): str, SchemaOptional("foo"): str}
+    )
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

@@ -111,11 +111,27 @@ Real world examples
   <thoth.adviser.exceptions.SkipPackage>` exception if the ``enum34`` would be
   used with newer Python version.
 
+Triggering unit for a specific package
+======================================
+
+To help with scaling the recommendation engine when it comes to number of
+pipeline units possibly registered, it is a good practice to state to which
+package the given unit corresponds. To run the pipeline unit for a specific
+package, this fact should be reflected in the pipeline unit configuration by
+stating ``package_name`` configuration option. An example can be a pipeline
+unit specific for TensorFlow packages, which should state ``package_name:
+"tensorflow"`` in the pipeline configuration.
+
+If the pipeline unit is generic for any package, the ``package_name``
+configuration has to default to ``None``.
+
 An example implementation
 =========================
 
 .. code-block:: python
 
+  from typing import Any
+  from typing import Dict
   from typing import Generator
   from thoth.python import PackageVersion
 
@@ -123,6 +139,8 @@ An example implementation
 
   class ExampleSieve(Sieve):
       """An example sieve implementation to demonstrate sieve purpose."""
+
+      CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None}  # The pipeline unit is not specific to any package.
 
       def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
           for package_version in package_versions:

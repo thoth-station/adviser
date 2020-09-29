@@ -19,8 +19,9 @@
 
 import pytest
 
+from thoth.adviser.context import Context
 from thoth.adviser.sieves import VersionConstraintSieve
-from thoth.adviser.exceptions import SieveError
+from thoth.adviser.exceptions import PipelineUnitConfigurationSchemaError
 from thoth.python import Source
 from thoth.python import PackageVersion
 
@@ -39,27 +40,25 @@ class TestVersionConstrainSieve(AdviserUnitTestCase):
     def test_configuration_error(self) -> None:
         """Test removing a locked package based on direct dependencies."""
         # Default values should error, no adjustment to values.
-        with pytest.raises(SieveError):
-            VersionConstraintSieve().pre_run()
+        unit = VersionConstraintSieve()
+        with pytest.raises(PipelineUnitConfigurationSchemaError):
+            unit.update_configuration({})
 
         unit = VersionConstraintSieve()
-        unit.update_configuration({"package_name": None, "version_specifier": None})
-        with pytest.raises(SieveError):
-            unit.pre_run()
+        with pytest.raises(PipelineUnitConfigurationSchemaError):
+            unit.update_configuration({"package_name": None, "version_specifier": None})
 
         unit = VersionConstraintSieve()
-        unit.update_configuration(
-            {"package_name": "tensorflow", "version_specifier": None,}
-        )
-        with pytest.raises(SieveError):
-            unit.pre_run()
+        with pytest.raises(PipelineUnitConfigurationSchemaError):
+            unit.update_configuration(
+                {"package_name": "tensorflow", "version_specifier": None,}
+            )
 
         unit = VersionConstraintSieve()
-        unit.update_configuration(
-            {"package_name": None, "version_specifier": ">2.0",}
-        )
-        with pytest.raises(SieveError):
-            unit.pre_run()
+        with pytest.raises(PipelineUnitConfigurationSchemaError):
+            unit.update_configuration(
+                {"package_name": None, "version_specifier": ">2.0",}
+            )
 
     def test_default_configuration(self) -> None:
         """Test obtaining default configuration."""
@@ -89,3 +88,20 @@ class TestVersionConstrainSieve(AdviserUnitTestCase):
         )
         unit.pre_run()
         assert list(unit.run([package_version])) == [package_version]
+
+    def test_super_pre_run(self, context: Context) -> None:
+        """Make sure the pre-run method of the base is called."""
+        unit = VersionConstraintSieve()
+        unit.update_configuration(
+            {"package_name": "tensorflow", "version_specifier": "==2.3",}
+        )
+
+        assert unit.unit_run is False
+        unit.unit_run = True
+
+        with unit.assigned_context(context):
+            unit.pre_run()
+
+        assert (
+            unit.unit_run is False
+        ), "Unit flag unit_run not reset, is super().pre_run() called in sources when providing pre_run method!?"

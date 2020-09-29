@@ -58,10 +58,6 @@ class TensorFlow114GastStep(Step):
     _MESSAGE = "TensorFlow in version <=1.14 used overpinned gast package, using gast in version <=0.2.2"
     _LINK = jl("tf_114_gast")
 
-    def pre_run(self) -> None:
-        """Initialize this pipeline unit before each run."""
-        self._message_logged = False
-
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register this pipeline unit for adviser if not using latest recommendations."""
@@ -75,6 +71,11 @@ class TensorFlow114GastStep(Step):
             return {}
 
         return None
+
+    def pre_run(self) -> None:
+        """Initialize this pipeline unit before each run."""
+        self._message_logged = False
+        super().pre_run()
 
     def run(
         self, state: State, package_version: PackageVersion

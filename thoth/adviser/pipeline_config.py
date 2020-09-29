@@ -22,6 +22,7 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import List
+from typing import Optional
 from typing import Union
 
 import attr
@@ -49,8 +50,8 @@ class PipelineConfig:
     boots = attr.ib(type=List[Boot], default=attr.Factory(list))
     # Use a dict to have O(1) access when applying pseudonyms.
     _pseudonyms = attr.ib(type=Dict[str, List[Pseudonym]], default=attr.Factory(dict))
-    sieves = attr.ib(type=List[Sieve], default=attr.Factory(list))
-    steps = attr.ib(type=List[Step], default=attr.Factory(list))
+    _sieves = attr.ib(type=Dict[Optional[str], List[Sieve]], default=attr.Factory(list))
+    _steps = attr.ib(type=Dict[Optional[str], List[Step]], default=attr.Factory(list))
     strides = attr.ib(type=List[Stride], default=attr.Factory(list))
     wraps = attr.ib(type=List[Wrap], default=attr.Factory(list))
 
@@ -63,6 +64,26 @@ class PipelineConfig:
     def pseudonyms_dict(self) -> Dict[str, List[Pseudonym]]:
         """Get pseudonyms as a dictionary mapping."""
         return self._pseudonyms
+
+    @property
+    def sieves(self) -> List[Sieve]:
+        """Get all sieves."""
+        return list(chain(*self._sieves.values()))
+
+    @property
+    def sieves_dict(self) -> Dict[Optional[str], List[Sieve]]:
+        """Get sieves as a dictionary mapping."""
+        return self._sieves
+
+    @property
+    def steps(self) -> List[Step]:
+        """Get all steps."""
+        return list(chain(*self._steps.values()))
+
+    @property
+    def steps_dict(self) -> Dict[Optional[str], List[Step]]:
+        """Get steps as a dictionary mapping."""
+        return self._steps
 
     def to_dict(self) -> Dict[str, List[Dict[str, Any]]]:
         """Return this pipeline configuration in a dict representation."""

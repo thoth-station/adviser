@@ -65,6 +65,7 @@ class MemTraceBoot(Boot):
         """Initialize memory tracing."""
         _LOGGER.warning("Enabling memory tracing, this has negative impact on the overall pipeline performance")
         tracemalloc.start(self.configuration["frame_count"])
+        super().pre_run()
 
     @staticmethod
     def _display_top(snapshot: tracemalloc.Snapshot, *, key_type: str = "lineno", limit: int = 10) -> None:

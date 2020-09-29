@@ -219,8 +219,7 @@ class TestResolver(AdviserTestCase):
         sieves.Sieve1.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
         sieves.Sieve2.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
 
-        resolver.pipeline.sieves = [sieves.Sieve1(), sieves.Sieve2()]
-
+        resolver.pipeline._sieves = {"tensorflow": [sieves.Sieve1(), sieves.Sieve2()]}
         assert list(resolver._run_sieves(tf_package_versions)) == tf_package_versions
 
     def test_run_sieves_error(self, resolver: Resolver, tf_package_versions: List[PackageVersion]) -> None:
@@ -228,7 +227,7 @@ class TestResolver(AdviserTestCase):
         flexmock(sieves.Sieve1)
 
         sieves.Sieve1.should_receive("run").with_args(object).and_raise(ValueError).once()
-        resolver.pipeline.sieves = [sieves.Sieve1()]
+        resolver.pipeline._sieves = {"tensorflow": [sieves.Sieve1()]}
 
         with pytest.raises(SieveError):
             list(resolver._run_sieves(tf_package_versions))
@@ -239,8 +238,7 @@ class TestResolver(AdviserTestCase):
 
         sieves.Sieve1.should_receive("run").with_args(object).and_raise(NotAcceptable).once()
 
-        resolver.pipeline.sieves = [sieves.Sieve1()]
-
+        resolver.pipeline._sieves = {"tensorflow": [sieves.Sieve1()]}
         assert list(resolver._run_sieves(tf_package_versions)) == []
 
     def test_run_steps_not_acceptable(self, resolver: Resolver, package_version: PackageVersion) -> None:
@@ -259,7 +257,7 @@ class TestResolver(AdviserTestCase):
 
         steps.Step2.should_receive("run").with_args(state1, package_version).and_raise(NotAcceptable).ordered()
 
-        resolver.pipeline.steps = [steps.Step1(), steps.Step2()]
+        resolver.pipeline._steps = {package_version.name: [steps.Step1(), steps.Step2()]}
 
         resolver._init_context()
 
@@ -284,8 +282,7 @@ class TestResolver(AdviserTestCase):
         flexmock(steps.Step1)
         steps.Step1.should_receive("run").with_args(state, package_version).and_raise(NameError).once()
 
-        resolver.pipeline.steps = [steps.Step1()]
-
+        resolver.pipeline._steps = {package_version.name: [steps.Step1()]}
         with pytest.raises(StepError):
             resolver._run_steps(
                 state, package_version, {"flask": [("flask", "0.12", "https://pypi.org/simple")]},
@@ -308,7 +305,7 @@ class TestResolver(AdviserTestCase):
             (package_version_tuple[0], package_version_tuple[1] + "dev0", package_version_tuple[2])
         )
 
-        resolver.pipeline.steps = [steps.Step1(), steps.Step2()]
+        resolver.pipeline._steps = {package_version.name: [steps.Step1(), steps.Step2()]}
 
         steps.Step1.MULTI_PACKAGE_RESOLUTIONS = True
         steps.Step2.MULTI_PACKAGE_RESOLUTIONS = False
@@ -352,7 +349,7 @@ class TestResolver(AdviserTestCase):
         flexmock(steps.Step1)
         steps.Step1.should_receive("run").with_args(state, package_version).and_raise(NameError).once()
 
-        resolver.pipeline.steps = [steps.Step1()]
+        resolver.pipeline._steps = {package_version.name: [steps.Step1()]}
 
         with pytest.raises(StepError):
             resolver._run_steps(
@@ -378,7 +375,7 @@ class TestResolver(AdviserTestCase):
         flexmock(steps.Step1)
         steps.Step1.should_receive("run").with_args(state, package_version).and_return((score, [{"foo": "bar"}])).once()
 
-        resolver.pipeline.steps = [steps.Step1()]
+        resolver.pipeline._steps = {package_version.name: [steps.Step1()]}
 
         with pytest.raises(StepError):
             resolver._run_steps(
@@ -535,8 +532,9 @@ class TestResolver(AdviserTestCase):
         """Test limiting number of latest versions considered."""
         resolver.limit_latest_versions = 2
         resolver.pipeline.boots = []
-        resolver.pipeline.sieves = []
-        resolver.pipeline.steps = []
+        resolver.pipeline._pseudonyms = {}
+        resolver.pipeline._sieves = {}
+        resolver.pipeline._steps = {}
         resolver.pipeline.strides = []
         resolver.pipeline.wraps = []
 
@@ -1043,7 +1041,9 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
         resolver.beam.add_state(state)
 
-        resolver.pipeline.sieves[0].should_receive("run").with_args(object).and_raise(NotAcceptable).once()
+        sieve = sieves.Sieve1()
+        sieve.should_receive("run").with_args(object).and_raise(NotAcceptable).once()
+        resolver.pipeline._sieves = {None: [sieve]}
 
         resolver.context.register_package_tuple(
             to_expand_package_tuple,
@@ -1425,7 +1425,9 @@ class TestResolver(AdviserTestCase):
             package_tuple, develop=False, os_name=None, os_version=None, python_version=None,
         )
 
-        resolver.pipeline.steps[0].should_receive("run").with_args(state, package_version).and_return((0.1, [])).once()
+        step = steps.Step1()
+        step.should_receive("run").with_args(state, package_version).and_return((0.1, [])).once()
+        resolver.pipeline._steps = {None: [step]}
         resolver.predictor.should_receive("set_reward_signal").with_args(object, package_tuple, 0.1).once()
         state_returned = resolver._expand_state(state, package_tuple)
         assert state_returned is not None
@@ -1809,7 +1811,7 @@ class TestResolver(AdviserTestCase):
         flexmock(steps.Step1)
         steps.Step1.should_receive("run").with_args(state, package_version).and_return((score_returned, [])).once()
 
-        resolver.pipeline.steps = [steps.Step1()]
+        resolver.pipeline._steps = {package_version.name: [steps.Step1()]}
         resolver.beam.should_receive("remove").with_args(state).once()
 
         resolver._init_context()
@@ -1849,9 +1851,9 @@ class TestResolver(AdviserTestCase):
         """Test scoring user stack lock file when steps discarded a state creation."""
         resolver._init_context()
         package_version = list(resolver.project.iter_dependencies_locked(with_devel=True))[0]
-        resolver.pipeline.steps[0].should_receive("run").with_args(object, package_version).and_raise(
-            NotAcceptable
-        ).once()
+        step = steps.Step1()
+        step.should_receive("run").with_args(object, package_version).and_raise(NotAcceptable).once()
+        resolver.pipeline._steps = {None: [step]}
         assert resolver.beam.size == 0
 
         resolver.should_receive("_prepare_user_lock_file").and_return(None).once()
@@ -2028,7 +2030,7 @@ class TestResolver(AdviserTestCase):
         sieves.Sieve1.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
         sieves.Sieve2.should_receive("run").with_args(object).and_raise(SkipPackage).once()
 
-        resolver.pipeline.sieves = [sieves.Sieve1(), sieves.Sieve2()]
+        resolver.pipeline._sieves = {"tensorflow": [sieves.Sieve1(), sieves.Sieve2()]}
 
         with pytest.raises(SkipPackage):
             list(resolver._run_sieves(tf_package_versions))
@@ -2107,7 +2109,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
         )
 
-        resolver.pipeline.sieves = [sieves.Sieve1(), _Functools32SkipPackageSieve()]
+        resolver.pipeline._sieves = {None: [sieves.Sieve1(), _Functools32SkipPackageSieve()]}
         state.unresolved_dependencies.clear()
         state.add_unresolved_dependency(to_expand_package_tuple)
         state_returned = resolver._expand_state(state, to_expand_package_tuple)
@@ -2189,7 +2191,7 @@ class TestResolver(AdviserTestCase):
             python_version=resolver.project.runtime_environment.python_version,
         )
 
-        resolver.pipeline.sieves = [sieves.Sieve1(), _Functools32SkipPackageSieve()]
+        resolver.pipeline._sieves = {None: [sieves.Sieve1(), _Functools32SkipPackageSieve()]}
         state.add_unresolved_dependency(to_expand_package_tuple)
         state_returned = resolver._expand_state(state, to_expand_package_tuple)
         assert state_returned is not None
@@ -2217,7 +2219,7 @@ class TestResolver(AdviserTestCase):
         resolver.beam.should_receive("wipe").with_args().and_return(None).once()
         resolver._init_context()
 
-        resolver.pipeline.sieves = [sieves.Sieve1(), _Functools32SkipPackageSieve()]
+        resolver.pipeline._sieves = {None: [sieves.Sieve1(), _Functools32SkipPackageSieve()]}
 
         assert resolver._prepare_initial_state(with_devel=True) is not None
         assert resolver.beam.size == 1
@@ -2230,7 +2232,7 @@ class TestResolver(AdviserTestCase):
         """Test skipping a package on the supplied user stack."""
         flexmock(sieves.Sieve1)
         sieves.Sieve1.should_call("run").times(2)
-        resolver.pipeline.sieves = [sieves.Sieve1(), _Functools32SkipPackageSieve()]
+        resolver.pipeline._sieves = {None: [sieves.Sieve1(), _Functools32SkipPackageSieve()]}
         resolver.should_receive("_prepare_user_lock_file").with_args(with_devel=True).and_return(None).once()
 
         pypi = Source("https://pypi.org/simple")
@@ -2262,7 +2264,7 @@ class TestResolver(AdviserTestCase):
         """Test skipping a package on the supplied user stack, the package is a direct dependency."""
         flexmock(sieves.Sieve1)
         sieves.Sieve1.should_call("run").times(2)
-        resolver.pipeline.sieves = [sieves.Sieve1(), _Functools32SkipPackageSieve()]
+        resolver.pipeline._sieves = {None: [sieves.Sieve1(), _Functools32SkipPackageSieve()]}
         resolver.should_receive("_prepare_user_lock_file").with_args(with_devel=True).and_return(None).once()
 
         pypi = Source("https://pypi.org/simple")
@@ -2301,7 +2303,7 @@ class TestResolver(AdviserTestCase):
         flexmock(steps.Step2)
         steps.Step1.should_call("run").times(1)
         steps.Step2.should_call("run").times(0)
-        resolver.pipeline.steps = [steps.Step1(), _SciPySkipPackageStep(), steps.Step2()]
+        resolver.pipeline._steps = {"scipy": [steps.Step1(), _SciPySkipPackageStep(), steps.Step2()]}
 
         package_version = PackageVersion(
             name="scipy", version="==1.2.2", index=Source("https://pypi.org/simple"), develop=False,
@@ -2465,3 +2467,49 @@ class TestResolver(AdviserTestCase):
         assert resolver.beam.size == 0, "No new state should be added"
         assert {"click"} == {*state.resolved_dependencies.keys()}
         assert {"flask", "tensorflow"} == {*state.unresolved_dependencies.keys()}
+
+    def test_run_sieves_with_none(self, resolver: Resolver, tf_package_versions: List[PackageVersion]) -> None:
+        """Test correct handling of sieves when `None` is set for steps."""
+        flexmock(sieves.Sieve1)
+        flexmock(sieves.Sieve2)
+
+        sieves.Sieve1.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
+        sieves.Sieve2.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
+
+        resolver.pipeline._sieves = {"tensorflow": [sieves.Sieve1()], None: [sieves.Sieve2()]}
+        assert list(resolver._run_sieves(tf_package_versions)) == tf_package_versions
+
+    def test_run_sieves_only_none(self, resolver: Resolver, tf_package_versions: List[PackageVersion]) -> None:
+        """Test correct handling of sieves when `None` is set for steps."""
+        flexmock(sieves.Sieve1)
+        flexmock(sieves.Sieve2)
+
+        sieves.Sieve1.should_receive("run").times(0)
+        sieves.Sieve2.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
+
+        resolver.pipeline._sieves = {"flask": [sieves.Sieve1()], None: [sieves.Sieve2()]}
+        assert list(resolver._run_sieves(tf_package_versions)) == tf_package_versions
+
+    def test_run_steps_with_none(self, resolver: Resolver, state: State, package_version: PackageVersion) -> None:
+        """Test correct handling of steps when `None` is set for steps."""
+        flexmock(steps.Step1)
+        flexmock(steps.Step2)
+
+        steps.Step1.should_receive("run").with_args(state, object).and_return(None).once()
+        steps.Step2.should_receive("run").with_args(state, object).and_return(None).once()
+
+        resolver.pipeline._steps = {package_version.name: [steps.Step1()], None: [steps.Step2()]}
+        resolver._init_context()
+        assert resolver._run_steps(state, package_version)
+
+    def test_run_steps_only_none(self, resolver: Resolver, state: State, package_version: PackageVersion) -> None:
+        """Test correct handling of steps when `None` is set for steps."""
+        flexmock(steps.Step1)
+        flexmock(steps.Step2)
+
+        steps.Step1.should_receive("run").times(0)
+        steps.Step2.should_receive("run").with_args(state, object).and_return(None).once()
+
+        resolver.pipeline._steps = {"some-another-package": [steps.Step1()], None: [steps.Step2()]}
+        resolver._init_context()
+        assert resolver._run_steps(state, package_version)

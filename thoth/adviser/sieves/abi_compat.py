@@ -36,6 +36,7 @@ _LOGGER = logging.getLogger(__name__)
 class AbiCompatibilitySieve(Sieve):
     """Remove packages if the image being used doesn't have necessary ABI."""
 
+    CONFIGURATION_DEFAULT = {"package_name": None}
     image_symbols = attr.ib(type=Set[str], factory=set, init=False)
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
 
@@ -61,8 +62,8 @@ class AbiCompatibilitySieve(Sieve):
             )
         )
         self._messages_logged.clear()
-
         _LOGGER.debug("Analyzed image has the following symbols: %r", self.image_symbols)
+        super().pre_run()
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """If package requires non-present symbols remove it."""
