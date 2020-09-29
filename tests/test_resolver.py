@@ -64,6 +64,7 @@ from thoth.adviser.exceptions import UserLockFileError
 from thoth.adviser.exceptions import PipelineUnitError
 
 import tests.units.boots as boots
+import tests.units.pseudonyms as pseudonyms
 import tests.units.sieves as sieves
 import tests.units.steps as steps
 import tests.units.strides as strides
@@ -2513,3 +2514,53 @@ class TestResolver(AdviserTestCase):
         resolver.pipeline._steps = {"some-another-package": [steps.Step1()], None: [steps.Step2()]}
         resolver._init_context()
         assert resolver._run_steps(state, package_version)
+
+    def test_run_pseudonym_unit_run(self, resolver: Resolver, state: State, package_version: PackageVersion) -> None:
+        """Test correct handling of the unit_run attribute."""
+        flexmock(pseudonyms.Pseudonym1)
+
+        result = ("selinon", "1.0.0", "https://pypi.org/simple")
+        pseudonyms.Pseudonym1.should_receive("run").with_args(package_version).and_yield(result).once()
+
+        unit = pseudonyms.Pseudonym1()
+        resolver.pipeline._pseudonyms = {package_version.name: [unit]}
+
+        assert unit.unit_run is False
+
+        resolver._init_context()
+        resolver.context.register_package_version(package_version)
+
+        resolver._run_pseudonym_units(state, package_version.to_tuple())
+        assert unit.unit_run is True
+
+    def test_run_sieves_unit_run(
+        self,
+        resolver: Resolver,
+        state: State,
+        package_version: PackageVersion,
+        tf_package_versions: List[PackageVersion],
+    ) -> None:
+        """Test correct handling of the unit_run attribute."""
+        flexmock(sieves.Sieve1)
+
+        sieves.Sieve1.should_receive("run").with_args(object).and_yield(*tf_package_versions).once()
+
+        unit = sieves.Sieve1()
+        resolver.pipeline._sieves = {None: [unit]}
+
+        assert unit.unit_run is False
+        assert list(resolver._run_sieves(tf_package_versions)) == tf_package_versions
+        assert unit.unit_run is True
+
+    def test_run_steps_unit_run(self, resolver: Resolver, state: State, package_version: PackageVersion) -> None:
+        """Test correct handling of the unit_run attribute."""
+        flexmock(steps.Step1)
+        steps.Step1.should_receive("run").with_args(state, object).and_return(None).once()
+
+        unit = steps.Step1()
+        resolver.pipeline._steps = {None: [unit]}
+        resolver._init_context()
+
+        assert unit.unit_run is False
+        assert resolver._run_steps(state, package_version)
+        assert unit.unit_run is True
