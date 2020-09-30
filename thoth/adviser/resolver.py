@@ -340,7 +340,7 @@ class Resolver:
             try:
                 step_result = step.run(state, package_version)
             except SkipPackage as exc:
-                # This should be fine also for user-stacks steps. They will just adjusted.
+                # This should be fine also for user-stacks steps. The recommendation engine will compute alternatives.
                 log_once(
                     _LOGGER,
                     self._log_step_skip_package,
@@ -418,10 +418,9 @@ class Resolver:
         else:
             # Optimization - reuse the old one as it would be discarded anyway.
             cloned_state = state
-            if (
-                not user_stack_scoring
-                and not skip_package
-                and (score_addition != 0.0 or (not state.unresolved_dependencies and not unresolved_dependencies))
+            if not user_stack_scoring and (
+                (not skip_package and score_addition != 0.0)
+                or (not state.unresolved_dependencies and not unresolved_dependencies)
             ):
                 self.beam.remove(cloned_state)
 
