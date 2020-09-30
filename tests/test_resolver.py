@@ -2564,3 +2564,113 @@ class TestResolver(AdviserTestCase):
         assert unit.unit_run is False
         assert resolver._run_steps(state, package_version)
         assert unit.unit_run is True
+
+    def test_run_steps_skip_package(self, resolver: Resolver, state: State, package_version: PackageVersion) -> None:
+        """Test handling of skipping a package in pipeline steps."""
+        flexmock(steps.Step1)
+        flexmock(steps.Step2)
+        steps.Step1.should_receive("run").with_args(state, object).and_raise(SkipPackage).once()
+        steps.Step2.should_receive("run").times(0)
+
+        step1 = steps.Step1()
+        step2 = steps.Step2()
+
+        resolver.pipeline._steps = {None: [step1, step2]}
+        resolver._init_context()
+        resolver._run_steps(state, package_version)
+
+    def test_run_steps_skip_package_no_result(
+        self, resolver: Resolver, state: State, package_version: PackageVersion
+    ) -> None:
+        """Test handling of skipping a package in pipeline steps - result should not be assigned to the state."""
+        flexmock(steps.Step1)
+        flexmock(steps.Step2)
+        steps.Step1.should_receive("run").with_args(state, object).and_return((1.2, [{"foo", "bar"}])).once()
+        steps.Step2.should_receive("run").with_args(state, object).and_raise(SkipPackage).once()
+
+        step1 = steps.Step1()
+        step2 = steps.Step2()
+
+        resolver.pipeline._steps = {None: [step1, step2]}
+        resolver._init_context()
+        state.score = 0.0
+        state.justification.clear()
+        state_returned = resolver._run_steps(state, package_version)
+        state.add_unresolved_dependency(("micropipenv", "1.0.0", "https://pypi.org/simple"))
+        resolver.beam.add_state(state)
+        assert state_returned is not None
+        assert state_returned is state
+        assert state_returned.score == 0.0, "Score should not be adjusted"
+        assert not state_returned.justification, "Justification should not be adjusted"
+        assert state in resolver.beam.iter_states()
+
+    def test_run_steps_skip_package_unresolved(
+        self, resolver: Resolver, state: State, package_version: PackageVersion
+    ) -> None:
+        """Test handling of skipping a package in pipeline steps when unresolved dependencies are present."""
+        flexmock(steps.Step1)
+        steps.Step1.should_receive("run").with_args(state, object).and_raise(SkipPackage).once()
+
+        step1 = steps.Step1()
+
+        state.unresolved_dependencies.clear()
+        assert "flask" not in state.resolved_dependencies
+        state.add_unresolved_dependency(("flask", "1,1.12", "https://pypi.org/simple"))
+
+        resolver.pipeline._steps = {None: [step1]}
+        resolver._init_context()
+        assert package_version.name not in state.resolved_dependencies
+        state_returned = resolver._run_steps(state, package_version)
+        assert state_returned is state
+        assert package_version.name not in state.resolved_dependencies
+
+    def test_run_steps_skip_package_no_unresolved(
+        self, resolver: Resolver, state: State, package_version: PackageVersion
+    ) -> None:
+        """Test handling of skipping a package in pipeline steps when no unresolved dependencies are present."""
+        flexmock(steps.Step1)
+        steps.Step1.should_receive("run").with_args(state, object).and_raise(SkipPackage).once()
+
+        step1 = steps.Step1()
+
+        state.unresolved_dependencies.clear()
+
+        resolver.pipeline._steps = {None: [step1]}
+        resolver._init_context()
+        resolver.beam.add_state(state)
+        assert package_version.name not in state.resolved_dependencies
+        assert package_version.name not in state.unresolved_dependencies
+        state_returned = resolver._run_steps(state, package_version)
+        assert state_returned is state
+        assert package_version.name not in state.resolved_dependencies
+        assert package_version.name not in state.unresolved_dependencies
+        assert state not in resolver.beam.iter_states()
+
+    def test_run_steps_skip_package_beam_remove(
+        self, resolver: Resolver, state: State, package_version: PackageVersion
+    ) -> None:
+        """Test handling of skipping a package in pipeline steps when no unresolved dependencies are present."""
+        flexmock(steps.Step1)
+        steps.Step1.should_receive("run").with_args(state, object).and_raise(SkipPackage).once()
+
+        step1 = steps.Step1()
+
+        state.unresolved_dependencies.clear()
+
+        resolver.pipeline._steps = {None: [step1]}
+
+        resolver._init_context()
+
+        # Add just one state to beam to make sure it gets removed if a final state is created.
+        resolver.beam.wipe()
+        resolver.beam.add_state(state)
+
+        assert package_version.name not in state.resolved_dependencies
+        assert package_version.name not in state.unresolved_dependencies
+        assert resolver.beam.size == 1
+
+        state_returned = resolver._run_steps(state, package_version)
+        assert state_returned is state
+        assert package_version.name not in state.resolved_dependencies
+        assert package_version.name not in state.unresolved_dependencies
+        assert resolver.beam.size == 0
