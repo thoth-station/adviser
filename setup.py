@@ -5,6 +5,19 @@ import sys
 from setuptools import setup
 from setuptools.command.test import test as TestCommand  # noqa
 
+try:
+    from setuptools import find_namespace_packages
+except ImportError:
+    # A dirty workaround for older setuptools.
+    def find_namespace_packages(path="thoth"):
+        """Find namespace packages alternative."""
+        packages = set()
+        for dir_name, dir_names, file_names in os.walk(path):
+            if os.path.basename(dir_name) != "__pycache__":
+                packages.add(dir_name.replace("/", "."))
+
+        return sorted(packages)
+
 
 def get_install_requires():
     """Get requirements for adviser module."""
@@ -81,27 +94,7 @@ setup(
     author="Fridolin Pokorny",
     author_email="fridolin@redhat.com",
     license="GPLv3+",
-    packages=[
-        "thoth.adviser",
-        "thoth.adviser.boots",
-        "thoth.adviser.boots._debug",
-        "thoth.adviser.predictors",
-        "thoth.adviser.pseudonyms",
-        "thoth.adviser.sieves",
-        "thoth.adviser.sieves.backports",
-        "thoth.adviser.sieves.tensorflow",
-        "thoth.adviser.sieves.pandas",
-        "thoth.adviser.sieves.setuptools",
-        "thoth.adviser.steps",
-        "thoth.adviser.steps",
-        "thoth.adviser.steps._debug",
-        "thoth.adviser.steps.tensorflow",
-        "thoth.adviser.strides",
-        "thoth.adviser.wraps",
-        "thoth.adviser.wraps.python",
-        "thoth.adviser.wraps.pytorch",
-        "thoth.adviser.wraps.tensorflow",
-    ],
+    packages=find_namespace_packages(),
     url="https://github.com/thoth-station/adviser",
     download_url="https://pypi.org/project/thoth-adviser",
     package_data={"thoth.adviser": ["py.typed"]},
