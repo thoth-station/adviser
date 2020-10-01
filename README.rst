@@ -88,8 +88,8 @@ discard a package from a software stack resolved). The resolution pipeline can:
   packages resolved (e.g. a package accidentally not stated as a dependency of
   a library, dependency underpinning issues, ...)
 
-* remove a dependency in specific version or the whole dependency from the
-  dependency graph (e.g. a package accidentally stated aa a dependency, missing
+* remove a dependency in a specific version or the whole dependency from the
+  dependency graph (e.g. a package accidentally stated a a dependency, missing
   ABI symbols in the runtime environment, dependency overpinning issues, ...)
 
 * score a package occurring in the dependency graph positively - prioritize
@@ -108,7 +108,7 @@ The pipeline units present in the pipeline configuration can take into account
 characteristics of the runtime environment used (software and hardware
 available), purpose of the application, ...
 
-Pipeline units are of different type - Boots, Pseudonyms, Sieves, Steps,
+Pipeline units are of different types - Boots, Pseudonyms, Sieves, Steps,
 Strides and Wraps. `Follow the online documentation for more info
 <https://thoth-station.ninja/docs/developers/adviser/index.html#pipeline-units>`__.
 
@@ -158,9 +158,10 @@ Advises and Recommendations
 In Thoth's terminology, advises and recommendations are the same. Based on
 the aggregated knowledge stored in the database, provide the best application
 stack with reasoning on why the given software stack is used. Pipeline units
-present in the pipeline configuration score packages resolved. The reasoning is
-called "justification" in Thoth's terminology. See Thoth's pages to `see some of
-them <https://thoth-station.ninja/justifications>`__.
+present in the pipeline configuration score packages resolved and provide such
+reasoning. The reasoning is called "justification" in Thoth's terminology. See
+Thoth's pages to `see some of them
+<https://thoth-station.ninja/justifications>`__.
 
 Provenance Checks
 =================
