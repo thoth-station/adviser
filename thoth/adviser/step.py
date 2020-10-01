@@ -35,8 +35,8 @@ from .unit import UnitPackageVersion
 class Step(UnitPackageVersion):
     """Step base class implementation.
 
-    Configuration option MUTLI_PACKAGE_RESOLUTION states whether this state should be run if package
-    is resolved multiple times.
+    Configuration option MUTLI_PACKAGE_RESOLUTION states whether a step should be run if package
+    is resolved multiple times for the same stack.
     """
 
     MULTI_PACKAGE_RESOLUTIONS = False
