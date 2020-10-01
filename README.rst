@@ -64,8 +64,8 @@ considering aspects for the user software stacks, such as:
 All these vectors stated above form a "context" for pipeline builder (the robot
 in the animation) that creates the pipeline configuration (a set of pipeline units).
 
-Software stack resolution pipeline
-==================================
+Predictor guided resolution process
+===================================
 
 Once the pipeline configuration is constructed, it is used to resolve software
 stacks meeting desired quality and purpose.
