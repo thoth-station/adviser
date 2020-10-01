@@ -123,6 +123,19 @@ reinforcement learning algorithms, such as `MCTS
 * `TowardsDataScience: How to beat Python’s pip: Reinforcement learning-based dependency resolution <https://towardsdatascience.com/how-to-beat-pythons-pip-254c2635197>`__
 * `YouTube: Reinforcement learning-based dependency resolution <https://www.youtube.com/watch?v=WEJ65Rvj3lc>`__
 
+Resolution process as Markov Decision Process
+=============================================
+
+As stated above, the whole resolution process can be modeled as a Markov Decision
+Process (MDP). Recommending the best possible set of packages than corresponds
+to solving the given MDP. See `Thoth's documentation for more info
+<https://thoth-station.ninja/docs/developers/adviser/introduction.html>`__.
+
+**See also:**
+
+* `TowardsDataScience: How to beat Python’s pip: Reinforcement learning-based dependency resolution <https://towardsdatascience.com/how-to-beat-pythons-pip-254c2635197>`__
+* `YouTube: Reinforcement learning-based dependency resolution <https://www.youtube.com/watch?v=WEJ65Rvj3lc>`__
+
 Dependency Monkey
 =================
 
