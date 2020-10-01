@@ -97,9 +97,10 @@ class SecurityIndicatorStep(Step):
             index_url=package_version.index.url,
         )
 
+        package_version_tuple = package_version.to_tuple_locked()
+
         if s_info is None:
             if self.context.recommendation_type == RecommendationType.SECURITY:
-                package_version_tuple = package_version.to_tuple_locked()
                 if package_version_tuple not in self._logged_packages:
                     self._logged_packages.add(package_version_tuple)
                     _LOGGER.warning(
@@ -115,6 +116,18 @@ class SecurityIndicatorStep(Step):
                     name=package_version.name, version=package_version.locked_version, index=package_version.index.url
                 ),
             )
+
+        if (
+            self.context.recommendation_type == RecommendationType.SECURITY
+            and s_info["severity_high_confidence_high"] != 0
+        ):
+            if package_version_tuple not in self._logged_packages:
+                self._logged_packages.add(package_version_tuple)
+                _LOGGER.warning(
+                    "Skipping including package %r because bandit found high security high confidence issue(s).",
+                    package_version_tuple,
+                )
+            raise NotAcceptable
 
         s_score = (
             (
