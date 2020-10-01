@@ -1,59 +1,166 @@
 Thoth Adviser
 -------------
 
-A recommendation engine and software stack generation for project `Thoth <https://github.com/thoth-station/>`__.
+Welcome to Thoth's adviser repository.
 
-There are the following main goals of thoth-adviser (as of now):
+This repository provides sources for a component called "thoth-adviser" which
+serves the following purposes:
 
-1. Provide a tool that can compute recommendations in project `Thoth <https://thoth-station.ninja>`__.
-2. Check provenance of installed packages (which package source indexes are used - this is not guaranteed by pip nor Pipenv).
-3. A tool called "Dependency Monkey" that generates all the possible software stacks for a project respecting dependency resolution.
+1. Recommendation engine for `project Thoth <https://thoth-station.ninja>`__.
 
-To interact with a deployed Thoth, you can use the
-`Thamos CLI <https://github.com/thoth-station/thamos>`__.
+2. A tool called "Dependency Monkey" that can generate all the possible
+   software stacks for a project respecting dependency resolution in the Python
+   ecosystem following programmable rules.
 
+3. Check provenance of installed Python artifacts based on package source
+   indexes used.
+
+If you would like to interact with Thoth from user's perspective, check
+`Thamos repository <https://github.com/thoth-station/thamos>`__.
+
+Software stack resolution pipeline
+==================================
+
+The software stack generation is shared for `Dependency Monkey
+<https://thoth-station.ninja/docs/developers/adviser/dependency_monkey.html>`__
+as well as for the recommendation engine. The core principle of the software
+stack generation lies in an abstraction called "software stack resolution
+pipeline". This pipeline is made out of multiple units of different type that
+form atomic pieces to score packages that can occur in a software stack based
+on the dependency resolution.
+
+.. image:: https://github.com/thoth-station/adviser/blob/master/docs/source/_static/pipeline_builder.gif?raw=true
+   :alt: Building a resolution pipeline.
+   :align: center
+
+As can be seen in the animation shown above, the pipeline units that form the
+software stack resolution pipeline are included in the pipeline dynamically on
+the pipeline creation. A set of units included form a pipeline configuration.
+
+The pipeline configuration is built by "pipeline builder" which asks each
+pipeline unit for inclusion in the pipeline configuration. Each pipeline unit
+can decide when and whether it should be included in the pipeline configuration
+considering aspects for the user software stacks, such as:
+
+* hardware available in the runtime environment when running the
+  application (e.g. CPU, GPU)
+
+* operating system and it's version used in the runtime environment where the
+  application is supposed to be run
+
+* software provided by the operating system, such as Python interpreter
+  version, CUDA version (for GPU computation) and other native dependencies
+  (e.g. glibc version, Intel MKL libraries, ...) and their ABI
+
+* user's intention with the software built - e.g. building a computational
+  intensive application, an application which should be secure for production
+  environments, latest-greatest software, ...
+
+* `type of inspections for the software quality checks
+  <https://github.com/thoth-station/amun-api/>`__ - Dependency Monkey scenario
+
+* ...
+
+All these vectors stated above form a "context" for pipeline builder (the robot
+in the animation) that creates the pipeline configuration (a set of pipeline units).
+
+Software stack resolution pipeline
+==================================
+
+Once the pipeline configuration is constructed, it is used to resolve software
+stacks meeting desired quality and purpose.
+
+.. image:: https://github.com/thoth-station/adviser/blob/master/docs/source/_static/pipeline.gif?raw=true
+   :alt: A resolution pipeline run.
+   :align: center
+
+Resolver (the fairy in the animation) can resolve and walk through the
+dependency graph respecting Python packaging based on the `pre-aggregated data
+from dependency solver runs <https://github.com/thoth-station/solver/>`__. The
+resolution process is guided by an abstraction called "Predictor" (shown as a
+magician in the animation). Predictor decides which packages in the dependency
+graph should be resolved by Resolver and thus be included in the resulting
+software stacks. Packages that are resolved go through the software stack
+resolution pipeline which scores packages (positively, negatively or completely
+discard a package from a software stack resolved). The resolution pipeline can:
+
+* inject new packages or new package versions to the dependency graph based on
+  packages resolved (e.g. a package accidentally not stated as a dependency of
+  a library, dependency underpinning issues, ...)
+
+* remove a dependency in specific version or the whole dependency from the
+  dependency graph (e.g. a package accidentally stated aa a dependency, missing
+  ABI symbols in the runtime environment, dependency overpinning issues, ...)
+
+* score a package occurring in the dependency graph positively - prioritize
+  resolution of a specific package in the dependency graph (e.g. positive
+  performance aspect of a package in a specific version/build)
+
+* score a package in a specific version occurring in the dependency graph
+  negatively - prioritize resolution of other versions (e.g. a security
+  vulnerability present in a specific release)
+
+* prevent resolving a specific package in a specific version so that resolver
+  tries to find a different resolution path, if any (e.g. buggy package releases)
+
+The pipeline units present in the pipeline configuration can take into account
+"context" as stated above - pipeline units can take into account
+characteristics of the runtime environment used (software and hardware
+available), purpose of the application, ...
+
+Pipeline units are of different type - Boots, Pseudonyms, Sieves, Steps,
+Strides and Wraps. `Follow the online documentation for more info
+<https://thoth-station.ninja/docs/developers/adviser/index.html#pipeline-units>`__.
+
+Predictor can be switched and the type of predictor can help with the
+desired resolution process. For recommending high quality software stacks,
+reinforcement learning algorithms, such as `MCTS
+<https://en.wikipedia.org/wiki/Monte_Carlo_tree_search>`__ or `TD-learning
+<https://en.wikipedia.org/wiki/Temporal_difference_learning>`__ are used.
+
+**See also:**
+
+* `TowardsDataScience: How to beat Python’s pip: Reinforcement learning-based dependency resolution <https://towardsdatascience.com/how-to-beat-pythons-pip-254c2635197>`__
+* `YouTube: Reinforcement learning-based dependency resolution <https://www.youtube.com/watch?v=WEJ65Rvj3lc>`__
 
 Dependency Monkey
 =================
 
-Dependency Monkey is a functionality that allows you to generate all the
-possible software stacks for your project. Given the input (direct dependencies
-of your project), Dependency Monkey creates N-ary dependency graph (as
-described above) stating all the dependencies of your direct
-dependencies/libraries as well as dependencies of all the transitive
-dependencies in your application stack.
-
-The primary use-case for Dependnecy Monkey is to generate software stacks that
+The primary use-case for Dependency Monkey is to generate software stacks that
 are subsequently validated and scored in the `Amun
-<https://github.com/thoth-station/amun-api>`__ service. Simply when generating
+<https://github.com/thoth-station/amun-api>`__ service. Simply, when generating
 all the possible software stacks, we can find the best software stack for an
 application by validating it in a CI (or Amun in case of Thoth), running the
-application in the specific runtime environment (e.g. Fedora 28 with installed
+application in the specific runtime environment (e.g. Fedora 33 with installed
 native packages - RPMs) on some specific hardware configuration. Generating and
 scoring all the possible software stacks is, however, most often not doable in
 a reasonable time. For this purpose, Dependency Monkey can create a sample of
-software stacks (see the ``distribution`` and ``seed`` parameters) that can be
-taken as representatives. These representatives are scored and aggregated data
-are used for predicting the best application stack (again, generated and run
-through CI/Amun to make predictions more accurate by learning over time).
+software stacks that can be taken as representatives. These representatives are
+scored and aggregated data are used for predicting the best application stack
+(again, generated and run through CI/Amun to make predictions more accurate by
+learning over time).
 
-See `Dependency Monkey
+See `Dependency Monkey documentation
 <https://thoth-station.ninja/docs/developers/adviser/dependency_monkey.html>`_
 for more info.
+
+**See also:**
+
+* `Developers Red Hat: AI software stack inspection with Thoth and TensorFlow <https://developers.redhat.com/blog/2020/09/30/ai-software-stack-inspection-with-thoth-and-tensorflow/?sc_cid=7013a000002gbzfAAA>`__
+* `TowardsDataScience: How to beat Python’s pip: Inspecting the quality of machine learning software <https://towardsdatascience.com/how-to-beat-pythons-pip-inspecting-the-quality-of-machine-learning-software-f1a028f0c42a>`__
+* `YouTube: Thoth Amun API: Inspecting the quality of software <https://www.youtube.com/watch?v=yeBjnZpdMwY>`__
+* `TowardsDataScience: How to beat Python’s pip: Dependency Monkey inspecting the quality of TensorFlow dependencies <https://towardsdatascience.com/how-to-beat-pythons-pip-dependency-monkey-inspecting-the-quality-of-tensorflow-dependencies-2503bed30450>`__
+* `YouTube: Dependency Monkey inspecting Python dependencies of TensorFlow <https://www.youtube.com/watch?v=S3hFn8KRsKc>`__
 
 Advises and Recommendations
 ===========================
 
 In Thoth's terminology, advises and recommendations are the same. Based on
-aggregated knowledge stored in the graph database, provide the best application
-stack with reasoning on why the given software stack is used. There is reused
-the N-ary dependency graph implementation stated above to compute possible
-candidates of software stacks and based on data aggregated, there is performed
-scoring of software stacks based on solely package-level data (e.g. the given
-package cannot be installed into the given runtime environment) or software
-stack information - the combination of packages cannot be assembled together or
-there were spotted issues when the same packages were used together in some
-specific versions.
+the aggregated knowledge stored in the database, provide the best application
+stack with reasoning on why the given software stack is used. Pipeline units
+present in the pipeline configuration score packages resolved. The reasoning is
+called "justification" in Thoth's terminology. See Thoth's pages to `see some of
+them <https://thoth-station.ninja/justifications>`__.
 
 Provenance Checks
 =================
@@ -63,32 +170,18 @@ a user's stack against its knowledge base. See `Provenance Checks
 <https://thoth-station.ninja/docs/developers/adviser/provenance_checks.html>`_
 for more info.
 
-Package source configuration
-############################
-
-When Thoth is deployed in your infrastracture that restricts packages installed
-to only trusted package source indexes, you can disable untrusted package
-source indexes by setting ``THOTH_WHITELISTED_SOURCES`` environment variable.
-This variable holds a comma separated list of URLs pointing to whitelisted
-package source indexes respecting
-`PEP-0503 <https://www.python.org/dev/peps/pep-0503/>`__ standard (the URL
-is with the ``/simple`` suffix).
-
-This environment variable is automatically fed from Thoth's graph database
-in a deployment. This way Thoth's operator has full control on what package
-source indexes which are used by users of Thoth.
-
 Installation and deployment
 ===========================
 
 Adviser is built using OpenShift Source-to-Image and deployed
-automatically with Thoth's deployment playbooks available in the `core
-repository <https://github.com/thoth-station/core>`__.
+automatically with Thoth's deployment available in the
+`thoth-station/thoth-application repository
+<https://github.com/thoth-station/thoth-application>`__.
 
-In a Thoth deployment, adviser is run based on requests comming to the
-`user API <https://github.com/thoth-station/user-api>`__ - each deployed adviser
-is run per a user request. You can run adviser locally as well by installing it
-and using its command line interface:
+In a Thoth deployment, adviser is run based on requests coming to the `user API
+<https://github.com/thoth-station/user-api>`__ - each deployed adviser is run
+per a user request. You can run adviser locally as well by installing it and
+using its command line interface:
 
 ::
 
@@ -97,18 +190,26 @@ and using its command line interface:
   # Or use git repo directly for the latest code:
   # pip3 install git+https://github.com/thoth-station/adviser
 
+Note a database needs to be available.  See `thoth-storages repository
+<https://github.com/thoth-station/storages>`__ on how to run Thoth's knowledge
+graph locally and example `notebooks
+<https://github.com/thoth-station/notebooks>`__ with experiments.
+
 When thoth-adviser is scheduled in a deployment, it is actually executed as a
 CLI with arguments passed via environment variables.
 
-See `thoth-storages repository <https://github.com/thoth-station/storages>`__
-repository on how to run Thoth's knowledge graph locally and
-example `notebooks <https://github.com/thoth-station/notebooks>`__ for experiments.
+Blocking a bogus pipeline unit
+==============================
 
 Adviser also considers environment variable ``THOTH_ADVISER_BLOCKED_UNITS`` that
 states a comma separated list of pipeline units that should not be added to
-the pipeline. This can be handy if an issue with a unit arises in a deployment - Thoth
-operator can remove pipeline unit by adjusting adviser template and provide
-this configuration without a need to deploy a new version of adviser.
+the pipeline. This can be handy if an issue with a unit arises in a deployment
+- Thoth operator can remove pipeline unit by adjusting environment variable in
+the adviser deployment manifest and provide this configuration without a need
+to deploy a new version of adviser.
+
+Disabling pipeline unit validation
+==================================
 
 For prod-like deployments, you can disable pipeline unit validation. By doing
 so, the pipeline unit configuration can be constructed faster. Provide
@@ -118,12 +219,12 @@ disable pipeline unit configuration validation.
 Running adviser locally
 =======================
 
-Often it is useful to run adviser locally to experiment or verify your changes
+Often, it is useful to run adviser locally to experiment or verify your changes
 in implementation. You can do so easily by running:
 
 .. code-block:: console
 
-  pipenv install
+  pipenv install --dev
   PYTHONPATH=. pipenv run ./thoth-adviser --help
 
 This command will run adviser locally - adviser will try to connect to a local

@@ -16,6 +16,7 @@ include tests/data/projects/Pipfile
 include tests/data/projects/Pipfile_project0
 include tests/data/projects/Pipfile_project1
 recursive-include docs *.dia
+recursive-include docs *.gif
 recursive-include docs *.html
 recursive-include docs *.png
 recursive-include docs *.py
