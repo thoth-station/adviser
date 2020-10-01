@@ -107,17 +107,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:1bfc96b7874ee9c477a9809c1706d0d4ab47c679264ea1f81b6ca4f78cb80830",
-                "sha256:5ed91fcf08e2d8f5cd1c8333ac767b3ab951b55a1634d168b2ca70da7d0f120b"
+                "sha256:02f5f7a2b1349760b030c34f90a9cb4600bf8fe3cbc76b801d122bc4cecf3a7f",
+                "sha256:e0a1dbc0a0e460dc6de2f4144b5015edad3ab5c17ee83c6194b1a010d815bc60"
             ],
-            "version": "==1.15.7"
+            "version": "==1.15.9"
         },
         "botocore": {
             "hashes": [
-                "sha256:22a0ab7ee20e4b0040ed618f6745472ff9d89d9c25ce23270bce0c0bdc676b51",
-                "sha256:2b3f676fbf054c54ebd40e3560bdc2800ac1a78381b6cf3c31957492b0275f6b"
+                "sha256:35b06b8801eb2dd7e708de35581f9c0304740645874f3af5b8b0c1648f8d6365",
+                "sha256:dc3244170254cbba7dfde00b0489f830069d93dd6a9e555178d989072d7ee7c2"
             ],
-            "version": "==1.18.7"
+            "version": "==1.18.9"
         },
         "cachetools": {
             "hashes": [
@@ -739,10 +739,10 @@
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:c9c0fa1412bad87104c4eee8dd36c7bbf60b0d92ae917ab519094779b22e6d9a",
-                "sha256:e159f7c919d19ae86e5a4ff370fccc45149fab461fbeb93fb5a735a0b33a9cb1"
+                "sha256:1d91a0059d2d8bb980bec169578035c2f2d4b93cd8a4fb5b85c81904d33e221a",
+                "sha256:6222cf623e404c3e62b8e0e81c6db866ac2d12a663b7c1f7963350e3f397522a"
             ],
-            "version": "==0.17.8"
+            "version": "==0.18.0"
         },
         "six": {
             "hashes": [
@@ -832,11 +832,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:0e5f7d9aa4700f5f919ed6970f314dfeaf64e07b64150ad8f6db4168247b207b",
-                "sha256:896635a67542654a1cf39deaccc5d0e4561fac6027dc4bf7ccba03ccbf567831"
+                "sha256:057c092d8895b6a04298944764061caee949ea9d0a68771de65eae56d862cdb6",
+                "sha256:edc10b7aebe66303a0da935a6f12c70100e18ca30cce24c248bacb76c8ec22d6"
             ],
             "index": "pypi",
-            "version": "==0.25.13"
+            "version": "==0.25.14"
         },
         "timestamp": {
             "hashes": [
