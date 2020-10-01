@@ -37,6 +37,19 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
     UNIT_TESTED = SecurityIndicatorStep
 
     _SECURITY_INFO_EXISTS = {
+        "severity_high_confidence_high": 0,
+        "severity_high_confidence_medium": 5,
+        "severity_high_confidence_low": 3,
+        "severity_medium_confidence_high": 2,
+        "severity_medium_confidence_medium": 0,
+        "severity_medium_confidence_low": 8,
+        "severity_low_confidence_high": 21,
+        "severity_low_confidence_medium": 6,
+        "severity_low_confidence_low": 0,
+        "number_of_lines_with_code_in_python_files": 692,
+    }
+
+    _HIGH_HIGH_SECURITY_INFO = {
         "severity_high_confidence_high": 1,
         "severity_high_confidence_medium": 5,
         "severity_high_confidence_low": 3,
@@ -83,6 +96,7 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
         )
 
         context = flexmock(graph=GraphDatabase())
+        context.recommendation_type = RecommendationType.STABLE
         with SecurityIndicatorStep.assigned_context(context):
             step = SecurityIndicatorStep()
             result = step.run(None, package_version)
@@ -139,3 +153,22 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
             result[1][0]["message"] == "flask===0.12.0 on https://pypi.org/simple has no "
             "gathered information regarding security."
         )
+
+    @pytest.mark.parametrize("recommendation_type", [RecommendationType.SECURITY])
+    def test_security_indicator_with_high_high(self, recommendation_type) -> None:
+        """Make sure we don't accept package if si info is missing when recommendation is secure."""
+        flexmock(GraphDatabase)
+        GraphDatabase.should_receive("get_si_aggregated_python_package_version").with_args(
+            package_name="flask", package_version="0.12.0", index_url="https://pypi.org/simple"
+        ).and_return(self._HIGH_HIGH_SECURITY_INFO).once()
+
+        package_version = PackageVersion(
+            name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
+        )
+
+        context = flexmock(graph=GraphDatabase())
+        context.recommendation_type = recommendation_type
+        with pytest.raises(NotAcceptable):
+            with SecurityIndicatorStep.assigned_context(context):
+                step = SecurityIndicatorStep()
+                step.run(None, package_version)
