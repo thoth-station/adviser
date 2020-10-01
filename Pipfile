@@ -12,7 +12,6 @@ hypothesis = "*"
 flexmock = "*"
 pytest-mypy = "*"
 jsonpatch = "*"
-voluptuous = "*"
 
 [packages]
 click = "*"
