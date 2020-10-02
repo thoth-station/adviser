@@ -97,7 +97,7 @@ provided.
 
 An example of a ``Pipfile`` that configures two Python package indexes - `PyPI
 <https://pypi.org/simple>`_ and `AICoE Python package index
-<https://tensorflow.pypi.thoth-station.ninja/>`:
+<https://tensorflow.pypi.thoth-station.ninja/>`__:
 
 .. code-block:: toml
 
