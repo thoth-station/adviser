@@ -14,17 +14,18 @@ state then represents a fully pinned down software stack (as can be seen in
 .. warning::
 
   The logic behind resolver manipulates with states. Step pipeline unit
-  implementation **must NOT** adjust state attributes. Adjusting beam is also
-  not allowed. If a step implementation adjusts state or beam, the behaviour is
-  undefined.
+  implementation **must NOT** adjust state attributes except for the stack
+  information. Adjusting beam is also not allowed. If a step implementation
+  adjusts state or beam, the behaviour is undefined.
 
-The pipeline step is triggered after :ref:`boot <boots>` and :ref:`sieve
-<sieves>` pipeline unit types and is used to score and decide whether the given
-package can be added the the resolver's internal state. In contrast to sieves,
-a step has full notion of package-versions present in not fully resolved
-software stack (resolver's internal state) so steps can judge whether the given
-package should be added to the state based on packages already present (see
-Real world examples section bellow for examples).
+The pipeline step is triggered after :ref:`boot <boots>`, :ref:`pseudonym
+<pseudonyms>` and :ref:`sieve <sieves>` pipeline unit types and is used to
+score and decide whether the given package can be added the the resolver's
+internal state. In contrast to sieves, a step has a full notion of
+package-versions present in not fully resolved software stack (resolver's
+internal state) so steps can judge whether the given package should be added to
+the state based on packages already present (see Real world examples section
+bellow for examples).
 
 .. note::
 
@@ -58,7 +59,7 @@ Main usage
       * ``float`` represents score adjustment of the state
 
       * the list of dictionaries carries "justification" on why the given
-        package-version was scored they way it was scored - this justification
+        package-version was scored the way it was scored - this justification
         is shown to the user
 
 * Prematurely end resolution based on the step reached
@@ -85,8 +86,9 @@ Real world examples
         stack as these two will never be resolved together
 
   * Packages that have security vulnerabilities (CVE) can be penalized during
-    resolution so that they do not occur in the resolved software stack, unless
-    there is no better candidate based on scoring in other pipeline steps
+    the resolution so that they do not occur in the resolved software stack,
+    unless there is no better candidate based on scoring in other pipeline
+    steps
 
   * Prevent adding ``scipy`` to a TensorFlow>2.1<=2.3 unless introduced
     explictly in the stack. It is not needed (it was introduced accidentally).
