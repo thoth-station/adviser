@@ -18,11 +18,16 @@ Registering a pipeline unit to pipeline
 
 If the pipeline configuration is not explicitly supplied, Thoth's adviser
 dynamically creates pipeline configuration. This creation is done in a loop
-where each pipeline unit class of a type (:ref:`boot <boots>`, :ref:`sieve
-<sieves>`, :ref:`step <steps>`, :ref:`stride <strides>` and :ref:`wrap
-<wraps>`) is asked for inclusion into the pipeline configuration - each
-pipeline unit implementation is responsible for providing logic that states
-when the given pipeline unit should be registered into the pipeline.
+where each pipeline unit class of a type (:ref:`boot <boots>`, :ref:`pseudonym
+<pseudonyms>`, :ref:`sieve <sieves>`, :ref:`step <steps>`, :ref:`stride
+<strides>` and :ref:`wrap <wraps>`) is asked for inclusion into the pipeline
+configuration - each pipeline unit implementation is responsible for providing
+logic that states when the given pipeline unit should be registered into the
+pipeline.
+
+.. image:: _static/pipeline_builder.gif
+   :target: _static/pipeline_builder.gif
+   :alt: Pipeline builder building the pipeline configuration.
 
 This logic is implemented as part of :func:`Unit.should_include
 <thoth.adviser.unit.Unit.should_include>` class method:
@@ -49,7 +54,9 @@ registered into the pipeline configuration or a dictionary stating pipeline
 configuration that should be applied to pipeline unit instance (an empty
 dictionary if no configuration changes are applied to the default pipeline
 configuration but the pipeline unit should be included in the pipeline
-configuration).
+configuration). The default configuration is provided by pipeline in a
+dictionary available as a class attribute in `Unit.CONFIGURATION_DEFAULT`. See
+:ref:`unit configuration section <unit_configuration>`.
 
 The pipeline configuration creation is done in multiple rounds so
 :class:`PipelineBuilderContext
@@ -63,6 +70,7 @@ configuration multiple times based on requirements. See
 :class:`PipelineBuilderContext
 <thoth.adviser.pipeline_builder.PipelineBuilderContext>` for more information.
 
+.. _unit_configuration:
 Unit configuration
 ==================
 
@@ -70,16 +78,23 @@ Each unit can have instance specific configuration. The default configuration
 can be supplied using :py:attr:`Unit.CONFIGURATION_DEFAULT
 <thoth.adviser.unit.Unit.CONFIGURATION_DEFAULT>` class property in the derived
 pipeline configuration type. Optionally, a schema of configuration can be
-defined by providing :py:attr:`Unit.CONFIGURATION_DEFAULT
+defined by providing :py:attr:`Unit.CONFIGURATION_SCHEMA
 <thoth.adviser.unit.Unit.CONFIGURATION_SCHEMA>` in the derived pipeline
 configuration type - this schema is used to verify unit configuration
 correctness on unit instantiation.
+
+Note units of type :ref:`pseudonym <pseudonyms>`, :ref:`sieve <sieves>` and
+:ref:`step <steps>` have to provide "``package_name``" configuration in the
+configuration to state on which package they operate on. This configuration
+option can be ``None`` for :ref:`sieve <sieves>` and :ref:`step <steps>`
+pipeline units. See unit specific documentation for more info.
 
 Pipeline unit configuration is then accessible via :func:`Unit.configuration
 <thoth.adviser.unit.Unit.configuration>` property on a unit instance which
 returns a dictionary with configuration - the default one updated with the one
 returned by :func:`Unit.should_include
-<thoth.adviser.unit.Unit.should_include>` class method.
+<thoth.adviser.unit.Unit.should_include>` class method on the pipeline unit
+registration.
 
 Additional pipeline unit methods
 ================================
@@ -105,18 +120,20 @@ implementation clean, follow already created structure for pipeline units.
 If a pipeline unit is pecific to a package, place it to a module named after
 this package. An example can be a ``tf_21_urllib3`` module implementing
 :class:`thoth.adviser.steps.tensorflow.tf_21_urllib3.TensorFlow21Urllib3Step`
-step. As this unit is a type of "step", it is placed in
+step. As this unit is a type of ":ref:`step <steps>`", it is placed in
 ``thoth.adviser.steps``, subsequently ``thoth.adviser.steps.tensorflow`` states
 this step is specific to `TensorFlow <https://pypi.org/project/tensorflow>`_
 package.
 
 All pipeline units specific to Python interpreter should go to ``python``
 module under the respective pipeline unit type module (e.g.
-``thoth.adviser.wraps.python`` for Python interpreter specific wraps).
+``thoth.adviser.wraps.python`` for Python interpreter specific :ref:`wraps
+<wraps>`).
 
 Any other modules that are generic enough should be placed inside the top-level
-module for the pipeline unit (e.g. inside ``thoth.adviser.sieves`` for a sieve
-specific units not specific to any Python interpreter or any Python package).
+module for the pipeline unit (e.g. inside ``thoth.adviser.sieves`` for a
+:ref:`sieve <sieves>` specific units not specific to any Python interpreter or
+any Python package).
 
 An exception are also units used for debugging that should go to ``_debug``
 module of the respective pipeline unit type module.
@@ -133,9 +150,15 @@ Pipeline units of type :class:`Sieve <thoth.adviser.sieve.Sieve>` and
 <thoth.adviser.exceptions.NotAcceptable>`, see :ref:`sieves <sieves>` and
 :ref:`steps <steps>` sections for more info.
 
-Pipeline units of type :class:`Sieve` can also raise :class:`SkipPackage
-<thoth.adviser.exceptions.SkipPacakge>` to exclude the given package from an
-application stack completely. See :ref:`sieves <sieves>` section for more info.
+Pipeline units of type :ref:`sieve <sieves>` and :ref:`step <steps>` can also
+raise :class:`SkipPackage <thoth.adviser.exceptions.SkipPackage>` to exclude
+the given package from an application stack completely. See :ref:`sieves
+<sieves>` and :ref:`steps <steps>` section for more info.
+
+Pipeline units of type :ref:`steps <steps>` can raise :class:`SkipPackage
+<thoth.adviser.exceptions.NotAcceptable>` signalizing the given step is not
+acceptable (corresponds to "not-acceptable" action taken in the :ref:`Markov
+Decision Process <introduction>`).
 
 Raising any other exception in pipeline units causes resolver failure.
 
@@ -151,10 +174,11 @@ determined dynamically on each adviser start. This enables construction of the
 pipeline depending on an input vector (e.g. packages used, Python indexes
 configured, library usage, recommendation type and such). Each pipeline unit
 requests to be registered to the pipeline configuration until the pipeline
-configuration has been changed, indicating that the unit has been registered?
+configuration has been changed, indicating that the unit has been registered.
 This loop respects ``__all__`` listing of the respective
-``thoth.adviser.boots``, ``thoth.adviser.sieves``, ``thoth.adviser.strides``,
-``thoth.adviser.steps`` and ``thoth.adviser.wraps`` module.
+``thoth.adviser.boots``, ``thoth.adviser.pseudonyms``,
+``thoth.adviser.sieves``, ``thoth.adviser.strides``, ``thoth.adviser.steps``
+and ``thoth.adviser.wraps`` module.
 
 It's good to note how pipeline units should be listed in ``__all__``:
 
@@ -171,10 +195,10 @@ It's good to note how pipeline units should be listed in ``__all__``:
    ``Bar``, the pipeline unit ``Foo`` should be stated before ``Bar`` in the
    ``__all__`` listing.
 
-  An example of a pipeline unit that is considered expensive is a pipeline unit
-  that performs a knowledge graph query (the more queries or more expensive
-  queries, the more pipeline unit is expensive). Note the overhead needed to
-  query the knowledge base.
+An example of a pipeline unit that is considered expensive is a pipeline unit
+that performs a knowledge graph query (the more queries or more expensive
+queries, the more pipeline unit is expensive). Note the overhead needed to
+query the knowledge base.
 
 Which pipeline unit type should be chosen?
 ==========================================
@@ -190,7 +214,10 @@ time a package is about to be added to resolver's internal state. As it is the
 most expensive one, it also provides the most information for a pipeline unit
 developer - which package in which specific version is about to be added to a
 partially resolved state and what the resolver state looks like. These units
-are the only ones that can affect the final unit score.
+are the only ones that can affect the final unit score. Make sure these units
+provide a package to which they correspond if they are specific to packages -
+this enables optimization which performs the unit call only if the given unit
+should be called.
 
 The second most expensive pipeline units are :ref:`sieves <sieves>`. They do
 not provide access to resolver's internal state, but are called each time there
@@ -200,10 +227,13 @@ final software stack. These units, unlike :ref:`steps <steps>`, do not provide
 access to resolver's internal state (states are created out of the packages
 that were not filtered by sieves).
 
-The third most expensive pipeline units are :ref:`strides <strides>`. They are
-called on each fully resolved state that eventually (if all wraps accept fully
-resolved state by resolver) form the recommended software stack (hence become
-final states).
+The third most expensive units are :ref:`pseudonyms <pseudonyms>`. They can
+provide "pseudonyms" - alternative packages published under different name or
+alternative versions that can be used (or both assumptions).
+
+The fourth most expensive pipeline units are :ref:`strides <strides>`. They are
+called on each fully resolved state that eventually form the recommended
+software stack (hence become final states).
 
 The most cheapest pipeline units are :ref:`boots <boots>` and :ref:`wraps
 <wraps>`. Boot pipeline unit types were designed to prepare resolver, the input
@@ -221,6 +251,6 @@ To keep the resolver performing well, try to always unroll all the operations
 that do not need to be included in the actual pipeline unit run method and put
 these operations to pre or post run methods. In that case, pipeline units can
 configure/prepare for a resolver run in advance, keeping the initialization
-part out of the actual pipeline run. Note the run method of a pipeline unit can
-be called thousands times in a single resolver run so optimizing these pieces
-matter a lot.
+part out of the actual pipeline run. Note the ``run`` method of a pipeline unit
+can be called thousands times in a single resolver run so optimizing these
+pieces matter a lot.
