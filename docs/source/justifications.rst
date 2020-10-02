@@ -109,7 +109,7 @@ found).
                 return None
 
             if cve_records:
-                return self.configuration["ve_penalization"], [{
+                return self.configuration["cve_penalization"], [{
                     "package_name": package_version.name,
                     "link": self._JUSTIFICATION_LINK,
                     "message": "Found at least one vulnerability for the given package:"
