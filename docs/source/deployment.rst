@@ -90,6 +90,8 @@ graph. If some relevant parts of the knowledge graph change, different results
 might be produced by adviser even if the seed is set to a constant value across
 multiple adviser runs.
 
+.. _beam_width:
+
 Beam and it's width
 ###################
 
