@@ -214,7 +214,7 @@ we follow the pattern of ``(ClusterName)-(DeploymentName)`` to assign the
 Some of the older deployments were `thoth-test-core`, `thoth-core-upshift-stage`,
  and etc. These can be found in ceph bucket.
 
-__Disclaimer__: Older deployments would be deprecated and removed. Please check
+**Disclaimer**: Older deployments would be deprecated and removed. Please check
 the existence of the deployment in ceph before using.
 
 .. code-block:: console
@@ -289,7 +289,7 @@ To temporary bypass this error you need to temporary turn off these
 recommendations by setting ``THOTH_ADVISE`` to ``0`` in the corresponding
 buildconfig:
 
-__Disclaimer:__ Please, do **NOT** commit such changes into repositories. We
+**Disclaimer:** Please, do **NOT** commit such changes into repositories. We
 always rely on versioned packages with proper release management.
 
 Scheduling workload in the cluster
