@@ -117,7 +117,7 @@ candidates that have higher score but do not lead to a fully resolved software
 stack given the version range specification of dependencies). There is also a
 risk described in :ref:`shared_deps`.
 
-An optimal number of beam width can be obtained empirically (or additional
+An optimal number for the beam width can be obtained empirically (or additional
 analysis on top of adviser reports) based on software stacks that the system is
 resolving.
 
@@ -137,4 +137,5 @@ deployments. Development dependencies are usually not installed in such cases
 developement dependencies the dependency graph explored on Thoth's side can be
 smaller which can narrow down the exploration to dependencies that go to the
 deployment. Naturally, this can have positive impact on the resulting software
-stack recommended (a better one can be found given the state space explored).
+stack recommended (a better one can be found given the smaller state space
+explored).

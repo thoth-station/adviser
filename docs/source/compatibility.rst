@@ -121,6 +121,8 @@ An example of a ``Pipfile`` that configures two Python package indexes - `PyPI
   allow_prereleases = true
 
 
+.. _shared_deps:
+
 A note on shared dependencies in a dependency graph
 ===================================================
 
