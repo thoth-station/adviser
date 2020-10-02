@@ -18,6 +18,11 @@ serves the following purposes:
 If you would like to interact with Thoth from user's perspective, check
 `Thamos repository <https://github.com/thoth-station/thamos>`__.
 
+If you would like to browse technical documentation, visit
+`thoth-adviser section
+<https://thoth-station.ninja/docs/developers/adviser/>`__ at
+`thoth-station.ninja <https://thoth-station.ninja>`_.
+
 Software stack resolution pipeline
 ==================================
 
