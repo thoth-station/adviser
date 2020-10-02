@@ -26,11 +26,11 @@ from voluptuous import Schema
 from voluptuous import Required
 import attr
 
-from .unit import UnitPackageVersion
+from .unit import UnitPackage
 
 
 @attr.s(slots=True)
-class Pseudonym(UnitPackageVersion):
+class Pseudonym(UnitPackage):
     """Pseudonym base class implementation."""
 
     # Pseudonym is always specific to a package.
