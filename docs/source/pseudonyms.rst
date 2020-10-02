@@ -15,9 +15,11 @@ is guaranteed by the resolution logic.
   or they result in too many new states. This has significant performance
   impact in the resolution process.
 
-Each pseudonym is uniquely identified by ``Pseudonym.PACKAGE_NAME`` string that
-corresponds to the package name for which the pipeline unit should be called.
-This is an optimization to the resolution process.
+Each pseudonym is uniquely identified by
+``unit_instance.configuration["package_name"]`` string derived out
+``Pseudonym.CONFIGURATION_DEFAULT["package_name"]`` that corresponds to the
+package name for which the pipeline unit should be called.  This is an
+optimization to the resolution process.
 
 Main usage
 ==========
@@ -28,8 +30,8 @@ Main usage
       functionality as ``tensorflow``, hence ``intel-tensorflow`` can be
       considered as a valid alternative to the resolution process.
 
-* Substituting versions that are not valid given the version range
-  specification declared by dependencies.
+* Adding versions of packages that were not listed in the dependency listing of
+  a library/application but are valid alternatives (underpinning issues).
 
 Real world examples
 ===================
@@ -40,7 +42,8 @@ Real world examples
   * Add TensorFlow in version 2.1.0 to the stack where TensorFlow in version
     2.2.0 would be resolved even though the application states
     TensorFlow==2.1.0 as a dependency - suitable for Dependency Monkey runs or
-    performing "post-release" fixes in version range specifications.
+    performing "post-release" fixes in version range specifications
+    (underpinning issues).
 
 An example implementation
 =========================
