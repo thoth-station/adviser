@@ -312,7 +312,7 @@ once your Python environment is set up:
 
 After running the commands above, you should see Python interpreter's prompt,
 run the following sequence of commands (you can use `help
-<https://docs.python.org/3/library/functions.html#help>` built in to see more
+<https://docs.python.org/3/library/functions.html#help>`_ built in to see more
 information from function documentation):
 
 .. code-block:: python
