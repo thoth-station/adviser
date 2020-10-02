@@ -32,6 +32,7 @@ Resolver and stack resolution pipeline
    pipeline
    resolver
    predictor
+   justifications
 
 
 Pipeline units
