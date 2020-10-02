@@ -154,8 +154,7 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
             "gathered information regarding security."
         )
 
-    @pytest.mark.parametrize("recommendation_type", [RecommendationType.SECURITY])
-    def test_security_indicator_with_high_high(self, recommendation_type) -> None:
+    def test_security_indicator_with_high_confidence(self) -> None:
         """Make sure we don't accept package if si info is missing when recommendation is secure."""
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("get_si_aggregated_python_package_version").with_args(
@@ -167,7 +166,7 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
         )
 
         context = flexmock(graph=GraphDatabase())
-        context.recommendation_type = recommendation_type
+        context.recommendation_type = RecommendationType.SECURITY
         with pytest.raises(NotAcceptable):
             with SecurityIndicatorStep.assigned_context(context):
                 step = SecurityIndicatorStep()
