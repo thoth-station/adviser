@@ -179,10 +179,10 @@ example:
 .. code-block:: console
 
   $ cd adviser/
-  $ THOTH_LOG_STORAGES_GRAPH_DGRAPH=DEBUG THOTH_LOG_ADVISER=WARNING PYTHONPATH=../python pipenv run ./thoth-adviser provenance --requirements ./Pipfile --requirements-locked ./Pipfile.lock --files
+  $ THOTH_LOG_STORAGES_GRAPH_POSTGRES=DEBUG THOTH_LOG_ADVISER=WARNING PYTHONPATH=../python pipenv run ./thoth-adviser provenance --requirements ./Pipfile --requirements-locked ./Pipfile.lock --files
 
-By exporting ``THOTH_LOG_STORAGES_GRAPH_DGRAPH`` environment variable, you set
-debug log level for file ``thoth/storages/graph/postgres.py`` provided by
+By exporting ``THOTH_LOG_STORAGES_GRAPH_POSTGRES`` environment variable, you
+set debug log level for file ``thoth/storages/graph/postgres.py`` provided by
 ``thoth-storages`` package. This way you can debug and inspect behavior only
 for certain parts of the application. If a module has underscore in its name,
 the environment variable has to have double underscores to explicitly escape it
