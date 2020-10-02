@@ -257,21 +257,8 @@ picked from OpenShift's/Kubernetes config). You should see a courtesy warning
 by ``thoth-common`` that you are running your application locally.
 
 To run an application from sources present in the local directory (for example
-with changes you have made), you can use the following command to upload
-sources to OpenShift and start a build:
-
-.. code-block:: console
-
-  $ cd adviser/
-  $ oc start-build adviser --from-dir=. -n <namespace>
-
-You will see (for example in the OpenShift console) that the build was
-triggered from sources.
-
-To see available builds (that match component name), issue the following once
-you are logged in and present in the right project:
-
-.. code-block:: console
+with changes you have made), you can open a pull request and issue ``/deploy``
+command as a comment to the pull request opened.
 
   $ oc get builds
 
@@ -284,10 +271,10 @@ cluster, you can do so by installing package from a Git repo and running the
   # To install thoth-common package from the master branch (you can adjust GitHub organization to point to your fork):
   $ pipenv install 'git+https://github.com/thoth-station/common.git@master#egg=thoth-common'
 
-After that, you can start build using ``oc start-build <build-name>
---from-dir=. -n <namespace>``. Note however that most of the Thoth's
-buildconfigs use Thoth to recommend application stacks. As you are using a Git
-version, this recommendation will fail with an error similar to this one:
+After that, you can open a pull request with adjusted dependencies. Note the
+git dependencies **must not** be merged to the repository. Thoth will fail with
+recommendations if it spots a VCS dependency in the application (it's a bad
+practice to use such deps in prod-like deployments):
 
 .. code-block:: console
 
@@ -298,19 +285,12 @@ version, this recommendation will fail with an error similar to this one:
     "error": "Invalid application stack supplied: Package thoth-storages uses a version control system instead of package index: {'git': 'https://github.com/thoth-station/storages' }",
   }
 
-To bypass this error you need to temporary turn off these recommendations by
-setting ``THOTH_ADVISE`` to ``0`` in the corresponding buildconfig:
+To temporary bypass this error you need to temporary turn off these
+recommendations by setting ``THOTH_ADVISE`` to ``0`` in the corresponding
+buildconfig:
 
-.. code-block:: console
-
-  oc edit bc <build-name> -n <namespace>
-
-Please set the environment variable ``THOTH_ADVISE`` back to ``1`` after you
-test your changes.
-
-Also not that files ``Pipfile`` and ``Pipfile.lock`` get updated. Please, do
-NOT commit such changes into repositories (we always rely on versioned
-packages).
+__Disclaimer:__ Please, do **NOT** commit such changes into repositories. We
+always rely on versioned packages with proper release management.
 
 Scheduling workload in the cluster
 ==================================
