@@ -207,6 +207,14 @@ represents a fully pinned down software stack.
   If the given action from a state leads to a final state (*terminal state*), the
   predictor instance receives a reward signal equal to ``math.inf``.
 
+The following video demonstrates the resolution process more in-depth.
+
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="https://www.youtube.com/embed/WEJ65Rvj3lc" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
+
 Nomenclature
 ============
 
