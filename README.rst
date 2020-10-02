@@ -136,9 +136,10 @@ reinforcement learning algorithms, such as `MCTS
 Resolution process as Markov Decision Process
 =============================================
 
-As stated above, the whole resolution process can be modeled as a Markov Decision
-Process (MDP). Recommending the best possible set of packages than corresponds
-to solving the given MDP. See `Thoth's documentation for more info
+The whole resolution process can be modeled as a Markov Decision Process (MDP)
+thus the reinforcement learning principles stated above can apply. Recommending
+the best possible set of packages than corresponds to solving the given MDP.
+See `Thoth's documentation for more info
 <https://thoth-station.ninja/docs/developers/adviser/introduction.html>`__.
 
 **See also:**
