@@ -107,6 +107,8 @@ unit instances will be shared.
 All pipeline units are grouped based on their type in the
 :class:`PipelineConfig <thoth.adviser.pipeline_config.PipelineConfig>` and
 resolver runs respect they relative ordering when pipeline units are executed.
+Pipeline units specific for a certein packages are prioritized in oposite to
+the generic ones - see ref:`the units section for more info <units>`.
 
 The very first pipeline units triggered are pipeline units of type :class:`Boot
 <thoth.adviser.boot.Boot>`. They are triggered prior to any resolution done -
@@ -115,10 +117,14 @@ see :ref:`boot unit documentation for more info <boots>`.
 Once all :class:`Boot <thoth.adviser.boot.Boot>` units are successfully
 executed, resolver resolves all the direct dependencies (that are sorted and
 filtered out based on ``limit_latest_versions`` configuration option) of the
-application and executes pipeline units of type :class:`Sieve
-<thoth.adviser.sieve.Sieve>` to filter out packages that should not be
-considered during resolver run. See :ref:`sieve pipeline unit documentation for
-more information <sieves>`.
+application and executes pipeline units of type :class:`Pseudonym
+<thoth.adviser.pseudonym.Pseudonym>` to compute "pseudonyms" for packages
+(packages providing same functionality but have different name of different
+version identifier). See :ref:`pseudonyms section for more info <pseudonyms>`.
+
+The next pipeline units of type :class:`Sieve <thoth.adviser.sieve.Sieve>`
+filter out packages that should not be considered during resolver run. See
+:ref:`sieve pipeline unit documentation for more information <sieves>`.
 
 Once sieves filter out packages in unwanted versions, resolver creates initial
 states that are formed out of all the combinations of packages in different
