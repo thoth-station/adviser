@@ -3,12 +3,12 @@
 Sieve pipeline unit type
 ------------------------
 
-The second pipeline unit type triggered after :ref:`boot type pipeline units
-<boots>` is called ":class:`sieve <thoth.adviser.sieve.Sieve>`". The main
-purpose of this pipeline unit is to filter out (hence "sieve") packages that
-should not occur in the resulting stack. It's called on each and every package
-that is resolved based on direct or transitive dependencies of the application
-stack supplied.
+The second pipeline unit type triggered after :ref:`pseudonym type pipeline
+units <pseudonyms>` is called ":class:`sieve <thoth.adviser.sieve.Sieve>`". The
+main purpose of this pipeline unit is to filter out (hence "sieve") packages
+that should not occur in the resulting stack. It's called on each and every
+package that is resolved based on direct or transitive dependencies of the
+application stack supplied.
 
 The pipeline unit of type :class:`sieve <thoth.adviser.sieve.Sieve>` accepts a
 generator of resolved package-versions (see ``PackageVersion`` abstraction in
@@ -21,7 +21,9 @@ will be shrinked based on ``limit_latest_versions`` (if supplied to the
 adviser) after pipeline sieve runs - this option reduces the state space
 considered. If sieves accept more package versions than
 ``limit_latest_versions`` package versions they will be reduced to
-``limit_latest_versions`` size.
+``limit_latest_versions`` size. Note the :ref:`issues that can arise by
+providing ``limit_latest_versions`` parameter <beam_width>`, usually this
+parameter is not needed.
 
 It's guaranteed that the list will contain package-versions in a specific
 (locked) version with information about the Python package index from where the
@@ -66,7 +68,7 @@ Main usage
   Even if pipeline sieves discard all the versions for a certain package, the
   resolution can be still successful. An example can be discarding dependency
   ``tensorboard`` from a TensorFlow stack. Dependency ``tensorboard`` is
-  present only in some releases of ``tensorflow`` package.
+  present as a dependency only in some releases of ``tensorflow`` package.
 
 Real world examples
 ===================
