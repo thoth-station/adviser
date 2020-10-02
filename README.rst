@@ -23,11 +23,10 @@ If you would like to browse technical documentation, visit
 <https://thoth-station.ninja/docs/developers/adviser/>`__ at
 `thoth-station.ninja <https://thoth-station.ninja>`_.
 
-.. raw:: html
-
-    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
-        <iframe src="https://www.youtube.com/embed/WEJ65Rvj3lc" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
-    </div>
+.. image:: https://github.com/thoth-station/adviser/blob/master/docs/source/_static/rl_video.png?raw=true
+   :alt: A reinforcement learning based dependency resolution.
+   :align: center
+   :target:  https://www.youtube.com/watch?v=WEJ65Rvj3lc
 
 Software stack resolution pipeline
 ==================================
