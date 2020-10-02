@@ -154,8 +154,7 @@ figure bellow:
 To satisfy version range specification, the only valid resolution leads to
 ``wheel==0.33.1`` (not considering pre, post releases or release candidates).
 Note that the implementation does not necessarily need to include such version
-(or versions), especially considering ``limit_latest_versions``, state space
-sampling and state space restrictions in beam. In such cases, it is recommended
-to pin down versions of such packages (as ``wheel`` in the example) explicitly
-as a hint to resolver. Otherwise resolution might fail. See logs of an adviser
-run to spot such cases.
+(or versions), especially considering the state space sampling and state space
+restrictions in beam. In such cases, it is recommended to pin down versions of
+such packages (as ``wheel`` in the example) explicitly as a hint to resolver.
+Otherwise resolution might fail. See logs of an adviser run to spot such cases.
