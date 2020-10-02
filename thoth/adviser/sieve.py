@@ -23,11 +23,11 @@ from typing import Generator
 import attr
 from thoth.python import PackageVersion
 
-from .unit import UnitPackageVersion
+from .unit import UnitPackage
 
 
 @attr.s(slots=True)
-class Sieve(UnitPackageVersion):
+class Sieve(UnitPackage):
     """Sieve base class implementation."""
 
     @abc.abstractmethod

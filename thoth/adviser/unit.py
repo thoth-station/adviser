@@ -200,8 +200,8 @@ class Unit(metaclass=abc.ABCMeta):
         """
 
 
-class UnitPackageVersion(Unit, metaclass=abc.ABCMeta):
-    """A pipeline unit that can be spefici to a package version."""
+class UnitPackage(Unit, metaclass=abc.ABCMeta):
+    """A pipeline unit that can be specific to a package."""
 
     CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): SchemaAny(str, None)})
     CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None}
