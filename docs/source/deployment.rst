@@ -39,6 +39,8 @@ stops the current pipeline run with resolution and gathers results obtained
 until that point.
 
 This behavior can be naturally used with Kubernetes/OpenShift liveness probes.
+See `liveness.py file used in deployments
+<https://github.com/thoth-station/adviser/blob/cb9b2f496308e4a44e1b3e102d0c5f2d71cffcbc/liveness.py#L18>`__.
 
 Memory management
 =================
@@ -92,12 +94,12 @@ Beam and it's width
 ###################
 
 One of the core data structures keeping resolver's internal states is beam (see
-:ref:`pipeline <pipeline>` and :ref:`predictor <predictor` docs for more info).
-Beam width is the maximum number of elements stored at the same time and can be
-configured using a hyperparameter during deployment.  There are few pros and
-cons for large and small *width* numbers. The optimal beam width depends on the
-stack size, CPU time allocated and memory available per adviser run in a
-deployment.
+:ref:`pipeline <pipeline>` and :ref:`predictor <predictor>` docs for more info).
+Beam width is the maximum number of partially resolved states stored at the
+same time and can be configured using a hyperparameter during deployment.
+There are few pros and cons for large and small *width* numbers. The optimal
+beam width depends on the stack size, CPU time allocated and memory available
+per adviser run in a deployment.
 
 If the beam width is set to a large number, it results in higher overhead
 needed for maintaining internal data structure per resolver iteration/round
@@ -112,7 +114,8 @@ good-enough software stack candidate to recommend. In the worst case it can
 result in no software stack resolved as candidates that would lead to a fully
 resolved software stack might be removed from the beam (pushed away by
 candidates that have higher score but do not lead to a fully resolved software
-stack given the version range specification of dependencies).
+stack given the version range specification of dependencies). There is also a
+risk described in :ref:`shared_deps`.
 
 An optimal number of beam width can be obtained empirically (or additional
 analysis on top of adviser reports) based on software stacks that the system is
