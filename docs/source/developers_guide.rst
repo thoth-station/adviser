@@ -214,8 +214,8 @@ we follow the pattern of ``(ClusterName)-(DeploymentName)`` to assign the
 Some of the older deployments were `thoth-test-core`, `thoth-core-upshift-stage`,
  and etc. These can be found in ceph bucket.
 
- __Disclaimer__: Older deployments would be deprecated and removed. Please check
- the existence of the deployment in ceph before using.
+__Disclaimer__: Older deployments would be deprecated and removed. Please check
+the existence of the deployment in ceph before using.
 
 .. code-block:: console
 
