@@ -60,13 +60,11 @@ different software environment is used in comparision to the one provided to
 Thoth's adviser.
 
 Resolution of Thoth's adviser might come up with a software stack that would
-never be produced by pip or Pipenv. The reason is a known issue - `pip is
-lacking proper resolver <https://github.com/pypa/pip/issues/988>`_. As Pipenv
-uses pip (Pipenv actually bundles pip and virtualenv into one package) this
-issue is inherited and software stacks resolved by pip/Pipenv might be not
-correct (or can even fail). Thoth's adviser is a drop-in replacement which
-provides server side resolution with additional guidance on installed
-packages based on observations stored in Thoth's knowledge base.
+never be produced by pip or Pipenv. The reason is a different resolution
+algorithm used and the aggregated knowledge Thoth uses during the resolution
+process. Thoth's adviser is a drop-in replacement which provides server side
+resolution with additional guidance on installed packages based on observations
+stored in Thoth's knowledge base.
 
 .. note::
 
@@ -75,7 +73,7 @@ packages based on observations stored in Thoth's knowledge base.
   software or hardware environments and use Thoth's recommendations.
 
 Environment markers applied on direct dependencies are not evaluated during
-resolution done on server but are taken into account once packages are
+the resolution done on server but are taken into account once packages are
 installed by Pipenv.
 
 Python package indexes
