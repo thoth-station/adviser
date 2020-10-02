@@ -17,7 +17,7 @@ Pre-requirements for your project
 =================================
 
 To let Thoth manage your Python application, your application has to use
-`Pipenv <https://pipenv.readthedocs.io/>`_ to manage virtual environment and
+`Pipenv <https://pipenv.readthedocs.io/>`__ to manage virtual environment and
 application dependencies. Pipenv's two main files, ``Pipfile`` and
 ``Pipfile.lock``, has to be placed in the root of your Python application
 directory.
@@ -32,9 +32,9 @@ If you use ``requirements.txt``, the easiest way how to convert to Pipenv's
 And add both file produced, ``Pipfile`` and ``Pipfile.lock``, into your Git
 repository.
 
-It's also possible to use `pip <https://pip.pypa.io/en/stable/user_guide/>`_
+It's also possible to use `pip <https://pip.pypa.io/en/stable/user_guide/>`__
 format as well as format used by
-`pip-tools <https://pypi.org/project/pip-tools/>`_. To use these formats,
+`pip-tools <https://pypi.org/project/pip-tools/>`__. To use these formats,
 you will need to adjust ``requirements_format`` configuration option in your
 ``.thoth.yaml`` configuration file.
 
@@ -66,8 +66,8 @@ Command Line Interface - Thamos CLI
 ===================================
 
 The easiest way how to get recommendations from Thoth service is to install
-`Thamos <https://thoth-station.ninja/docs/developers/thamos>`_ (Thoth's CLI and
-library):
+`Thamos <https://thoth-station.ninja/docs/developers/thamos>`__ (Thoth's CLI
+and library):
 
 .. code-block:: console
 
@@ -102,7 +102,7 @@ dependencies using:
   pipenv install --deploy --dev
 
 Please follow `Thamos documentation for more info
-<https://thoth-station.ninja/docs/developers/thamos>`_. Also check
+<https://thoth-station.ninja/docs/developers/thamos>`__. Also check
 `thoth-station/cli-examples repository <https://github.com/thoth-station/cli-examples>`__
 that demonstrates an example application that using Thamos CLI.
 
@@ -110,7 +110,7 @@ OpenShift Python s2i build process
 ==================================
 
 Thoth can be used in `OpenShift's s2i process
-<https://docs.openshift.com/container-platform/3.11/using_images/s2i_images/python.html>`_
+<https://docs.openshift.com/container-platform/3.11/using_images/s2i_images/python.html>`__
 where it can produce recommendations targeting your specific hardware
 configuration you use to run your application inside the cluster (e.g. specific
 GPU available in the cluster).
@@ -118,21 +118,27 @@ GPU available in the cluster).
 .. note::
 
   Check `thoth-station/s2i-example-migration
-  <https://github.com/thoth-station/s2i-example-migration>`_ with a
-  step-by-step tutorial (also with a pre-recorded screencast with a
-  voice-over) on how to port an already existing Python s2i application to
-  Thoth.
+  <https://github.com/thoth-station/s2i-example-migration>`__ with a
+  step-by-step tutorial on how to port an already existing Python s2i
+  application to Thoth.
 
 You can find a list of base images which you can use with Thoth in `s2i-thoth
-repository <https://github.com/thoth-station/s2i-thoth>`_ with detailed
+repository <https://github.com/thoth-station/s2i-thoth>`__ with detailed
 instructions on how to use Thoth in the OpenShift's s2i process. The container
 images are hosted at `quay.io/organization/thoth-station
-<https://quay.io/organization/thoth-station>`_.
+<https://quay.io/organization/thoth-station>`__.
 
 .. note::
 
-  You can use a tool called `thoth-s2i <https://github.com/thoth-station/s2i`_
-  that can automatically migrate your existing s2i application to use Thoth.
+  You can use a tool called `thoth-s2i
+  <https://github.com/thoth-station/s2i>`__ that can automatically migrate your
+  existing s2i application to use Thoth.
+
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="https://www.youtube.com/embed/FtW1PAuI3nk" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
 
 Thoth's s2i container images can be configured using environment variables
 supplied to the build config:
@@ -159,10 +165,10 @@ supplied to the build config:
   repository if the submitted Thoth analysis fails
 
 See also configuration options for Thoth's client present in `Thamos
-documentation <https://thoth-station.ninja/docs/developers/thamos/>`_.
+documentation <https://thoth-station.ninja/docs/developers/thamos/>`__.
 
 An example of such application can be found on `GitHub  - s2i TensorFlow
-example <https://github.com/thoth-station/s2i-example>`_.
+example <https://github.com/thoth-station/s2i-example>`__.
 
 .. raw:: html
 
