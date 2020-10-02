@@ -13,7 +13,8 @@ engine is available at `thoth-station.ninja/justifications
 <https://thoth-station.ninja/justifications>`__. These are documents linked
 from the :ref:`pipeline units <units>` present in the :ref:`pipeline
 configuration <pipeline>` during the software stack resolution. Some of the
-justifications can be produced directly by the resolver or predictor.
+justifications can be produced directly by the :ref:`resolver <resolver>` or
+:ref:`predictor <predictor>`.
 
 Creating justification documents
 ================================
@@ -38,6 +39,13 @@ To create a justification, you can use ``get_justification_link`` from
 
   link = jl("my_justification")
 
+The ``my_justification`` part directly corresponds to the name of the Markdown
+file with justification as placed in the ``_j/`` directory (without
+the ``.md`` suffix). The linked justification will be named
+``my_justification.md`` and will be placed in `thoth-station.github.io/_j
+<https://github.com/thoth-station/thoth-station.github.io/tree/master/_j>`__.
+The justification document is automatically built on push to master and the
+justification is automatically available in the justification listing.
 
 Adding justifications to the recommended software
 =================================================
@@ -50,7 +58,7 @@ Thoth's adviser test-suite (see ``AdviserTestCase._JUSTIFICATION_SCHEMA`` in
 Justifications for recommended software stack
 #############################################
 
-The very first use of justification schema uses :ref:`step pipeline unit
+The very first use of justification schema uses :ref:`step pipeline units
 <steps>`. These units can return justification as part of their results.  These
 justifications are justifications specific to the software stack resolved and
 recommended. Thus it will show up of the resolved software stack is recommended
@@ -109,7 +117,10 @@ found).
 
             return None
 
-The value returned corresponds to a list of justifications. Follow :ref:`steps
+The value returned corresponds to a list of justifications that should be
+reported when a software stack is resolved from the ``state`` taking the step
+described in the pipeline unit (an action taken from a state to another state
+as seen in :ref:`Markov Decision Process <introduction>`). Follow :ref:`steps
 documentation <steps>` for more info.
 
 Justifications on stack level
@@ -117,7 +128,7 @@ Justifications on stack level
 
 There is also a possibility to provide justifications on the stack level. These
 justifications will always show up to the user with the recommended software
-stack and are on the "stack level". An example of such justification can be an
+stack and are on the "stack level". An example of such justifications can be an
 informative message about the direct dependencies used, software environment
 used or hardware environment used - all these are not thought to the
 recommended set of Python packages.
