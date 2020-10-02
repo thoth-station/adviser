@@ -17,7 +17,7 @@ a final state is reached). This guidance can have two main purposes:
 
 .. note::
 
-  The :ref:`introductory section <introduction>` discusses about intuition
+  The :ref:`introductory section <introduction>` discusses about the intuition
   behind Thoth's adviser resolver that is based on two core components -
   Predictor and Resolver. The resolution is treated as a `Markov Decision
   Process (MDP) <https://en.wikipedia.org/wiki/Markov_decision_process>`_. See
@@ -61,9 +61,10 @@ state. The state  will be expanded in the next resolver round by resolving the
 returned package.  The package is resolved by retrieving all the direct
 dependencies of that dependency in different versions and new states are
 generated out of all the combinations of packages in different versions that
-can occur -- if such transition is valid based on Python ecosystem dependency
-resolving; and dependencies are accepted by pipeline :ref:`sieves <sieves>` and
-:ref:`steps <steps>`.
+can occur -- if such transition is valid based Thoth's judgement ecosystem
+(based on dependency specification in Python packages and based on
+:ref:`pseudonyms <pseudonyms>`); and dependencies are accepted by pipeline
+:ref:`sieves <sieves>` and :ref:`steps <steps>`.
 
 .. warning::
 
@@ -119,9 +120,9 @@ beam.
 Predictor attributes and methods
 ================================
 
-The predictor implementation **should not** use any non-default attributes as
-the constructor is called without any parameters. If any adjustment is desired,
-a user can implement :func:`Predictor.pre_run
+Predictor can accept parameters that can be supplied from CLI or directly when
+instantiating predictor programmatically.  If any adjustment is desired before
+running the resolution pipeline, a user can implement :func:`Predictor.pre_run
 <thoth.adviser.predictor.Predictor.pre_run>` method that is called with
 initialized adviser context before the stack generation pipeline is triggered:
 
@@ -150,4 +151,5 @@ Additional methods that can be provided are:
   plot predictor's history
 
 See :ref:`Adaptive Simulated Annealing <annealing>` as an example of a
-predictor that samples state space or performs hill climbing.
+predictor that samples state space and subsequently performs hill climbing as
+the temperature decreases.
