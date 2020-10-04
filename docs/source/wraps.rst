@@ -38,6 +38,12 @@ Real world examples
   some performance improvement
   <https://developers.redhat.com/blog/2020/06/25/red-hat-enterprise-linux-8-2-brings-faster-python-3-8-run-speeds/>`_.
 
+Justifications in the recommended software stacks
+=================================================
+
+Follow the :ref:`linked documentation for providing valuable information to
+users on actions performed in pipeline units implemented <justifications>`.
+
 An example implementation
 =========================
 

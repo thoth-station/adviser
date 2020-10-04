@@ -66,6 +66,12 @@ Real world examples
   * If a user uses hardware (CPU/GPU) that is not known to Thoth's knowledge
     base, a boot unit can halt adviser
 
+Justifications in the recommended software stacks
+=================================================
+
+Follow the :ref:`linked documentation for providing valuable information to
+users on actions performed in pipeline units implemented <justifications>`.
+
 An example implementation
 =========================
 

@@ -107,6 +107,12 @@ unit specific for TensorFlow packages, which should state ``package_name:
 If the pipeline unit is generic for any package, the ``package_name``
 configuration has to default to ``None``.
 
+Justifications in the recommended software stacks
+=================================================
+
+Follow the :ref:`linked documentation for providing valuable information to
+users on actions performed in pipeline units implemented <justifications>`.
+
 An example implementation
 =========================
 

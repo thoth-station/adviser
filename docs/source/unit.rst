@@ -96,6 +96,12 @@ returned by :func:`Unit.should_include
 <thoth.adviser.unit.Unit.should_include>` class method on the pipeline unit
 registration.
 
+Justifications in the recommended software stacks
+=================================================
+
+Follow the :ref:`linked documentation for providing valuable information to
+users on actions performed in pipeline units implemented <justifications>`.
+
 Additional pipeline unit methods
 ================================
 

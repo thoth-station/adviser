@@ -45,6 +45,12 @@ Real world examples
     performing "post-release" fixes in version range specifications
     (underpinning issues).
 
+Justifications in the recommended software stacks
+=================================================
+
+Follow the :ref:`linked documentation for providing valuable information to
+users on actions performed in pipeline units implemented <justifications>`.
+
 An example implementation
 =========================
 

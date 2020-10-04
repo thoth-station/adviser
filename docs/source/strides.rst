@@ -46,6 +46,12 @@ Real world examples
   <https://github.com/thoth-station/amun-api>`_ to gather observations about
   Python ecosystem and packages present
 
+Justifications in the recommended software stacks
+=================================================
+
+Follow the :ref:`linked documentation for providing valuable information to
+users on actions performed in pipeline units implemented <justifications>`.
+
 An example implementation
 =========================
 
