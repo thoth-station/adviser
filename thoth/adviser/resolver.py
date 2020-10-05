@@ -73,10 +73,6 @@ _LOGGER = logging.getLogger(__name__)
 _NO_EXTRAS = frozenset([None])
 
 
-class _NoStateAdd(Exception):
-    """An exception used internally to signalize no state addition."""
-
-
 def _beam_width(value: Any) -> Optional[int]:
     """Set and convert beam width."""
     if value is None:
