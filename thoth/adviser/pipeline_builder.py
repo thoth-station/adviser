@@ -25,7 +25,6 @@ from typing import Dict
 from typing import Generator
 from typing import List
 from typing import Optional
-from typing import Set
 from itertools import chain
 
 import attr
@@ -66,12 +65,12 @@ class PipelineBuilderContext:
     _steps = attr.ib(type=Dict[Optional[str], List[Step]], factory=dict, kw_only=True)
     _strides = attr.ib(type=Dict[Optional[str], List[Stride]], factory=dict, kw_only=True)
     _wraps = attr.ib(type=Dict[Optional[str], List[Wrap]], factory=dict, kw_only=True)
-    _boots_included = attr.ib(type=Set[Any], factory=set, kw_only=True)
-    _pseudonyms_included = attr.ib(type=Set[Any], factory=set, kw_only=True)
-    _sieves_included = attr.ib(type=Set[Any], factory=set, kw_only=True)
-    _steps_included = attr.ib(type=Set[Any], factory=set, kw_only=True)
-    _strides_included = attr.ib(type=Set[Any], factory=set, kw_only=True)
-    _wraps_included = attr.ib(type=Set[Any], factory=set, kw_only=True)
+    _boots_included = attr.ib(type=Dict[str, List[Boot]], factory=dict, kw_only=True)
+    _pseudonyms_included = attr.ib(type=Dict[str, List[Pseudonym]], factory=dict, kw_only=True)
+    _sieves_included = attr.ib(type=Dict[str, List[Sieve]], factory=dict, kw_only=True)
+    _steps_included = attr.ib(type=Dict[str, List[Step]], factory=dict, kw_only=True)
+    _strides_included = attr.ib(type=Dict[str, List[Stride]], factory=dict, kw_only=True)
+    _wraps_included = attr.ib(type=Dict[str, List[Wrap]], factory=dict, kw_only=True)
 
     @property
     def boots(self) -> List[Boot]:
@@ -144,19 +143,49 @@ class PipelineBuilderContext:
     def is_included(self, unit_class: type) -> bool:
         """Check if the given pipeline unit is already included in the pipeline configuration."""
         if issubclass(unit_class, Boot):
-            return unit_class in self._boots_included
+            return unit_class.__name__ in self._boots_included
         elif issubclass(unit_class, Pseudonym):
-            return unit_class in self._pseudonyms_included
+            return unit_class.__name__ in self._pseudonyms_included
         elif issubclass(unit_class, Sieve):
-            return unit_class in self._sieves_included
+            return unit_class.__name__ in self._sieves_included
         elif issubclass(unit_class, Step):
-            return unit_class in self._steps_included
+            return unit_class.__name__ in self._steps_included
         elif issubclass(unit_class, Stride):
-            return unit_class in self._strides_included
+            return unit_class.__name__ in self._strides_included
         elif issubclass(unit_class, Wrap):
-            return unit_class in self._wraps_included
+            return unit_class.__name__ in self._wraps_included
 
         raise InternalError(f"Unknown unit {unit_class.__name__!r}")
+
+    def get_included_boots(self, boot_class: type) -> List[Boot]:
+        """Get included boots of the provided boot class."""
+        assert issubclass(boot_class, Boot)
+        return self._boots_included.get(boot_class.__name__, [])
+
+    def get_included_pseudonyms(self, pseudonym_class: type) -> List[Pseudonym]:
+        """Get included sieves of the provided sieve class."""
+        assert issubclass(pseudonym_class, Pseudonym)
+        return self._pseudonyms_included.get(pseudonym_class.__name__, [])
+
+    def get_included_sieves(self, sieve_class: type) -> List[Sieve]:
+        """Get included sieves of the provided sieve class."""
+        assert issubclass(sieve_class, Sieve)
+        return self._sieves_included.get(sieve_class.__name__, [])
+
+    def get_included_steps(self, step_class: type) -> List[Step]:
+        """Get included steps of the provided step class."""
+        assert issubclass(step_class, Step)
+        return self._steps_included.get(step_class.__name__, [])
+
+    def get_included_strides(self, stride_class: type) -> List[Stride]:
+        """Get included strides of the provided stride class."""
+        assert issubclass(stride_class, Stride)
+        return self._strides_included.get(stride_class.__name__, [])
+
+    def get_included_wraps(self, wrap_class: type) -> List[Wrap]:
+        """Get included wraps of the provided wrap class."""
+        assert issubclass(wrap_class, Wrap)
+        return self._wraps_included.get(wrap_class.__name__, [])
 
     def is_adviser_pipeline(self) -> bool:
         """Check if the pipeline built is meant for adviser."""
@@ -171,7 +200,7 @@ class PipelineBuilderContext:
         package_name: Optional[str] = unit.configuration.get("package_name")
 
         if isinstance(unit, Boot):
-            self._boots_included.add(unit.__class__)
+            self._boots_included.setdefault(unit.__class__.__name__, []).append(unit)
             self._boots.setdefault(package_name, []).append(unit)
             return
         elif isinstance(unit, Pseudonym):
@@ -180,23 +209,23 @@ class PipelineBuilderContext:
                     f"Pipeline cannot be constructed as unit {unit.__class__.__name__!r} of type Pseudonym "
                     f"did not provide any package name configuration: {unit.configuration!r}"
                 )
+            self._pseudonyms_included.setdefault(unit.__class__.__name__, []).append(unit)
             self._pseudonyms.setdefault(package_name, []).append(unit)
-            self._pseudonyms_included.add(unit.__class__)
             return
         elif isinstance(unit, Sieve):
-            self._sieves_included.add(unit.__class__)
+            self._sieves_included.setdefault(unit.__class__.__name__, []).append(unit)
             self._sieves.setdefault(package_name, []).append(unit)
             return
         elif isinstance(unit, Step):
-            self._steps_included.add(unit.__class__)
+            self._steps_included.setdefault(unit.__class__.__name__, []).append(unit)
             self._steps.setdefault(package_name, []).append(unit)
             return
         elif isinstance(unit, Stride):
-            self._strides_included.add(unit.__class__)
+            self._strides_included.setdefault(unit.__class__.__name__, []).append(unit)
             self._strides.setdefault(package_name, []).append(unit)
             return
         elif isinstance(unit, Wrap):
-            self._wraps_included.add(unit.__class__)
+            self._wraps_included.setdefault(unit.__class__.__name__, []).append(unit)
             self._wraps.setdefault(package_name, []).append(unit)
             return
 
