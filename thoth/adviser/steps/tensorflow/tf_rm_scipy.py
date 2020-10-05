@@ -52,6 +52,9 @@ class TensorFlowRemoveSciPyStep(Step):
     https://github.com/tensorflow/tensorflow/pull/40789
     """
 
+    MULTI_PACKAGE_RESOLUTIONS = False
+    CONFIGURATION_DEFAULT = {"package_name": "scipy"}
+
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
     _MESSAGE = "TensorFlow in versions >=2.1<=2.3 stated SciPy as a dependency but it is not used in the codebase"
@@ -86,9 +89,6 @@ class TensorFlowRemoveSciPyStep(Step):
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Remove SciPy dependency from a TensorFlow>2.1<=2.3 stack."""
-        if package_version.name != "scipy":
-            return None
-
         tensorflow_any = (
             state.resolved_dependencies.get("tensorflow")
             or state.resolved_dependencies.get("tensorflow-cpu")

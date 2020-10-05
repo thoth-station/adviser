@@ -73,8 +73,15 @@ class MKLThreadsWrap(Wrap):
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
         """Include this wrap in adviser, once."""
-        if not builder_context.is_included(cls):
-            return {}
+        units_included = builder_context.get_included_wraps(cls)
+        if len(units_included) == 4:
+            return None
+        elif len(units_included) == 0:
+            return {"package_name": "torch"}
+        elif len(units_included) == 1:
+            return {"package_name": "pytorch"}
+        elif len(units_included) == 2:
+            return {"package_name": "intel-tensorflow"}
 
         return None
 

@@ -35,7 +35,18 @@ class TestTensorFlow23Accuracy(AdviserUnitTestCase):
     def test_verify_multiple_should_include(self) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
         builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
-        self.verify_multiple_should_include(builder_context)
+
+        for package_name in ("tensorflow", "tensorflow-cpu", "tensorflow-gpu", "intel-tensorflow"):
+            pipeline_config = self.UNIT_TESTED.should_include(builder_context)
+            assert pipeline_config is not None
+            assert pipeline_config == {"package_name": package_name}
+
+            unit = self.UNIT_TESTED()
+            unit.update_configuration(pipeline_config)
+
+            builder_context.add_unit(unit)
+
+        assert self.UNIT_TESTED.should_include(builder_context) is None, "The unit must not be included"
 
     def test_run_noop(self) -> None:
         """Test no justification added if TensorFlow 2.3 is not resolved."""

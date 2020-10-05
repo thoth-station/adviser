@@ -50,7 +50,8 @@ class TensorFlow113NumPyStep(Step):
     """
 
     # Run this step each time, regardless of when tensorflow and tensorflow-probability are resolved.
-    MULTI_PACKAGE_RESOLUTIONS = True
+    MULTI_PACKAGE_RESOLUTIONS = False
+    CONFIGURATION_DEFAULT = {"package_name": "numpy"}
 
     _MESSAGE = "TensorFlow in version 1.13.1 is compatible with NumPy>=1.16.0"
     _LINK = jl("tf_25636")
@@ -80,9 +81,6 @@ class TensorFlow113NumPyStep(Step):
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Suggest to use TensorFlow 1.13.1 with NumPy>=1.16.0."""
-        if package_version.name != "numpy":
-            return None
-
         tensorflow_any = (
             state.resolved_dependencies.get("tensorflow")
             or state.resolved_dependencies.get("tensorflow-cpu")

@@ -37,6 +37,7 @@ class TensorFlow23DictSummary(Wrap):
     https://github.com/tensorflow/tensorflow/issues/42679
     """
 
+    CONFIGURATION_DEFAULT = {"package_name": "tensorflow"}
     _JUSTIFICATION = [
         {
             "type": "WARNING",
@@ -48,10 +49,22 @@ class TensorFlow23DictSummary(Wrap):
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include this wrap in adviser."""
-        if builder_context.is_included(cls) or not builder_context.is_adviser_pipeline():
+        if not builder_context.is_adviser_pipeline():
             return None
 
-        return {}
+        units_included = builder_context.get_included_wraps(cls)
+        if len(units_included) == 4:
+            return None
+        elif len(units_included) == 0:
+            return {"package_name": "tensorflow"}
+        elif len(units_included) == 1:
+            return {"package_name": "tensorflow-cpu"}
+        elif len(units_included) == 2:
+            return {"package_name": "tensorflow-gpu"}
+        elif len(units_included) == 3:
+            return {"package_name": "intel-tensorflow"}
+
+        return None
 
     def run(self, state: State) -> None:
         """Notify about a bug in summary output spotted on TensorFlow 2.3."""

@@ -75,7 +75,7 @@ class PandasPy36Sieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Do not use Pandas>=1.2 on Python 3.6."""
         for package_version in package_versions:
-            if package_version.name != "pandas" or package_version.semantic_version.release[:2] < (1, 2):
+            if package_version.semantic_version.release[:2] < (1, 2):
                 yield package_version
             elif not self._message_logged:
                 self._message_logged = True

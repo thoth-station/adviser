@@ -37,6 +37,8 @@ class IntelTensorFlowWrap(Wrap):
     https://software.intel.com/content/www/us/en/develop/articles/intel-optimization-for-tensorflow-installation-guide.html#pip_wheels
     """
 
+    CONFIGURATION_DEFAULT = {"package_name": "tensorflow"}
+
     # Sandy bridge CPUID taken from https://en.wikipedia.org/wiki/Sandy_Bridge
     # Ivy bridge CPUID taken from https://en.wikipedia.org/wiki/Ivy_Bridge_(microarchitecture)
     #
@@ -86,5 +88,5 @@ class IntelTensorFlowWrap(Wrap):
 
     def run(self, state: State) -> None:
         """Recommend using intel-tensorflow if tensorflow is resolved."""
-        if "tensorflow" in state.resolved_dependencies and "intel-tensorflow" not in state.resolved_dependencies:
+        if "intel-tensorflow" not in state.resolved_dependencies:
             state.add_justification(self._JUSTIFICATION)

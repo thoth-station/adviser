@@ -110,7 +110,7 @@ class TestPy36SetuptoolsSieve(AdviserUnitTestCase):
             name="setuptools", version="==49.1.0", develop=False, index=Source("https://pypi.org/simple"),
         )
         pkg3 = PackageVersion(
-            name="tensorflow", version="==2.2.0", develop=False, index=Source("https://thoth-station.ninja/simple"),
+            name="setuptools", version="==50.30.8", develop=False, index=Source("https://thoth-station.ninja/simple"),
         )
 
         pkgs = [pkg1, pkg2, pkg3]

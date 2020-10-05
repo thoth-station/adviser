@@ -49,7 +49,8 @@ class TensorFlow21Urllib3Step(Step):
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
     # Run this step each time, regardless of when TensorFlow and urllib3 are resolved.
-    MULTI_PACKAGE_RESOLUTIONS = True
+    MULTI_PACKAGE_RESOLUTIONS = False
+    CONFIGURATION_DEFAULT = {"package_name": "urllib3"}
 
     _MESSAGE = (
         "TensorFlow in version 2.1 can cause runtime errors when imported, caused by "
@@ -81,10 +82,7 @@ class TensorFlow21Urllib3Step(Step):
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Suggest not to use TensorFlow 2.1 with specific urllib3 as issues with six were spotted on imports."""
-        if (
-            package_version.name != "urllib3"
-            or package_version.semantic_version.release[:2] not in self._AFFECTED_URLLIB3_VERSIONS
-        ):
+        if package_version.semantic_version.release[:2] not in self._AFFECTED_URLLIB3_VERSIONS:
             return None
 
         tensorflow_any = (

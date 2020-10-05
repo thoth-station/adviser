@@ -52,7 +52,8 @@ class TensorFlow22NumPyStep(Step):
     """
 
     # Run this step each time, regardless of when tensorflow and tensorflow-probability are resolved.
-    MULTI_PACKAGE_RESOLUTIONS = True
+    MULTI_PACKAGE_RESOLUTIONS = False
+    CONFIGURATION_DEFAULT = {"package_name": "numpy"}
 
     _MESSAGE = "TensorFlow <2.3>=2.0 states NumPy<2.0.0 as a dependency, but is compatible with NumPy<1.19.0"
     _LINK = jl("tf_41902")
@@ -82,7 +83,7 @@ class TensorFlow22NumPyStep(Step):
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Suggest to use TensorFlow <2.3>=2.0 with NumPy<1.19.0."""
-        if package_version.name != "numpy" and package_version.semantic_version.release[:2] < (1, 19):
+        if package_version.semantic_version.release[:2] < (1, 19):
             return None
 
         tensorflow_any = (

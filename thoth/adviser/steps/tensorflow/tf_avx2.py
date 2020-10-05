@@ -43,6 +43,9 @@ _LOGGER = logging.getLogger(__name__)
 class TensorFlowAVX2Step(Step):
     """A step that recommends AICoE TensorFlow builds optimized for AVX2 enabled CPU processors."""
 
+    MULTI_PACKAGE_RESOLUTIONS = False
+    CONFIGURATION_DEFAULT = {"package_name": "tensorflow"}
+
     _SCORE_ADDITION = 0.2
     _JUSTIFICATION_ADDITION = [
         {
@@ -95,9 +98,6 @@ class TensorFlowAVX2Step(Step):
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Recommend TensorFlow builds optimized for AVX2 enabled CPU processors."""
-        if package_version.name != "tensorflow":
-            return None
-
         aicoe_config = self.get_aicoe_configuration(package_version)
         if not aicoe_config or aicoe_config["configuration"].lower() != "avx2":
             # Not an AICoE build or not an AVX2 build.

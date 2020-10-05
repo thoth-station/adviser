@@ -69,7 +69,7 @@ class Py36SetuptoolsSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out old setuptools that do not work with Python 3.6."""
         for package_version in package_versions:
-            if package_version.name != "setuptools" or package_version.semantic_version.major >= 17:
+            if package_version.semantic_version.major >= 17:
                 yield package_version
             elif package_version.name == "setuptools" and not self._message_logged:
                 self._message_logged = True

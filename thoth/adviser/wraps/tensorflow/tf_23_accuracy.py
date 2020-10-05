@@ -39,6 +39,8 @@ class TensorFlow23Accuracy(Wrap):
     https://github.com/tensorflow/tensorflow/commit/5adacc88077ef82f6c4a7f9bb65f9ed89f9d8947
     """
 
+    CONFIGURATION_DEFAULT = {"package_name": "tensorflow"}
+
     _JUSTIFICATION = [
         {
             "type": "WARNING",
@@ -51,10 +53,22 @@ class TensorFlow23Accuracy(Wrap):
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Include this wrap in adviser."""
-        if builder_context.is_included(cls) or not builder_context.is_adviser_pipeline():
+        if not builder_context.is_adviser_pipeline():
             return None
 
-        return {}
+        units_included = builder_context.get_included_wraps(cls)
+        if len(units_included) == 4:
+            return None
+        elif len(units_included) == 0:
+            return {"package_name": "tensorflow"}
+        elif len(units_included) == 1:
+            return {"package_name": "tensorflow-cpu"}
+        elif len(units_included) == 2:
+            return {"package_name": "tensorflow-gpu"}
+        elif len(units_included) == 3:
+            return {"package_name": "intel-tensorflow"}
+
+        return None
 
     def run(self, state: State) -> None:
         """Notify about accuracy bug in safe()/load_model() calls."""
