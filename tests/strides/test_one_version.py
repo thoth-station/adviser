@@ -20,7 +20,7 @@
 import pytest
 
 from thoth.adviser.exceptions import NotAcceptable
-from thoth.adviser.exceptions import StrideError
+from thoth.adviser.exceptions import PipelineUnitConfigurationSchemaError
 from thoth.adviser.state import State
 from thoth.adviser.strides import OneVersionStride
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
@@ -44,13 +44,12 @@ class TestOneVersionStride(AdviserUnitTestCase):
     def test_pre_run_error(self) -> None:
         """Test error produced in pre-run if configuration is wrong."""
         unit = OneVersionStride()
-        with pytest.raises(StrideError):
-            unit.pre_run()
+        with pytest.raises(PipelineUnitConfigurationSchemaError):
+            unit.update_configuration({})
 
         unit = OneVersionStride()
-        unit.update_configuration({"package_name": None})
-        with pytest.raises(StrideError):
-            unit.pre_run()
+        with pytest.raises(PipelineUnitConfigurationSchemaError):
+            unit.update_configuration({"package_name": None})
 
     def test_configuration_default(self) -> None:
         """Test default pipeline unit configuration."""

@@ -28,11 +28,11 @@ from typing import Tuple
 from thoth.python import PackageVersion
 
 from .state import State
-from .unit import UnitPackage
+from .unit import Unit
 
 
 @attr.s(slots=True)
-class Step(UnitPackage):
+class Step(Unit):
     """Step base class implementation.
 
     Configuration option MUTLI_PACKAGE_RESOLUTION states whether a step should be run if package

@@ -26,6 +26,9 @@ from typing import TYPE_CHECKING
 
 from thoth.adviser.stride import Stride
 from thoth.adviser.state import State
+from voluptuous import Any as SchemaAny
+from voluptuous import Schema
+from voluptuous import Required
 
 if TYPE_CHECKING:
     from thoth.adviser.pipeline_builder import PipelineBuilderContext
@@ -34,7 +37,11 @@ if TYPE_CHECKING:
 class Stride1(Stride):
     """A testing stride implementation."""
 
-    CONFIGURATION_DEFAULT = {"linus": {"residence": "oregon", "children": 3, "parents": ["nils", "anna"]}}
+    CONFIGURATION_DEFAULT = {
+        "linus": {"residence": "oregon", "children": 3, "parents": ["nils", "anna"]},
+        "package_name": None,
+    }
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("linus"): object, Required("package_name"): SchemaAny(str, None)})
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -47,7 +54,8 @@ class Stride1(Stride):
 class Stride2(Stride):
     """A testing stride implementation."""
 
-    CONFIGURATION_DEFAULT = {"foo": None}
+    CONFIGURATION_DEFAULT = {"foo": None, "package_name": "thamos"}
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("foo"): object, Required("package_name"): SchemaAny(str, None)})
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

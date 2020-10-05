@@ -249,10 +249,15 @@ class Resolver:
             cli_parameters=self.cli_parameters,
         )
 
-    def _run_boots(self) -> None:
+    def _run_boots(self, *, with_devel: bool = True) -> None:
         """Run all boots bound to the current run context."""
-        for boot in self.pipeline.boots:
+        package_boots = []
+        for package_version in self.project.iter_dependencies(with_devel=with_devel):
+            package_boots.extend(self.pipeline.boots_dict.get(package_version.name, []))
+
+        for boot in chain(package_boots, self.pipeline.boots_dict.get(None, [])):
             _LOGGER.debug("Running boot %r", boot.__class__.__name__)
+            boot.unit_run = True
             try:
                 boot.run()
             except NotAcceptable as exc:
@@ -448,8 +453,13 @@ class Resolver:
 
     def _run_strides(self, state: State) -> bool:
         """Run strides and check if the given state should be accepted."""
-        for stride in self.pipeline.strides:
+        package_strides = []
+        for package_name in state.resolved_dependencies:
+            package_strides.extend(self.pipeline.strides_dict.get(package_name, []))
+
+        for stride in chain(package_strides, self.pipeline.strides_dict.get(None, [])):
             _LOGGER.debug("Running stride %r", stride.__class__.__name__)
+            stride.unit_run = True
             try:
                 stride.run(state)
             except NotAcceptable as exc:
@@ -464,12 +474,17 @@ class Resolver:
 
     def _run_wraps(self, state: State) -> None:
         """Run all wraps bound to the current run context."""
-        for wrap in self.pipeline.wraps:
+        package_wraps = []
+        for package_name in state.resolved_dependencies:
+            package_wraps.extend(self.pipeline.wraps_dict.get(package_name, []))
+
+        for wrap in chain(package_wraps, self.pipeline.wraps_dict.get(None, [])):
             _LOGGER.debug("Running wrap %r", wrap.__class__.__name__)
+            wrap.unit_run = True
             try:
                 wrap.run(state)
             except Exception as exc:
-                raise WrapError(f"Failed to run wrap {wrap.__class__.__name__!r} on a final step: {str(exc)}") from exc
+                raise WrapError(f"Failed to run wrap {wrap.__class__.__name__!r} on a final state: {str(exc)}") from exc
 
     def _prepare_user_lock_file(self, *, with_devel: bool = True) -> None:
         """Perform operations on the user's lock file required before running the pipeline.
@@ -1033,7 +1048,7 @@ class Resolver:
     ) -> Generator[State, None, None]:
         """Actually perform states resolution."""
         self._log_once_init()
-        self._run_boots()
+        self._run_boots(with_devel=with_devel)
 
         if not self.project.runtime_environment.is_fully_specified():
             _LOGGER.warning(

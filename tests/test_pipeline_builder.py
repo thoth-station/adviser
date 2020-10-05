@@ -185,7 +185,9 @@ class TestPipelineBuilder(AdviserTestCase):
         )
 
         assert pipeline.to_dict() == {
-            "boots": [{"name": "Boot1", "configuration": {"some_parameter": 1.0}}],
+            "boots": [
+                {"name": "Boot1", "configuration": {"some_parameter": 1.0, "package_name": "flask"}, "unit_run": False}
+            ],
             "sieves": [
                 {
                     "name": "Sieve2",
@@ -202,10 +204,10 @@ class TestPipelineBuilder(AdviserTestCase):
                 }
             ],
             "strides": [
-                {"name": "Stride2", "configuration": {"foo": None},},
-                {"name": "Stride1", "configuration": {"linus": "torvalds"},},
+                {"name": "Stride2", "configuration": {"foo": None, "package_name": "thamos"}, "unit_run": False},
+                {"name": "Stride1", "configuration": {"linus": "torvalds", "package_name": None,}, "unit_run": False},
             ],
-            "wraps": [{"name": "Wrap2", "configuration": {}}],
+            "wraps": [{"name": "Wrap2", "configuration": {"package_name": "hexsticker"}, "unit_run": False}],
         }
 
     @use_test_units
@@ -244,7 +246,9 @@ class TestPipelineBuilder(AdviserTestCase):
     def test_from_dict(self) -> None:
         """Test instantiation of a pipeline from a dictionary."""
         dict_ = {
-            "boots": [{"name": "Boot1", "configuration": {"some_parameter": 1.0}}],
+            "boots": [
+                {"name": "Boot1", "configuration": {"some_parameter": 1.0, "package_name": "flask"}, "unit_run": False}
+            ],
             "pseudonyms": [{"name": "Pseudonym2", "configuration": {"package_name": "tensorflow"}, "unit_run": False}],
             "sieves": [
                 {
@@ -261,14 +265,15 @@ class TestPipelineBuilder(AdviserTestCase):
                 }
             ],
             "strides": [
-                {"name": "Stride2", "configuration": {"foo": None}},
-                {"name": "Stride1", "configuration": {"linus": "torvalds"}},
+                {"name": "Stride2", "configuration": {"foo": None, "package_name": "thamos"}, "unit_run": False},
+                {"name": "Stride1", "configuration": {"linus": "torvalds", "package_name": None}, "unit_run": False},
             ],
-            "wraps": [{"name": "Wrap2", "configuration": {}}],
+            "wraps": [{"name": "Wrap2", "configuration": {"package_name": "hexsticker"}, "unit_run": False}],
         }
 
         pipeline = PipelineBuilder.from_dict(dict(dict_))
-        assert pipeline.to_dict() == dict_
+        pipeline_dict = pipeline.to_dict()
+        assert pipeline_dict == dict_
         assert isinstance(pipeline.boots[0], Boot)
         assert isinstance(pipeline.pseudonyms[0], Pseudonym)
         assert isinstance(pipeline.sieves[0], Sieve)
@@ -281,17 +286,21 @@ class TestPipelineBuilder(AdviserTestCase):
     def test_load(self, tmp_path: Path) -> None:
         """Test instantiation of a pipeline from a dictionary."""
         expected_dict_ = {
-            "boots": [{"name": "Boot1", "configuration": {"some_parameter": -0.2}}],
+            "boots": [
+                {"configuration": {"package_name": "flask", "some_parameter": -0.2}, "name": "Boot1", "unit_run": False}
+            ],
             "pseudonyms": [],
             "sieves": [],
             "steps": [
                 {
+                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
                     "name": "Step1",
                     "unit_run": False,
-                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
                 }
             ],
-            "strides": [{"name": "Stride2", "configuration": {"foo": None}}],
+            "strides": [
+                {"configuration": {"foo": None, "package_name": "thamos"}, "name": "Stride2", "unit_run": False}
+            ],
             "wraps": [],
         }
 
@@ -322,7 +331,8 @@ class TestPipelineBuilder(AdviserTestCase):
         assert isinstance(pipeline.steps[0], Step)
         assert isinstance(pipeline.strides[0], Stride)
         assert not pipeline.wraps
-        assert pipeline.to_dict() == expected_dict_
+        pipeline_dict = pipeline.to_dict()
+        assert pipeline_dict == expected_dict_
 
         json_path = tmp_path / "config.json"
         with open(json_path, "w") as f:
@@ -335,7 +345,8 @@ class TestPipelineBuilder(AdviserTestCase):
         assert isinstance(pipeline.steps[0], Step)
         assert isinstance(pipeline.strides[0], Stride)
         assert not pipeline.wraps
-        assert pipeline.to_dict() == expected_dict_
+        pipeline_dict = pipeline.to_dict()
+        assert pipeline_dict == expected_dict_
 
     @use_test_units
     def test_from_dict_unit_configuration_error(self) -> None:

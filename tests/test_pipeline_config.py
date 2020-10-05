@@ -30,12 +30,15 @@ class TestPipelineConfig(AdviserTestCase):
 
     def test_to_dict(self, pipeline_config: PipelineConfig) -> None:
         """Test serialization of pipeline configuration."""
-        assert pipeline_config.to_dict() == {
-            "boots": [{"name": "Boot1", "configuration": {"some_parameter": -0.2}}],
+        pipeline_dict = pipeline_config.to_dict()
+        assert pipeline_dict == {
+            "boots": [
+                {"configuration": {"package_name": "flask", "some_parameter": -0.2}, "name": "Boot1", "unit_run": False}
+            ],
             "pseudonyms": [
                 {
-                    "name": "Pseudonym1",
                     "configuration": {"another_parameter": 0.33, "package_name": "tensorflow"},
+                    "name": "Pseudonym1",
                     "unit_run": False,
                 }
             ],
@@ -48,21 +51,30 @@ class TestPipelineConfig(AdviserTestCase):
             ],
             "steps": [
                 {
+                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
                     "name": "Step1",
                     "unit_run": False,
-                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
                 }
             ],
             "strides": [
                 {
+                    "configuration": {
+                        "linus": {"children": 3, "parents": ["nils", "anna"], "residence": "oregon"},
+                        "package_name": None,
+                    },
                     "name": "Stride1",
-                    "configuration": {"linus": {"residence": "oregon", "children": 3, "parents": ["nils", "anna"],}},
+                    "unit_run": False,
                 }
             ],
             "wraps": [
                 {
+                    "configuration": {
+                        "cities": ["Brno", "Bonn", "Boston", "Milan"],
+                        "thoth": [2018, 2019],
+                        "package_name": None,
+                    },
                     "name": "Wrap1",
-                    "configuration": {"thoth": [2018, 2019], "cities": ["Brno", "Bonn", "Boston", "Milan"],},
+                    "unit_run": False,
                 }
             ],
         }

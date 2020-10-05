@@ -23,6 +23,8 @@ from typing import Optional
 from typing import TYPE_CHECKING
 
 from thoth.adviser.boot import Boot
+from voluptuous import Schema
+from voluptuous import Required
 
 if TYPE_CHECKING:
     from thoth.adviser.pipeline_builder import PipelineBuilderContext
@@ -31,7 +33,8 @@ if TYPE_CHECKING:
 class Boot1(Boot):
     """A testing boot implementation."""
 
-    CONFIGURATION_DEFAULT = {"some_parameter": -0.2}
+    CONFIGURATION_DEFAULT = {"some_parameter": -0.2, "package_name": "flask"}
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str, Required("some_parameter"): float})
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -43,6 +46,8 @@ class Boot1(Boot):
 
 class Boot2(Boot):
     """A testing boot implementation."""
+
+    CONFIGURATION_DEFAULT = {"package_name": None}
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

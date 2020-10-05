@@ -29,10 +29,11 @@ from typing import Optional
 from typing import TYPE_CHECKING
 
 import attr
+from voluptuous import Required
+from voluptuous import Schema
 
 from ..state import State
 from ..stride import Stride
-from ..exceptions import StrideError
 from ..exceptions import NotAcceptable
 
 if TYPE_CHECKING:
@@ -51,6 +52,7 @@ class OneVersionStride(Stride):
         "package_name": None,
         "only_once": True,
     }
+    CONFIGURATION_SCHEMA = Schema({Required("package_name"): str, "only_once": bool})
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -60,9 +62,6 @@ class OneVersionStride(Stride):
     def pre_run(self) -> None:
         """Initialize internal state of the unit."""
         self.version_seen = None
-
-        if self.configuration["package_name"] is None:
-            raise StrideError(f"No package name provided to the {self.__class__.__name__!r} pipeline unit")
 
     def run(self, state: State) -> None:
         """Filter out software stacks, allow only a package with specific version being produced just once."""
