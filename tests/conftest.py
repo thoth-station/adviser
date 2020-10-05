@@ -83,17 +83,20 @@ def pipeline_config() -> PipelineConfig:
     flexmock(Stride1)
     flexmock(Wrap1)
 
+    boot1 = Boot1()
     pseudonym1 = Pseudonym1()
     sieve1 = Sieve1()
     step1 = Step1()
+    stride1 = Stride1()
+    wrap1 = Wrap1()
 
     return PipelineConfig(
-        boots=[Boot1()],
+        boots={boot1.configuration.get("package_name"): [boot1]},
         pseudonyms={pseudonym1.configuration["package_name"]: [pseudonym1]},
-        sieves={sieve1.configuration["package_name"]: [sieve1]},
-        steps={step1.configuration["package_name"]: [step1]},
-        strides=[Stride1()],
-        wraps=[Wrap1()],
+        sieves={sieve1.configuration.get("package_name"): [sieve1]},
+        steps={step1.configuration.get("package_name"): [step1]},
+        strides={stride1.configuration.get("package_name"): [stride1]},
+        wraps={wrap1.configuration.get("package_name"): [wrap1]},
     )
 
 

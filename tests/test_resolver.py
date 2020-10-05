@@ -183,7 +183,8 @@ class TestResolver(AdviserTestCase):
         boots.Boot1.should_receive("run").and_return(None).ordered()
         boots.Boot2.should_receive("run").and_return(None).ordered()
 
-        resolver.pipeline.boots = [boots.Boot1(), boots.Boot2()]
+        units = [boots.Boot1(), boots.Boot2()]
+        resolver.pipeline._boots = {b.configuration.get("package_name"): [b] for b in units}
 
         assert resolver._run_boots() is None
 
@@ -195,7 +196,8 @@ class TestResolver(AdviserTestCase):
         boots.Boot1.should_receive("run").and_return(None).ordered()
         boots.Boot2.should_receive("run").and_raise(NotAcceptable).ordered()
 
-        resolver.pipeline.boots = [boots.Boot1(), boots.Boot2()]
+        units = [boots.Boot1(), boots.Boot2()]
+        resolver.pipeline._boots = {b.configuration.get("package_name"): [b] for b in units}
 
         with pytest.raises(CannotProduceStack):
             resolver.resolve()
@@ -205,7 +207,8 @@ class TestResolver(AdviserTestCase):
         flexmock(boots.Boot1)
         boots.Boot1.should_receive("run").and_raise(ValueError).once()
 
-        resolver.pipeline.boots = [boots.Boot1()]
+        units = [boots.Boot1()]
+        resolver.pipeline._boots = {b.configuration.get("package_name"): [b] for b in units}
 
         with pytest.raises(BootError):
             resolver._run_boots()
@@ -391,6 +394,8 @@ class TestResolver(AdviserTestCase):
         state.score = 0.1
         state.add_justification(self.JUSTIFICATION_SAMPLE_1)
 
+        # Add a dependency for Stride2 call.
+        state.add_resolved_dependency(("thamos", "1.0.0", "https://pypi.org/simple"))
         original_state = deepcopy(state)
 
         flexmock(strides.Stride1)
@@ -399,7 +404,8 @@ class TestResolver(AdviserTestCase):
         strides.Stride1.should_receive("run").with_args(state).and_return(None).once()
         strides.Stride2.should_receive("run").with_args(state).and_return(None).once()
 
-        resolver.pipeline.strides = [strides.Stride1(), strides.Stride2()]
+        units = [strides.Stride1(), strides.Stride2()]
+        resolver.pipeline._strides = {s.configuration.get("package_name"): [s] for s in units}
 
         assert resolver._run_strides(state) is True
         assert original_state == state, "State is not untouched"
@@ -410,15 +416,19 @@ class TestResolver(AdviserTestCase):
         state.score = 0.1
         state.add_justification(self.JUSTIFICATION_SAMPLE_1)
 
+        # Add a dependency for Stride2 call.
+        state.add_resolved_dependency(("thamos", "1.0.0", "https://pypi.org/simple"))
         original_state = deepcopy(state)
 
         flexmock(strides.Stride1)
         flexmock(strides.Stride2)
 
-        strides.Stride1.should_receive("run").with_args(state).and_return(None).once()
-        strides.Stride2.should_receive("run").with_args(state).and_raise(NotAcceptable).once()
+        strides.Stride2.should_receive("run").with_args(state).and_return(None).once()
+        strides.Stride1.should_receive("run").with_args(state).and_raise(NotAcceptable).once()
 
-        resolver.pipeline.strides = [strides.Stride1(), strides.Stride2()]
+        # Reverse order so package_name==None is called, then package_name==thamos
+        units = [strides.Stride2(), strides.Stride1()]
+        resolver.pipeline._strides = {s.configuration.get("package_name"): [s] for s in units}
 
         resolver._init_context()
         assert resolver._run_strides(state) is False
@@ -435,7 +445,8 @@ class TestResolver(AdviserTestCase):
         flexmock(strides.Stride1)
 
         strides.Stride1.should_receive("run").with_args(state).and_raise(NotImplementedError).once()
-        resolver.pipeline.strides = [strides.Stride1()]
+        units = [strides.Stride1()]
+        resolver.pipeline._strides = {s.configuration.get("package_name"): [s] for s in units}
 
         with pytest.raises(StrideError):
             resolver._run_strides(state)
@@ -448,6 +459,8 @@ class TestResolver(AdviserTestCase):
         state.score = 0.01
         state.add_justification(self.JUSTIFICATION_SAMPLE_2)
 
+        # Add a dependency for Wrap2 call.
+        state.add_resolved_dependency(("hexsticker", "1.0.0", "https://pypi.org/simple"))
         original_state = deepcopy(state)
 
         flexmock(wraps.Wrap1)
@@ -455,7 +468,8 @@ class TestResolver(AdviserTestCase):
         wraps.Wrap1.should_receive("run").with_args(state).and_return(None).once()
         wraps.Wrap2.should_receive("run").with_args(state).and_return(None).once()
 
-        resolver.pipeline.wraps = [wraps.Wrap1(), wraps.Wrap2()]
+        units = [wraps.Wrap1(), wraps.Wrap2()]
+        resolver.pipeline._wraps = {w.configuration.get("package_name"): [w] for w in units}
 
         assert resolver._run_wraps(state) is None
         assert original_state == state, "State has changed during running wraps"
@@ -471,7 +485,8 @@ class TestResolver(AdviserTestCase):
         flexmock(wraps.Wrap1)
         wraps.Wrap1.should_receive("run").with_args(state).and_raise(ValueError).once()
 
-        resolver.pipeline.wraps = [wraps.Wrap1()]
+        units = [wraps.Wrap1()]
+        resolver.pipeline._wraps = {w.configuration.get("package_name"): [w] for w in units}
 
         with pytest.raises(WrapError):
             resolver._run_wraps(state)
@@ -532,12 +547,12 @@ class TestResolver(AdviserTestCase):
     ) -> None:
         """Test limiting number of latest versions considered."""
         resolver.limit_latest_versions = 2
-        resolver.pipeline.boots = []
+        resolver.pipeline._boots = {}
         resolver.pipeline._pseudonyms = {}
         resolver.pipeline._sieves = {}
         resolver.pipeline._steps = {}
-        resolver.pipeline.strides = []
-        resolver.pipeline.wraps = []
+        resolver.pipeline._strides = {}
+        resolver.pipeline._wraps = {}
 
         tf_package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
         flask_package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
@@ -2469,6 +2484,31 @@ class TestResolver(AdviserTestCase):
         assert {"click"} == {*state.resolved_dependencies.keys()}
         assert {"flask", "tensorflow"} == {*state.unresolved_dependencies.keys()}
 
+    def test_run_boots_only_none(self, resolver: Resolver) -> None:
+        """Test correct handling of boots when `None` is set for boots."""
+        flexmock(boots.Boot1)
+        flexmock(boots.Boot2)
+
+        boots.Boot1.should_receive("run").times(0)
+        boots.Boot2.should_receive("run").with_args().and_return(None).once()
+
+        resolver.pipeline._boots = {"some-another-package": [boots.Boot1()], None: [boots.Boot2()]}
+        resolver._init_context()
+        resolver._run_boots()
+
+    def test_run_boots_with_none(self, resolver: Resolver) -> None:
+        """Test correct handling of boots when `None` is set for boots."""
+        flexmock(boots.Boot1)
+        flexmock(boots.Boot2)
+
+        boots.Boot1.should_receive("run").with_args().and_return(None).once()
+        boots.Boot2.should_receive("run").with_args().and_return(None).once()
+
+        assert "tensorflow" in (pv.name for pv in resolver.project.iter_dependencies())
+        resolver.pipeline._boots = {"tensorflow": [boots.Boot1()], None: [boots.Boot2()]}
+        resolver._init_context()
+        resolver._run_boots()
+
     def test_run_sieves_with_none(self, resolver: Resolver, tf_package_versions: List[PackageVersion]) -> None:
         """Test correct handling of sieves when `None` is set for steps."""
         flexmock(sieves.Sieve1)
@@ -2514,6 +2554,74 @@ class TestResolver(AdviserTestCase):
         resolver.pipeline._steps = {"some-another-package": [steps.Step1()], None: [steps.Step2()]}
         resolver._init_context()
         assert resolver._run_steps(state, package_version)
+
+    def test_run_strides_only_none(self, resolver: Resolver, state: State) -> None:
+        """Test correct handling of strides when `None` is set for strides."""
+        flexmock(strides.Stride1)
+        flexmock(strides.Stride2)
+
+        strides.Stride1.should_receive("run").times(0)
+        strides.Stride2.should_receive("run").with_args(state).and_return(None).once()
+
+        resolver.pipeline._strides = {"some-another-package": [strides.Stride1()], None: [strides.Stride2()]}
+        resolver._init_context()
+        assert resolver._run_strides(state)
+
+    def test_run_strides_with_none(self, resolver: Resolver, state: State, package_version: PackageVersion) -> None:
+        """Test correct handling of strides when `None` is set for strides."""
+        flexmock(strides.Stride1)
+        flexmock(strides.Stride2)
+
+        strides.Stride1.should_receive("run").with_args(state).and_return(None).once()
+        strides.Stride2.should_receive("run").with_args(state).and_return(None).once()
+
+        state.add_resolved_dependency(package_version.to_tuple())
+
+        resolver.pipeline._strides = {package_version.name: [strides.Stride1()], None: [strides.Stride2()]}
+        resolver._init_context()
+        assert resolver._run_strides(state)
+
+    def test_run_wraps_only_none(self, resolver: Resolver, state: State) -> None:
+        """Test correct handling of wraps when `None` is set for wraps."""
+        flexmock(wraps.Wrap1)
+        flexmock(wraps.Wrap2)
+
+        wraps.Wrap1.should_receive("run").times(0)
+        wraps.Wrap2.should_receive("run").with_args(state).and_return(None).once()
+
+        resolver.pipeline._wraps = {"some-another-package": [wraps.Wrap1()], None: [wraps.Wrap2()]}
+        resolver._init_context()
+        resolver._run_wraps(state)
+
+    def test_run_wraps_with_none(self, resolver: Resolver, state: State, package_version: PackageVersion) -> None:
+        """Test correct handling of wraps when `None` is set for wraps."""
+        flexmock(wraps.Wrap1)
+        flexmock(wraps.Wrap2)
+
+        wraps.Wrap1.should_receive("run").with_args(state).and_return(None).once()
+        wraps.Wrap2.should_receive("run").with_args(state).and_return(None).once()
+
+        state.add_resolved_dependency(package_version.to_tuple())
+
+        resolver.pipeline._wraps = {package_version.name: [wraps.Wrap1()], None: [wraps.Wrap2()]}
+        resolver._init_context()
+        resolver._run_wraps(state)
+
+    def test_run_boot_unit_run(self, resolver: Resolver) -> None:
+        """Test correct handling of the unit_run attribute."""
+        flexmock(boots.Boot2)
+
+        boots.Boot2.should_receive("run").with_args().and_return(None).once()
+
+        unit = boots.Boot2()
+        resolver.pipeline._boots = {None: [unit]}
+
+        assert unit.unit_run is False
+
+        resolver._init_context()
+
+        assert resolver._run_boots() is None
+        assert unit.unit_run is True
 
     def test_run_pseudonym_unit_run(self, resolver: Resolver, state: State, package_version: PackageVersion) -> None:
         """Test correct handling of the unit_run attribute."""
@@ -2563,6 +2671,38 @@ class TestResolver(AdviserTestCase):
 
         assert unit.unit_run is False
         assert resolver._run_steps(state, package_version)
+        assert unit.unit_run is True
+
+    def test_run_stride_unit_run(self, resolver: Resolver, state: State) -> None:
+        """Test correct handling of the unit_run attribute."""
+        flexmock(strides.Stride2)
+
+        strides.Stride2.should_receive("run").with_args(state).and_return(None).once()
+
+        unit = strides.Stride2()
+
+        assert unit.configuration.get("package_name")
+        state.add_resolved_dependency((unit.configuration["package_name"], "1.0.0", "https://pypi.org/simple"))
+        resolver.pipeline._strides = {unit.configuration["package_name"]: [unit]}
+
+        assert unit.unit_run is False
+        resolver._init_context()
+        assert resolver._run_strides(state) is True
+        assert unit.unit_run is True
+
+    def test_run_wraps_unit_run(self, resolver: Resolver, state: State) -> None:
+        """Test correct handling of the unit_run attribute."""
+        flexmock(wraps.Wrap1)
+
+        wraps.Wrap1.should_receive("run").with_args(state).and_return(None).once()
+
+        unit = wraps.Wrap1()
+
+        resolver.pipeline._wraps = {None: [unit]}
+
+        assert unit.unit_run is False
+        resolver._init_context()
+        resolver._run_wraps(state)
         assert unit.unit_run is True
 
     def test_run_steps_skip_package(self, resolver: Resolver, state: State, package_version: PackageVersion) -> None:

@@ -47,13 +47,23 @@ if TYPE_CHECKING:
 class PipelineConfig:
     """A configuration of a pipeline for dependency-monkey and for adviser."""
 
-    boots = attr.ib(type=List[Boot], default=attr.Factory(list))
+    _boots = attr.ib(type=Dict[Optional[str], List[Boot]], factory=dict)
     # Use a dict to have O(1) access when applying pseudonyms.
-    _pseudonyms = attr.ib(type=Dict[str, List[Pseudonym]], default=attr.Factory(dict))
-    _sieves = attr.ib(type=Dict[Optional[str], List[Sieve]], default=attr.Factory(list))
-    _steps = attr.ib(type=Dict[Optional[str], List[Step]], default=attr.Factory(list))
-    strides = attr.ib(type=List[Stride], default=attr.Factory(list))
-    wraps = attr.ib(type=List[Wrap], default=attr.Factory(list))
+    _pseudonyms = attr.ib(type=Dict[str, List[Pseudonym]], factory=dict)
+    _sieves = attr.ib(type=Dict[Optional[str], List[Sieve]], factory=dict)
+    _steps = attr.ib(type=Dict[Optional[str], List[Step]], factory=dict)
+    _strides = attr.ib(type=Dict[Optional[str], List[Stride]], factory=dict)
+    _wraps = attr.ib(type=Dict[Optional[str], List[Wrap]], factory=dict)
+
+    @property
+    def boots(self) -> List[Boot]:
+        """Get all boots."""
+        return list(chain(*self._boots.values()))
+
+    @property
+    def boots_dict(self) -> Dict[Optional[str], List[Boot]]:
+        """Get boots as a dictionary mapping."""
+        return self._boots
 
     @property
     def pseudonyms(self) -> List[Pseudonym]:
@@ -84,6 +94,26 @@ class PipelineConfig:
     def steps_dict(self) -> Dict[Optional[str], List[Step]]:
         """Get steps as a dictionary mapping."""
         return self._steps
+
+    @property
+    def strides(self) -> List[Stride]:
+        """Get all strides."""
+        return list(chain(*self._strides.values()))
+
+    @property
+    def strides_dict(self) -> Dict[Optional[str], List[Stride]]:
+        """Get strides as a dictionary mapping."""
+        return self._strides
+
+    @property
+    def wraps(self) -> List[Wrap]:
+        """Get all wraps."""
+        return list(chain(*self._wraps.values()))
+
+    @property
+    def wraps_dict(self) -> Dict[Optional[str], List[Wrap]]:
+        """Get wraps as a dictionary mapping."""
+        return self._wraps
 
     def to_dict(self) -> Dict[str, List[Dict[str, Any]]]:
         """Return this pipeline configuration in a dict representation."""

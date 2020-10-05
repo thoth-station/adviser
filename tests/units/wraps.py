@@ -24,6 +24,9 @@ from typing import TYPE_CHECKING
 
 from thoth.adviser.wrap import Wrap
 from thoth.adviser.state import State
+from voluptuous import Any as SchemaAny
+from voluptuous import Schema
+from voluptuous import Required
 
 if TYPE_CHECKING:
     from thoth.adviser.pipeline_builder import PipelineBuilderContext
@@ -35,7 +38,11 @@ class Wrap1(Wrap):
     CONFIGURATION_DEFAULT = {
         "thoth": [2018, 2019],
         "cities": ["Brno", "Bonn", "Boston", "Milan"],
+        "package_name": None,
     }
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {Required("thoth"): object, Required("cities"): object, Required("package_name"): SchemaAny(str)}
+    )
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -48,7 +55,8 @@ class Wrap1(Wrap):
 class Wrap2(Wrap):
     """A testing wrap implementation."""
 
-    CONFIGURATION_DEFAULT: Dict[str, Any] = {}
+    CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": "hexsticker"}
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str})
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

@@ -56,9 +56,10 @@ class Unit(metaclass=abc.ABCMeta):
     _name = attr.ib(type=str, default=None, kw_only=True)
 
     _CONTEXT: Optional[Context] = None
-    # Schema used to validate unit configuration - None value does not validate configuration.
-    CONFIGURATION_SCHEMA: Schema = None
-    CONFIGURATION_DEFAULT: Dict[str, Any] = {}
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): SchemaAny(str, None)})
+    CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None}
+
+    unit_run = attr.ib(type=bool, default=False, kw_only=True)
 
     _RE_CAMEL2SNAKE = re.compile("(?!^)([A-Z]+)")
     _AICOE_PYTHON_PACKAGE_INDEX_URL = "https://tensorflow.pypi.thoth-station.ninja/index/"
@@ -90,6 +91,12 @@ class Unit(metaclass=abc.ABCMeta):
             result.update(configuration_dict)
 
         return result
+
+    def __attrs_post_init__(self) -> None:
+        """Initialize post-init attributes."""
+        # Initialize unit_run always to False so the pipeline unit JSON report can be reused across
+        # multiple pipeline unit runs.
+        self.unit_run = False
 
     @_configuration.default
     def _initialize_default_configuration(self) -> Dict[str, Any]:
@@ -132,7 +139,7 @@ class Unit(metaclass=abc.ABCMeta):
 
     def to_dict(self) -> Dict[str, Any]:
         """Turn this pipeline step into its dictionary representation."""
-        return {"name": self.__class__.__name__, "configuration": self.configuration}
+        return {"name": self.__class__.__name__, "configuration": self.configuration, "unit_run": self.unit_run}
 
     @classmethod
     def is_aicoe_release(cls, package_version: PackageVersion) -> bool:
@@ -185,6 +192,7 @@ class Unit(metaclass=abc.ABCMeta):
 
         This method should not raise any exception.
         """
+        self.unit_run = False
 
     def post_run(self) -> None:  # noqa: D401
         """Called after the resolution is finished.
@@ -198,26 +206,3 @@ class Unit(metaclass=abc.ABCMeta):
 
         This method should not raise any exception.
         """
-
-
-class UnitPackage(Unit, metaclass=abc.ABCMeta):
-    """A pipeline unit that can be specific to a package."""
-
-    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): SchemaAny(str, None)})
-    CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None}
-
-    unit_run = attr.ib(type=bool, default=False, kw_only=True)
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Turn this pipeline step into its dictionary representation."""
-        return {"name": self.__class__.__name__, "configuration": self.configuration, "unit_run": self.unit_run}
-
-    def __attrs_post_init__(self) -> None:
-        """Initialize post-init attributes."""
-        # Initialize unit_run always to False so the pipeline unit JSON report can be reused across
-        # multiple pipeline unit runs.
-        self.unit_run = False
-
-    def pre_run(self) -> None:
-        """Initialize pre-run attributes before each pipeline run."""
-        self.unit_run = False

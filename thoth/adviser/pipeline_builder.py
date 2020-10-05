@@ -60,22 +60,27 @@ class PipelineBuilderContext:
     decision_type = attr.ib(type=Optional[DecisionType], kw_only=True, default=None)
     recommendation_type = attr.ib(type=Optional[RecommendationType], kw_only=True, default=None)
 
-    _boots = attr.ib(type=List[Boot], default=attr.Factory(list), kw_only=True)
-    _pseudonyms = attr.ib(type=Dict[str, List[Pseudonym]], default=attr.Factory(dict), kw_only=True)
-    _sieves = attr.ib(type=Dict[Optional[str], List[Sieve]], default=attr.Factory(dict), kw_only=True)
-    _steps = attr.ib(type=Dict[Optional[str], List[Step]], default=attr.Factory(dict), kw_only=True)
-    _strides = attr.ib(type=List[Stride], default=attr.Factory(list), kw_only=True)
-    _wraps = attr.ib(type=List[Wrap], default=attr.Factory(list), kw_only=True)
-    _boots_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
-    _pseudonyms_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
-    _sieves_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
-    _steps_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
-    _strides_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
-    _wraps_included = attr.ib(type=Set[Any], default=attr.Factory(set), kw_only=True)
+    _boots = attr.ib(type=Dict[Optional[str], List[Boot]], factory=dict, kw_only=True)
+    _pseudonyms = attr.ib(type=Dict[str, List[Pseudonym]], factory=dict, kw_only=True)
+    _sieves = attr.ib(type=Dict[Optional[str], List[Sieve]], factory=dict, kw_only=True)
+    _steps = attr.ib(type=Dict[Optional[str], List[Step]], factory=dict, kw_only=True)
+    _strides = attr.ib(type=Dict[Optional[str], List[Stride]], factory=dict, kw_only=True)
+    _wraps = attr.ib(type=Dict[Optional[str], List[Wrap]], factory=dict, kw_only=True)
+    _boots_included = attr.ib(type=Set[Any], factory=set, kw_only=True)
+    _pseudonyms_included = attr.ib(type=Set[Any], factory=set, kw_only=True)
+    _sieves_included = attr.ib(type=Set[Any], factory=set, kw_only=True)
+    _steps_included = attr.ib(type=Set[Any], factory=set, kw_only=True)
+    _strides_included = attr.ib(type=Set[Any], factory=set, kw_only=True)
+    _wraps_included = attr.ib(type=Set[Any], factory=set, kw_only=True)
 
     @property
     def boots(self) -> List[Boot]:
         """Get all boots registered to this pipeline builder context."""
+        return list(chain(*self._boots.values()))
+
+    @property
+    def boots_dict(self) -> Dict[Optional[str], List[Boot]]:
+        """Get boots as a dictionary mapping."""
         return self._boots
 
     @property
@@ -111,11 +116,21 @@ class PipelineBuilderContext:
     @property
     def strides(self) -> List[Stride]:
         """Get all strides registered to this pipeline builder context."""
+        return list(chain(*self._strides.values()))
+
+    @property
+    def strides_dict(self) -> Dict[Optional[str], List[Stride]]:
+        """Get strides as a dictionary mapping."""
         return self._strides
 
     @property
     def wraps(self) -> List[Wrap]:
         """Get all wraps registered to this pipeline builder context."""
+        return list(chain(*self._wraps.values()))
+
+    @property
+    def wraps_dict(self) -> Dict[Optional[str], List[Wrap]]:
+        """Get wraps as a dictionary mapping."""
         return self._wraps
 
     def __attrs_post_init__(self) -> None:
@@ -153,12 +168,13 @@ class PipelineBuilderContext:
 
     def add_unit(self, unit: Unit) -> None:
         """Add the given unit to pipeline configuration."""
+        package_name: Optional[str] = unit.configuration.get("package_name")
+
         if isinstance(unit, Boot):
             self._boots_included.add(unit.__class__)
-            self._boots.append(unit)
+            self._boots.setdefault(package_name, []).append(unit)
             return
         elif isinstance(unit, Pseudonym):
-            package_name = unit.configuration.get("package_name")
             if not package_name:
                 raise PipelineConfigurationError(
                     f"Pipeline cannot be constructed as unit {unit.__class__.__name__!r} of type Pseudonym "
@@ -168,22 +184,20 @@ class PipelineBuilderContext:
             self._pseudonyms_included.add(unit.__class__)
             return
         elif isinstance(unit, Sieve):
-            package_name = unit.configuration.get("package_name")
             self._sieves_included.add(unit.__class__)
             self._sieves.setdefault(package_name, []).append(unit)
             return
         elif isinstance(unit, Step):
-            package_name = unit.configuration.get("package_name")
             self._steps_included.add(unit.__class__)
             self._steps.setdefault(package_name, []).append(unit)
             return
         elif isinstance(unit, Stride):
             self._strides_included.add(unit.__class__)
-            self._strides.append(unit)
+            self._strides.setdefault(package_name, []).append(unit)
             return
         elif isinstance(unit, Wrap):
             self._wraps_included.add(unit.__class__)
-            self._wraps.append(unit)
+            self._wraps.setdefault(package_name, []).append(unit)
             return
 
         raise InternalError(f"Unknown unit {unit!r} of type {unit.__class__.__name__!r}")
@@ -279,12 +293,12 @@ class PipelineBuilder:
                 ctx.add_unit(unit_instance)
 
         pipeline = PipelineConfig(
-            boots=ctx.boots,
+            boots=ctx.boots_dict,
             pseudonyms=ctx.pseudonyms_dict,
             sieves=ctx.sieves_dict,
             steps=ctx.steps_dict,
-            strides=ctx.strides,
-            wraps=ctx.wraps,
+            strides=ctx.strides_dict,
+            wraps=ctx.wraps_dict,
         )
 
         if _LOGGER.getEffectiveLevel() <= logging.DEBUG:
@@ -329,9 +343,11 @@ class PipelineBuilder:
         import thoth.adviser.strides
         import thoth.adviser.wraps
 
-        boots = []
+        boots: Dict[Optional[str], List[Boot]] = {}
         for boot_entry in dict_.pop("boots", []):
-            boots.append(cls._do_instantiate_from_dict(thoth.adviser.boots, boot_entry))
+            boot_unit: Boot = cls._do_instantiate_from_dict(thoth.adviser.boots, boot_entry)  # type: ignore
+            package_name = boot_unit.configuration.get("package_name")
+            boots.setdefault(package_name, []).append(boot_unit)
 
         pseudonyms: Dict[str, List[Pseudonym]] = {}
         for pseudonym_entry in dict_.pop("pseudonyms", []):
@@ -358,24 +374,23 @@ class PipelineBuilder:
             package_name = step_unit.configuration.get("package_name")
             steps.setdefault(package_name, []).append(step_unit)
 
-        strides = []
+        strides: Dict[Optional[str], List[Stride]] = {}
         for stride_entry in dict_.pop("strides", []):
-            strides.append(cls._do_instantiate_from_dict(thoth.adviser.strides, stride_entry))
+            stride_unit: Stride = cls._do_instantiate_from_dict(thoth.adviser.strides, stride_entry)  # type: ignore
+            package_name = stride_unit.configuration.get("package_name")
+            strides.setdefault(package_name, []).append(stride_unit)
 
-        wraps = []
+        wraps: Dict[Optional[str], List[Wrap]] = {}
         for wrap_entry in dict_.pop("wraps", []):
-            wraps.append(cls._do_instantiate_from_dict(thoth.adviser.wraps, wrap_entry))
+            wrap_unit: Wrap = cls._do_instantiate_from_dict(thoth.adviser.wraps, wrap_entry)  # type: ignore
+            package_name = wrap_unit.configuration.get("package_name")
+            wraps.setdefault(package_name, []).append(wrap_unit)
 
         if dict_:
             _LOGGER.warning("Unknown entry in pipeline configuration: %r", dict_)
 
         pipeline = PipelineConfig(
-            boots=boots,  # type: ignore
-            pseudonyms=pseudonyms,
-            sieves=sieves,
-            steps=steps,
-            strides=strides,  # type: ignore
-            wraps=wraps,  # type: ignore
+            boots=boots, pseudonyms=pseudonyms, sieves=sieves, steps=steps, strides=strides, wraps=wraps,
         )
         _LOGGER.debug(
             "Pipeline configuration creation ended, configuration:\n%s", json.dumps(pipeline.to_dict(), indent=2),
