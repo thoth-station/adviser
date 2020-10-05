@@ -138,7 +138,7 @@ whether inclusion of a package version is valid to a state - this is done for
 each and every package-version combination.
 
 If all the steps on a state accept the given package, a newly created state
-(this `corresponds to taking an action from a state to a new state in a Markov
+(this :ref:`corresponds to taking an action from a state to a new state in a Markov
 Decision Process <introduction_rl>`) is added to the resolver beam as a state
 to be considered during resolver run, respecting :ref:`beam width parameter
 <beam_width>`.
@@ -268,12 +268,11 @@ unit types - :ref:`boots <boots>`, :ref:`pseudonymns <pseudonyms>`,
 :ref:`sieves <sieves>`, :ref:`steps <steps>`, :ref:`strides <strides>` and
 :ref:`wraps <wraps>`.
 
-Moreover, pipeline units of type :ref:`sieves <sieves>` and :ref:`steps
-<steps>` can be specific to a package. This was introduced as an optimization
-to group these pipeline units based on packages they operate on not to call
-them ineffectively on packages that are not relevant in the resolution process.
-Note pipeline units can be called thousand times during the resolution process
-so this optimization matters a lot.
+Moreover, pipeline units can be specific to a package. This was introduced as
+an optimization to group these pipeline units based on packages they operate on
+not to call them ineffectively on packages that are not relevant in the
+resolution process.  Note pipeline units can be called thousand times during
+the resolution process so this optimization matters a lot.
 
 See implementation of :class:`PipelineBuilderContext
 <thoth.adviser.pipeline_builder.PipelineBuilderContext>` for more info on

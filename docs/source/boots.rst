@@ -66,6 +66,20 @@ Real world examples
   * If a user uses hardware (CPU/GPU) that is not known to Thoth's knowledge
     base, a boot unit can halt adviser
 
+Triggering unit for a specific package
+======================================
+
+To help with scaling the recommendation engine when it comes to number of
+pipeline units possibly registered, it is a good practice to state to which
+package the given unit corresponds. To run the pipeline unit for a specific
+package, this fact should be reflected in the pipeline unit configuration by
+stating ``package_name`` configuration option. An example can be a pipeline
+unit specific for TensorFlow packages, which should state ``package_name:
+"tensorflow"`` in the pipeline configuration.
+
+If the pipeline unit is generic for any package, the ``package_name``
+configuration has to default to ``None``.
+
 Justifications in the recommended software stacks
 =================================================
 
@@ -86,6 +100,8 @@ An example implementation
 
   class ExampleBoot(Boot):
       """This is an example boot implementation."""
+
+    CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None}  # The pipeline unit is not specific to any package.
 
     def run(self) -> None:
         """Main entry-point for boot unit to demonstrate boot example."""
