@@ -141,23 +141,23 @@ during or after the resolution process is done:
 
   import logging
   import attr
-  
+
   from thoth.adviser.boot import Boot
   from thoth.common import get_justification_link as jl
-  
+
   _LOGGER = logging.getLogger(__name__)
-  
-  
+
+
   @attr.s(slots=True)
   class UbiBoot(Boot):
       """Remap UBI to RHEL.
-  
+
       As UBI has ABI compatibility with RHEL, remap any UBI to RHEL.
       """
-  
+
       _MESSAGE = "Using observations for RHEL instead of UBI, RHEL is ABI compatible with UBI"
       _JUSTIFICATION_LINK = jl("rhel_ubi")
-  
+
       # ...
 
       def run(self) -> None:
