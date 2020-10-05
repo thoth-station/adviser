@@ -29,6 +29,8 @@ import logging
 import attr
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
+from voluptuous import Schema
+from voluptuous import Required
 
 from ..enums import RecommendationType
 from ..exceptions import NotAcceptable
@@ -51,14 +53,26 @@ class SecurityIndicatorStep(Step):
 
     CONFIGURATION_DEFAULT = {
         "package_name": None,
-        "high_confidence_weight": 1,
+        "high_confidence_weight": 1.0,
         "medium_confidence_weight": 0.5,
         "low_confidence_weight": 0.1,
-        "high_severity_weight": 100,
-        "medium_severity_weight": 10,
-        "low_severity_weight": 1,
+        "high_severity_weight": 100.0,
+        "medium_severity_weight": 10.0,
+        "low_severity_weight": 1.0,
         "si_reward_weight": 0.5,
     }
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {
+            Required("package_name"): None,
+            Required("high_confidence_weight"): float,
+            Required("medium_confidence_weight"): float,
+            Required("low_confidence_weight"): float,
+            Required("high_severity_weight"): float,
+            Required("medium_severity_weight"): float,
+            Required("low_severity_weight"): float,
+            Required("si_reward_weight"): float,
+        }
+    )
     _JUSTIFICATION_LINK = jl("security")
 
     @classmethod
