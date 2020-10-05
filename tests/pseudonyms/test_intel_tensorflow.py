@@ -41,7 +41,18 @@ class TestIntelTensorFlowPseudonym(AdviserUnitTestCase):
         """Verify multiple should_include calls do not loop endlessly."""
         builder_context.recommendation_type = RecommendationType.STABLE
         builder_context.project.runtime_environment.cuda_version = None
-        self.verify_multiple_should_include(builder_context)
+
+        for package_name in ("tensorflow", "tensorflow-cpu"):
+            pipeline_config = self.UNIT_TESTED.should_include(builder_context)
+            assert pipeline_config is not None
+            assert pipeline_config == {"package_name": package_name}
+
+            unit = self.UNIT_TESTED()
+            unit.update_configuration(pipeline_config)
+
+            builder_context.add_unit(unit)
+
+        assert self.UNIT_TESTED.should_include(builder_context) is None, "The unit must not be included"
 
     def test_recommendation_types_considered(self) -> None:
         """Test recommendation types that were considered during implementation of this pipeline unit.
@@ -72,7 +83,7 @@ class TestIntelTensorFlowPseudonym(AdviserUnitTestCase):
         builder_context.recommendation_type = recommendation_type
         builder_context.project.runtime_environment.cuda_version = None
         assert builder_context.is_adviser_pipeline()
-        assert self.UNIT_TESTED.should_include(builder_context) == {}
+        assert self.UNIT_TESTED.should_include(builder_context) is not None
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type,cuda_version",

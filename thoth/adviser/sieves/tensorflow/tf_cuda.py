@@ -49,7 +49,7 @@ class TensorFlowCUDASieve(Sieve):
     See supported matrix at https://www.tensorflow.org/install/source#linux
     """
 
-    CONFIGURATION_DEFAULT = {"package_name": "tensorflow"}  # TODO: add tensorflow-gpu
+    CONFIGURATION_DEFAULT = {"package_name": "tensorflow"}
     _MESSAGE = f"Recommended TensorFlow that supports CUDA present in the runtime environment - see {jl('tf_cuda')}"
 
     _EMPTY: FrozenSet[Tuple[int, int]] = frozenset()
@@ -113,8 +113,14 @@ class TensorFlowCUDASieve(Sieve):
             )
             return None
 
-        if not builder_context.is_included(cls):
-            return {}
+        # Include this pipeline units in two configurations for tensorflow and tensorflow-gpu.
+        included_units = builder_context.get_included_sieves(cls)
+        if len(included_units) == 2:
+            return None
+        if len(included_units) == 0:
+            return {"package_name": "tensorflow"}
+        elif len(included_units) == 1:
+            return {"package_name": "tensorflow-gpu"}
 
         return None
 

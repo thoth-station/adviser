@@ -72,13 +72,9 @@ class ImportlibResourcesBackportSieve(Sieve):
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Remove dependency importlib-resources for newer Python versions."""
-        for package_version in package_versions:
-            if package_version.name == "importlib-resources":
-                if not self._logged:
-                    self.context.stack_info.append({"type": "WARNING", "message": self._MESSAGE})
-                    _LOGGER.warning(self._MESSAGE)
-                    self._logged = True
+        if not self._logged:
+            self.context.stack_info.append({"type": "WARNING", "message": self._MESSAGE})
+            _LOGGER.warning(self._MESSAGE)
+            self._logged = True
 
-                raise SkipPackage
-
-            yield package_version
+        raise SkipPackage

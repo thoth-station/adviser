@@ -55,7 +55,18 @@ spec:
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
         builder_context.recommendation_type = RecommendationType.LATEST
-        self.verify_multiple_should_include(builder_context)
+
+        for package_name in ("torch", "pytorch", "intel-tensorflow"):
+            pipeline_config = self.UNIT_TESTED.should_include(builder_context)
+            assert pipeline_config is not None
+            assert pipeline_config == {"package_name": package_name}
+
+            unit = self.UNIT_TESTED()
+            unit.update_configuration(pipeline_config)
+
+            builder_context.add_unit(unit)
+
+        assert self.UNIT_TESTED.should_include(builder_context) is None, "The unit must not be included"
 
     def test_run_justification_noop(self) -> None:
         """Test no operation when PyTorch is not present."""

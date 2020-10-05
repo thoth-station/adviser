@@ -55,12 +55,15 @@ class IntelTensorFlowPseudonym(Pseudonym):
             # No intel-tensorflow in GPU enabled environments.
             return None
 
-        if (
-            builder_context.is_adviser_pipeline()
-            and builder_context.recommendation_type != RecommendationType.LATEST
-            and not builder_context.is_included(cls)
-        ):
-            return {}
+        if builder_context.is_adviser_pipeline() and builder_context.recommendation_type != RecommendationType.LATEST:
+            # Register self for tensorflow and tensorflow-cpu.
+            included_units = builder_context.get_included_pseudonyms(cls)
+            if len(included_units) == 2:
+                return None
+            elif len(included_units) == 0:
+                return {"package_name": "tensorflow"}
+            elif len(included_units) == 1:
+                return {"package_name": "tensorflow-cpu"}
 
         return None
 

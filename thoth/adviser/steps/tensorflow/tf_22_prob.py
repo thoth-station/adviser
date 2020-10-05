@@ -50,7 +50,8 @@ class TensorFlow22ProbabilityStep(Step):
     """
 
     # Run this step each time, regardless of when tensorflow and tensorflow-probability are resolved.
-    MULTI_PACKAGE_RESOLUTIONS = True
+    MULTI_PACKAGE_RESOLUTIONS = False
+    CONFIGURATION_DEFAULT = {"package_name": "tensorflow-probability"}
 
     _MESSAGE = "TensorFlow in version 2.2 and tensorflow-probability cause runtime errors"
     _LINK = jl("tf_40584")
@@ -80,9 +81,6 @@ class TensorFlow22ProbabilityStep(Step):
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Suggest not to use TensorFlow 2.2 with with tensorflow-probability."""
-        if package_version.name != "tensorflow-probability":
-            return None
-
         tensorflow_any = (
             state.resolved_dependencies.get("tensorflow")
             or state.resolved_dependencies.get("tensorflow-cpu")

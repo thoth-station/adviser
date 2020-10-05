@@ -52,8 +52,8 @@ class TensorFlow114GastStep(Step):
 
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
-    # Run this step each time, regardless of when TensorFlow and urllib3 are resolved.
-    MULTI_PACKAGE_RESOLUTIONS = True
+    MULTI_PACKAGE_RESOLUTIONS = False
+    CONFIGURATION_DEFAULT = {"package_name": "gast"}
 
     _MESSAGE = "TensorFlow in version <=1.14 used overpinned gast package, using gast in version <=0.2.2"
     _LINK = jl("tf_114_gast")
@@ -81,7 +81,7 @@ class TensorFlow114GastStep(Step):
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Suggest not to use gast>0.2.2 with TensorFlow<1.14."""
-        if package_version.name != "gast" or package_version.semantic_version.release[:3] <= (0, 2, 2):
+        if package_version.semantic_version.release[:3] <= (0, 2, 2):
             return None
 
         tensorflow_any = (
