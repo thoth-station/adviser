@@ -37,6 +37,12 @@ class TestOneVersionStride(AdviserUnitTestCase):
     def test_verify_multiple_should_include(self) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
 
+    def test_default_configuration(self) -> None:
+        """Test instantiation the pipeline unit fails with the default configuration."""
+        unit_instance = self.UNIT_TESTED()
+        with pytest.raises(PipelineUnitConfigurationSchemaError):
+            unit_instance.update_configuration({})
+
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test no inclusion of this pipeline unit."""
         assert OneVersionStride.should_include(builder_context) is None

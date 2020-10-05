@@ -172,6 +172,11 @@ class AdviserUnitTestCase(AdviserTestCase):
                     isinstance(package_name, str) and len(unit.configuration["package_name"]) > 0
                 ), f"Unit {self.UNIT_TESTED.__name__!r} does not provide required package_version configuration option"
 
+    def test_default_configuration(self) -> None:
+        """Test instantiation the pipeline unit succeeds with default configuration."""
+        unit_instance = self.UNIT_TESTED()
+        unit_instance.update_configuration({})
+
     def test_super_pre_run(self, context: Context) -> None:
         """Make sure the pre-run method of the base is called."""
         if self.UNIT_TESTED is None or not issubclass(self.UNIT_TESTED, (Pseudonym, Sieve, Step)):
