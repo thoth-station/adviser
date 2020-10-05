@@ -55,8 +55,8 @@ configuration that should be applied to pipeline unit instance (an empty
 dictionary if no configuration changes are applied to the default pipeline
 configuration but the pipeline unit should be included in the pipeline
 configuration). The default configuration is provided by pipeline in a
-dictionary available as a class attribute in `Unit.CONFIGURATION_DEFAULT`. See
-:ref:`unit configuration section <unit_configuration>`.
+dictionary available as a class attribute in ``Unit.CONFIGURATION_DEFAULT``.
+See :ref:`unit configuration section <unit_configuration>`.
 
 The pipeline configuration creation is done in multiple rounds so
 :class:`PipelineBuilderContext
@@ -83,11 +83,10 @@ defined by providing :py:attr:`Unit.CONFIGURATION_SCHEMA
 configuration type - this schema is used to verify unit configuration
 correctness on unit instantiation.
 
-Note units of type :ref:`pseudonym <pseudonyms>`, :ref:`sieve <sieves>` and
-:ref:`step <steps>` have to provide "``package_name``" configuration in the
-configuration to state on which package they operate on. This configuration
-option can be ``None`` for :ref:`sieve <sieves>` and :ref:`step <steps>`
-pipeline units. See unit specific documentation for more info.
+Note units of type :ref:`pseudonym <pseudonyms>` and have to provide
+"``package_name``" configuration in the unit configuration to state on which
+package they operate on. Other pipeline units can default to ``None``. See unit
+specific documentation for more info.
 
 Pipeline unit configuration is then accessible via :func:`Unit.configuration
 <thoth.adviser.unit.Unit.configuration>` property on a unit instance which

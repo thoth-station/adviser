@@ -38,6 +38,20 @@ Real world examples
   some performance improvement
   <https://developers.redhat.com/blog/2020/06/25/red-hat-enterprise-linux-8-2-brings-faster-python-3-8-run-speeds/>`_.
 
+Triggering unit for a specific package
+======================================
+
+To help with scaling the recommendation engine when it comes to number of
+pipeline units possibly registered, it is a good practice to state to which
+package the given unit corresponds. To run the pipeline unit for a specific
+package, this fact should be reflected in the pipeline unit configuration by
+stating ``package_name`` configuration option. An example can be a pipeline
+unit specific for TensorFlow packages, which should state ``package_name:
+"tensorflow"`` in the pipeline configuration.
+
+If the pipeline unit is generic for any package, the ``package_name``
+configuration has to default to ``None``.
+
 Justifications in the recommended software stacks
 =================================================
 
@@ -63,6 +77,8 @@ An example implementation
 
   class NoSemanticInterpositionWrap(Wrap):
       """A wrap that recommends to switch to Python 3.8 on RHEL 8.2."""
+
+      CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None}  # The pipeline unit is not specific to any package.
 
       _JUSTIFICATION = [
         {
@@ -92,7 +108,7 @@ An example implementation
 
       def run(self, state: State) -> None:
           """Recommend using Python3.8 on RHEL/UBI 8.2."""
-          state.add_justification(self._JUSTIFICATION
+          state.add_justification(self._JUSTIFICATION)
 
 The implementation can also provide other methods, such as :func:`Unit.pre_run
 <thoth.adviser.unit.Unit.post_run>`, :func:`Unit.post_run
