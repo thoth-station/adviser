@@ -137,10 +137,17 @@ Resolution process as Markov Decision Process
 =============================================
 
 The whole resolution process can be modeled as a Markov Decision Process (MDP)
-thus the reinforcement learning principles stated above can apply. Recommending
-the best possible set of packages than corresponds to solving the given MDP.
-See `Thoth's documentation for more info
+thus the reinforcement learning (RL) principles stated above can apply.
+Recommending the best possible set of packages than corresponds to solving the
+given MDP.  See `Thoth's documentation for more info
 <https://thoth-station.ninja/docs/developers/adviser/introduction.html>`__.
+
+To obey terms often used in the reinforcement learning terminology, Predictor
+can be seen as an agent. Resolver and Software stack resolution pipeline can be
+seen as entities that interact with the environment. Names used in Thoth
+intentionally do not correspond to RL terminology as RL based resolution is
+just one of the possible resolutions that can be implemented (others can be
+hill-climbing, random walks in the dependency graph, ...).
 
 **See also:**
 
