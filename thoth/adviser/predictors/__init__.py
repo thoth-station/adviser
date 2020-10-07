@@ -21,6 +21,7 @@ from .annealing import AdaptiveSimulatedAnnealing
 from .hill_climbing import HillClimbing
 from .latest import ApproximatingLatest
 from .mcts import MCTS
+from .nn import NN
 from .package_combinations import PackageCombinations
 from .random_walk import RandomWalk
 from .sampling import Sampling
@@ -32,6 +33,7 @@ __all__ = [
     "ApproximatingLatest",
     "HillClimbing",
     "MCTS",
+    "NN",
     "PackageCombinations",
     "RandomWalk",
     "Sampling",

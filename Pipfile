@@ -1,4 +1,9 @@
 [[source]]
+url ="https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/"
+verify_ssl = true
+name = "tf-redhat-aicoe"
+
+[[source]]
 name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
@@ -26,6 +31,8 @@ pyyaml = "*"
 packaging = "*"
 voluptuous = "*"
 fext = ">=0.2.0"
+tensorflow = {version="==2.2.0", index="tf-redhat-aicoe"}
+jupyterlab = "*"
 
 [requires]
 python_version = "3.6"
