@@ -186,62 +186,6 @@ class TestTemporalDifference(AdviserTestCase):
 
         assert predictor._do_exploitation(state) == random_unresolved_dependency
 
-    def test_policy_size_no_shrink(self, context: Context) -> None:
-        """Test limiting policy size over runs."""
-        predictor = TemporalDifference()
-
-        predictor._policy = {
-            ("numpy", "2.0.0", "https://pypi.org/simple"): [1.0, 100],
-            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [2.0, 100],
-        }
-
-        rewarded = list(predictor._policy.keys())[0]  # numpy
-        state = flexmock()
-        state.should_receive("iter_resolved_dependencies").with_args().and_return([rewarded]).once()
-
-        # No shrink as we are in this iteration.
-        context.iteration = td_module._TD_POLICY_SIZE_CHECK_ITERATION + 1
-        old_policy_size = td_module._TD_POLICY_SIZE
-        with predictor.assigned_context(context):
-            try:
-                td_module._TD_POLICY_SIZE = 1
-                predictor.set_reward_signal(state, rewarded, 1.0)
-            finally:
-                td_module._TD_POLICY_SIZE = old_policy_size
-
-        assert predictor._policy == {
-            ("numpy", "2.0.0", "https://pypi.org/simple"): [1.0 + 1.0, 100 + 1],
-            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [2.0, 100],
-        }
-
-    def test_policy_size_shrink(self, context: Context) -> None:
-        """Test limiting policy size over runs."""
-        predictor = TemporalDifference()
-
-        predictor._policy = {
-            ("numpy", "2.0.0", "https://pypi.org/simple"): [1.0, 100],
-            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [3.0, 100],
-        }
-
-        rewarded = list(predictor._policy.keys())[0]  # numpy
-        state = flexmock()
-        state.should_receive("iter_resolved_dependencies").with_args().and_return([rewarded]).once()
-
-        # No shrink as we are in this iteration.
-        context.iteration = 2 * td_module._TD_POLICY_SIZE_CHECK_ITERATION
-        old_policy_size = td_module._TD_POLICY_SIZE
-        with predictor.assigned_context(context):
-            try:
-                td_module._TD_POLICY_SIZE = 1
-                predictor.set_reward_signal(state, rewarded, 0.5)
-            finally:
-                td_module._TD_POLICY_SIZE = old_policy_size
-
-        # the numpy entry with a value of [1.5, 101] gets removed
-        assert predictor._policy == {
-            ("tensorflow", "2.0.0", "https://thoth-station.ninja/simple"): [3.0, 100],
-        }
-
     def test_run_exploration(self, context: Context) -> None:
         """Tests run when exploration is performed."""
         flexmock(TemporalDifference)
