@@ -32,11 +32,8 @@ from .td import TemporalDifference
 
 
 _LOGGER = logging.getLogger(__name__)
-# 0 means unlimited memory for policy learning.
-_MCTS_POLICY_SIZE = int(os.getenv("THOTH_MCTS_POLICY_SIZE", 0))
 # Percentage relative to `limit` for the heat-up part.
 _MCTS_HEAT_UP = int(os.getenv("THOTH_MCTS_HEAT_UP", 10))
-_MCTS_POLICY_SIZE_CHECK_ITERATION = 1024
 
 
 @attr.s(slots=True)
@@ -88,14 +85,6 @@ class MCTS(TemporalDifference):
 
         # We have reached a new final - get another next time.
         self._next_state = None
-
-        # We limit number of records stored from time to time. Using sorting in O(N*log(N)) from
-        # time to time appears to be much faster than keeping a min-heap queue with O(log(N)) overhead.
-        if _MCTS_POLICY_SIZE and self.context.iteration % _MCTS_POLICY_SIZE_CHECK_ITERATION == 0:
-            _LOGGER.warning("Shrinking learnt policy to %d entries", _MCTS_POLICY_SIZE)
-            self._policy = dict(
-                sorted(self._policy.items(), key=operator.itemgetter(1), reverse=True)[:_MCTS_POLICY_SIZE]
-            )
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Run MCTS with adaptive simulated annealing schedule."""
