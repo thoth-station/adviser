@@ -31,6 +31,8 @@ import logging
 
 import attr
 from thoth.python import PackageVersion
+from voluptuous import Schema
+from voluptuous import Required
 
 from ...state import State
 from ...step import Step
@@ -46,6 +48,11 @@ _LOGGER = logging.getLogger(__name__)
 @attr.s(slots=True)
 class MockScoreStep(Step):
     """A step that is mocking scoring of packages."""
+
+    # Assign probability is used to "assign" a score to the package to simulate knowledge
+    # coverage for packages resolved - 0.75 means ~75% of packages will have a score.
+    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): None, Required("assign_probability"): float})
+    CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None, "assign_probability": 0.75}
 
     _score_history = attr.ib(type=Dict[Tuple[str, str, str], float], factory=dict, init=False)
 
@@ -81,5 +88,8 @@ class MockScoreStep(Step):
         """Score the given package regardless of the state."""
         # Using seed set to process on the adviser run affects this call - so adviser
         # with same seed set shared scores generated across runs.
-        score = self._score_history.setdefault(package_version.to_tuple(), random.uniform(-1.0, 1.0))
+        score = self._score_history.setdefault(
+            package_version.to_tuple(),
+            random.uniform(-1.0, 1.0) if random.random() >= self.configuration["assign_probability"] else 0.0,
+        )
         return score, None
