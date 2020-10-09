@@ -30,7 +30,6 @@ from thoth.adviser.context import Context
 from thoth.adviser.predictors import TemporalDifference
 from thoth.adviser.predictors import AdaptiveSimulatedAnnealing
 from thoth.adviser.state import State
-import thoth.adviser.predictors.td as td_module
 
 from ..base import AdviserTestCase
 

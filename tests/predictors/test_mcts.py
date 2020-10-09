@@ -25,7 +25,6 @@ import pytest
 from thoth.adviser.context import Context
 from thoth.adviser.predictors import MCTS
 from thoth.adviser.predictors import TemporalDifference
-import thoth.adviser.predictors.mcts as mcts_module
 
 from ..base import AdviserTestCase
 
