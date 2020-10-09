@@ -373,13 +373,13 @@ class PipelineBuilder:
         import thoth.adviser.wraps
 
         boots: Dict[Optional[str], List[Boot]] = {}
-        for boot_entry in dict_.pop("boots") or []:
+        for boot_entry in dict_.pop("boots", []) or []:
             boot_unit: Boot = cls._do_instantiate_from_dict(thoth.adviser.boots, boot_entry)  # type: ignore
             package_name = boot_unit.configuration.get("package_name")
             boots.setdefault(package_name, []).append(boot_unit)
 
         pseudonyms: Dict[str, List[Pseudonym]] = {}
-        for pseudonym_entry in dict_.pop("pseudonyms") or []:
+        for pseudonym_entry in dict_.pop("pseudonyms", []) or []:
             unit: Pseudonym = cls._do_instantiate_from_dict(thoth.adviser.pseudonyms, pseudonym_entry)  # type: ignore
 
             package_name = unit.configuration.get("package_name")
@@ -392,25 +392,25 @@ class PipelineBuilder:
             pseudonyms.setdefault(package_name, []).append(unit)
 
         sieves: Dict[Optional[str], List[Sieve]] = {}
-        for sieve_entry in dict_.pop("sieves") or []:
+        for sieve_entry in dict_.pop("sieves", []) or []:
             sieve_unit: Sieve = cls._do_instantiate_from_dict(thoth.adviser.sieves, sieve_entry)  # type: ignore
             package_name = sieve_unit.configuration.get("package_name")
             sieves.setdefault(package_name, []).append(sieve_unit)
 
         steps: Dict[Optional[str], List[Step]] = {}
-        for step_entry in dict_.pop("steps") or []:
+        for step_entry in dict_.pop("steps", []) or []:
             step_unit: Step = cls._do_instantiate_from_dict(thoth.adviser.steps, step_entry)  # type: ignore
             package_name = step_unit.configuration.get("package_name")
             steps.setdefault(package_name, []).append(step_unit)
 
         strides: Dict[Optional[str], List[Stride]] = {}
-        for stride_entry in dict_.pop("strides") or []:
+        for stride_entry in dict_.pop("strides", []) or []:
             stride_unit: Stride = cls._do_instantiate_from_dict(thoth.adviser.strides, stride_entry)  # type: ignore
             package_name = stride_unit.configuration.get("package_name")
             strides.setdefault(package_name, []).append(stride_unit)
 
         wraps: Dict[Optional[str], List[Wrap]] = {}
-        for wrap_entry in dict_.pop("wraps") or []:
+        for wrap_entry in dict_.pop("wraps", []) or []:
             wrap_unit: Wrap = cls._do_instantiate_from_dict(thoth.adviser.wraps, wrap_entry)  # type: ignore
             package_name = wrap_unit.configuration.get("package_name")
             wraps.setdefault(package_name, []).append(wrap_unit)
