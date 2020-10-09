@@ -38,24 +38,48 @@ _LOGGER = logging.getLogger(__name__)
 class TemporalDifference(AdaptiveSimulatedAnnealing):
     """Implementation of Temporal Difference (TD) based predictor with adaptive simulated annealing schedule."""
 
+    step = attr.ib(type=int, default=1, kw_only=True)
     _policy = attr.ib(type=Dict[Tuple[str, str, str], List[Union[float, int]]], factory=dict, init=False)
+    _steps_reward = attr.ib(type=float, default=0.0, init=False)
+    _steps_taken = attr.ib(type=int, default=0, init=False)
+
+    @step.validator
+    def _step_validator(self, _: str, value: int) -> None:
+        """Validate step parameter for n-step TD-learning."""
+        if not isinstance(value, int):
+            raise ValueError(f"Unknown type for TD n-step: {type(value)}")
+
+        if value < 1:
+            raise ValueError(f"Step set to {value} is not valid for n-step TD-learning")
 
     def pre_run(self) -> None:
         """Initialize pre-running of this predictor."""
         super().pre_run()
         self._policy.clear()
         self._temperature = float(self.context.limit)
+        self._steps_taken = 0
+        self._steps_reward = 0.0
 
     def set_reward_signal(self, state: State, _: Tuple[str, str, str], reward: float) -> None:
         """Note down reward signal of the last action performed."""
         if math.isnan(reward) or math.isinf(reward):
-            # Do not take into account final states or states not leading to correct resolution.
+            # Do not take into account final states or states not leading to incorrect resolution.
+            # If an invalid resolution is made, n-step TD learning does not update policy for partial steps.
+            self._steps_taken = 0
+            self._steps_reward = 0.0
+            return
+
+        self._steps_reward += reward
+        if self._steps_taken < self.step:
             return
 
         for package_tuple in state.iter_resolved_dependencies():
             record = self._policy.setdefault(package_tuple, [0.0, 0])
-            record[0] += reward
+            record[0] += self._steps_reward
             record[1] += 1
+
+        self._steps_taken = 0  # Set back to zero as we update policy.
+        self._steps_reward = 0.0
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Run Temporal Difference (TD) with adaptive simulated annealing schedule."""
@@ -89,6 +113,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
                 )
             )
 
+        self._steps_taken += 1
         return state, unresolved_dependency_tuple
 
     def _do_exploitation(self, state: State) -> Tuple[str, str, str]:
