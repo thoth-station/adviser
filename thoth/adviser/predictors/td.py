@@ -34,10 +34,6 @@ from ..state import State
 
 
 _LOGGER = logging.getLogger(__name__)
-# 0 means unlimited memory for policy learning.
-_TD_POLICY_SIZE = int(os.getenv("THOTH_TD_POLICY_SIZE", 0))
-# How often the policy should be checked for shrinking.
-_TD_POLICY_SIZE_CHECK_ITERATION = 1024
 
 
 @attr.s(slots=True)
@@ -62,14 +58,6 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
             record = self._policy.setdefault(package_tuple, [0.0, 0])
             record[0] += reward
             record[1] += 1
-
-        # We limit number of records stored from time to time. Using sorting in O(N*log(N)) from
-        # time to time appears to be much faster than keeping a min-heap queue with O(log(N)) overhead.
-        if _TD_POLICY_SIZE and self.context.iteration % _TD_POLICY_SIZE_CHECK_ITERATION == 0:
-            _LOGGER.debug("Shrinking learnt policy to %d entries", _TD_POLICY_SIZE)
-            self._policy = dict(
-                sorted(self._policy.items(), key=operator.itemgetter(1), reverse=True)[:_TD_POLICY_SIZE]
-            )
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Run Temporal Difference (TD) with adaptive simulated annealing schedule."""
