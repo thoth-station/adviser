@@ -17,11 +17,9 @@
 
 """Implementation of steps used for debugging the application."""
 
+from .generate_score import GenerateScoreStep
 from .mock_score import MockScoreStep
 from .set_score import SetScoreStep
 
 
-__all__ = [
-    "MockScoreStep",
-    "SetScoreStep",
-]
+__all__ = ["MockScoreStep", "SetScoreStep", "GenerateScoreStep"]
