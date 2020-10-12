@@ -28,6 +28,7 @@ from functools import partial
 
 import attr
 import amun
+import matplotlib
 from thoth.python import Project
 
 from .beam import Beam
@@ -59,6 +60,10 @@ class DependencyMonkey:
     def beam(self) -> Beam:
         """Get beam instance used in the resolver."""
         return self.resolver.beam
+
+    def plot(self) -> matplotlib.figure.Figure:
+        """Plot info from Dependency Monkey run."""
+        return self.resolver.plot()
 
     def resolve(self, *, with_devel: bool = True, user_stack_scoring: bool = False) -> DependencyMonkeyReport:
         """Perform simulated annealing and run dependency monkey on products."""
