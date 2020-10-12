@@ -1166,7 +1166,7 @@ class Resolver:
                 if (self.context.accepted_final_states_count - 1) % self.log_final_state_count == 0:
                     _LOGGER.info(
                         "Pipeline reached %d final states out of %d requested in iteration %d "
-                        "(pipeline pace %.02f stacks/second), top rated software stack has a score of %s",
+                        "(pipeline pace %.02f stacks/second), top rated software stack in beam has a score of %s",
                         self.context.accepted_final_states_count,
                         self.context.limit,
                         self.context.iteration,
