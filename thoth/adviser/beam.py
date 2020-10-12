@@ -164,6 +164,7 @@ class Beam:
 
     def wipe(self) -> None:
         """Remove all states from beam."""
+        self._beam_history.clear()
         self._heap.clear()
 
     def iter_states(self) -> List[State]:
