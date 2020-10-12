@@ -654,8 +654,8 @@ class Resolver:
             _LOGGER.warning("Resolver failed as it was unable to resolve direct dependencies, see %s", jl("unresolved"))
             raise UnresolvedDependencies("Unable to resolve all direct dependencies", unresolved=unresolved)
 
-        # Now we are free to de-instantiate solver.
-        del self._solver
+        # Now we are free to de-instantiate solver to save some memory.
+        self._solver = None
 
         return resolved_direct_dependencies
 
