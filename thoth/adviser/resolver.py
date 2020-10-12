@@ -1253,7 +1253,7 @@ class Resolver:
 
         host.set_xlabel("iteration")
         host.set_ylabel("Score of the resolved stack")
-        par1.set_ylabel("Highest score of the resolved stack")
+        par1.set_ylabel("Score of the best resolved stack found")
 
         host.yaxis.label.set_color(p1.get_color())
         par1.yaxis.label.set_color(p2.get_color())
