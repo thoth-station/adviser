@@ -42,13 +42,15 @@ _LOGGER = logging.getLogger(__name__)
 class AdaptiveSimulatedAnnealing(Predictor):
     """Implementation of adaptive simulated annealing looking for stacks based on the scoring function."""
 
+    temperature_coefficient = attr.ib(type=float, default=0.999, kw_only=True)
+
     _temperature_history = attr.ib(type=List[Tuple[float, bool, float, int]], factory=list, kw_only=True,)
     _temperature = attr.ib(type=float, kw_only=True, default=0.0)
 
     def _temperature_function(self, t0: float, context: Context) -> float:
         """Temperature function used to compute new temperature."""
         k = (context.accepted_final_states_count + math.log(context.iteration + 1)) / context.limit
-        temperature = t0 * 0.97 ** k
+        temperature = t0 * self.temperature_coefficient ** k
         _LOGGER.debug(
             "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, beam size= %d, k=%f) = %g",
             context.iteration,
