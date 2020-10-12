@@ -118,6 +118,7 @@ class TestTemporalDifference(AdviserTestCase):
             ("numpy", "1.0.0", "https://pypi.org/simple"): [30.30, 92],
         }
 
+        predictor._steps_taken = 1
         predictor.set_reward_signal(state, None, reward)
 
         assert predictor._policy == {
@@ -139,6 +140,7 @@ class TestTemporalDifference(AdviserTestCase):
             ("numpy", "1.0.0", "https://pypi.org/simple"): [30.30, 92],
         }
 
+        predictor._steps_taken = 1
         predictor.set_reward_signal(state, None, reward)
 
         assert predictor._policy == {
@@ -218,10 +220,12 @@ class TestTemporalDifference(AdviserTestCase):
         ).and_return(0.75).once()
         context.beam.should_receive("max").with_args().and_return(max_state).and_return(max_state).twice()
 
-        predictor = TemporalDifference()
+        predictor = TemporalDifference(step=1)
+        predictor._steps_taken = 0
         predictor._temperature = 1.0
         with predictor.assigned_context(context):
             assert predictor.run() == (probable_state, unresolved_dependency)
+            assert predictor._steps_taken == 1
 
     def test_run_exploitation(self, context: Context) -> None:
         """Tests run when exploitation is performed."""
@@ -254,7 +258,61 @@ class TestTemporalDifference(AdviserTestCase):
         ).and_return(0.75).once()
         context.beam.should_receive("max").with_args().and_return(max_state).and_return(max_state).twice()
 
-        predictor = TemporalDifference()
+        predictor = TemporalDifference(step=1)
         predictor._temperature = 1.0
+        predictor._steps_taken = 0
         with predictor.assigned_context(context):
             assert predictor.run() == (max_state, unresolved_dependency)
+            assert predictor._steps_taken == 1
+
+    def test_validation(self) -> None:
+        """Test validation of configuration supplied for n-step TD-learning."""
+        with pytest.raises(ValueError):
+            TemporalDifference(step=0)
+
+        with pytest.raises(ValueError):
+            TemporalDifference(step=-3)
+
+        with pytest.raises(ValueError):
+            TemporalDifference(step="foo")
+
+    def test_step_default(self) -> None:
+        """Test default parameter for step."""
+        predictor = TemporalDifference()
+        assert predictor.step == 1
+        assert predictor._steps_taken == 0
+
+    def test_n_step_td_step_adjust(self, context: Context) -> None:
+        """Test adjusting steps taken on reward signal propagation."""
+        predictor = TemporalDifference(step=1)
+        predictor._temperature = 1.0
+        predictor._steps_taken = 1
+        package_tuple = ("tensorflow", "2.3.1", "https://pypi.org/simple")
+        state = State()
+        state.add_resolved_dependency(package_tuple)
+        with predictor.assigned_context(context):
+            predictor.set_reward_signal(state, package_tuple, 0.33)
+
+        assert predictor._policy.get(package_tuple) == [0.33, 1]
+        assert predictor._steps_taken == 0
+
+    def test_n_step_td_step_no_adjust(self, context: Context) -> None:
+        """Test adjusting steps taken on reward signal propagation."""
+        predictor = TemporalDifference(step=1)
+        predictor._temperature = 1.0
+        predictor._steps_taken = 0
+        package_tuple = ("tensorflow", "2.3.1", "https://pypi.org/simple")
+        state = State()
+        state.add_resolved_dependency(package_tuple)
+        with predictor.assigned_context(context):
+            predictor.set_reward_signal(state, package_tuple, 0.33)
+
+        assert predictor._policy.get(package_tuple) is None
+
+        predictor._steps_taken = 1
+
+        with predictor.assigned_context(context):
+            predictor.set_reward_signal(state, package_tuple, 0.2)
+
+        assert predictor._policy.get(package_tuple) == [0.53, 1]
+        assert predictor._steps_taken == 0
