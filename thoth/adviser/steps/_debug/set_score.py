@@ -24,11 +24,14 @@ from typing import List
 from typing import Dict
 from typing import TYPE_CHECKING
 import logging
+import random
 
 import attr
 from thoth.python import PackageVersion
-from voluptuous import Schema
+from voluptuous import Any as SchemaAny
+from voluptuous import Optional as SchemaOptional
 from voluptuous import Required
+from voluptuous import Schema
 
 from ...state import State
 from ...step import Step
@@ -52,20 +55,27 @@ class SetScoreStep(Step):
             Required("package_name"): str,
             Required("package_version"): str,
             Required("index_url"): str,
-            Required("score"): float,
+            SchemaOptional("score"): SchemaAny(float, None),
         }
     )
     CONFIGURATION_DEFAULT: Dict[str, Any] = {
         "package_name": None,
         "package_version": None,
         "index_url": None,
-        "score": 0.0,
+        "score": None,
     }
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, never."""
         return None
+
+    def pre_run(self) -> None:
+        """Initialize this pipeline unit before each run."""
+        if self.configuration["score"] is None:
+            self.configuration["score"] = random.uniform(-1.0, 1.0)
+
+        super().pre_run()
 
     def run(
         self, _: State, package_version: PackageVersion
