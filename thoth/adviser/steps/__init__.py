@@ -29,7 +29,8 @@ from .tensorflow import TensorFlow114GastStep
 from .tensorflow import TensorFlow22NumPyStep
 from .tensorflow import TensorFlowRemoveSciPyStep
 
-# from ._debug import MockScoreStep
+from ._debug import MockScoreStep
+from ._debug import SetScoreStep
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -40,7 +41,8 @@ __all__ = [
     "CvePenalizationStep",
     "DropoutStep",
     "SecurityIndicatorStep",
-    # "MockScoreStep",
+    "MockScoreStep",
+    "SetScoreStep",
     "TensorFlow21Urllib3Step",
     "TensorFlow22ProbabilityStep",
     "TensorFlowAVX2Step",
