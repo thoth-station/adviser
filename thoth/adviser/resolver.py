@@ -35,6 +35,9 @@ import contextlib
 import signal
 import weakref
 
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.python import Project
@@ -49,6 +52,7 @@ from .exceptions import BootError
 from .exceptions import CannotProduceStack
 from .exceptions import EagerStopPipeline
 from .exceptions import NotAcceptable
+from .exceptions import NoHistoryKept
 from .exceptions import SkipPackage
 from .exceptions import SieveError
 from .exceptions import StepError
@@ -173,6 +177,8 @@ class Resolver:
     _beam = attr.ib(type=Optional[Beam], kw_only=True, default=None)
     _solver = attr.ib(type=Optional[PythonPackageGraphSolver], kw_only=True, default=None)
     _context = attr.ib(type=Optional[Context], default=None, kw_only=True)
+    _history = attr.ib(type=List[Optional[float]], factory=list, init=False)
+    _history_max = attr.ib(type=List[Optional[float]], factory=list, init=False)
 
     _log_unresolved = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), kw_only=True)
     _log_unsolved = attr.ib(type=Set[str], default=attr.Factory(set), kw_only=True)
@@ -1112,6 +1118,20 @@ class Resolver:
                     else:
                         self.context.discarded_final_states_count += 1
 
+                    self._history.append(state_returned.score)
+                    self._history_max.append(
+                        max(
+                            self._history_max[-1]
+                            if self._history_max and self._history_max[-1] is not None
+                            else state_returned.score,
+                            state_returned.score,
+                        )
+                    )
+                else:
+                    if self.beam.keep_history:
+                        self._history.append(None)
+                        self._history_max.append(self._history_max[-1] if self._history_max else None)
+
         if self.stop_resolving:
             _LOGGER.warning(
                 "Resolving stopped with the current beam size %d as the allocated CPU time was exhausted",
@@ -1128,6 +1148,8 @@ class Resolver:
             )
             self.count = self.limit
 
+        self._history.clear()
+        self._history_max.clear()
         self.predictor.pre_run()
         self.pipeline.call_pre_run()
 
@@ -1204,6 +1226,49 @@ class Resolver:
             self.pipeline.call_post_run_report(report)
 
         return report
+
+    def plot(self) -> matplotlib.figure.Figure:
+        """Plot history captured during the resolution process."""
+        if not self._history:
+            raise NoHistoryKept("No history datapoints kept")
+
+        x = [i for i in range(len(self._history))]
+        y1 = self._history
+        y2 = self._history_max
+
+        fig, host = plt.subplots()
+        fig.subplots_adjust(right=0.75)
+
+        par1 = host.twinx()
+
+        par1.spines["right"].set_position(("axes", 1.10))
+        self.beam._make_patch_spines_invisible(par1)
+
+        par1.spines["right"].set_visible(True)
+        host.spines["right"].set_visible(False)
+        host.spines["top"].set_visible(False)
+
+        (p1,) = host.plot(x, y1, ",g", label="Score of the resolved stack")
+        (p2,) = par1.plot(x, y2, ",b", label="The highest score")
+
+        host.set_xlabel("iteration")
+        host.set_ylabel("Score of the resolved stack")
+        par1.set_ylabel("Highest score of the resolved stack")
+
+        host.yaxis.label.set_color(p1.get_color())
+        par1.yaxis.label.set_color(p2.get_color())
+
+        tkw = dict(size=4, width=1.5)
+        host.tick_params(axis="y", colors=p1.get_color(), **tkw)
+        host.tick_params(axis="x", **tkw)
+        par1.tick_params(axis="y", colors=p2.get_color(), **tkw)
+
+        font_prop = FontProperties()
+        font_prop.set_size("medium")
+        fig.legend(
+            loc="upper center", bbox_to_anchor=(0.50, 1.00), ncol=2, fancybox=True, shadow=True, prop=font_prop,
+        )
+        return fig
 
     @classmethod
     def get_adviser_instance(

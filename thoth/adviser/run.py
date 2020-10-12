@@ -82,11 +82,12 @@ def subprocess_run(
 
                 predictor_history_file = f"{file_name}_{resolver.predictor.__class__.__name__}.{extension}"
                 beam_history_file = f"{file_name}_{resolver.beam.__class__.__name__}.{extension}"
+                resolver_history_file = f"{file_name}_resolver.{extension}"
                 try:
                     figure = resolver.predictor.plot()
                     figure.savefig(predictor_history_file, format=extension)
                 except Exception as exc:
-                    _LOGGER.exception("Failed to plot predictor history to %r: %s", plot, str(exc))
+                    _LOGGER.exception("Failed to plot predictor history to %r: %s", predictor_history_file, str(exc))
                 else:
                     _LOGGER.info("Predictor history saved to %r", predictor_history_file)
 
@@ -94,9 +95,17 @@ def subprocess_run(
                     figure = resolver.beam.plot()
                     figure.savefig(beam_history_file, format=extension)
                 except Exception as exc:
-                    _LOGGER.exception("Failed to plot beam history to %r: %s", plot, str(exc))
+                    _LOGGER.exception("Failed to plot beam history to %r: %s", beam_history_file, str(exc))
                 else:
                     _LOGGER.info("Beam history saved to %r", beam_history_file)
+
+                try:
+                    figure = resolver.plot()
+                    figure.savefig(resolver_history_file, format=extension)
+                except Exception as exc:
+                    _LOGGER.exception("Failed to plot resolver history to %r: %s", resolver_history_file, str(exc))
+                else:
+                    _LOGGER.info("Resolver history saved to %r", resolver_history_file)
 
             result_dict.update(dict(error=False, error_msg=None, report=report.to_dict()))
         except AdviserRunException as exc:
