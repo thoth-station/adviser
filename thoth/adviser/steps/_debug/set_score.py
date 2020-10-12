@@ -53,8 +53,8 @@ class SetScoreStep(Step):
     CONFIGURATION_SCHEMA: Schema = Schema(
         {
             Required("package_name"): str,
-            Required("package_version"): str,
-            Required("index_url"): str,
+            SchemaOptional("package_version"): SchemaAny(str, None),
+            SchemaOptional("index_url"): SchemaAny(str, None),
             SchemaOptional("score"): SchemaAny(float, None),
         }
     )
@@ -82,8 +82,10 @@ class SetScoreStep(Step):
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Score the given package."""
         if (
-            package_version.locked_version != self.configuration["package_version"]
-            or package_version.index.url != self.configuration["index_url"]
+            self.configuration["package_version"] is not None
+            and package_version.locked_version != self.configuration["package_version"]
+        ) or (
+            self.configuration["index_url"] is not None and package_version.index.url != self.configuration["index_url"]
         ):
             return None
 
