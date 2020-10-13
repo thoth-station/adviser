@@ -60,7 +60,7 @@ class ApproximatingLatest(HillClimbing):
             self._hop = True
             if not self._hop_logged:
                 _LOGGER.warning(
-                    "The latest stack couldn't be resolved, performing hops across package versions -see %s",
+                    "The latest stack couldn't be resolved, performing hops across package versions - see %s",
                     jl("latest_hops"),
                 )
                 self._hop_logged = True
