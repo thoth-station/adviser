@@ -1154,6 +1154,7 @@ class Resolver:
         self.pipeline.call_pre_run()
 
         start_time = time.monotonic()
+        max_score = None
         try:
             for final_state in self._do_resolve_states(with_devel=with_devel, user_stack_scoring=user_stack_scoring):
                 _LOGGER.debug(
@@ -1163,15 +1164,19 @@ class Resolver:
                     self.context.limit,
                 )
 
+                max_score = final_state.score if max_score is None else max(max_score, final_state.score)
+
                 if (self.context.accepted_final_states_count - 1) % self.log_final_state_count == 0:
                     _LOGGER.info(
                         "Pipeline reached %d final states out of %d requested in iteration %d "
-                        "(pipeline pace %.02f stacks/second), top rated software stack in beam has a score of %s",
+                        "(pipeline pace %.02f stacks/second); top rated software stack in beam has a score of %.2f; "
+                        "top rated software stack found so far has a score of %.2f",
                         self.context.accepted_final_states_count,
                         self.context.limit,
                         self.context.iteration,
                         self.context.accepted_final_states_count / (time.monotonic() - start_time),
-                        self.beam.max().score if self.beam.size > 0 else "N/A",
+                        self.beam.max().score if self.beam.size > 0 else float("nan"),
+                        max_score,
                     )
 
                 product = Product.from_final_state(context=self.context, state=final_state)
