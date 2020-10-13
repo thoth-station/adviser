@@ -25,8 +25,10 @@ from typing import Dict
 from typing import TYPE_CHECKING
 import logging
 import random
+import zlib
 
 import attr
+import numpy as np
 from thoth.python import PackageVersion
 from voluptuous import Any as SchemaAny
 from voluptuous import Optional as SchemaOptional
@@ -51,18 +53,32 @@ class GenerateScoreStep(Step):
     a need to store all the score for packages.
     """
 
+    MULTI_PACKAGE_RESOLUTIONS = False
+
     # Assign probability is used to "assign" a score to the package to simulate knowledge
     # coverage for packages resolved - 0.75 means ~75% of packages will have a score.
     CONFIGURATION_SCHEMA: Schema = Schema(
-        {SchemaOptional("package_name"): SchemaAny(str, None), SchemaOptional("assign_probability"): float}
+        {SchemaOptional("package_name"): SchemaAny(str, None), SchemaOptional("buffer_size"): int, SchemaOptional("seed"): int}
     )
-    CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None, "assign_probability": 0.75}
+    CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None, "buffer_size": 1024, "seed": 42}
 
     _history = attr.ib(type=Dict[Tuple[str, str, str], float], factory=dict, init=False)
+    _buffer = attr.ib(type=List[float], factory=list, init=False)
+    _idx = attr.ib(type=int, default=0, init=False)
 
     def pre_run(self) -> None:
         """Initialize this pipeline units before each run."""
         self._history.clear()
+        self._idx = 0
+
+        if not self._buffer:
+            state = random.getstate()
+            random.seed(self.configuration["seed"])
+            self._buffer = [0.0]*self.configuration["buffer_size"]
+            for i in range(self.configuration["buffer_size"]):
+                self._buffer[i] = random.uniform(self.SCORE_MIN, self.SCORE_MAX)
+            random.setstate(state)
+
         super().pre_run()
 
     @classmethod
@@ -80,12 +96,7 @@ class GenerateScoreStep(Step):
         if score is not None:
             return score, None
 
-        if random.random() < self.configuration["assign_probability"]:
-            self._history[package_tuple] = 0.0
-            return 0.0, None
-
-        old_state = random.getstate()
-        random.seed(",".join(package_tuple))
-        score = random.uniform(self.SCORE_MIN, self.SCORE_MAX)
-        random.setstate(old_state)
-        return score, None
+        idx = self._idx
+        self._idx = (self._idx + 1) % self.configuration["buffer_size"]
+        self._history[package_tuple] = self._buffer[idx]
+        return self._buffer[idx], None
