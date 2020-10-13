@@ -1161,7 +1161,10 @@ class Resolver:
 
                 max_score = final_state.score if max_score is None else max(max_score, final_state.score)
 
-                if self.context.iteration - last_iteration_logged > self.log_iteration or self.context.accepted_final_states_count == 1:
+                if (
+                    self.context.iteration - last_iteration_logged > self.log_iteration
+                    or self.context.accepted_final_states_count == 1
+                ):
                     _LOGGER.info(
                         "Pipeline reached %d final states out of %d requested in iteration %d "
                         "(pipeline pace %.02f stacks/second); top rated software stack in beam has a score of %.2f; "
@@ -1171,7 +1174,7 @@ class Resolver:
                         self.context.iteration,
                         self.context.accepted_final_states_count / (time.monotonic() - start_time),
                         self.beam.max().score if self.beam.size > 0 else float("nan"),
-                        float("nan") if max_score is None else max_score ,
+                        float("nan") if max_score is None else max_score,
                     )
                     last_iteration_logged = self.context.iteration
 
