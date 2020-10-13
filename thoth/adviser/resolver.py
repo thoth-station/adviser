@@ -1112,15 +1112,16 @@ class Resolver:
                     else:
                         self.context.discarded_final_states_count += 1
 
-                    self._history.append(state_returned.score)
-                    self._history_max.append(
-                        max(
-                            self._history_max[-1]
-                            if self._history_max and self._history_max[-1] is not None
-                            else state_returned.score,
-                            state_returned.score,
+                    if self.beam.keep_history:
+                        self._history.append(state_returned.score)
+                        self._history_max.append(
+                            max(
+                                self._history_max[-1]
+                                if self._history_max and self._history_max[-1] is not None
+                                else state_returned.score,
+                                state_returned.score,
+                            )
                         )
-                    )
                 else:
                     if self.beam.keep_history:
                         self._history.append(None)
