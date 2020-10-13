@@ -96,7 +96,7 @@ class MockScoreStep(Step):
         score = self._score_history.setdefault(
             package_version.to_tuple(),
             random.uniform(self.SCORE_MIN, self.SCORE_MAX)
-            if random.random() >= self.configuration["assign_probability"]
+            if random.random() <= self.configuration["assign_probability"]
             else 0.0,
         )
         return score, None
