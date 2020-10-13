@@ -46,6 +46,11 @@ class Predictor:
     _CONTEXT: Optional[Context] = None
 
     @classmethod
+    def obtain_default_configuration(cls, config_option_name: str) -> Any:
+        """Get the default value assigned to the given configuration option of a predictor instance."""
+        return getattr(cls.__attrs_attrs__, config_option_name).default  # type: ignore
+
+    @classmethod
     @contextmanager
     def assigned_context(cls, context: Context) -> Generator[None, None, None]:
         """Assign context to predictor."""
