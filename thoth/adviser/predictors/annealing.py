@@ -18,8 +18,9 @@
 """Implementation of Adaptive Simulated Annealing (ASA) used to resolve software stacks."""
 
 from typing import Any
-from typing import Tuple
 from typing import List
+from typing import Optional
+from typing import Tuple
 import logging
 import random
 import math
@@ -44,7 +45,9 @@ class AdaptiveSimulatedAnnealing(Predictor):
 
     temperature_coefficient = attr.ib(type=float, default=0.999, kw_only=True)
 
-    _temperature_history = attr.ib(type=List[Tuple[float, bool, float, int]], factory=list, kw_only=True,)
+    _temperature_history = attr.ib(
+        type=List[Tuple[Optional[float], Optional[bool], Optional[float], int]], factory=list, kw_only=True,
+    )
     _temperature = attr.ib(type=float, kw_only=True, default=0.0)
 
     def _temperature_function(self, t0: float, context: Context) -> float:
