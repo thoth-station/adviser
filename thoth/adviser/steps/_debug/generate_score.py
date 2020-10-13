@@ -25,6 +25,7 @@ from typing import Dict
 from typing import TYPE_CHECKING
 import logging
 import random
+from pprint import pprint
 
 import attr
 from thoth.python import PackageVersion
@@ -60,9 +61,15 @@ class GenerateScoreStep(Step):
             SchemaOptional("package_name"): SchemaAny(str, None),
             SchemaOptional("buffer_size"): int,
             SchemaOptional("seed"): int,
+            SchemaOptional("assign_probability"): float,
         }
     )
-    CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None, "buffer_size": 1024, "seed": 42}
+    CONFIGURATION_DEFAULT: Dict[str, Any] = {
+        "package_name": None,
+        "buffer_size": 1024,
+        "seed": 42,
+        "assign_probability": 0.75,
+    }
 
     _history = attr.ib(type=Dict[Tuple[str, str, str], float], factory=dict, init=False)
     _buffer = attr.ib(type=List[float], factory=list, init=False)
@@ -78,10 +85,18 @@ class GenerateScoreStep(Step):
             random.seed(self.configuration["seed"])
             self._buffer = [0.0] * self.configuration["buffer_size"]
             for i in range(self.configuration["buffer_size"]):
-                self._buffer[i] = random.uniform(self.SCORE_MIN, self.SCORE_MAX)
+                self._buffer[i] = (
+                    random.uniform(self.SCORE_MIN, self.SCORE_MAX)
+                    if random.random() <= self.configuration["assign_probability"]
+                    else 0.0
+                )
             random.setstate(state)
 
         super().pre_run()
+
+    def post_run(self) -> None:
+        """Print the generated scores on finish to stdout."""
+        pprint(self._history)
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
