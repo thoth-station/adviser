@@ -48,6 +48,8 @@ _LOGGER = logging.getLogger(__name__)
 class SetScoreStep(Step):
     """A step that is setting score for packages."""
 
+    MULTI_PACKAGE_RESOLUTIONS = False
+
     # Assign probability is used to "assign" a score to the package to simulate knowledge
     # coverage for packages resolved - 0.75 means ~75% of packages will have a score.
     CONFIGURATION_SCHEMA: Schema = Schema(
@@ -73,7 +75,7 @@ class SetScoreStep(Step):
     def pre_run(self) -> None:
         """Initialize this pipeline unit before each run."""
         if self.configuration["score"] is None:
-            self.configuration["score"] = random.uniform(-1.0, 1.0)
+            self.configuration["score"] = random.uniform(self.SCORE_MIN, self.SCORE_MAX)
 
         super().pre_run()
 
