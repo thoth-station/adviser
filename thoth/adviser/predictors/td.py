@@ -21,6 +21,7 @@ from typing import Dict
 from typing import List
 from typing import Tuple
 from typing import Union
+from typing import Optional
 import logging
 import math
 import random
@@ -42,6 +43,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
     _policy = attr.ib(type=Dict[Tuple[str, str, str], List[Union[float, int]]], factory=dict, init=False)
     _steps_reward = attr.ib(type=float, default=0.0, init=False)
     _steps_taken = attr.ib(type=int, default=0, init=False)
+    _next_state = attr.ib(type=Optional[State], default=None, init=False)
 
     @step.validator
     def _step_validator(self, _: str, value: int) -> None:
@@ -59,18 +61,17 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
         self._temperature = float(self.context.limit)
         self._steps_taken = 0
         self._steps_reward = 0.0
+        self._next_state = None
 
     def set_reward_signal(self, state: State, _: Tuple[str, str, str], reward: float) -> None:
         """Note down reward signal of the last action performed."""
-        if math.isnan(reward) or math.isinf(reward):
-            # Do not take into account final states or states not leading to incorrect resolution.
-            # If an invalid resolution is made, n-step TD learning does not update policy for partial steps.
-            self._steps_taken = 0
-            self._steps_reward = 0.0
-            return
+        trajectory_end = math.isnan(reward) or math.isinf(reward)
+        if trajectory_end:
+            self._next_state = None
+            reward = 0.0
 
         self._steps_reward += reward
-        if self._steps_taken < self.step:
+        if self._steps_taken < self.step and not trajectory_end:
             return
 
         for package_tuple in state.iter_resolved_dependencies():
@@ -85,36 +86,40 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
         """Run Temporal Difference (TD) with adaptive simulated annealing schedule."""
         self._temperature = self._temperature_function(self._temperature, self.context)
 
-        # Expand highest promising by default.
-        max_state = self.context.beam.max()
+        if self._next_state is not None:
+            unresolved_dependency_tuple = self._do_exploitation(self._next_state)
+            if self.keep_history:
+                self._temperature_history.append((None, None, None, self.context.accepted_final_states_count))
+            return self._next_state, unresolved_dependency_tuple
+
+        self._next_state = self.context.beam.max()
 
         # Pick a random state to be expanded if accepted.
         probable_state_idx = random.randrange(1, self.context.beam.size) if self.context.beam.size > 1 else 0
         probable_state = self.context.beam.get(probable_state_idx)
         acceptance_probability = self._compute_acceptance_probability(
-            max_state.score, probable_state.score, self._temperature
+            self._next_state.score, probable_state.score, self._temperature
         )
 
         if acceptance_probability >= random.random():
             # Perform exploration.
-            state = probable_state
-            unresolved_dependency_tuple = state.get_random_unresolved_dependency(prefer_recent=True)
+            unresolved_dependency_tuple = probable_state.get_random_unresolved_dependency(prefer_recent=True)
+            self._next_state = probable_state
         else:
-            state = max_state
-            unresolved_dependency_tuple = self._do_exploitation(max_state)
+            unresolved_dependency_tuple = self._do_exploitation(self._next_state)
 
         if self.keep_history:
             self._temperature_history.append(
                 (
                     self._temperature,
-                    state is self.context.beam.max(),
+                    self._next_state is self.context.beam.max(),
                     acceptance_probability,
                     self.context.accepted_final_states_count,
                 )
             )
 
         self._steps_taken += 1
-        return state, unresolved_dependency_tuple
+        return self._next_state, unresolved_dependency_tuple
 
     def _do_exploitation(self, state: State) -> Tuple[str, str, str]:
         """Perform expansion of a highest rated stack with action that should yield highest reward."""
