@@ -172,7 +172,7 @@ class Resolver:
 
     cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict), kw_only=True)
     stop_resolving = attr.ib(type=bool, default=False, kw_only=True)
-    log_final_state_count = attr.ib(type=int, kw_only=True)
+    log_iteration = attr.ib(type=int, kw_only=True, default=os.getenv("THOTH_ADVISER_LOG_ITERATION", 5000))
 
     _beam = attr.ib(type=Optional[Beam], kw_only=True, default=None)
     _solver = attr.ib(type=Optional[PythonPackageGraphSolver], kw_only=True, default=None)
@@ -196,12 +196,6 @@ class Resolver:
 
         if value <= 0:
             raise ValueError(f"Value for attribute {attribute!r} should be a positive integer, got {value} instead")
-
-    @log_final_state_count.default
-    def _log_final_state_count_default(self) -> int:
-        """Determine how often the pipeline should log about its progress."""
-        # Log each 10% by default.
-        return int(os.getenv("THOTH_ADVISER_LOG_FINAL_STATE_COUNT", self.limit // 10)) or 1
 
     @property
     def context(self) -> Context:
@@ -1166,7 +1160,7 @@ class Resolver:
 
                 max_score = final_state.score if max_score is None else max(max_score, final_state.score)
 
-                if (self.context.accepted_final_states_count - 1) % self.log_final_state_count == 0:
+                if self.context.iteration % self.log_iteration == 0 or self.context.accepted_final_states_count == 1:
                     _LOGGER.info(
                         "Pipeline reached %d final states out of %d requested in iteration %d "
                         "(pipeline pace %.02f stacks/second); top rated software stack in beam has a score of %.2f; "
@@ -1176,7 +1170,7 @@ class Resolver:
                         self.context.iteration,
                         self.context.accepted_final_states_count / (time.monotonic() - start_time),
                         self.beam.max().score if self.beam.size > 0 else float("nan"),
-                        max_score,
+                        float("nan") if max_score is None else max_score ,
                     )
 
                 product = Product.from_final_state(context=self.context, state=final_state)
