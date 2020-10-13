@@ -172,7 +172,7 @@ class Resolver:
 
     cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict), kw_only=True)
     stop_resolving = attr.ib(type=bool, default=False, kw_only=True)
-    log_iteration = attr.ib(type=int, kw_only=True, default=os.getenv("THOTH_ADVISER_LOG_ITERATION", 5000))
+    log_iteration = attr.ib(type=int, kw_only=True, default=int(os.getenv("THOTH_ADVISER_LOG_ITERATION", 7500)))
 
     _beam = attr.ib(type=Optional[Beam], kw_only=True, default=None)
     _solver = attr.ib(type=Optional[PythonPackageGraphSolver], kw_only=True, default=None)
@@ -1149,10 +1149,11 @@ class Resolver:
 
         start_time = time.monotonic()
         max_score = None
+        last_iteration_logged = 0
         try:
             for final_state in self._do_resolve_states(with_devel=with_devel, user_stack_scoring=user_stack_scoring):
                 _LOGGER.debug(
-                    "Pipeline reached a new final state, yielding pipeline product " "with a score of %g - %d/%d",
+                    "Pipeline reached a new final state, yielding pipeline product with a score of %g - %d/%d",
                     final_state.score,
                     self.context.accepted_final_states_count,
                     self.context.limit,
@@ -1160,7 +1161,7 @@ class Resolver:
 
                 max_score = final_state.score if max_score is None else max(max_score, final_state.score)
 
-                if self.context.iteration % self.log_iteration == 0 or self.context.accepted_final_states_count == 1:
+                if self.context.iteration - last_iteration_logged > self.log_iteration or self.context.accepted_final_states_count == 1:
                     _LOGGER.info(
                         "Pipeline reached %d final states out of %d requested in iteration %d "
                         "(pipeline pace %.02f stacks/second); top rated software stack in beam has a score of %.2f; "
@@ -1172,6 +1173,7 @@ class Resolver:
                         self.beam.max().score if self.beam.size > 0 else float("nan"),
                         float("nan") if max_score is None else max_score ,
                     )
+                    last_iteration_logged = self.context.iteration
 
                 product = Product.from_final_state(context=self.context, state=final_state)
                 yield product
