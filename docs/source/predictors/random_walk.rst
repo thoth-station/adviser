@@ -25,11 +25,11 @@ Once any issues or inspected aspects of software stacks are spotted, other
 predictors could be used to narrow down to a issue maker (such as :ref:`package
 combinations predictor <package_combinations>`).
 
-.. image:: _static/random_walk.gif
-   :target: _static/random_walk.gif
+.. image:: ../_static/random_walk.gif
+   :target: ../_static/random_walk.gif
    :alt: An animation of a simple state space sampling.
 
-The figure bellow shows random sampling performed during resolution of a
+The figure bellow shows random walk performed during resolution of a
 software stack in a state space with random score assigned to packages. x-axis
 shows resolver iterations and y-axis corresponds to scores computed. As can be
 seen, the predictor does not learn state space characteristics to resolve
@@ -37,6 +37,6 @@ software stacks possibly `falling into a local optima
 <https://en.wikipedia.org/wiki/Local_search_(optimization)>`__.  The score
 gradually increases, taking always the top rated state from the beam.
 
-.. image:: ../_static/hill_climbing.png
-   :target: ../_static/hill_climbing.png
-   :alt: An example of a history during hill climbing in adviser.
+.. image:: ../_static/random_walk.png
+   :target: ../_static/random_walk.png
+   :alt: An example of a history during random walk in the resolution process.
