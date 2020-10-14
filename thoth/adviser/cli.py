@@ -29,6 +29,7 @@ from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import Optional
+from typing import Tuple
 
 import attr
 import click
@@ -109,20 +110,28 @@ def _instantiate_project(
     return project
 
 
-def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationType) -> type:
+def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationType) -> Tuple[type, Dict[str, Any]]:
     """Get adviser predictor based on command line option."""
     if predictor != "AUTO":
-        return getattr(predictors, predictor)
+        return getattr(predictors, predictor), {}
 
     if recommendation_type == RecommendationType.LATEST:
-        return predictors.ApproximatingLatest
+        return predictors.ApproximatingLatest, {}
     elif (
         recommendation_type == RecommendationType.STABLE
         or recommendation_type == RecommendationType.TESTING
         or recommendation_type == RecommendationType.PERFORMANCE
         or recommendation_type == RecommendationType.SECURITY
     ):
-        return predictors.MCTS
+        return (
+            predictors.TemporalDifference,
+            {
+                "step": 2,
+                "temperature_coefficient": predictors.TemporalDifference.obtain_default_configuration(
+                    "temperature_coefficient"
+                ),
+            },
+        )
 
     raise ValueError(f"Unknown recommendation type: {recommendation_type!r}")
 
@@ -458,8 +467,8 @@ def advise(
     parameters["project"] = project.to_dict()
     if pipeline_config is not None:
         parameters["pipeline"] = pipeline_config.to_dict()
-    predictor_class = _get_adviser_predictor(predictor, recommendation_type)
-    predictor_kwargs = _get_predictor_kwargs(predictor_config)
+    predictor_class, predictor_kwargs = _get_adviser_predictor(predictor, recommendation_type)
+    predictor_kwargs = _get_predictor_kwargs(predictor_config) or predictor_kwargs
     predictor_instance = predictor_class(**predictor_kwargs, keep_history=plot is not None)
 
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
