@@ -12,24 +12,19 @@ either a top rated state for expansion or, based on probability, picks some
 another state from the beam. This state is expanded by picking one dependency
 from unresolved dependency listing and obtaining its direct dependencies making
 the dependency resolved and direct dependencies becoming part of unresolved
-dependency listing. A state is in so-called "final state" if all the
-dependencies were resolved and there is no package version clash during
-resolution (no two packages of a same type but in different versions or
-packages of a same type coming from a different Python package source index -
-this is not acceptable in Python packaging). The probability of picking a
-neighbour state (and not the highest rated stack) from beam is computed based
-on, besides other parameters, the temperature function which respects number of
-iterations and number of final states produced so far (thus "adaptive"
-simulated annealing).
+dependency listing.  The probability of picking a neighbour state (and not the
+highest rated stack) from beam is computed based on, besides other parameters,
+the temperature function which respects number of iterations and number of
+final states produced so far (thus "adaptive" simulated annealing).
 
 An example of an adaptive simulated annealing run that produced 1000 Python
-stacks (final states) with no observations on scored packages and states can be
-seen on the following figure. As the database for scoring states is empty
-(Python stacks were just resolved without any guidance), the probability of
-picking a random state from the beam is high (the algorithm is looking for
-a state which would be better than a score of 0.0 in comparision to a neighbour
-candidate with a score of 0.0). This acceptance probability is kept even as the
-temperature dropps.
+stacks (final states) with no observations on scored packages seen on the
+following figure. As the database for scoring states is empty (Python stacks
+were just resolved without any guidance), the probability of picking a random
+state from the beam is high (the algorithm is looking for a state which would
+be better than a score of 0.0 in comparision to a neighbour candidate with a
+score of 0.0). This acceptance probability is kept even as the temperature
+drops.
 
 .. image:: ../_static/asa_no_data.png
    :target: ../_static/asa_no_data.png
