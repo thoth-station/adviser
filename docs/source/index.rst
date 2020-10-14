@@ -57,10 +57,13 @@ Predictors
    :maxdepth: 1
 
    predictors/sampling
+   predictors/random_walk
    predictors/hill_climbing
-   predictors/monte_carlo
    predictors/annealing
    predictors/rl
+   predictors/monte_carlo_learning
+   predictors/temporal_difference_learning
+   predictors/neural_network
 
 
 Other functionality provided by thoth-adviser implementation
