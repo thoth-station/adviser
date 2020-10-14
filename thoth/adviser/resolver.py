@@ -149,8 +149,7 @@ class Resolver:
     DEFAULT_COUNT = 3
     DEFAULT_BEAM_WIDTH = -1
     DEFAULT_LIMIT_LATEST_VERSIONS = -1
-    DEFAULT_LOG_FINAL_STATE_COUNT = 500
-    DEFAULT_LOG_FINAL_STATE_TOP = False
+
     pipeline = attr.ib(type=PipelineConfig, kw_only=True)
     project = attr.ib(type=Project, kw_only=True)
     library_usage = attr.ib(type=Dict[str, Any], kw_only=True, converter=_library_usage)
