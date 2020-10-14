@@ -33,9 +33,7 @@ The figure bellow shows random walk performed during resolution of a
 software stack in a state space with random score assigned to packages. x-axis
 shows resolver iterations and y-axis corresponds to scores computed. As can be
 seen, the predictor does not learn state space characteristics to resolve
-software stacks possibly `falling into a local optima
-<https://en.wikipedia.org/wiki/Local_search_(optimization)>`__.  The score
-gradually increases, taking always the top rated state from the beam.
+software stacks and randomly comes up with software stacks.
 
 .. image:: ../_static/random_walk.png
    :target: ../_static/random_walk.png
