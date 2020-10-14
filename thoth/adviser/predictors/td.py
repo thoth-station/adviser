@@ -40,6 +40,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
     """Implementation of Temporal Difference (TD) based predictor with adaptive simulated annealing schedule."""
 
     step = attr.ib(type=int, default=1, kw_only=True)
+    trace = attr.ib(type=bool, default=True, kw_only=True)
     _policy = attr.ib(type=Dict[Tuple[str, str, str], List[Union[float, int]]], factory=dict, init=False)
     _steps_reward = attr.ib(type=float, default=0.0, init=False)
     _steps_taken = attr.ib(type=int, default=0, init=False)
@@ -63,7 +64,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
         self._steps_reward = 0.0
         self._next_state = None
 
-    def set_reward_signal(self, state: State, _: Tuple[str, str, str], reward: float) -> None:
+    def set_reward_signal(self, state: State, package_tuple: Tuple[str, str, str], reward: float) -> None:
         """Note down reward signal of the last action performed."""
         trajectory_end = math.isnan(reward) or math.isinf(reward)
         if trajectory_end:
@@ -74,7 +75,12 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
         if self._steps_taken < self.step and not trajectory_end:
             return
 
-        for package_tuple in state.iter_resolved_dependencies():
+        if self.trace:
+            for package_tuple in state.iter_resolved_dependencies():
+                record = self._policy.setdefault(package_tuple, [0.0, 0])
+                record[0] += self._steps_reward
+                record[1] += 1
+        else:
             record = self._policy.setdefault(package_tuple, [0.0, 0])
             record[0] += self._steps_reward
             record[1] += 1
