@@ -93,7 +93,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
         self._temperature = self._temperature_function(self._temperature, self.context)
 
         if self._next_state is not None:
-            unresolved_dependency_tuple = self._do_exploitation(self._next_state)
+            unresolved_dependency_tuple = self._next_state.get_random_unresolved_dependency(prefer_recent=True)
             if self.keep_history:
                 self._temperature_history.append((None, None, None, self.context.accepted_final_states_count))
             return self._next_state, unresolved_dependency_tuple
