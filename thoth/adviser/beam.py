@@ -136,7 +136,7 @@ class Beam:
         host.spines["top"].set_visible(False)
 
         (p1,) = host.plot(x, y1, ",g", label="Beam size")
-        (p2,) = par1.plot(x, y2, ",b", label="Top rated state score")
+        (p2,) = par1.plot(x, y2, ",b", label="Score of top rated partially resolved state")
 
         host.set_xlabel("iteration")
         host.set_ylabel("beam size")

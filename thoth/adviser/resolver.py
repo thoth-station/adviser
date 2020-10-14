@@ -1256,7 +1256,7 @@ class Resolver:
         (p2,) = par1.plot(x, y2, ",b", label="The highest score")
 
         host.set_xlabel("iteration")
-        host.set_ylabel("Score of the resolved stack")
+        host.set_ylabel("Score of the resolved stack in iteration")
         par1.set_ylabel("Score of the best resolved stack found")
 
         host.yaxis.label.set_color(p1.get_color())
