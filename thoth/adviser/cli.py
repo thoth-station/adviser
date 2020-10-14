@@ -126,10 +126,11 @@ def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationTy
         return (
             predictors.TemporalDifference,
             {
-                "step": 2,
+                "step": 1,
                 "temperature_coefficient": predictors.TemporalDifference.obtain_default_configuration(
                     "temperature_coefficient"
                 ),
+                "trace": False,
             },
         )
 
