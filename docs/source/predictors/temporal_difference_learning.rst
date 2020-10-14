@@ -21,8 +21,8 @@ significantly decrease approximately in iteration 70000. This collerates with
 product creation cadence as exploitation phase is starting based on the resolution
 progress.
 
-.. image:: ../_static/td_predictor.gif
-   :target: ../_static/td_predictor.gif
+.. image:: ../_static/td_predictor.pdf
+   :target: ../_static/td_predictor.pdf
    :alt: Progress made during resolution guided by a TD-learning based predictor.
 
 Scores of software stacks reflect exploration and exploitation phase as well,
@@ -32,15 +32,15 @@ exploration phase slowly ends. The average score of software stacks produced
 during the exploitation phase is higher. The best software stack candidate is
 found in approx. 90000th resolver iteration in the exploitation phase.
 
-.. image:: ../_static/td_resolver.gif
-   :target: ../_static/td_resolver.gif
+.. image:: ../_static/td_resolver.pdf
+   :target: ../_static/td_resolver.pdf
    :alt: Score of resolved software stacks as produced by the resolution pipeline and score of the best software stack found.
 
 Number of software stacks in beam grows until 70000th iteration after which it
 starts to grow slower considering the exploitation phase start.
 
-.. image:: ../_static/td_beam.gif
-   :target: ../_static/td_beam.gif
+.. image:: ../_static/td_beam.pdf
+   :target: ../_static/td_beam.pdf
    :alt: States captured in the resolver's beam.
 
 .. note::
