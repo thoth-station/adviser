@@ -60,7 +60,7 @@ Predictors
    predictors/random_walk
    predictors/hill_climbing
    predictors/annealing
-   predictors/rl
+   predictors/reinforcement_learning
    predictors/mcts
    predictors/temporal_difference_learning
    predictors/neural_network

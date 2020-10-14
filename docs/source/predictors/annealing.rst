@@ -17,6 +17,9 @@ highest rated stack) from beam is computed based on, besides other parameters,
 the temperature function which respects number of iterations and number of
 final states produced so far (thus "adaptive" simulated annealing).
 
+See :class:`adaptive simulated annealing implementation
+<thoth.adviser.predictors.AdaptiveSimulatedAnnealing>`.
+
 An example of an adaptive simulated annealing run that produced 1000 Python
 stacks (final states) with no observations on scored packages seen on the
 following figure. As the database for scoring states is empty (Python stacks
@@ -73,7 +76,8 @@ Even thught in both cases there were used same input data and same seed for
 random generator, results differ as steps taken by resolver differ across
 iterations.
 
-It's worth to adjust this parameter in deployment based on time allocated for
+It's worth to adjust this parameter in a deployment based on time allocated for
 adviser runs. The right value should make sure adviser is able to sample the
-state space and perform exploitation of highest states found. See
-:ref:`deployment` section for more info.
+state space and perform exploitation of highest states found considering CPU
+time allocated in the cluster pre a resolution request. See also
+:ref:`deployment` section.

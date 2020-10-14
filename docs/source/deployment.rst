@@ -130,6 +130,9 @@ Tweaking predictor configuration also falls into deployment specific
 configuration. Predictor configuration is however specific per predictor
 implementation so reach out to respective predictor documentation.
 
+See for example :ref:`annealing` that provides ``temperature_coefficient`` that
+can be tweaked in deployment to obtain better results.
+
 Development dependencies (dev flag)
 ###################################
 
