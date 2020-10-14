@@ -97,6 +97,15 @@ class MCTS(TemporalDifference):
         # in the beam is the one we keep as next expanded. If they do not match, the last added is not the next state
         # we wanted to expand - this is based on the MCTS logic.
         if self._next_state is not None and self._next_state is self.context.beam.get_last():
+            if self.keep_history:
+                self._temperature_history.append(
+                    (
+                        self._temperature,
+                        self._next_state is self.context.beam.max(),
+                        None,
+                        self.context.accepted_final_states_count,
+                    )
+                )
             return (
                 self._next_state,
                 self._next_state.get_random_unresolved_dependency(prefer_recent=True),
