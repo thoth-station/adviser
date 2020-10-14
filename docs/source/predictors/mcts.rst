@@ -3,7 +3,7 @@
 Monte Carlo Tree Search (MCTS)
 ------------------------------
 
-This method is also many times referred as "Monte Carlo Tree learning".
+This method is also many times referred as "Monte Carlo learning".
 
 See `Wikipedia for a brief intro to MCTS
 <https://en.wikipedia.org/wiki/Monte_Carlo_tree_search>`__.
@@ -26,12 +26,12 @@ candidate drops to 0 and only the highest rated candidates are expanded
 
 .. image:: ../_static/mcts_predictor.png
    :target: ../_static/mcts_predictor.png
-   :alt: Resolving software stacks with Monte Carlo Tree Search and policy learnt.
+   :alt: Progress made during MCTS guided resolution.
 
 .. note::
 
   The exploration and exploitation phase is balanced using an annealing schedule,
-  see :ref:`reinforcement learning intro <rl_balancing>` for more info.
+  see :ref:`reinforcement learning intro section <rl_balancing>` for more info.
 
 The second figure shows how software stacks produced by resolver increased they
 score during the exploitation phase until circa 30000 iteration. This
@@ -40,7 +40,7 @@ resolved since then.
 
 .. image:: ../_static/mcts_resolver.png
    :target: ../_static/mcts_resolver.png
-   :alt: Resolving software stacks with Monte Carlo Tree Search and policy learnt.
+   :alt: Statistics from the resolver during MCTS guided resolution.
 
 The last figure shows size of the beam keeping unresolved (partially resolved)
 states. The max score of partially resolved states increase until iteration
@@ -50,4 +50,7 @@ the exploration phase finishes, beam size does not increase that drastically.
 
 .. image:: ../_static/mcts_beam.png
    :target: ../_static/mcts_beam.png
-   :alt: Resolving software stacks with Monte Carlo Tree Search and policy learnt.
+   :alt: Beam information during the MCTS guided resolution.
+
+It's also worth to point out the dataset used when creating plots was made out
+of sparse scores.
