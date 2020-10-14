@@ -30,7 +30,9 @@ candidate drops to 0 and only the highest rated candidates are expanded
 
 .. note::
 
-  The exploration and exploitation phase is balanced using an annealing schedule,
+  The exploration and exploitation phase is balanced using an annealing
+  schedule. The balance factor can be parametrized using
+  ``temperature_coefficient`` parameter that can be supplied to the predictor.
   see :ref:`reinforcement learning intro section <rl_balancing>` for more info.
 
 The second figure shows how software stacks produced by resolver increased they
