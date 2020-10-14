@@ -61,7 +61,7 @@ Predictors
    predictors/hill_climbing
    predictors/annealing
    predictors/rl
-   predictors/monte_carlo_learning
+   predictors/mcts
    predictors/temporal_difference_learning
    predictors/neural_network
 

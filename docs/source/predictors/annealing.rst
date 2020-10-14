@@ -3,69 +3,9 @@
 Adaptive simulated annealing
 ----------------------------
 
-A very first implementation of Adviser and Dependency Monkey was designed to
-load the whole dependency graph into memory and subsequently perform operations
-on the weighted dependency graph. This way the dependency graph was adjusted
-based on scores on edges and by traversing the dependency graph, there were
-produced software stacks. Over time we abandoned this approach as it did not
-scale with size of software stacks (e.g. a TensorFlow Python stack  required
-circa 2.5k queries to the database just for dependency graph retrieval) and
-`given the trend in Python ecosystem
-<https://stackoverflow.blog/2017/09/06/incredible-growth-python//>`_ this
-solution would also not be scalable.
-
-The new implementation uses a stochastic approach based on :class:`Adaptive
-simulated annealing <thoth.adviser.predictors.AdaptiveSimulatedAnnealing>` (see
-`Wikipedia for a brief info
+See `Wikipedia
 <https://en.wikipedia.org/wiki/Adaptive_simulated_annealing>`_ and also
-`simulated annealing <https://en.wikipedia.org/wiki/Simulated_annealing>`_).
-Software stacks are lazily expanded from initial states. The initial states are
-formed out of combinations computed on all the resolved direct dependencies. As
-an example, we can create a software stack that requests two packages to be
-installed - ``tensorflow`` and ``flask`` - with specific version ranges:
-
-.. code-block:: console
-
-  tensorflow>=1.14,0
-  flask>=1.0.0<=1.1.0
-
-Thoth in this case performs offline resolution (based on pre-computed data in
-the database which state how dependencies are structured) of direct
-dependencies and finds matching releases given version range specification - an
-illustrative example:
-
-.. code-block:: console
-
-  tensorflow==2.0.0
-  tensorflow==1.14.0
-  tensorflow==1.15.0
-  flask==1.1.0
-  flask==1.0.0
-
-These releases are kept in buckets of a same package type (``tensorflow`` and
-``flask``) and sorted based on versions. All the possible combinations of these
-direct dependencies create initial states (as described above) - in this case
-we have 3*2=6 combinations in total:
-
-.. code-block:: python
-
-  >>> from itertools import product
-  >>> from pprint import pprint
-  >>> pprint(list(product(["tensorflow==2.0.0", "tensorflow==1.15.0", "tensorflow==1.15.0"], ["flask==1.1.0", "flask==1.0.0"])))
-  [('tensorflow==2.0.0', 'flask==1.1.0'),
-   ('tensorflow==2.0.0', 'flask==1.0.0'),
-   ('tensorflow==1.15.0', 'flask==1.1.0'),
-   ('tensorflow==1.15.0', 'flask==1.0.0'),
-   ('tensorflow==1.14.0', 'flask==1.1.0'),
-   ('tensorflow==1.14.0', 'flask==1.0.0')]
-
-Each and every combination creates an initial state - see :class:`State
-<thoth.adviser.state.State>` abstraction in sources for representation of a
-single state which is about to be expanded resolved.
-
-States are added to a `beam <https://en.wikipedia.org/wiki/Beam_search>`_ which
-is designed to limit search space given the memory resources available (keep
-only ``beam.width`` most promising states to be expanded/resolved).
+`simulated annealing <https://en.wikipedia.org/wiki/Simulated_annealing>`_ for basics.
 
 The adaptive simulated annealing part of adviser's resolution algorithm takes
 either a top rated state for expansion or, based on probability, picks some
@@ -82,32 +22,63 @@ on, besides other parameters, the temperature function which respects number of
 iterations and number of final states produced so far (thus "adaptive"
 simulated annealing).
 
-The section described above is a brief summary of :ref:`resolver implementation
-<resolver>`. The annealing implementation can also perform hill-climbing. As
-the order in which states are added to the beam is preserved, the first state
-added is also first pop-ed. This simulates :py:attr:`LATEST
-<thoth.adviser.enums.RecommendationType>` resolution - expanding always the
-first state added to the beam.
-
 An example of an adaptive simulated annealing run that produced 1000 Python
 stacks (final states) with no observations on scored packages and states can be
 seen on the following figure. As the database for scoring states is empty
 (Python stacks were just resolved without any guidance), the probability of
-picking a random state from the beam is very high (the algorithm is looking for
-a state which would be better than a score of 0.0). This acceptance probability
-is kept even the temperature dropped.
+picking a random state from the beam is high (the algorithm is looking for
+a state which would be better than a score of 0.0 in comparision to a neighbour
+candidate with a score of 0.0). This acceptance probability is kept even as the
+temperature dropps.
 
-.. image:: ../_static/history_no_data.png
-   :target: ../_static/history_no_data.png
+.. image:: ../_static/asa_no_data.png
+   :target: ../_static/asa_no_data.png
    :alt: Resolving software stacks with simulated annealing with no data available.
 
-On the figure below, there was randomized scoring of top rated states for
-demonstration purposes. As can be seen, the acceptance probability for picking
-a neighbour state for expansion is decreasing with number of final states
-produced and with decreasing temperature during iterations. This caused picking
-the highest rated states for expansion and producing final states out of them
-(fully resolved Python software stacks).
+On the figure below, there was created a random dataset for scoring packages in
+the resolution process for demonstration purposes. As can be seen, the
+acceptance probability for picking a neighbour state for expansion is
+decreasing with number of final states produced and with decreasing temperature
+during iterations. This caused picking the highest rated states for expansion
+and producing final states out of them (fully resolved Python software stacks).
+Once temperature drops to 0.0, only highest rated software stack is picked for
+resolution as acceptance probability for the neighbour state dropped to 0.0 as
+well.
 
-.. image:: ../_static/history_random_data.png
-   :target: ../_static/history_random_data.png
-   :alt: Resolving software stacks with simulated annealing with random data.
+.. image:: ../_static/asa_data.png
+   :target: ../_static/asa_data.png
+   :alt: Resolving software stacks with simulated annealing with randomized data.
+
+Temperature coefficient
+=======================
+
+Predictor based on adaptive simulated annealing (and all the derived ones),
+accepts a parameter called ``temperature_coefficient``. This parameter is used
+to specify how steep the temperature decrease should be. For reinforcement
+learning based predictors (see :ref:`mcts` and
+:ref:`temporal_difference_learning`) this parameter balances exploration and
+exploitation phases. A usual values for this parameter are
+``0.9<=temperature_coefficient<1.0``.
+
+The figure below shows a simulated annealing run when
+``temperature_coefficient`` is set to ``0.9``.
+
+.. image:: ../_static/asa_tc_09.png
+   :target: ../_static/asa_tc_09.png
+   :alt: Resolving software stacks with simulated annealing with randomized data and temperature coefficient set to 0.9.
+
+In comparision to figure above, the figure below shows another simulated
+annealing run when ``temperature_coefficient`` is set to ``0.98``.
+
+.. image:: ../_static/asa_tc_098.png
+   :target: ../_static/asa_tc_098.png
+   :alt: Resolving software stacks with simulated annealing with randomized data and temperature coefficient set to 0.98.
+
+Even thught in both cases there were used same input data and same seed for
+random generator, results differ as steps taken by resolver differ across
+iterations.
+
+It's worth to adjust this parameter in deployment based on time allocated for
+adviser runs. The right value should make sure adviser is able to sample the
+state space and perform exploitation of highest states found. See
+:ref:`deployment` section for more info.
