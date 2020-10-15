@@ -90,42 +90,46 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
 
     def run(self) -> Tuple[State, Tuple[str, str, str]]:
         """Run Temporal Difference (TD) with adaptive simulated annealing schedule."""
-        self._temperature = self._temperature_function(self._temperature, self.context)
-
         if self._next_state is not None:
             unresolved_dependency_tuple = self._next_state.get_random_unresolved_dependency(prefer_recent=True)
             if self.keep_history:
                 self._temperature_history.append((None, None, None, self.context.accepted_final_states_count))
             return self._next_state, unresolved_dependency_tuple
 
-        self._next_state = self.context.beam.max()
+        if self._temperature > 0.0:
+            self._temperature = self._temperature_function(self._temperature, self.context)
+            self._next_state = self.context.beam.max()
 
-        # Pick a random state to be expanded if accepted.
-        probable_state_idx = random.randrange(1, self.context.beam.size) if self.context.beam.size > 1 else 0
-        probable_state = self.context.beam.get(probable_state_idx)
-        acceptance_probability = self._compute_acceptance_probability(
-            self._next_state.score, probable_state.score, self._temperature
-        )
-
-        if acceptance_probability >= random.random():
-            # Perform exploration.
-            unresolved_dependency_tuple = probable_state.get_random_unresolved_dependency(prefer_recent=True)
-            self._next_state = probable_state
-        else:
-            unresolved_dependency_tuple = self._do_exploitation(self._next_state)
-
-        if self.keep_history:
-            self._temperature_history.append(
-                (
-                    self._temperature,
-                    self._next_state is self.context.beam.max(),
-                    acceptance_probability,
-                    self.context.accepted_final_states_count,
-                )
+            # Pick a random state to be expanded if accepted.
+            probable_state_idx = random.randrange(1, self.context.beam.size) if self.context.beam.size > 1 else 0
+            probable_state = self.context.beam.get(probable_state_idx)
+            acceptance_probability = self._compute_acceptance_probability(
+                self._next_state.score, probable_state.score, self._temperature
             )
 
+            if acceptance_probability >= random.random():
+                # Perform exploration.
+                unresolved_dependency_tuple = probable_state.get_random_unresolved_dependency(prefer_recent=True)
+                self._next_state = probable_state
+            else:
+                unresolved_dependency_tuple = self._do_exploitation(self._next_state)
+
+            if self.keep_history:
+                self._temperature_history.append(
+                    (
+                        self._temperature,
+                        self._next_state is self.context.beam.max(),
+                        acceptance_probability,
+                        self.context.accepted_final_states_count,
+                    )
+                )
+
+            self._steps_taken += 1
+            return self._next_state, unresolved_dependency_tuple
+
         self._steps_taken += 1
-        return self._next_state, unresolved_dependency_tuple
+        self._next_state = self.context.beam.max()
+        return self._next_state, self._do_exploitation(self._next_state)
 
     def _do_exploitation(self, state: State) -> Tuple[str, str, str]:
         """Perform expansion of a highest rated stack with action that should yield highest reward."""
