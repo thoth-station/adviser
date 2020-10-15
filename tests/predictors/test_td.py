@@ -99,11 +99,28 @@ class TestTemporalDifference(AdviserTestCase):
     def test_set_reward_signal_nan_inf(self, float_case: float) -> None:
         """Test (not) keeping the reward signal for nan/inf."""
         predictor = TemporalDifference()
-        state = flexmock()
+        state = State()
+        state.add_resolved_dependency(("tensorflow", "2.3.0", "https://pypi.org/simple"))
+        state.add_resolved_dependency(("flask", "0.12", "https://pypi.org/simple"))
+        state.add_unresolved_dependency(("termial-random", "0.0.2", "https://pypi.org/simple"))
+        predictor._policy = {
+            ("flask", "0.12", "https://pypi.org/simple"): [0.2, 1],
+        }
+        predictor._steps_taken = 2
+        predictor._steps_reward = 1.2
+        predictor._next_state = state
+
         assert (
             predictor.set_reward_signal(state, ("tensorflow", "2.0.0", "https://pypi.org/simple"), float_case) is None
         )
-        assert predictor._policy == {}
+
+        assert predictor._policy == {
+            ("flask", "0.12", "https://pypi.org/simple"): [1.4, 2],
+            ("tensorflow", "2.3.0", "https://pypi.org/simple"): [1.2, 1],
+        }
+        assert predictor._steps_taken == 0
+        assert predictor._steps_reward == 0.0
+        assert predictor._next_state is None
 
     def test_set_reward_signal_unseen(self) -> None:
         """Test keeping the reward signal for an unseen step."""
@@ -218,7 +235,7 @@ class TestTemporalDifference(AdviserTestCase):
         AdaptiveSimulatedAnnealing.should_receive("_compute_acceptance_probability").with_args(
             max_state.score, probable_state.score, 0.9
         ).and_return(0.75).once()
-        context.beam.should_receive("max").with_args().and_return(max_state).and_return(max_state).twice()
+        context.beam.should_receive("max").with_args().and_return(max_state).once()
 
         predictor = TemporalDifference(step=1)
         predictor._steps_taken = 0
@@ -256,7 +273,7 @@ class TestTemporalDifference(AdviserTestCase):
         AdaptiveSimulatedAnnealing.should_receive("_compute_acceptance_probability").with_args(
             max_state.score, probable_state.score, 0.9
         ).and_return(0.75).once()
-        context.beam.should_receive("max").with_args().and_return(max_state).and_return(max_state).twice()
+        context.beam.should_receive("max").with_args().and_return(max_state).once()
 
         predictor = TemporalDifference(step=1)
         predictor._temperature = 1.0
