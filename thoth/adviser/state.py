@@ -17,7 +17,6 @@
 
 """A state of not fully resolved software stack in adviser's recommendations implementation."""
 
-import math
 from typing import Any
 from typing import Tuple
 from typing import Dict
