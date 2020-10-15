@@ -1191,6 +1191,9 @@ class Resolver:
             self.context.accepted_final_states_count / duration,
         )
 
+        if max_score is not None:
+            _LOGGER.info("The highest rated software stack resolved has a score of %0.2f", max_score)
+
         _LOGGER.info(
             "Pipeline strides discarded %d and accepted %d final states in total",
             self.context.discarded_final_states_count,
