@@ -34,6 +34,7 @@ from typing import Tuple
 import attr
 import click
 import yaml
+import termial_random
 from thoth.analyzer import print_command_result
 from thoth.common import init_logging
 from thoth.common import RuntimeEnvironment
@@ -481,6 +482,7 @@ def advise(
         predictor_kwargs,
     )
     random.seed(seed)
+    termial_random.seed(seed)
 
     resolver = Resolver.get_adviser_instance(
         predictor=predictor_instance,
@@ -717,6 +719,7 @@ def dependency_monkey(
         predictor_kwargs,
     )
     random.seed(seed)
+    termial_random.seed(seed)
 
     resolver = Resolver.get_dependency_monkey_instance(
         predictor=predictor_instance,
