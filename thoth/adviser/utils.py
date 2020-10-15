@@ -32,7 +32,7 @@ def should_keep_history(value: Any) -> bool:
     `value' is None which triggers checks in environment variables.
     """
     if value is None:
-        return not bool(int(os.getenv("THOTH_ADVISER_NO_HISTORY", 0)))
+        return bool(int(os.getenv("THOTH_ADVISER_HISTORY", 0)))
 
     if isinstance(value, bool):
         return value
