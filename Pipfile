@@ -26,6 +26,7 @@ pyyaml = "*"
 packaging = "*"
 voluptuous = "*"
 fext = ">=0.2.0"
+termial-random = "*"
 
 [requires]
 python_version = "3.6"
