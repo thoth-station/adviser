@@ -58,6 +58,7 @@ Predictors
 
    predictors/sampling
    predictors/random_walk
+   predictors/latest
    predictors/hill_climbing
    predictors/annealing
    predictors/reinforcement_learning
