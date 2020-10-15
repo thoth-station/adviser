@@ -105,7 +105,8 @@ per adviser run in a deployment.
 
 If the beam width is set to a large number, it results in higher overhead
 needed for maintaining internal data structure per resolver iteration/round
-(see `fext <https://github.com/thoth-station/fext>`_). This overhead grows
+(see `fext <https://github.com/thoth-station/fext>`__, `termial-random
+<https://github.com/thoth-station/termial-random>`__). This overhead grows
 linearly with beam width. Also, memory consumption is increased and more CPU
 time is spent on maintaining the data structure and obtaining relevant resolver
 states.
