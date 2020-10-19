@@ -149,7 +149,7 @@ class CannotProduceStack(AdviserRunException):
         super().__init__(*args)
         self.stack_info: List[Dict[str, Any]] = stack_info
 
-    def to_dict(self) -> Optional[Dict[str, str]]:
+    def to_dict(self) -> Optional[Dict[str, Any]]:
         """Convert exception to a dict representation for a user."""
         return {
             "ERROR": "No results were resolved, see logs for more info",
