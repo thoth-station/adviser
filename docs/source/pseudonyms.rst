@@ -80,7 +80,7 @@ An example implementation
     class TensorFlowPseudonym(Pseudonym):
         """A TensorFlow pseudonym."""
 
-        PACKAGE_NAME: str = "tensorflow"
+        CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": "tensorflow"}  # Operates on "tensorflow" package.
 
         _pseudonyms = attr.ib(type=Optional[Set[Tuple[str, str, str]]], default=None, init=False)
 
