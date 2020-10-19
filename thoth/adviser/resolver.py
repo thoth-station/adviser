@@ -256,7 +256,7 @@ class Resolver:
             try:
                 boot.run()
             except NotAcceptable as exc:
-                msg = f"Boot pipeline unit {boot.__class__.__name__} failed: {str(exc)!r}"
+                msg = f"Boot pipeline unit {boot.__class__.__name__!r} failed: {str(exc)}"
                 self.context.stack_info.append(
                     {"message": msg, "type": "ERROR",}
                 )
