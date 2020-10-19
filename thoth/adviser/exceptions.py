@@ -121,12 +121,13 @@ class AdviserRunException(AdviserException):
 class UnresolvedDependencies(AdviserRunException):
     """An exception raised if dependencies were not resolved and cannot produce stack."""
 
-    __slots__ = ["unresolved"]
+    __slots__ = ["unresolved", "stack_info"]
 
-    def __init__(self, *args: Any, unresolved: List[str]) -> None:
+    def __init__(self, *args: Any, unresolved: List[str], stack_info: List[Dict[str, Any]]) -> None:
         """Capture unresolved dependencies in this exception."""
         super().__init__(*args)
         self.unresolved = unresolved
+        self.stack_info = stack_info
 
     def to_dict(self) -> Optional[Dict[str, Any]]:
         """Convert unresolved dependencies exception to the user."""
@@ -136,6 +137,7 @@ class UnresolvedDependencies(AdviserRunException):
             "dependencies were not yet solved in Thoth "
             "cannot resolve all direct dependencies",
             "_ERROR_DETAILS": {"unresolved": self.unresolved,},
+            "stack_info": self.stack_info,
         }
 
 
