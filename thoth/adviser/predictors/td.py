@@ -129,6 +129,16 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
 
         self._steps_taken += 1
         self._next_state = self.context.beam.max()
+        if self.keep_history:
+            self._temperature_history.append(
+                (
+                    self._temperature,
+                    True,  # Always True.
+                    0.0,
+                    self.context.accepted_final_states_count,
+                )
+            )
+
         return self._next_state, self._do_exploitation(self._next_state)
 
     def _do_exploitation(self, state: State) -> Tuple[str, str, str]:
