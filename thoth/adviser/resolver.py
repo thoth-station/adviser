@@ -675,7 +675,7 @@ class Resolver:
         if not direct_dependencies:
             msg = "No direct dependencies found"
             self.context.stack_info.append(
-                {"message": msg, "type": "ERROR", "link": jl("no_direct"),}
+                {"message": msg, "type": "ERROR", "link": jl("solve_direct"),}
             )
             raise CannotProduceStack(msg, stack_info=self.context.stack_info)
 
