@@ -628,10 +628,7 @@ class Resolver:
                 # database but none was matching the given version range.
                 unresolved.append(package_version.name)
 
-                error_msg = (
-                    f"No versions were found for direct dependency "
-                    f"{package_version.name!r}"
-                )
+                error_msg = f"No versions were found for direct dependency {package_version.name!r}"
                 runtime_environment = self.project.runtime_environment
                 if runtime_environment.operating_system.name:
                     error_msg += f"; operating system {runtime_environment.operating_system.name!r}"
@@ -644,12 +641,9 @@ class Resolver:
                 if runtime_environment.platform:
                     error_msg += f" using platform {runtime_environment.platform!r}"
 
-                self.context.stack_info.append({
-                    "message": error_msg,
-                    "type": "ERROR",
-                    "link": jl("solve_direct"),
-                })
-
+                self.context.stack_info.append(
+                    {"message": error_msg, "type": "ERROR", "link": jl("solve_direct"),}
+                )
                 _LOGGER.warning("%s - see %s", error_msg, jl("solve_direct"))
                 continue
 
@@ -660,8 +654,16 @@ class Resolver:
             )
 
         if unresolved:
-            _LOGGER.warning("Resolver failed as it was unable to resolve direct dependencies, see %s", jl("unresolved"))
-            raise UnresolvedDependencies("Unable to resolve all direct dependencies", unresolved=unresolved)
+            error_msg = "Resolver failed as it was unable to resolve direct dependencies"
+            self.context.stack_info.append({
+                "message": error_msg,
+                "type": "ERROR",
+                "link": jl("unresolved")
+            })
+            _LOGGER.warning("%s - see %s", error_msg, jl("unresolved"))
+            raise UnresolvedDependencies(
+                "Unable to resolve all direct dependencies", unresolved=unresolved, stack_info=self.context.stack_info
+            )
 
         # Now we are free to de-instantiate solver to save some memory.
         self._solver = None
