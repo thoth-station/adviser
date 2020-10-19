@@ -630,7 +630,7 @@ class Resolver:
 
                 error_msg = (
                     f"No versions were found for direct dependency "
-                    f"{package_version.name!r} - see {jl('solve_direct')}"
+                    f"{package_version.name!r}"
                 )
                 runtime_environment = self.project.runtime_environment
                 if runtime_environment.operating_system.name:
@@ -644,7 +644,13 @@ class Resolver:
                 if runtime_environment.platform:
                     error_msg += f" using platform {runtime_environment.platform!r}"
 
-                _LOGGER.warning(error_msg)
+                self.context.stack_info.append({
+                    "message": error_msg,
+                    "type": "ERROR",
+                    "link": jl("solve_direct"),
+                })
+
+                _LOGGER.warning("%s - see %s", error_msg, jl("solve_direct"))
                 continue
 
             _LOGGER.info(
