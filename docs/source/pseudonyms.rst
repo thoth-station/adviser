@@ -16,7 +16,7 @@ is guaranteed by the resolution logic.
   impact in the resolution process.
 
 Each pseudonym is uniquely identified by
-``unit_instance.configuration["package_name"]`` string derived out
+``unit_instance.configuration["package_name"]`` string derived out of
 ``Pseudonym.CONFIGURATION_DEFAULT["package_name"]`` that corresponds to the
 package name for which the pipeline unit should be called.  This is an
 optimization to the resolution process.
@@ -26,9 +26,9 @@ Main usage
 
 * Adding "aliases" to the software stack.
 
-    * An example could be ``intel-tensorflow`` package that provides the same
-      functionality as ``tensorflow``, hence ``intel-tensorflow`` can be
-      considered as a valid alternative to the resolution process.
+  * An example could be ``intel-tensorflow`` package that provides the same
+    functionality as ``tensorflow``, hence ``intel-tensorflow`` can be
+    considered as a valid alternative to the resolution process.
 
 * Adding versions of packages that were not listed in the dependency listing of
   a library/application but are valid alternatives (underpinning issues).
@@ -36,14 +36,14 @@ Main usage
 Real world examples
 ===================
 
-  * Substitute all ``tensorflow`` packages in the software stack with their
-    ``intel-tensorflow`` counterparts.
+* Substitute all ``tensorflow`` packages in the software stack with their
+  ``intel-tensorflow`` counterparts.
 
-  * Add TensorFlow in version 2.1.0 to the stack where TensorFlow in version
-    2.2.0 would be resolved even though the application states
-    TensorFlow==2.1.0 as a dependency - suitable for Dependency Monkey runs or
-    performing "post-release" fixes in version range specifications
-    (underpinning issues).
+* Add TensorFlow in version 2.1.0 to the stack where TensorFlow in version
+  2.2.0 would be resolved even though the application states
+  TensorFlow==2.1.0 as a dependency - suitable for Dependency Monkey runs or
+  performing "post-release" fixes in version range specifications
+  (underpinning issues).
 
 Justifications in the recommended software stacks
 =================================================
