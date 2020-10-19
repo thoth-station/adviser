@@ -75,23 +75,23 @@ Main usage
 Real world examples
 ===================
 
-  * Some releases of ``tensorflow`` do not work with some ``numpy`` versions -
-    a ``numpy`` in a specific version can be added to a software stack that has
-    ``tensorflow``  incompatible with the given ``numpy`` release (even though
-    the version range specification allows it, ``tensorflow`` maintainers did
-    not tested the given ``numpy`` release with issued ``tensorflow`` release)
+* Some releases of ``tensorflow`` do not work with some ``numpy`` versions -
+  a ``numpy`` in a specific version can be added to a software stack that has
+  ``tensorflow``  incompatible with the given ``numpy`` release (even though
+  the version range specification allows it, ``tensorflow`` maintainers did
+  not tested the given ``numpy`` release with issued ``tensorflow`` release)
 
-      * A step implementing this observation can simply raise ``NotAcceptable``
-        exception that will prevent from such issues in the resolved software
-        stack as these two will never be resolved together
+    * A step implementing this observation can simply raise ``NotAcceptable``
+      exception that will prevent from such issues in the resolved software
+      stack as these two will never be resolved together
 
-  * Packages that have security vulnerabilities (CVE) can be penalized during
-    the resolution so that they do not occur in the resolved software stack,
-    unless there is no better candidate based on scoring in other pipeline
-    steps
+* Packages that have security vulnerabilities (CVE) can be penalized during
+  the resolution so that they do not occur in the resolved software stack,
+  unless there is no better candidate based on scoring in other pipeline
+  steps
 
-  * Prevent adding ``scipy`` to a TensorFlow>2.1<=2.3 unless introduced
-    explictly in the stack. It is not needed (it was introduced accidentally).
+* Prevent adding ``scipy`` to a TensorFlow>2.1<=2.3 unless introduced
+  explicitly in the stack. It is not needed (it was introduced accidentally).
 
 Triggering unit for a specific package
 ======================================
