@@ -142,9 +142,19 @@ class UnresolvedDependencies(AdviserRunException):
 class CannotProduceStack(AdviserRunException):
     """Raised if there was not produced any result."""
 
-    def to_dict(self) -> Optional[Dict[str, str]]:
+    __slots__ = ["stack_info"]
+
+    def __init__(self, *args: Any, stack_info: List[Dict[str, Any]]) -> None:
+        """Instantiate the exception."""
+        super().__init__(*args)
+        self.stack_info: List[Dict[str, Any]] = stack_info
+
+    def to_dict(self) -> Optional[Dict[str, Any]]:
         """Convert exception to a dict representation for a user."""
-        return {"ERROR": "No results were resolved, see logs for more info"}
+        return {
+            "ERROR": "No results were resolved, see logs for more info",
+            "stack_info": self.stack_info,
+        }
 
 
 class UserLockFileError(AdviserRunException):

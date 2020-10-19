@@ -256,7 +256,11 @@ class Resolver:
             try:
                 boot.run()
             except NotAcceptable as exc:
-                raise CannotProduceStack(f"Boot pipeline unit {boot.__class__.__name__} failed: {str(exc)!r}")
+                msg = f"Boot pipeline unit {boot.__class__.__name__} failed: {str(exc)!r}"
+                self.context.stack_info.append(
+                    {"message": msg, "type": "ERROR",}
+                )
+                raise CannotProduceStack(msg, stack_info=self.context.stack_info)
             except Exception as exc:
                 raise BootError(f"Failed to run pipeline boot {boot.__class__.__name__!r}: {str(exc)}") from exc
 
@@ -663,7 +667,11 @@ class Resolver:
         direct_dependencies = self._resolve_direct_dependencies(with_devel=with_devel)
 
         if not direct_dependencies:
-            raise CannotProduceStack("No direct dependencies found")
+            msg = "No direct dependencies found"
+            self.context.stack_info.append(
+                {"message": msg, "type": "ERROR", "link": jl("no_direct"),}
+            )
+            raise CannotProduceStack(msg, stack_info=self.context.stack_info)
 
         skipped_packages: List[str] = []
         for direct_dependency_name, package_versions in direct_dependencies.items():
@@ -680,10 +688,14 @@ class Resolver:
                 continue
 
             if not package_versions:
-                raise CannotProduceStack(
-                    f"Cannot satisfy direct dependencies - direct dependencies "
-                    f"of type {direct_dependency_name!r} were removed by pipeline sieves"
+                msg = (
+                    f"Cannot satisfy direct dependencies - direct dependencies of type {direct_dependency_name!r} "
+                    "were removed by pipeline sieves"
                 )
+                self.context.stack_info.append(
+                    {"type": "ERROR", "message": msg,}
+                )
+                raise CannotProduceStack(msg, stack_info=self.context.stack_info)
 
             if self.limit_latest_versions:
                 direct_dependencies[direct_dependency_name] = package_versions[: self.limit_latest_versions]
@@ -1221,10 +1233,15 @@ class Resolver:
                 report.add_product(product)
 
             if report.product_count() == 0:
-                raise CannotProduceStack(
-                    f"Resolver did not find any stack that would satisfy "
-                    f"requirements and stack characteristics given the time allocated - see {jl('no_stack')}"
+                msg = (
+                    f"Resolver did not find any stack that would satisfy requirements and stack "
+                    f"characteristics given the time allocated"
                 )
+                link = jl("no_stack")
+                self.context.stack_info.append(
+                    {"message": msg, "type": "ERROR", "link": link,}
+                )
+                raise CannotProduceStack(msg + f"- see {link}", stack_info=self.context.stack_info)
 
             if self.context.stack_info:
                 report.set_stack_info(self.context.stack_info)

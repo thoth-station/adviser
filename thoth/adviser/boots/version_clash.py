@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING
 import attr
 
 from ..boot import Boot
-from ..exceptions import CannotProduceStack
+from ..exceptions import NotAcceptable
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
@@ -62,7 +62,7 @@ class VersionClashBoot(Boot):
                 continue
 
             if package_version.locked_version != dev_package_version.locked_version:
-                raise CannotProduceStack(
+                raise NotAcceptable(
                     f"Package {package_version.name!r} is locked to {package_version.locked_version!r} "
-                    f"in packages section, but in dev section it is locked to {package_version.locked_version!r}"
+                    f"in packages section, but in dev section it is locked to {package_version.locked_version!r}",
                 )
