@@ -655,11 +655,7 @@ class Resolver:
 
         if unresolved:
             error_msg = "Resolver failed as it was unable to resolve direct dependencies"
-            self.context.stack_info.append({
-                "message": error_msg,
-                "type": "ERROR",
-                "link": jl("unresolved")
-            })
+            self.context.stack_info.append({"message": error_msg, "type": "ERROR", "link": jl("unresolved")})
             _LOGGER.warning("%s - see %s", error_msg, jl("unresolved"))
             raise UnresolvedDependencies(
                 "Unable to resolve all direct dependencies", unresolved=unresolved, stack_info=self.context.stack_info
