@@ -7,6 +7,14 @@ The last pipeline unit type is named ":class:`wrap <thoth.adviser.wrap.Wrap>`".
 This pipeline unit is called after a final state is accepted by :ref:`strides
 <strides>`.
 
+.. note::
+
+  Based on internal optimizations done for faster resolution process, wraps do
+  not need to be called for all the states resolved and accepted by strides. If
+  a final state will not be considered as part of the pipeline result
+  respecting ``count`` parameter (number of software stacks returned based on
+  their score), wrap pipeline units are not called.
+
 The wrap pipeline unit can perform logic on already accepted final state. A
 possible use case for wrap pipeline unit can be addition of another
 justification based on the packages resolved. This is handy if you want to add
