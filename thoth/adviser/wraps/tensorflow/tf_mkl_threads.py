@@ -57,7 +57,6 @@ class MKLThreadsWrap(Wrap):
         }
     ]
 
-    # As JSON patch does not have any direct way to test presence of an item in an array, we preprend the configuration.
     _ADVISED_MANIFEST_CHANGE_PREPEND = [
         {
             "apiVersion:": "apps.openshift.io/v1",
