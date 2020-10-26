@@ -23,7 +23,6 @@ from .python_version import PythonVersionBoot
 from .rhel_version import RHELVersionBoot
 from .solved_software_environment import SolvedSoftwareEnvironmentBoot
 from .ubi import UbiBoot
-from .version_clash import VersionClashBoot
 
 # from ._debug import MemTraceBoot
 
@@ -40,5 +39,4 @@ __all__ = [
     "PlatformBoot",
     "FullySpecifiedEnvironment",
     "SolvedSoftwareEnvironmentBoot",
-    "VersionClashBoot",
 ]
