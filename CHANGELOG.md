@@ -5685,3 +5685,253 @@
 * :pushpin: Automatic update of dependency thoth-storages from 0.25.10 to 0.25.11 (#1250)
 * :pushpin: Automatic update of dependency hypothesis from 5.35.3 to 5.35.4
 * :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0
+
+## Release 0.19.0 (2020-10-26T23:56:28)
+### Features
+* Added documentation to integrate kebechet
+* Reflect MULTI_PACKAGE_RESOLUTIONS change in docs
+* Adjust testsuite so that it respects optimized wraps call
+* Make pre-commit happy
+* Add a note to wraps docs about wrap call optimization
+* Adjust testsuite accordingly
+* Call wraps only if products are in the final resolver result
+* Fix testsuite
+* Remove version clash boot
+* Fix pre-commit complains
+* Add imports to docs sample
+* Fix manifest changes docs
+* Add docs for advising manifest changes
+* Fix pre-commit
+* Fix docs formatting
+* Fix indentation in docs
+* Fix documentation for the package_name option in pseudonyms
+* Point to the existing relevant justification document
+* Provide stack info if direct dependencies were not resolved
+* Improve message logged
+* Make pre-commit happy
+* Fix return type
+* Add stack info when no stack is produced
+* Fix history kept in TD-learning
+* Temperature computation and probability does not need to be done for t=0
+* Do not keep history by default
+* Document latest predictor
+* Remove unused import
+* Mention the lib in docs
+* Use C extension for computing termial random
+* Do one step TD-learning and turn off trace
+* Get random dependency for expansion
+* Fix links to images
+* Fix links to images
+* Add docs for TD-learning
+* Introduce trace parameter to TD learning
+* Add MCTS demonstration
+* Fix MCTS history keeping
+* Docs update
+* Minor adjustment to annealing docs
+* Remove hill climbing copy-pasta leftover
+* Add an image for random walk
+* Fix path to images
+* Adjust plot labels
+* Fix index and add template files for predictors
+* Switch to TD-learning with step==2 instead of Monte Carlo learning
+* Fix log printed
+* Fix formatting
+* Add more weak condition when logging progress
+* Log based on iteration not based on final states produced
+* Enable probability assigning score when generating scores
+* Fix assigning score based on probability
+* Log the highest rated software stack found so far
+* Implement a unit for deterministic score assignment
+* Fix n-step TD-learning
+* Fix message logged
+* Be more accurate with plot label
+* Allow assigning score when package version or index url is not set
+* Set score can now generate random score if not explicitly provided
+* Plot resolver history
+* Register debug units so they can be easily run using supplied conf
+* Clear beam history
+* Implement n-step TD learning
+* Units do not need to be stated in the configuration
+* Provide probability configuration for assigning a score
+* Adjust for pre-commit
+* Remove tests related to policy shrink
+* No need to shrink in TD learning
+* No need to shrink learnt policy
+* Allow null values in pipeline units listing (#1441)
+* Add a note to README
+* Remove unused exception
+* Simplify units implementation based on calling contract (#1431)
+* Test default configuration schema in units (#1433)
+* Provide schema for security indicators step so that it is registered (#1432)
+* Introduce capability for obtaining units inside a builder context (#1430)
+* Implement package version in configuration for boots, strides and wraps
+* Fix trailing white space (#1429)
+* Link to justification document in each pipeline unit docs
+* exclude hc hs if type is secure (#1416)
+* Extend justifications section
+* Add justifications section to the docs
+* Add a link to RL resolution video
+* Adjust sentence
+* Turn html into an image so it's properly rendered by GitHub
+* Add a link to RL video
+* Fix links to YT video
+* Adjust docs for Dependency Monkey
+* Link to docs from README
+* Adjust docs for steps
+* Adjust docs for pseudonym pipeline units
+* Adjust docs for sieve pipeline units
+* Some units are specific to package, not to package version
+* Adjust predictor documentation
+* Adjust resolver section of docs
+* Some modifications to the pipeline section in docs
+* Mention pseudonyms in the pipeline unit docs
+* Add a link to shared deps note
+* Minor tweaks in the deployment section
+* Fix formatting
+* Adjust link to Python docs
+* Note to buildconfiguration
+* Fix formatting
+* Fix environment variable name
+* Link to beam
+* limit_latest_versions is no longer supported
+* Fix URL
+* Fix urls in the integration section
+* Adjust compatibility section in docs
+* State MDP in the README file
+* Fix docstring (#1418)
+* Remove voluptuous from dev-packages it is already in packages
+* Fix heading
+* Adjust README file
+* Use find_namespace_packages to discover all thoth-adviser modules (#1412)
+* Add missing schema
+* Optimize sieve and steps calls that are specific for a package (#1404)
+* Pass package_name from unit configuration (#1400)
+* Remove unused import
+* Remove unused import
+* Return pytest.skip if the pipeline unit cannot be verified
+* Add testsuite related to pseudonym runs
+### Bug Fixes
+* Provide stack info if resolver failed to resolve direct dependencies
+* Minor fixes in docs
+* Minor fixes in the README file
+### Improvements
+* Minor refactoring and a note addition
+* Add docs for package combinations predictor
+* Make multi_package_resolution part of the step unit configuration
+* Add tests for product addition to report
+* Add documentation for predictor that uses a gradient based method
+* Print found stack score to logs
+* Add documentation for adaptive simulated annealing predictor
+* Document sampling, random walk and hill climbing predictors
+* Remove unused parts
+* Keep resolver history only if needed
+* Turn off multi package resolution for debug units
+* Remove unused imports
+* Rework generate score unit not to use random module
+* Make temperature coefficient parametrize and increase it
+* Deinstantiate solver and let gc do its job
+* Update docs to reflect package_name in boots, strides and wraps
+* Fix typo
+* Adjust the unit section of documentation
+* Add images for pipeline and pipeline builder
+* Add tests for skipping a package from steps (#1411)
+* Add tests related to unit_run flag
+* Introduce Pseudonym pipeline unit type (#1313)
+* Introduce a base class for implementing pipeline unit tests (#1314)
+### Other
+* Adjust types in history kept in annealing
+### Automatic Updates
+* :pushpin: Automatic update of dependency hypothesis from 5.37.3 to 5.38.1 (#1499)
+* :pushpin: Automatic update of dependency hypothesis from 5.37.0 to 5.37.1 (#1440)
+* :pushpin: Automatic update of dependency pytest from 6.1.0 to 6.1.1 (#1425)
+* :pushpin: Automatic update of dependency hypothesis from 5.36.1 to 5.37.0 (#1424)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.14 to 0.25.15 (#1423)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.13 to 0.25.14 (#1413)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.12 to 0.25.13 (#1402)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1398)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.11 to 0.25.12 (#1401)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1397)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1396)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1395)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1394)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1393)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1392)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1391)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1390)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1389)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1386)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1382)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1381)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1380)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1379)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1378)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1377)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1376)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1375)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1371)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1370)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1369)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1368)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1367)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1366)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1365)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1364)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1363)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1362)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1361)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1360)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1359)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1358)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1356)
+* :pushpin: Automatic update of dependency pytest from 6.0.2 to 6.1.0 (#1357)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1355)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1354)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1353)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1352)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1351)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1350)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1349)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1348)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1347)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1346)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1345)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1344)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1343)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1342)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1341)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1340)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1339)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1338)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1337)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1336)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1335)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1334)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1333)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1332)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1331)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1330)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1329)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1328)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1327)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1326)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1325)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1324)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1323)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1322)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1320)
+* :pushpin: Automatic update of dependency hypothesis from 5.36.0 to 5.36.1 (#1321)
+* :pushpin: Automatic update of dependency hypothesis from 5.36.0 to 5.36.1 (#1319)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1318)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1316)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1315)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1311)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1310)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1309)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1308)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1307)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1306)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1305)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1304)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1303)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1302)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1301)
