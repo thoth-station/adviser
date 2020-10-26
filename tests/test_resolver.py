@@ -1522,9 +1522,9 @@ class TestResolver(AdviserTestCase):
 
         resolver._init_context()
 
-        resolver.should_receive("_do_resolve_states_raw").with_args(with_devel=True, user_stack_scoring=True,).and_yield(
-            final_state1, final_state2
-        ).once()
+        resolver.should_receive("_do_resolve_states_raw").with_args(
+            with_devel=True, user_stack_scoring=True,
+        ).and_yield(final_state1, final_state2).once()
 
         flexmock(Product)
         Product.should_receive("from_final_state").with_args(context=resolver.context, state=final_state1).and_return(
