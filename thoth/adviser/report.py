@@ -55,15 +55,17 @@ class Report:
         """Set stack information."""
         self._stack_info = stack_info
 
-    def add_product(self, product: Product) -> None:
+    def add_product(self, product: Product) -> bool:
         """Add adviser pipeline product to report."""
         item = ((product.score, self._heapq_counter), product)
         self._heapq_counter -= 1
 
         if len(self._heapq) >= self.count:
-            heapq.heappushpop(self._heapq, item)
+            popped = heapq.heappushpop(self._heapq, item)
+            return popped is not item
         else:
             heapq.heappush(self._heapq, item)
+            return True
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert pipeline report to a dict representation."""
