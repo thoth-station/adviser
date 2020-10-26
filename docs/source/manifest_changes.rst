@@ -19,7 +19,7 @@ the deployment config.
 
 .. code-block:: python
 
-  class MKLThreadsWrap(Wrap):
+  class ExampleWrap(Wrap):
 
       CONFIGURATION_DEFAULT = {"package_name": "intel-tensorflow"}  # call this wrap for intel-tensorflow
 
@@ -49,4 +49,3 @@ The ``advised_manifest_changes`` attribute holds a list of changes that should
 be applied. Each change is a list of JSON Patch objects - each item in the JSON
 Patch object is evaluated until it succeds. See `RFC-6902 for more info
 <https://tools.ietf.org/html/rfc6902>`__.
-
