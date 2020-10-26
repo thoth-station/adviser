@@ -33,6 +33,7 @@ Resolver and stack resolution pipeline
    resolver
    predictor
    justifications
+   manifest_changes
 
 
 Pipeline units
