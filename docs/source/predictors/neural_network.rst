@@ -61,4 +61,3 @@ words, the neural network would be trained on the causal data and would be used
 during the resolution process as part of another predictor if the dependency
 sub-graph for which it was trained is spotted during the resolution process. In
 other cases, gradient-free methods can be used.
-
