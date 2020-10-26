@@ -66,6 +66,7 @@ Predictors
    predictors/mcts
    predictors/temporal_difference_learning
    predictors/neural_network
+   predictors/package_combinations
 
 
 Other functionality provided by thoth-adviser implementation
