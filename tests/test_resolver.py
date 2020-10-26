@@ -1373,7 +1373,8 @@ class TestResolver(AdviserTestCase):
             stride.should_receive("run").with_args(final_state).and_return(None).once()
 
         for wrap in resolver.pipeline.wraps:
-            wrap.should_receive("run").with_args(final_state).and_return(None).once()
+            # Optimization of the wraps call causes no wrap is called in the raw part.
+            wrap.should_receive("run").with_args(final_state).and_return(None).times(0)
 
         resolver.should_receive("_prepare_initial_state").with_args(with_devel=True).and_return(final_state).once()
 
@@ -1390,7 +1391,7 @@ class TestResolver(AdviserTestCase):
             final_state
         ).once()
 
-        states = list(resolver._do_resolve_states_raw(with_devel=True, user_stack_scoring=True))
+        states = list(resolver._do_resolve_states_raw(with_devel=True, user_stack_scoring=False))
         assert states == [final_state]
         assert resolver.context.iteration == 2
         assert resolver.context.accepted_final_states_count == 1
@@ -1590,9 +1591,13 @@ class TestResolver(AdviserTestCase):
 
     def test_resolve(self, resolver: Resolver) -> None:
         """Test report creation during resolution."""
-        product = flexmock(score=1.0)
+        state = State()
+        state.unresolved_dependencies.clear()
+        state.score = 1.0
+        assert state.is_final()
+
         resolver.should_receive("_do_resolve_states").with_args(with_devel=True, user_stack_scoring=True).and_return(
-            [product]
+            [state]
         ).once()
         resolver.pipeline.should_receive("call_post_run_report").once()
         resolver.predictor.should_receive("post_run_report").once()
@@ -1604,7 +1609,8 @@ class TestResolver(AdviserTestCase):
 
         assert resolver.context is not None, "Context is not bound to resolver"
         assert report.product_count() == 1
-        assert list(report.iter_products()) == [product]
+        product = list(report.iter_products())[0]
+        assert product.score == state.score
 
     def test_get_adviser_instance(self, predictor_mock: Predictor) -> None:
         """Test getting a resolver for adviser."""
