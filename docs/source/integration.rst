@@ -179,7 +179,59 @@ example <https://github.com/thoth-station/s2i-example>`__.
 Kebechet - GitHub application
 =============================
 
-TODO: write a summary
+Here is how in a few easy steps how you can add Kebechet to your Github project.
+
+Step 1 -
+# Install Thamos CLI tool:
+
+.. code-block:: console
+
+  pip3 install thamos  # keep in mind: requires Python 3.6+!!
+
+# Go to repository that should be managed by Thoth which already has Pipfile present:
+
+.. code-block:: console
+
+   cd ~/git/repo/
+
+# Setup Thamos configuration:
+
+.. code-block:: console
+
+   thamos config
+
+That’s it, thamos would create a ".thoth.yaml" file for you. Now you can append the managers you need to run on it. Here, for example, we want version and update manager to run on the demo repo so the config is -
+
+.. code-block:: yaml
+
+    managers:
+        - name: update
+          configuration:
+            labels: [bot, kebechet]
+        - name: version
+          configuration:
+            labels: [bot, kebechet]
+            changelog_file: true
+..
+
+In case thamos config doesn’t work for you -
+Add the `.thoth.yaml` file in your project root directory manually.
+Format - https://github.com/thoth-station/common/blob/master/.thoth.yaml
+
+Kebechet cares about the managers you add under the manager section. You will find how to define the manager config under each of the manager readme - `kebechet/managers
+<https://github.com/thoth-station/kebechet/tree/master/kebechet/managers>`_.
+We have currently most packages for solved for these run time environments - rhel, fedora, ubi.
+
+Step 2-
+Now that you are done with the setup of which managers you want to be run on your project, you are done with the major part.
+We would next install the Github app to ensure we recieve webhooks from the repository, please install `Khebhut
+<https://github.com/apps/khebhut>`_, which is an alias for Kebechet.
+And finally let’s add our bot friend as a collaborator, so that he can help you maintain your project.
+In Github go to - Settings -> Manage access
+And invite `@sesheta
+<https://github.com/sesheta>`_ as a collaborater.
+
+
 
 Jupyter Notebooks
 =================
