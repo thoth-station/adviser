@@ -54,13 +54,13 @@ class TestReport(AdviserTestCase):
         report = Report(count=2, pipeline=pipeline_config)
 
         product1 = Product(project=None, score=0.42, justification=[], advised_runtime_environment=None)
-        report.add_product(product1)
+        assert report.add_product(product1) is True
         assert report.product_count() == 1
         assert list(report.iter_products()) == [product1]
         assert list(report.iter_products_sorted()) == [product1]
 
         product2 = Product(project=None, score=0.0, justification=[], advised_runtime_environment=None)
-        report.add_product(product2)
+        assert report.add_product(product2) is True
         assert report.product_count() == 2
         assert set(report.iter_products()) == {product1, product2}
         assert list(report.iter_products_sorted()) == [product1, product2]
@@ -68,7 +68,7 @@ class TestReport(AdviserTestCase):
         assert list(report.iter_products_sorted(reverse=False)) == [product2, product1]
 
         product3 = Product(project=None, score=0.98, justification=[], advised_runtime_environment=None)
-        report.add_product(product3)
+        assert report.add_product(product3) is True
         assert report.product_count() == 2
         assert set(report.iter_products()) == {product3, product1}
         assert list(report.iter_products_sorted()) == [product3, product1]
@@ -76,7 +76,15 @@ class TestReport(AdviserTestCase):
         assert list(report.iter_products_sorted(reverse=False)) == [product1, product3]
 
         product4 = Product(project=None, score=0.666, justification=[], advised_runtime_environment=None,)
-        report.add_product(product4)
+        assert report.add_product(product4) is True
+        assert report.product_count() == 2
+        assert set(report.iter_products()) == {product3, product4}
+        assert list(report.iter_products_sorted()) == [product3, product4]
+        assert list(report.iter_products_sorted(reverse=True)) == [product3, product4]
+        assert list(report.iter_products_sorted(reverse=False)) == [product4, product3]
+
+        product5 = Product(project=None, score=-0.99999, justification=[], advised_runtime_environment=None,)
+        assert report.add_product(product5) is False
         assert report.product_count() == 2
         assert set(report.iter_products()) == {product3, product4}
         assert list(report.iter_products_sorted()) == [product3, product4]

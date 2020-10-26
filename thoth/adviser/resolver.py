@@ -1054,7 +1054,7 @@ class Resolver:
 
         return self._run_steps(state, package_version, all_dependencies, newly_added)
 
-    def _do_resolve_states(
+    def _do_resolve_states_raw(
         self, *, with_devel: bool = True, user_stack_scoring: bool = True,
     ) -> Generator[State, None, None]:
         """Actually perform states resolution."""
@@ -1120,7 +1120,6 @@ class Resolver:
                 if state_returned is not None and not state_returned.unresolved_dependencies:
                     # A final state produced by the pipeline.
                     if self._run_strides(state_returned):
-                        self._run_wraps(state_returned)
                         self.context.accepted_final_states_count += 1
                         self.context.register_accepted_final_state(state_returned)
                         yield state_returned
@@ -1148,10 +1147,10 @@ class Resolver:
                 self.beam.size,
             )
 
-    def _do_resolve_products(
+    def _do_resolve_states(
         self, *, with_devel: bool = True, user_stack_scoring: bool = True,
-    ) -> Generator[Product, None, None]:
-        """Resolve raw products as produced by this resolver pipeline."""
+    ) -> Generator[State, None, None]:
+        """Resolve states as produced by this resolver pipeline, ready to be used to build a product."""
         if self.count > self.limit:
             _LOGGER.warning(
                 "Count (%d) is higher than limit (%d), setting count to %d", self.count, self.limit, self.limit,
@@ -1167,7 +1166,9 @@ class Resolver:
         max_score = None
         last_iteration_logged = 0
         try:
-            for final_state in self._do_resolve_states(with_devel=with_devel, user_stack_scoring=user_stack_scoring):
+            for final_state in self._do_resolve_states_raw(
+                with_devel=with_devel, user_stack_scoring=user_stack_scoring
+            ):
                 _LOGGER.debug(
                     "Pipeline reached a new final state, yielding pipeline product with a score of %g - %d/%d",
                     final_state.score,
@@ -1194,8 +1195,7 @@ class Resolver:
                     )
                     last_iteration_logged = self.context.iteration
 
-                product = Product.from_final_state(context=self.context, state=final_state)
-                yield product
+                yield final_state
                 del final_state
         except EagerStopPipeline as exc:
             _LOGGER.info("Stopping pipeline eagerly as per request: %s", str(exc))
@@ -1225,7 +1225,10 @@ class Resolver:
         """Resolve raw products as produced by this resolver pipeline."""
         self._init_context()
         with Unit.assigned_context(self.context), self.predictor.assigned_context(self.context):
-            yield from self._do_resolve_products(with_devel=with_devel, user_stack_scoring=user_stack_scoring)
+            for state in self._do_resolve_states(with_devel=with_devel, user_stack_scoring=user_stack_scoring):
+                # Always run wraps as raw products are computed.
+                self._run_wraps(state)
+                yield Product.from_final_state(context=self.context, state=state)
 
     def resolve(self, *, with_devel: bool = True, user_stack_scoring: bool = True) -> Report:
         """Resolve software stacks and return resolver report."""
@@ -1233,8 +1236,11 @@ class Resolver:
 
         self._init_context()
         with Unit.assigned_context(self.context), self.predictor.assigned_context(self.context):
-            for product in self._do_resolve_products(with_devel=with_devel, user_stack_scoring=user_stack_scoring):
-                report.add_product(product)
+            for state in self._do_resolve_states(with_devel=with_devel, user_stack_scoring=user_stack_scoring):
+                product = Product.from_final_state(context=self.context, state=state)
+                if report.add_product(product):
+                    # An optimization - we do not need to run wraps if the product is not part of the final result.
+                    self._run_wraps(state)
 
             if report.product_count() == 0:
                 msg = (
