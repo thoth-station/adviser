@@ -13,14 +13,15 @@ multiple combinations should be consider - e.g.  `NumPy
 <https://pypi.org/project/absl-py>`__ packages.
 
 When computing combinations of certain package or packages it is often a good
-practice to pin versions of packages to specific versions. This can be
-accomplished on the requirements level (Pipfile) but this is in general
+practice to pin versions of all the other packages to specific versions. This
+can be accomplished on the requirements level (Pipfile) but this is in general
 considered as a bad practice for this use case. Having dependencies locked on
 pipeline unit level allows locking of a package only if it is about to be
 resolved. On the other hand, locking packages on requirements level creates
 request for the resolver to have the given requirement always present in the
 stack. This can have negative impact on the tested software as the tested part
-is not minimal.
+is not minimal and the required dependency can affect how dependency graph
+looks like with respect to other dependencies as well.
 
 See Amun inspection present in `thoth-station/dependency-monkey-zoo repository
 <https://github.com/thoth-station/dependency-monkey-zoo/tree/master/tensorflow/inspection-2020-09-08.1>`__
@@ -47,8 +48,8 @@ parts are:
       name: OneVersionStride
 
 3. Parameters passed to the predictor specify which package combinations should
-   be considered during the resolution (thus predictor guides the resolution process
-   to resolve these combinations):
+   be considered during the resolution (thus predictor guides the resolution
+   process to resolve these combinations):
 
   .. code-block:: yaml
 
@@ -56,8 +57,9 @@ parts are:
     - six
     - urllib3
 
-As can be seen, using the pipeline configuration and the predictor in a specific
-way can lead to desired results. They can cooperate to achieve desired results.
+As can be seen, using the pipeline configuration and the predictor in a
+specific way can lead to desired results. They can cooperate to achieve desired
+results.
 
 The video below demonstrates the whole process in action:
 
@@ -67,5 +69,5 @@ The video below demonstrates the whole process in action:
         <iframe src="https://www.youtube.com/embed/S3hFn8KRsKc" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
     </div>
 
-The results presented in the video can be seen summarized `in this following blog
-<https://developers.redhat.com/blog/2020/09/30/ai-software-stack-inspection-with-thoth-and-tensorflow/?sc_cid=7013a000002gbzfAAA>`__.
+The results presented in the video can be seen summarized `in this following
+blog <https://developers.redhat.com/blog/2020/09/30/ai-software-stack-inspection-with-thoth-and-tensorflow/?sc_cid=7013a000002gbzfAAA>`__.
