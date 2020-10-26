@@ -193,3 +193,13 @@ class AdviserUnitTestCase(AdviserTestCase):
         assert (
             unit.unit_run is False
         ), "Unit flag unit_run not reset, is super().pre_run() called in sources when providing pre_run method!?"
+
+    def test_default_multi_package_resolution(self) -> None:
+        """Test presence of multi_package_resolution in unit default."""
+        if self.UNIT_TESTED is None or not issubclass(self.UNIT_TESTED, Step):
+            return pytest.skip("Only Step pipeline units should include multi_package_resolution option")
+
+        assert (
+            "multi_package_resolution" in self.UNIT_TESTED.CONFIGURATION_DEFAULT
+        ), "Make sure the multi_package_resolution option is present in step unit default configuration"
+        assert isinstance(self.UNIT_TESTED.CONFIGURATION_DEFAULT.get("multi_package_resolution"), bool)

@@ -33,6 +33,7 @@ import attr
 from thoth.python import PackageVersion
 from voluptuous import Any as SchemaAny
 from voluptuous import Optional as SchemaOptional
+from voluptuous import Required as SchemaRequired
 from voluptuous import Schema
 
 from ...state import State
@@ -50,14 +51,20 @@ _LOGGER = logging.getLogger(__name__)
 class MockScoreStep(Step):
     """A step that is mocking scoring of packages."""
 
-    MULTI_PACKAGE_RESOLUTIONS = False
-
     # Assign probability is used to "assign" a score to the package to simulate knowledge
     # coverage for packages resolved - 0.75 means ~75% of packages will have a score.
     CONFIGURATION_SCHEMA: Schema = Schema(
-        {SchemaOptional("package_name"): SchemaAny(str, None), SchemaOptional("assign_probability"): float}
+        {
+            SchemaOptional("package_name"): SchemaAny(str, None),
+            SchemaOptional("assign_probability"): float,
+            SchemaRequired("multi_package_resolution"): bool,
+        }
     )
-    CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None, "assign_probability": 0.75}
+    CONFIGURATION_DEFAULT: Dict[str, Any] = {
+        "package_name": None,
+        "assign_probability": 0.75,
+        "multi_package_resolution": False,
+    }
 
     _score_history = attr.ib(type=Dict[Tuple[str, str, str], float], factory=dict, init=False)
 

@@ -44,7 +44,7 @@ _LOGGER = logging.getLogger(__name__)
 class AICoEReleasesStep(Step):
     """Prioritize releases from AICoE."""
 
-    CONFIGURATION_DEFAULT = {"package_name": None}
+    CONFIGURATION_DEFAULT = {"package_name": None, "multi_package_resolution": False}
     _SCORE_ADDITION = 0.1
     _JUSTIFICATION = [
         {

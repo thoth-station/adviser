@@ -20,11 +20,15 @@
 import abc
 
 import attr
+from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
 
+from voluptuous import Schema
+from voluptuous import Required
+from voluptuous import Any as SchemaAny
 from thoth.python import PackageVersion
 
 from .state import State
@@ -35,11 +39,14 @@ from .unit import Unit
 class Step(Unit):
     """Step base class implementation.
 
-    Configuration option MUTLI_PACKAGE_RESOLUTION states whether a step should be run if package
+    Configuration option `mutli_package_resolution` states whether a step should be run if package
     is resolved multiple times for the same stack.
     """
 
-    MULTI_PACKAGE_RESOLUTIONS = False
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {Required("package_name"): SchemaAny(str, None), Required("multi_package_resolution"): bool}
+    )
+    CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None, "multi_package_resolution": False}
 
     SCORE_MAX = 1.0
     SCORE_MIN = -1.0

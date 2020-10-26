@@ -247,7 +247,11 @@ class TestPipelineBuilder(AdviserTestCase):
             "steps": [
                 {
                     "name": "Step1",
-                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
+                    "configuration": {
+                        "guido_retirement": 2019,
+                        "package_name": "tensorflow",
+                        "multi_package_resolution": False,
+                    },
                     "unit_run": False,
                 }
             ],
@@ -308,7 +312,11 @@ class TestPipelineBuilder(AdviserTestCase):
             "steps": [
                 {
                     "name": "Step1",
-                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
+                    "configuration": {
+                        "guido_retirement": 2019,
+                        "package_name": "tensorflow",
+                        "multi_package_resolution": False,
+                    },
                     "unit_run": False,
                 }
             ],
@@ -341,7 +349,11 @@ class TestPipelineBuilder(AdviserTestCase):
             "sieves": [],
             "steps": [
                 {
-                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
+                    "configuration": {
+                        "guido_retirement": 2019,
+                        "package_name": "tensorflow",
+                        "multi_package_resolution": False,
+                    },
                     "name": "Step1",
                     "unit_run": False,
                 }

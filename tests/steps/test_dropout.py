@@ -60,4 +60,8 @@ class TestDropoutStep(AdviserUnitTestCase):
 
     def test_default_configuration(self) -> None:
         """Test default configuration of dropout pipeline step."""
-        assert DropoutStep.CONFIGURATION_DEFAULT == {"probability": 0.9, "package_name": None}
+        assert DropoutStep.CONFIGURATION_DEFAULT == {
+            "probability": 0.9,
+            "package_name": None,
+            "multi_package_resolution": False,
+        }

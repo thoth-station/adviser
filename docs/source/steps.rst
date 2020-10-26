@@ -39,8 +39,11 @@ bellow for examples).
 
   Note this behaviour is turned off by default. If the pipeline step requires
   such call, the step implementation should set
-  ``Step.MULTI_PACKAGE_RESOLUTIONS`` to ``True`` in derived classes
-  implementing step logic.
+  ``step_instance.configuration["multi_package_resolution"]`` to ``True`` in
+  derived classes implementing step logic. This is usually accomplished using
+  the default configuration (if the unit should not behave differently based on
+  the ``should_include`` logic). The default option can be set using
+  ``Step.CONFIGURATION_DEFAULT["multi_package_resolution"] = True``
 
 Main usage
 ==========
@@ -134,8 +137,7 @@ An example implementation
       """Filter out numpy causing issues in upstream TensorFlow==1.9.0."""
 
       # This pipeline unit is specific for "numpy".
-      CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": "numpy"}
-      MULTI_PACKAGE_RESOLUTIONS = False
+      CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": "numpy", "multi_package_resolution": False}
 
       def run(self, state: State, package_version: PackageVersion) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
           """The main entry-point for step implementation demonstration."""

@@ -309,10 +309,11 @@ class TestResolver(AdviserTestCase):
             (package_version_tuple[0], package_version_tuple[1] + "dev0", package_version_tuple[2])
         )
 
-        resolver.pipeline._steps = {package_version.name: [steps.Step1(), steps.Step2()]}
-
-        steps.Step1.MULTI_PACKAGE_RESOLUTIONS = True
-        steps.Step2.MULTI_PACKAGE_RESOLUTIONS = False
+        step1 = steps.Step1()
+        step2 = steps.Step2()
+        step1.configuration["multi_package_resolution"] = True
+        step2.configuration["multi_package_resolution"] = False
+        resolver.pipeline._steps = {package_version.name: [step1, step2]}
 
         resolver._init_context()
         resolver.context.iteration = state.iteration + 1

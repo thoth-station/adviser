@@ -51,9 +51,7 @@ class TensorFlow22NumPyStep(Step):
     https://github.com/tensorflow/tensorflow/issues/41902
     """
 
-    # Run this step each time, regardless of when tensorflow and tensorflow-probability are resolved.
-    MULTI_PACKAGE_RESOLUTIONS = False
-    CONFIGURATION_DEFAULT = {"package_name": "numpy"}
+    CONFIGURATION_DEFAULT = {"package_name": "numpy", "multi_package_resolution": False}
 
     _MESSAGE = "TensorFlow <2.3>=2.0 states NumPy<2.0.0 as a dependency, but is compatible with NumPy<1.19.0"
     _LINK = jl("tf_41902")

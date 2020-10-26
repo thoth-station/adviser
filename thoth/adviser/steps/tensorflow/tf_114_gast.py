@@ -52,8 +52,7 @@ class TensorFlow114GastStep(Step):
 
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
-    MULTI_PACKAGE_RESOLUTIONS = False
-    CONFIGURATION_DEFAULT = {"package_name": "gast"}
+    CONFIGURATION_DEFAULT = {"package_name": "gast", "multi_package_resolution": False}
 
     _MESSAGE = "TensorFlow in version <=1.14 used overpinned gast package, using gast in version <=0.2.2"
     _LINK = jl("tf_114_gast")

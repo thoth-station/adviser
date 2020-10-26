@@ -27,7 +27,3 @@ class TestStep(AdviserTestCase):
     def test_boundaries(self) -> None:
         """Test score boundaries of steps."""
         assert Step.SCORE_MAX > 0.0 > Step.SCORE_MIN
-
-    def test_multi_package_resolution_default(self) -> None:
-        """Test default value of multi package resolution."""
-        assert Step.MULTI_PACKAGE_RESOLUTIONS is False
