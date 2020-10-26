@@ -19,6 +19,15 @@ the deployment config.
 
 .. code-block:: python
 
+  from typing import TYPE_CHECKING
+  from typing import Optional, Dict, Any
+
+  from ...state import State
+  from ...wrap import Wrap
+
+  if TYPE_CHECKING:
+      from ..pipeline_builder import PipelineBuilderContext
+
   class ExampleWrap(Wrap):
 
       CONFIGURATION_DEFAULT = {"package_name": "intel-tensorflow"}  # call this wrap for intel-tensorflow
@@ -37,15 +46,17 @@ the deployment config.
 
       @classmethod
       def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
-         if builder_context.is_included(cls):
-            return None
+          """Include this pipeline unit only if it hasn't been included."""
+          if builder_context.is_included(cls):
+             return None
 
-         return {}
+          return {}
 
       def run(self, state: State) -> None:
+          """Advise manifest changes for intel-tensorflow."""
           state.advised_manifest_changes.append(self._ADVISED_MANIFEST_CHANGES)
 
 The ``advised_manifest_changes`` attribute holds a list of changes that should
 be applied. Each change is a list of JSON Patch objects - each item in the JSON
-Patch object is evaluated until it succeds. See `RFC-6902 for more info
+Patch object is evaluated until it succeeds. See `RFC-6902 for more info
 <https://tools.ietf.org/html/rfc6902>`__.
