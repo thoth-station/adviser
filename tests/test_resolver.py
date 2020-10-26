@@ -501,6 +501,7 @@ class TestResolver(AdviserTestCase):
         ).and_return({}).once()
 
         resolver._solver = solver_mock
+        resolver._init_context()
         with pytest.raises(UnresolvedDependencies, match="Unable to resolve all direct dependencies") as exc:
             resolver._resolve_direct_dependencies(with_devel=True)
 
@@ -518,6 +519,7 @@ class TestResolver(AdviserTestCase):
         ).and_return({"tensorflow": tf_package_versions, "flask": []}).once()
 
         resolver._solver = solver_mock
+        resolver._init_context()
         with pytest.raises(UnresolvedDependencies, match="Unable to resolve all direct dependencies") as exc:
             resolver._resolve_direct_dependencies(with_devel=True)
 
