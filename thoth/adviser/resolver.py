@@ -332,10 +332,10 @@ class Resolver:
             _LOGGER.debug("Running step %r for %r", step.__class__.__name__, package_version_tuple)
             step.unit_run = True
 
-            if multi_package_resolution and not step.MULTI_PACKAGE_RESOLUTIONS:
+            if multi_package_resolution and not step.configuration["multi_package_resolution"]:
                 _LOGGER.debug(
                     "Skipping running step %r - this step was already run for package %r "
-                    "and the given step has no MULTI_PACKAGE_RESOLUTIONS flag set",
+                    "and the given step has no multi_package_resolution flag set",
                     step.__class__.__name__,
                     package_version_tuple,
                 )

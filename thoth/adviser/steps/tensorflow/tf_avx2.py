@@ -43,8 +43,7 @@ _LOGGER = logging.getLogger(__name__)
 class TensorFlowAVX2Step(Step):
     """A step that recommends AICoE TensorFlow builds optimized for AVX2 enabled CPU processors."""
 
-    MULTI_PACKAGE_RESOLUTIONS = False
-    CONFIGURATION_DEFAULT = {"package_name": "tensorflow"}
+    CONFIGURATION_DEFAULT = {"package_name": "tensorflow", "multi_package_resolution": False}
 
     _SCORE_ADDITION = 0.2
     _JUSTIFICATION_ADDITION = [

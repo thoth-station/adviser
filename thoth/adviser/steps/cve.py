@@ -49,8 +49,14 @@ _LOGGER = logging.getLogger(__name__)
 class CvePenalizationStep(Step):
     """Penalization based on CVE being present in stack."""
 
-    CONFIGURATION_DEFAULT = {"package_name": None, "cve_penalization": -0.2}
-    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): None, Required("cve_penalization"): float})
+    CONFIGURATION_DEFAULT = {"package_name": None, "cve_penalization": -0.2, "multi_package_resolution": False}
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {
+            Required("package_name"): None,
+            Required("cve_penalization"): float,
+            Required("multi_package_resolution"): False,
+        }
+    )
     _JUSTIFICATION_LINK = jl("cve")
 
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)

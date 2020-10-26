@@ -37,8 +37,10 @@ if TYPE_CHECKING:
 class Step1(Step):
     """A testing step implementation."""
 
-    CONFIGURATION_DEFAULT = {"guido_retirement": 2019, "package_name": "tensorflow"}
-    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str, Required("guido_retirement"): int})
+    CONFIGURATION_DEFAULT = {"guido_retirement": 2019, "package_name": "tensorflow", "multi_package_resolution": False}
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {Required("package_name"): str, Required("guido_retirement"): int, Required("multi_package_resolution"): bool}
+    )
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -53,8 +55,14 @@ class Step1(Step):
 class Step2(Step):
     """A testing step implementation."""
 
-    CONFIGURATION_DEFAULT = {"lyrics": ".. drifting further everyday...", "package_name": "thoth-adviser"}
-    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str, Required("lyrics"): str})
+    CONFIGURATION_DEFAULT = {
+        "lyrics": ".. drifting further everyday...",
+        "package_name": "thoth-adviser",
+        "multi_package_resolution": False,
+    }
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {Required("package_name"): str, Required("lyrics"): str, Required("multi_package_resolution"): bool}
+    )
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

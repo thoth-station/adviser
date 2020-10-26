@@ -48,9 +48,7 @@ class TensorFlow21Urllib3Step(Step):
 
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
-    # Run this step each time, regardless of when TensorFlow and urllib3 are resolved.
-    MULTI_PACKAGE_RESOLUTIONS = False
-    CONFIGURATION_DEFAULT = {"package_name": "urllib3"}
+    CONFIGURATION_DEFAULT = {"package_name": "urllib3", "multi_package_resolution": False}
 
     _MESSAGE = (
         "TensorFlow in version 2.1 can cause runtime errors when imported, caused by "

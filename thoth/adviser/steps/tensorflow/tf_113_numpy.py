@@ -49,9 +49,7 @@ class TensorFlow113NumPyStep(Step):
     https://github.com/tensorflow/tensorflow/issues/25636
     """
 
-    # Run this step each time, regardless of when tensorflow and tensorflow-probability are resolved.
-    MULTI_PACKAGE_RESOLUTIONS = False
-    CONFIGURATION_DEFAULT = {"package_name": "numpy"}
+    CONFIGURATION_DEFAULT = {"package_name": "numpy", "multi_package_resolution": False}
 
     _MESSAGE = "TensorFlow in version 1.13.1 is compatible with NumPy>=1.16.0"
     _LINK = jl("tf_25636")

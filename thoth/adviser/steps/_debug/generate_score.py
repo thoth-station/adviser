@@ -31,6 +31,7 @@ import attr
 from thoth.python import PackageVersion
 from voluptuous import Any as SchemaAny
 from voluptuous import Optional as SchemaOptional
+from voluptuous import Required as SchemaRequired
 from voluptuous import Schema
 
 from ...state import State
@@ -52,23 +53,23 @@ class GenerateScoreStep(Step):
     a need to store all the score for packages.
     """
 
-    MULTI_PACKAGE_RESOLUTIONS = False
-
     # Assign probability is used to "assign" a score to the package to simulate knowledge
     # coverage for packages resolved - 0.75 means ~75% of packages will have a score.
     CONFIGURATION_SCHEMA: Schema = Schema(
         {
-            SchemaOptional("package_name"): SchemaAny(str, None),
-            SchemaOptional("buffer_size"): int,
-            SchemaOptional("seed"): int,
             SchemaOptional("assign_probability"): float,
+            SchemaOptional("buffer_size"): int,
+            SchemaOptional("package_name"): SchemaAny(str, None),
+            SchemaOptional("seed"): int,
+            SchemaRequired("multi_package_resolution"): bool,
         }
     )
     CONFIGURATION_DEFAULT: Dict[str, Any] = {
-        "package_name": None,
-        "buffer_size": 1024,
-        "seed": 42,
         "assign_probability": 0.75,
+        "buffer_size": 1024,
+        "multi_package_resolution": False,
+        "package_name": None,
+        "seed": 42,
     }
 
     _history = attr.ib(type=Dict[Tuple[str, str, str], float], factory=dict, init=False)

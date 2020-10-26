@@ -51,7 +51,11 @@ class TestPipelineConfig(AdviserTestCase):
             ],
             "steps": [
                 {
-                    "configuration": {"guido_retirement": 2019, "package_name": "tensorflow"},
+                    "configuration": {
+                        "guido_retirement": 2019,
+                        "package_name": "tensorflow",
+                        "multi_package_resolution": False,
+                    },
                     "name": "Step1",
                     "unit_run": False,
                 }

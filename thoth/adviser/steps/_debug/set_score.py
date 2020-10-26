@@ -48,22 +48,22 @@ _LOGGER = logging.getLogger(__name__)
 class SetScoreStep(Step):
     """A step that is setting score for packages."""
 
-    MULTI_PACKAGE_RESOLUTIONS = False
-
     # Assign probability is used to "assign" a score to the package to simulate knowledge
     # coverage for packages resolved - 0.75 means ~75% of packages will have a score.
     CONFIGURATION_SCHEMA: Schema = Schema(
         {
+            Required("multi_package_resolution"): bool,
             Required("package_name"): str,
-            SchemaOptional("package_version"): SchemaAny(str, None),
             SchemaOptional("index_url"): SchemaAny(str, None),
+            SchemaOptional("package_version"): SchemaAny(str, None),
             SchemaOptional("score"): SchemaAny(float, None),
         }
     )
     CONFIGURATION_DEFAULT: Dict[str, Any] = {
+        "index_url": None,
+        "multi_package_resolution": False,
         "package_name": None,
         "package_version": None,
-        "index_url": None,
         "score": None,
     }
 

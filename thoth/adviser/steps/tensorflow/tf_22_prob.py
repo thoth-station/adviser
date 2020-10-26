@@ -49,9 +49,7 @@ class TensorFlow22ProbabilityStep(Step):
     https://github.com/tensorflow/tensorflow/issues/40584
     """
 
-    # Run this step each time, regardless of when tensorflow and tensorflow-probability are resolved.
-    MULTI_PACKAGE_RESOLUTIONS = False
-    CONFIGURATION_DEFAULT = {"package_name": "tensorflow-probability"}
+    CONFIGURATION_DEFAULT = {"package_name": "tensorflow-probability", "multi_package_resolution": False}
 
     _MESSAGE = "TensorFlow in version 2.2 and tensorflow-probability cause runtime errors"
     _LINK = jl("tf_40584")

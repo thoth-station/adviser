@@ -28,6 +28,8 @@ from typing import TYPE_CHECKING
 import logging
 
 from thoth.python import PackageVersion
+from voluptuous import Required
+from voluptuous import Schema
 
 from ..exceptions import NotAcceptable
 from ..state import State
@@ -44,7 +46,14 @@ _LOGGER = logging.getLogger(__name__)
 class DropoutStep(Step):
     """A step that drops a state transition with a certain probability."""
 
-    CONFIGURATION_DEFAULT = {"package_name": None, "probability": 0.9}
+    CONFIGURATION_DEFAULT = {"package_name": None, "probability": 0.9, "multi_package_resolution": False}
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {
+            Required("package_name"): None,
+            Required("cve_penalization"): float,
+            Required("multi_package_resolution"): False,
+        }
+    )
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

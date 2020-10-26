@@ -52,8 +52,7 @@ class TensorFlowRemoveSciPyStep(Step):
     https://github.com/tensorflow/tensorflow/pull/40789
     """
 
-    MULTI_PACKAGE_RESOLUTIONS = False
-    CONFIGURATION_DEFAULT = {"package_name": "scipy"}
+    CONFIGURATION_DEFAULT = {"package_name": "scipy", "multi_package_resolution": False}
 
     _message_logged = attr.ib(type=bool, default=False, init=False)
 

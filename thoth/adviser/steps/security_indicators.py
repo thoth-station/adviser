@@ -52,24 +52,26 @@ class SecurityIndicatorStep(Step):
     _logged_packages = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), init=False)
 
     CONFIGURATION_DEFAULT = {
-        "package_name": None,
         "high_confidence_weight": 1.0,
-        "medium_confidence_weight": 0.5,
-        "low_confidence_weight": 0.1,
         "high_severity_weight": 100.0,
-        "medium_severity_weight": 10.0,
+        "low_confidence_weight": 0.1,
         "low_severity_weight": 1.0,
+        "medium_confidence_weight": 0.5,
+        "medium_severity_weight": 10.0,
+        "multi_package_resolution": False,
+        "package_name": None,
         "si_reward_weight": 0.5,
     }
     CONFIGURATION_SCHEMA: Schema = Schema(
         {
-            Required("package_name"): None,
             Required("high_confidence_weight"): float,
-            Required("medium_confidence_weight"): float,
-            Required("low_confidence_weight"): float,
             Required("high_severity_weight"): float,
-            Required("medium_severity_weight"): float,
+            Required("low_confidence_weight"): float,
             Required("low_severity_weight"): float,
+            Required("medium_confidence_weight"): float,
+            Required("medium_severity_weight"): float,
+            Required("multi_package_resolution"): bool,
+            Required("package_name"): None,
             Required("si_reward_weight"): float,
         }
     )
