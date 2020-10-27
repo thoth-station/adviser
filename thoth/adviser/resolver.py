@@ -1068,8 +1068,8 @@ class Resolver:
                 jl("spec_env"),
             )
 
-        _LOGGER.info("Scoring user's stack - see %s", jl("user_stack"))
         if user_stack_scoring:
+            _LOGGER.info("Scoring user's stack - see %s", jl("user_stack"))
             try:
                 user_stack = self._maybe_score_user_lock_file(with_devel=with_devel)
             except UserLockFileError as exc:
@@ -1079,6 +1079,8 @@ class Resolver:
             else:
                 if user_stack:
                     yield user_stack
+        else:
+            _LOGGER.info("No scoring done on user's stack - see %s", jl("user_stack"))
 
         _LOGGER.info("Preparing initial states for the resolution pipeline")
         state = self._prepare_initial_state(with_devel=with_devel)
