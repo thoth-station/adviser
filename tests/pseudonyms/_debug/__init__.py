@@ -15,17 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Pseudonym units implemented in adviser."""
-
-from ._debug import AliasPseudonym
-from .intel_tensorflow import IntelTensorFlowPseudonym
-from .tensorflow_gpu import TensorFlowGPUPseudonym
-
-# Relative ordering of units is relevant, as the order specifies order
-# in which the asked to be registered - any dependencies between them
-# can be mentioned here.
-__all__ = [
-    "AliasPseudonym",
-    "IntelTensorFlowPseudonym",
-    "TensorFlowGPUPseudonym",
-]
+"""Tests related to debug pseudonyms."""
