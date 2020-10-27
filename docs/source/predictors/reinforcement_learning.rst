@@ -45,3 +45,7 @@ internal attributes of resolver.
 
   The temperature function can be plotted when ``--plot`` option is supplied to
   an adviser run.
+
+See `this notebook that shows the resolution process using TD-learning
+predictor
+<https://github.com/thoth-station/notebooks/blob/master/notebooks/development/Gradient-free%20reinforcement%20learning%20predictors.ipynb>`__.

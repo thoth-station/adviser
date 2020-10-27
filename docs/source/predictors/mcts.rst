@@ -56,3 +56,6 @@ the exploration phase finishes, beam size does not increase that drastically.
 
 It's also worth to point out the dataset used when creating plots was made out
 of sparse scores.
+
+See `this notebook that shows the resolution process using MCTS predictor
+<https://github.com/thoth-station/notebooks/blob/master/notebooks/development/Gradient-free%20reinforcement%20learning%20predictors.ipynb>`__.
