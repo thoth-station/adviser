@@ -39,7 +39,7 @@ parts are:
    requirements level:
 
   .. code-block:: yaml
-  
+
     steps:
     # Pin numpy to one version that can occur across all the stacks resolved:
     - configuration:
