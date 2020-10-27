@@ -47,6 +47,9 @@ class TestReport(AdviserTestCase):
             "pipeline": {"boots": [], "pseudonyms": [], "sieves": [], "steps": [], "strides": [], "wraps": [],},
             "products": [],
             "stack_info": [{"foo": "bar"}],
+            "resolver_iterations": 0,
+            "accepted_final_states_count": 0,
+            "discarded_final_states_count": 0,
         }
 
     def test_add_product(self, pipeline_config: PipelineConfig) -> None:
@@ -113,4 +116,7 @@ class TestReport(AdviserTestCase):
             "pipeline": pipeline_config.to_dict(),
             "products": [product.to_dict()],
             "stack_info": None,
+            "resolver_iterations": 0,
+            "accepted_final_states_count": 0,
+            "discarded_final_states_count": 0,
         }

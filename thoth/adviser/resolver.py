@@ -1261,6 +1261,9 @@ class Resolver:
             self.predictor.post_run_report(report)
             self.pipeline.call_post_run_report(report)
 
+        report.resolver_iterations = self.context.iteration
+        report.accepted_final_states_count = self.context.accepted_final_states_count
+        report.discarded_final_states_count = self.context.discarded_final_states_count
         return report
 
     def plot(self) -> matplotlib.figure.Figure:
