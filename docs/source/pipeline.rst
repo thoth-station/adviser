@@ -94,6 +94,11 @@ representation of a pipeline configuration or directly instance of
 :class:`PipelineConfig <thoth.adviser.pipeline_config.PipelineConfig>` with all
 the pipeline units instantiated and configured.
 
+See `this Jupyter Notebook
+<https://github.com/thoth-station/notebooks/blob/master/notebooks/development/Pipeline%20units.ipynb>`__
+that demonstrates how pipeline is constructed and how the resolution process
+uses it to resolve software stacks meeting the desired quality.
+
 Pipeline and resolver execution
 ===============================
 
