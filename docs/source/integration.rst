@@ -179,28 +179,30 @@ example <https://github.com/thoth-station/s2i-example>`__.
 Kebechet - GitHub application
 =============================
 
-Here is how in a few easy steps how you can add Kebechet to your Github project.
+Here is are few easy steps describing how you can add Kebechet to your GitHub
+project:
 
-Step 1 -
-# Install Thamos CLI tool:
+* Install `Thamos <https://pypi.org/project/thamos>`__ CLI tool:
 
-.. code-block:: console
+  .. code-block:: console
 
-  pip3 install thamos  # keep in mind: requires Python 3.6+!!
+    pip3 install thamos  # keep in mind: requires Python 3.6+!!
 
-# Go to repository that should be managed by Thoth which already has Pipfile present:
+* Go to the repository that should be managed by Thoth which already has ``Pipfile`` present:
 
-.. code-block:: console
+  .. code-block:: console
 
-   cd ~/git/repo/
+     cd ~/git/repo/
 
-# Setup Thamos configuration:
+* Setup Thamos configuration:
 
-.. code-block:: console
+  .. code-block:: console
 
-   thamos config
+     thamos config
 
-That’s it, thamos would create a ".thoth.yaml" file for you. Now you can append the managers you need to run on it. Here, for example, we want version and update manager to run on the demo repo so the config is -
+That’s it - thamos would create a "``.thoth.yaml``" file for you. Now you can
+change the managers you want to run. Here, for example, we want ``version`` and
+``update`` manager to run on the demo repo so the configuration is:
 
 .. code-block:: yaml
 
@@ -212,26 +214,31 @@ That’s it, thamos would create a ".thoth.yaml" file for you. Now you can appen
           configuration:
             labels: [bot, kebechet]
             changelog_file: true
-..
 
-In case thamos config doesn’t work for you -
-Add the `.thoth.yaml` file in your project root directory manually.
-Format - https://github.com/thoth-station/common/blob/master/.thoth.yaml
+In case thamos config doesn’t work for you, add the ``.thoth.yaml`` file in
+your project root directory manually.  An example can be found `here
+<https://github.com/thoth-station/common/blob/master/.thoth.yaml>`__.
 
-Kebechet cares about the managers you add under the manager section. You will find how to define the manager config under each of the manager readme - `kebechet/managers
-<https://github.com/thoth-station/kebechet/tree/master/kebechet/managers>`_.
-We have currently most packages for solved for these run time environments - rhel, fedora, ubi.
+Kebechet cares about the managers you add under the manager section. You will
+find how to define the manager config under each of the manager readme -
+`kebechet/managers
+<https://github.com/thoth-station/kebechet/tree/master/kebechet/managers>`__.
 
-Step 2-
-Now that you are done with the setup of which managers you want to be run on your project, you are done with the major part.
-We would next install the Github app to ensure we recieve webhooks from the repository, please install `Khebhut
-<https://github.com/apps/khebhut>`_, which is an alias for Kebechet.
-And finally let’s add our bot friend as a collaborator, so that he can help you maintain your project.
-In Github go to - Settings -> Manage access
-And invite `@sesheta
-<https://github.com/sesheta>`_ as a collaborater.
+To see available runtime environment configurations, check Thoth endpoints. For
+available configurations issue:
 
+.. code-block:: console
 
+  curl -X GET "https://khemenu.thoth-station.ninja/api/v1/runtime-environment" -H  "accept: application/json"
+
+Now that you are done with the setup of which managers you want to be run on
+your project, you are done with the major part.  We would next install the
+GitHub app to ensure we receive webhooks from the repository, please install
+`Khebhut <https://github.com/apps/khebhut>`__, which is an alias for Kebechet.
+
+And finally, let’s add our bot friend as a collaborator, so that he can help
+you maintain your project.  In GitHub go to ``Settings`` -> ``Manage access``
+and invite `@sesheta <https://github.com/sesheta>`__ as a collaborator.
 
 Jupyter Notebooks
 =================
