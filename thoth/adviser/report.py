@@ -42,6 +42,9 @@ class Report:
 
     count = attr.ib(type=int, kw_only=True)
     pipeline = attr.ib(type=PipelineConfig, kw_only=True)
+    resolver_iterations = attr.ib(type=int, kw_only=True, default=0)
+    accepted_final_states_count = attr.ib(type=int, kw_only=True, default=0)
+    discarded_final_states_count = attr.ib(type=int, kw_only=True, default=0)
     _stack_info = attr.ib(type=Optional[List[Dict[str, Any]]], kw_only=True, default=None)
     _heapq = attr.ib(type=List[Tuple[Tuple[float, int], Product]], default=attr.Factory(list), kw_only=True,)
     _heapq_counter = attr.ib(type=int, default=0, kw_only=True)
@@ -73,6 +76,9 @@ class Report:
             "pipeline": self.pipeline.to_dict(),
             "products": [product.to_dict() for product in self.iter_products()],
             "stack_info": self._stack_info,
+            "resolver_iterations": self.resolver_iterations,
+            "accepted_final_states_count": self.accepted_final_states_count,
+            "discarded_final_states_count": self.discarded_final_states_count,
         }
 
     def product_count(self) -> int:
