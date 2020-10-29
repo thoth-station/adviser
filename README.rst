@@ -74,6 +74,12 @@ considering aspects for the user software stacks, such as:
 All these vectors stated above form a "context" for pipeline builder (the robot
 in the animation) that creates the pipeline configuration (a set of pipeline units).
 
+**See also:**
+
+* `TowardsDataScience: How to beat Python’s pip: Software stack resolution pipelines <https://towardsdatascience.com/how-to-beat-pythons-pip-software-stack-resolution-pipelines-21bc37f01a93>`__
+* `YouTube: Pipeline units in a software stack resolution process <https://www.youtube.com/watch?v=OCX8JQDXP9s>`__
+* `Jupyter Notebook: Pipeline units in a software stack resolution process <https://github.com/thoth-station/notebooks/blob/master/notebooks/development/Pipeline%20units.ipynb>`__
+
 Predictor guided resolution process
 ===================================
 
