@@ -5948,3 +5948,1686 @@
 * Handle cannot produce stack exception so results are not overwritten
 ### Improvements
 * Link Jupyter notebook showing TD-learning and MCTS predictors
+
+## Release 0.19.2 (2020-10-29T17:02:24)
+### Features
+* Release of version 0.19.1
+* Add a generic alias pseudonym unit
+* Add a link to Jupyter Notebook demonstrating pipelines
+* Minor formatting changes in Kebechet docs (#1507)
+* Propagate statistics to the final report
+* Log message only if relevant (#1506)
+* Fix trailing whitespace in docs (#1505)
+* Release of version 0.19.0
+* Added documentation to integrate kebechet
+* Reflect MULTI_PACKAGE_RESOLUTIONS change in docs
+* Adjust testsuite so that it respects optimized wraps call
+* Make pre-commit happy
+* Add a note to wraps docs about wrap call optimization
+* Adjust testsuite accordingly
+* Call wraps only if products are in the final resolver result
+* Fix testsuite
+* Remove version clash boot
+* Fix pre-commit complains
+* Add imports to docs sample
+* Fix manifest changes docs
+* Add docs for advising manifest changes
+* Fix pre-commit
+* Fix docs formatting
+* Fix indentation in docs
+* Fix documentation for the package_name option in pseudonyms
+* Point to the existing relevant justification document
+* Provide stack info if direct dependencies were not resolved
+* Improve message logged
+* Make pre-commit happy
+* Fix return type
+* Add stack info when no stack is produced
+* Fix history kept in TD-learning
+* Temperature computation and probability does not need to be done for t=0
+* Do not keep history by default
+* Document latest predictor
+* Remove unused import
+* Mention the lib in docs
+* Use C extension for computing termial random
+* Do one step TD-learning and turn off trace
+* Get random dependency for expansion
+* Fix links to images
+* Fix links to images
+* Add docs for TD-learning
+* Introduce trace parameter to TD learning
+* Add MCTS demonstration
+* Fix MCTS history keeping
+* Docs update
+* Minor adjustment to annealing docs
+* Remove hill climbing copy-pasta leftover
+* Add an image for random walk
+* Fix path to images
+* Adjust plot labels
+* Fix index and add template files for predictors
+* Switch to TD-learning with step==2 instead of Monte Carlo learning
+* Fix log printed
+* Fix formatting
+* Add more weak condition when logging progress
+* Log based on iteration not based on final states produced
+* Enable probability assigning score when generating scores
+* Fix assigning score based on probability
+* Log the highest rated software stack found so far
+* Implement a unit for deterministic score assignment
+* Fix n-step TD-learning
+* Fix message logged
+* Be more accurate with plot label
+* Allow assigning score when package version or index url is not set
+* Set score can now generate random score if not explicitly provided
+* Plot resolver history
+* Register debug units so they can be easily run using supplied conf
+* Clear beam history
+* Implement n-step TD learning
+* Units do not need to be stated in the configuration
+* Provide probability configuration for assigning a score
+* Adjust for pre-commit
+* Remove tests related to policy shrink
+* No need to shrink in TD learning
+* No need to shrink learnt policy
+* Allow null values in pipeline units listing (#1441)
+* Add a note to README
+* Remove unused exception
+* Simplify units implementation based on calling contract (#1431)
+* Test default configuration schema in units (#1433)
+* Provide schema for security indicators step so that it is registered (#1432)
+* Introduce capability for obtaining units inside a builder context (#1430)
+* Implement package version in configuration for boots, strides and wraps
+* Fix trailing white space (#1429)
+* Link to justification document in each pipeline unit docs
+* exclude hc hs if type is secure (#1416)
+* Extend justifications section
+* Add justifications section to the docs
+* Add a link to RL resolution video
+* Adjust sentence
+* Turn html into an image so it's properly rendered by GitHub
+* Add a link to RL video
+* Fix links to YT video
+* Adjust docs for Dependency Monkey
+* Link to docs from README
+* Adjust docs for steps
+* Adjust docs for pseudonym pipeline units
+* Adjust docs for sieve pipeline units
+* Some units are specific to package, not to package version
+* Adjust predictor documentation
+* Adjust resolver section of docs
+* Some modifications to the pipeline section in docs
+* Mention pseudonyms in the pipeline unit docs
+* Add a link to shared deps note
+* Minor tweaks in the deployment section
+* Fix formatting
+* Adjust link to Python docs
+* Note to buildconfiguration
+* Fix formatting
+* Fix environment variable name
+* Link to beam
+* limit_latest_versions is no longer supported
+* Fix URL
+* Fix urls in the integration section
+* Adjust compatibility section in docs
+* State MDP in the README file
+* Fix docstring (#1418)
+* Remove voluptuous from dev-packages it is already in packages
+* Fix heading
+* Adjust README file
+* Use find_namespace_packages to discover all thoth-adviser modules (#1412)
+* Add missing schema
+* Optimize sieve and steps calls that are specific for a package (#1404)
+* Pass package_name from unit configuration (#1400)
+* Remove unused import
+* Remove unused import
+* Return pytest.skip if the pipeline unit cannot be verified
+* Add testsuite related to pseudonym runs
+* Release of version 0.18.0 (#1300)
+* Fix black complains (#1291)
+* Fix master branch
+* Rename sieve to conform naming convention
+* Provide stack info in step pipeline units
+* Provide stack info in pipeline sieves
+* Add stack information in boots
+* Fix complains of pre-commit (#1280)
+* Introduce a step for removing scipy for TF>=2.1<2.3 releases (#1249)
+* Add a link to Python version justification (#1273)
+* Add a mechanism to skip packages from a stack based on pipeline steps
+* Do not recommend using TensorFlow<2.3>=2.0 with NumPy>=1.19.0 (#1262)
+* Prevent resolving TF<=1.14 with gast>0.2.2
+* Implement a sieve that drops Pandas>=1.2 on Python 3.6 (#1264)
+* Fix pre-commit issues reported (#1254)
+* Fix formatting in backports
+* Fix message printed
+* Fix providing justification to CVE step
+* Add justification links related to user stack scoring
+* Add a step to make sure the correct version of NumPy is used for TF==1.13.1 (#1236)
+* Link justification documents related to resolver messages (#1232)
+* Fix wrong import
+* Provide justification links to various parts of the resolution process
+* Link justification for the approximating latest predictor
+* Recommend TensorFlow release based on CUDA present in environment (#1225)
+* Release of version 0.17.0 (#1227)
+* Fix version checks - be accurate about TensorFlow versions (#1224)
+* Notify about proper usage of Intel's MKL
+* Fix the testsuite issue
+* Make black happy
+* Implement automatic schema checks in the testsuite (#1217)
+* Be more specific about justification types provided
+* Provide mechanism to verify justification schema
+* Use cached Python version tuples
+* Exclude test files from the package
+* Additional changes to the implementation
+* State unit implementation placemenet in docs
+* Fix typing of advised manifest changes
+* Fix rebase issue
+* Make pre-commit happy
+* Advise to add OMP_NUM_THREADS environment variable when MKL is used
+* State advised manifest changes in the final product report
+* Use kw_only parameters in product
+* State manifest changes in the pipeline product
+* include whiskey_lake microarch to list of avx2 containing archs
+* Make pre-commit happy
+* Restrict resolutions of tensorflow==2.2 with tensorflow-probability (#1202)
+* Link to justification document when unresolved dependencies
+* Perform copy of the manifest changes for each state clone
+* Perform copy of the advised manifest changes on state clone
+* Correct messages printed to users
+* Fix message formatting
+* Adjust testsuite to check for justification link
+* Add an ability to specify manifest changes
+* Provide a link to justification to pipeline units
+* Revert "Provide a link to justification to each pipeline unit"
+* Provide a link to justification to pipeline units
+* Introduce a step prevents from resolving some combinations of urllib3 with TensorFlow=2.1
+* Release of version 0.16.0
+* Unresolved dependencies have to be set due to intersected deps
+* Implement a predictor that generates package combinations
+* Implement a predictor that generates package combinations
+* Document raising EagerStopPipeline in predictor
+* Fix issue caused when last unresolved dependency is removed
+* Update unresolved dependencies during the resolution process
+* Introduce prioritized packages to predictors (#1160)
+* Introduce a way to parametrize predictor (#1159)
+* Log warning about no SI just once per pipeline run (#1154)
+* Apply limit of stacks only for the accepted stacks (#1155)
+* Release of version 0.15.1 (#1149)
+* Fix SI step inclusion (#1146)
+* Release of version 0.15.0
+* Release of version 0.14.1 (#1140)
+* Fix f-string expansion in exception (#1120)
+* Introduce a stride for discarding non-unique stacks (#1119)
+* give user more information
+* add tests for si adviser step
+* Release of version 0.14.0 (#1118)
+* add security indicator step
+* Add docs for RL based predictors (#1105)
+* updated document with ceph deployment name specification (#1103)
+* Release of version 0.13.0 (#1077)
+* Fix selecting dependency monkey predictor based on decision type (#1090)
+* Add Kevin to owners section
+* Implement functools32 backport sieve
+* Make black happy
+* Do not provide _logged to init
+* Introduce a sieve to filter out backport functools32
+* Turn backport boots into sieves to run also on transitive dependencies
+* Respect review comments for documentation
+* Reformat using black
+* Add capability of skipping removing a library from an application stack
+* Stack information is never None
+* Add information about backports to stack info (#1069)
+* Fix pre-commit complains
+* remove file which is unused
+* Introduce boots for Python backports
+* Extend recommendation types
+* Remove latest versions limitation
+* Release of version 0.12.0 (#1056)
+* Release of version 0.11.0 (#1052)
+* Require newer version of attrs when running mypy
+* Introduce a sieve to filter out incompatible setuptools for Python 3.6
+* Change some mypy typing to comments to get aroudn subscripting errors
+* Remove tempalates handled by thoth-application (#1046)
+* :sparkles: added the cyborg-supervisors team to prow univers, after we have had it as a github team
+* Add link to Provenance Checks (#1045)
+* Introduce a mock score step for experimenting with predictors
+* Implement a pipeline step for recommending AVX2 builds of AICoE Tenso… (#1020)
+* Introduce a wrap for recommending Python3.8 on RHEL 8.2 (#1042)
+* Remove provenance-checker job template
+* Remove adviser job template
+* Remove Dependency Monkey job template
+* Update OWNERS
+* Remove latest versions limitation
+* Adjust MANIFEST.in
+* add secondsAfterFailure
+* Increase time for SLI
+* Remove dependency
+* Include each marker of a type just once
+* Release of version 0.10.0
+* Respect review comments
+* Update docs/source/deployment.rst
+* Note down beam width once the resolution is terminated
+* Document deployment and configuring adviser in a deployment
+* :recycle: Removed unnecessary tempalates
+* Add a boot for tracing memory consumption
+* Add a check for available platforms
+* adjust kebechet run-results workflow
+* add conditional to workflow
+* add default output params
+* indent to follow coala styling
+* Added black
+* Added pyproject.toml
+* Use trigger integration in adviser workflow
+* add is_missing to mock tests
+* Add outputs
+* Change to trigger integration task
+* add ssh to adviser workflow
+* secret mount WorkflowTemplate->Workflow
+* add ssh volume mount
+* added a 'tekton trigger tag_release pipeline issue'
+* add volume mount for proper output
+* change env name
+* add run-result to adviser workflow
+* add is missing resolver
+* Release of version 0.9.5
+* Add unsolved-package-handler to adviser workflow
+* first attempt at kebechet run results task
+* update versions
+* Use thoth-toolbox
+* Use thamos from upstream
+* Fix links to docs and add s2i migration video
+* create sieve for missing package versions
+* Improve message provided to user
+* Point to s2i-example-migration
+* Implement platform boot
+* Adviser Dev env var added to template
+* Include MKL warning also in dependency monkey runs
+* intel-tensorflow is built with MKL support
+* Handle exit code regardless core file is produced
+* Create a wrap for Intel's MKL env variable configuration
+* Fixed readme link
+* consistency in using secrets
+* Fix liveness probe
+* Add missing liveness probe to advise workflow
+* Export variable as adviser forks a sub-process
+* Release of version 0.9.4
+* Empty commit to trigger the new release
+* Introduce heat up phase for the latest predictor
+* Setup TTL strategy to reduce preassure causing OOM
+* Adjust the message produced
+* Reduce beam width to address OOM issues for large stacks in the cluster
+* Recommendation type is not lowercase
+* Disable provenance checks
+* Release of version 0.9.3
+* Release of version 0.9.2
+* Adjust parameters in deployment
+* Release of version 0.9.1
+* Release of version 0.9.0
+* Add fext to application requirements
+* Remove unusued parameter
+* Re-enable fext for beam's internal state handling
+* consistency in openshift templates to run provenance
+* Prioritize releases by AICoE
+* Add option consider/do not consider dev dependencies
+* Increase timeout for running tests
+* Increase timeout for running tests
+* No need to initialize logging multiple times
+* Optimize termial of n computation
+* Fix scoring of the user stack
+* Optimize termial of n computation
+* Document provenance checks
+* Fix dependency monkey invocation flag
+* Log resolver progress each 10%
+* Missing parenthesis prevent sync on Ceph
+* Fix docstring
+* Updates to the new beam API
+* Reduce memory footprint
+* Implement MCTS predictor
+* Additional changes for TD
+* Fix annealing testsuite
+* Introduce Temporal Difference based predictor using annealing based scheduling
+* Fix coala complains
+* Introduce user stack scoring as a base for comparision
+* Correct space for exception
+* Fix handling of environment markers when multiple packages use marker
+* Release of version 0.8.0
+* Fix defaults in CLI, they are lowercase now
+* Resolver does not check runtime environment specification during state resolving
+* Add Python version boot
+* Start using fext in adviser
+* Adjust string for image and key
+* Add registry env variables
+* Generalize variables for Ceph for the workflows
+* Prevent from OSError when the requirements string is too large
+* Add voluptous to requirements.txt
+* Remove typeshed
+* UBI boot has to be before boot that checks RHEL version
+* Solved software environment has to be run after changes to environment
+* Adjust testsuite
+* Propagate the original runtime environment used in resolving in pipeline products
+* Increase timeout for pytest tests
+* Fix test suite
+* Ignore the run logger for dependency monkey runs
+* Fix type
+* Propagate metdata to products
+* Allow context to be passed as a file
+* Update thoth-storages to address import issue
+* Update dependencies
+* Propagate metdata to products
+* Bump template version
+* OpenShift templates are referenced by label
+* Update dependencies
+* Adviser workflow when using Thamos CLI
+* No deafult value null for metadata
+* Add template for releases
+* Revert to flexmock(GraphDatabase)
+* GraphDatabase->graph
+* follow python standards
+* add more flex
+* Update .thoth.yaml
+* change to should call
+* initialize graph
+* abi-compat-sieve tests
+* Run workflow even if adviser fails
+* add env variable
+* State thoth-s2i in integration
+* Add a wrap for adding info about no observations
+* Update docstring
+* Modify parameters for GitHub App
+* cache query results
+* self.image_symbols is now a set
+* Create abi sieve
+* Adjust script in finished webhook
+* adjust script in finished webhook template
+* Adjust inner workflow for GitHub App
+* Do identity check instead of equality check
+* Capture CLI parameters in resolver's context
+* Log information about future solver runs of unsolved dependencies
+* Fix Coala complains
+* Introduce normalization of score returned by step units
+* Introduce RHEL version boot for RHEL major releases
+* Rename template for workflow-operator
+* Disable dry run for Thoth's recommendations
+* Do not show information about results being submitted to result API
+* Use epsilon greedy strategy for picking the latest version
+* Adjust limit latest versions and beam width
+* Assign correct default value
+* Do not keep history in adviser runs
+* Fix default value key
+* Add missing metadata to adviser job template
+* Fix handling of --dry-run parameter
+* Show version of direct dependencies explictly
+* Include random decision stride only explictly
+* Introduce stride for getting one version in a stack
+* Move log_once to utils function
+* Optimize state removal out of beam
+* Optimize handling of the top score kept in beam
+* Prevent annealing from being stuck
+* Log stack counter in a more human readable form
+* Propagate also expanded package tuple to reward signal
+* Mention behavior for the default value
+* Log pipeline speed
+* Release of version 0.7.3
+* Create more descriptive message
+* Fix log message reported
+* Log interesting checkpoints during resolution to user
+* Reward signal now propagates state for which the reward signal is computed
+* Introduce a method for getting a state by its id
+* Fix beam method signatures
+* Remove unused import statement
+* Introduce approximating latest predictor
+* Re-add state with no unresolved dependencies back to beam on resolution
+* Remvoe accidentally committed print statement
+* Predictor should pick key to beam
+* Introduce assigned context to predictor
+* Extend docs with MDP
+* Release of version 0.7.2
+* Release of version 0.7.1
+* Set random walk as default predictor for Dependency Monkey
+* Inspection endpoint does not accept runtime environment
+* Fix submitting inspections
+* Add a boot that checks for fully specified environment
+* Add ability to block pipeline units during pipeline build
+* Bump template patch version
+* Fix decision type environment variable name
+* There is no option for DEPENDENDENCY_MONKEY_LIMIT
+* did not save merge before merging
+* Yield from iterator to keep context
+* Add a note on requirements.txt
+* State pip/pip-compile support in integration section
+* Adjust testsuite accordingly
+* Sort direct dependencies for reproducible resolver runs
+* Do not prefer recent versions in random walk and sampling
+* Optimize arithmetics a bit
+* Be more explicit about the function call in docstring
+* Introduce termial function to prefer more recent versions randomly
+* Extend resolver testsuite
+* Adjust env variable name
+* Boots can raise not acceptable
+* Register solved software environment boot
+* Sort reported environments
+* Introduce solved software environment boot
+* Fixed missing emptyDir in the Adviser Workflow
+* Limit number of software stacks to 1 on LATEST
+* Adjust testsuite to correctly propagate reward signal
+* Introduce beam.reset()
+* Introduce beam.get_random()
+* Reward signal now accepts resolver context
+* Remove environment serialization - it takes some time during runs
+* Random walk and initial configuration change
+* Fixed too many blank lines in Workflow template
+* Fixed adviser Workflow template
+* Happy new year!
+* Adjust documentation for the new predictor run API
+* Predictors now return also packages that should be resolved from states
+* Fix docstring of boot
+* Add a boot for mapping UBI to RHEL
+* Exclude reports from run error in Sentry
+* Add checks for special cases when environment markers apply to leaf nodes
+* Register CVE step only for STABLE and TESTING recommendation types
+* Automatically choose the most appropriate predictor based on CLI
+* :sparkles: added an Argo Workflow to run an advise
+* :see_no_evil: ignoring the xml report coverage file
+* Format using black
+* Counter is no longer used
+* Improve multi-key sorting of states in the beam
+* Log warning about shared dependencies in the dependency graph
+* Do not retrieve markers during resolution
+* Fix logging format expansion
+* Fix computing top state in the beam
+* Simplify creation of initial states
+* Fix Coala complains
+* Keep track of dependencies added
+* Accepted final states can be 0
+* Make temperature function a function of iteration as well
+* Keep beam in context
+* Implement a dropout step
+* Bump version in templates
+* Fork only in the cluster
+* Fix coala complains
+* Document new iteration round methods
+* Adjust docs for limit latest versions
+* Always bind context
+* Adjust test suite
+* Adjust semantics of limit latest versions
+* Add a note on shared dependencies
+* Refactor plotting primitives
+* Do not keep history if not plotting in CLI
+* Use SIGINT in liveness probe
+* Implement version clash boot
+* Add locked sieve
+* Beam width is stated two times
+* Document OpenShift s2i build integration
+* Document build-watcher
+* Log correct file location for beam history plots
+* Document build-watcher
+* Add a link to Thamos documentation
+* Point to Thamos documentation instead of GitHub repo
+* Add architecture diagram
+* State also core repository
+* docs: Architecture overview section
+* Remove graph cache bits no longer used
+* Document pipeline configuration instrumentation
+* Point documentation to other libraries
+* Add developer's guide to documentation
+* Use RHEL instead of UBI
+* Update Thoth configuration file and Thoth's s2i configuration
+* Add note to step docs - no adjustment in step or beam
+* No need to clone a state before running steps
+* Do not show not relevant logs to users
+* Fix exit code propagation of the forked child
+* Add validation of count and limit resolver attributes
+* Propagate information about package that has CVE to justification in CVE step
+* Add Google Analytics
+* Fix reference to sieve in docs
+* Fix references to the source code
+* Release of version 0.7.0
+* Graph cache is not used anymore
+* Fix coala complains
+* Enhance exception
+* Give more information dependencies were not resolved
+* Set beam width template in the adviser template job
+* Fix coala complains
+* Fix coala complains
+* Fix stride signature
+* Fix boot docstring
+* Fix tests
+* Optimizations of beam
+* Fix Coala complains
+* Use generators to retrieve items
+* Provide property for run executor that prints report
+* Provide an option to configure pipeline via file/dict
+* Step should not return Nan/Inf
+* Use backtracking to run steps
+* Make coala happy again
+* Fix beam top manipulation
+* Add logic for registering a final state
+* Add dependencies only if they were previously considered based on env marker
+* Remove print used during debugging
+* Change default number of stacks returned on call
+* Fix parameter to adviser CLI
+* Adjust logged messages
+* Make beam instance of resolver
+* Sieve now accepts and returns a generator of package versions
+* Address review comments
+* Fix coala issues
+* Optimize retrieval of environment markers
+* Propagate document id into jobs
+* More tests
+* Bump library versions
+* Fix hashes representation in the generated Pipfile.lock
+* Remove score filter stride
+* Remove Dgraph leftovers
+* Hotfix for obtained hashes
+* Notify when a new pipeline product was produced
+* Notify user when computing recommendations
+* Update dependencies
+* Fix coala complains
+* Plotting environment variables were renamed
+* Add missing modules
+* Update dependencies for new API
+* New thoth-python uses packaging's Version with different API
+* Remove old test - solver does not support latest versions anymore
+* Fix coala issues - reformat using black
+* Use new solver implementation
+* Adjust provenance-checker output to be in alaign with adviser and dm
+* Revert "runtime_environment var should be dict in parameter"
+* Fix exit code propagation to the main process
+* runtime_environment var should be dict in parameter
+* Release of version 0.6.1
+* Cache queries for retrieving enabled indexes
+* Use slots on pipeline unit instances
+* Release of version 0.6.0
+* Start using adaptive simulated annealing
+* Release of version 0.6.0
+* updated templates with annotations and param thoth-advise-value
+* Pin thoth libraries which will have incompatible release
+* Fix duration
+* Fix duration calculation
+* Add duration to Adviser
+* Introduce sieve for limiting number of latest versions in direct dependencies
+* Add a new sieve for limiting pre-releases in direct dependencies
+* Introduce semver sorting on direct dependnecies - sieve
+* use postgresql hostname from thoth configmap
+* Add check for upstream tensorflow parsing
+* Adjust os sieve testsuite to reflect changes
+* Add Sentry DSN to build of adviser-cached
+* Propagate deployment name to have reports when cache is built
+* Propagate deployment name for sentry environment
+* Fix testsuite
+* Make coala happy
+* Fix indentation issues
+* Relock requirements
+* Fix exception message
+* Implement solved sieve
+* Changes needed for PostgreSQL migration
+* Add a pipeline step which removes unsolved packages
+* Store and restore cache on builds
+* Adjust cache not to cache graph database adapter
+* Create adviser cache during container build
+* Propagate runtime environment explicitly
+* Use more generic env var names
+* Start using PostgreSQL in deployment
+* Turn error into warning
+* State how to integrate with Thoth in docs
+* Start using Thoth's s2i base image
+* Fix missing packages in adviser's package
+* Document how to make changes in the dependency graph while it changes
+* A package can be removed in the previous sub-graphs removals
+* Start using Thoth in OpenShift's s2i
+* Ask graph database only for packages which were already solved
+* Do not remove package tuples which are direct dependencies
+* Do not treat builds as pre-releases
+* Fix resolving direct dependencies based on the score
+* add metadata
+* Introduce sieves
+* Update docs with sieves
+* Release of version 0.5.0
+* Deinstantiate solver once it is no longer needed
+* Fix instantiation of edges
+* Adjust testsuite so that it works with new implementation
+* Fix handling of additional pytest arguments in setup.py test
+* Fix handling of additional pytest arguments in setup.py test
+* :pushpin: Automatic dependency re-locking
+* Remove unused import
+* Improve some logger messages
+* Optimize retrieval of transitive dependencies to avoid list copies
+* Optimize instantiation of objects when resolved from graph database
+* Remove invalid configuration entry APP_FILE in build config
+* Fix transitive query - correctly propagate runtime information
+* Improve warning message
+* Remove score based cut-off step, observation reduction takes its position
+* Introduce observation reduction step to reduce subgraphs with no observations
+* Introduce routines for iterating over develop and non-develop deps
+* :sparkles: added the standard github configuration and a CODEOWNERS file
+* Update lockfile
+* Report used pipeline configuration of adviser to user
+* Minor changes
+* Use CXXABI_1.3.8
+* Use black for formatting
+* Rework optimizations
+* Adjust testsuite for new implementation
+* Report packages forming a found stack inside to a log
+* Print out estimated number of stacks in scientific form
+* Use only packages with known index
+* Add build trigger using generic webhook
+* Updated Readme to Dgraph examples
+* Optimize package removal by working on indexes instead of package tuples
+* Update documentation to respect current state
+* Use uint16_t for representing packages in libdependency graph
+* Provide better report to user on why adviser has stopped prematurely
+* Use defaults of -1 for "unlimited" numbers in the cluster
+* Be more user-friendly in cluster logs
+* Log number of packages considered during dependency graph traversals
+* Fix testsuite
+* Create pipeline builder abstraction
+* Release of version 0.4.0
+* Fix coala issues
+* Use new method to obtain even large stacks from graph database
+* Add information about library usage to pipeline and OpenShift job
+* Build-time error filtering should be a very first step
+* Fix issue happening in semver sort after a package is removed
+* Implement build-time error filtering step
+* Adjust provenance-checker template to use Dgraph
+* Adjust adviser template to use Dgraph
+* Report overall score of a stack
+* Remove is_solvable flag as done in Dgraph implementation
+* Added the method to read version from project to conf.py
+* Remove JanusGraph specific bits
+* Do not depend on specific graph adapter from specific module
+* Remove JanusGraph specific bits
+* Trigger dependency monkey reports sync into graph database
+* Create a workaround for click argument parsing from env vars
+* :sparkles: added the Registry to be used for image pulling to the templates
+* Adviser implementation using stack generation pipeline
+* Make Isis a proper adapter
+* Report premature end of stack stream
+* Improve handling of long-running advises
+* Add timeout seconds for adviser to let it submit results
+* Top score is now 100
+* Make reports more human readable
+* Fix testsuite
+* Add Thoth's configuration file
+* Make Isis instance attribute
+* Always kill stack producer if there is no consumer of stacks
+* Fix Coala issues
+* Introduce stack producer timeout
+* Use Sphinx for documentation
+* Introduce parameters for limiting number of versions
+* Introduce limit parameter to limit number of packages of a same type
+* Fix usage of package_t in libdependency_graph.so
+* Use safe_load
+* Fix coala complains
+* Report any exception which occurred during dependency monkey run
+* Introduce checks on configuration
+* Make sure Isis is a singleton
+* Use Isis API from configmap
+* Make Coala happy again
+* Use black for formatting
+* Add missing file
+* Make sure versions are sorted, add tests for adviser
+* Fix tests
+* Log runtime environment when computing advises
+* Address coala issues
+* Add an optional graph database adapter to reduce number of connections
+* Update README, state local run in a container
+* Remove unused env variables
+* Provide Sentry and Prometheus configuration
+* Add metadata information shown in result reports
+* Update Pipfile.lock
+* Register provenance-checker to graph-sync-scheduler
+* Use runtime information during runtime-specific resolution
+* Use runtime environment as provided by user
+* Use click echo instead of raw print
+* Fix wrong order of tuples
+* Provide generic stack information
+* Score and report CVEs in the application stack to the user
+* Report version on each run
+* Do not be too verbose
+* Document dependency graph build
+* Report number of stacks scored
+* Fix coala complains
+* Wait for parent to score stacks in stack producer
+* Add shared library for CentOS:7
+* Provide Dockerfile for container-build
+* Add linked library
+* Initial dependency graph implementation in C++
+* Correctly handle end of pipe
+* Adjust .gitignore
+* Run dependency graph as a standalone process, produce stacks into pipe
+* It's already 2019
+* Restrict indexes in dependency monkey runs
+* Schedule graph syncs for adviser runs by graph-sync-operator
+* Fix hashes collision in generated Pipfile.locks
+* Implement dependency graph in C++
+* Amun API URL is used by Dependency Monkey
+* Argument has to be named otherwise cannot be used as kwargs
+* Increase run time for dependency monkey
+* Propagate whitelisted sources to provenance checks
+* Increase dependency monkey requests
+* Correctly propagate job ids from workload operator
+* Fix CI by updating thoth-python package
+* Remove duplicit parameter from template
+* Increase adviser job run limit
+* Provide limit and count defaults in template
+* Add coverage file to .gitignore
+* Fix linter issues
+* Fix wrong variable usage
+* Report limit if limit was reached
+* Refactor test suite
+* Use black for formatting
+* Use to_tuple_locked method as we have locked packages
+* Fix missing import
+* Construct Pipfile from resolved dependencies
+* Print estimated number of software stacks
+* Remove unused if statement
+* The decision function is now not optional
+* Performance based scoring on exact stack match
+* Do not pass None values in runtime environment to_dict
+* Simplify work with dependency graph
+* Avoid possibly inserting same package versions multiple times
+* Use Python 3.6 by default
+* Discard original sources when creating a new project
+* Fix transitive dependencies retrieval
+* Don't be too verbose in logs
+* Fetch digests from graph database in provenance checks
+* Capture all the layers of dependencies
+* Fix injecting digests into generated stacks
+* Do not forget to package requirements.txt
+* Raise an exception if no matching versions were found
+* Consider also version when creating dependency graph
+* Correctly fill stacks with package digests
+* Remove files that were moved to thoth-python
+* Include index when retrieving packages from the graph database
+* Fill package hashes from the graph database
+* Fix import errors
+* Use thoth-python package
+* Fix janusgraph port
+* Fix Coala complains
+* Fix missing import
+* Pass index to be none always
+* Fill package digets in advises
+* Be consistent with subcommand naming
+* Introduce limit in dependency monkey template
+* Introduce limit and count in adviser template
+* First implementation of the Adviser class
+* Default to stdout in dependency monkey
+* Refactor dependency monkey so that it can be used in notebooks
+* Perform deepcopy to report the correct input
+* Fix filling hashes multiple times
+* Seed and count can be empty string
+* Convert required parameters to ints
+* Fix environment variable name
+* Improve logging
+* Fix missing import
+* Make sure queries respect python package names according to PEP
+* Improve logging to make sure its visible what's going on
+* Fix syntax error
+* Fix import error
+* Add missing import
+* Issue warning when submitting to Amun API
+* Handle exceptions happening when submitting to Amun API
+* Add exception if constraints cannot be met
+* Always check which source in a warehouse
+* Adjust dependency monkey job template
+* Aaa
+* Fixes in the dependency graph implementation
+* Add missing imports
+* Check first layer of dependencies for validity
+* Sanity check for adding non-locked version to lock
+* Introduce graph Python solver
+* Add testsuite for graph solver
+* Introduce dependency graph
+* Introduce graph Python solver
+* reading README from file, its the long_description...
+* Check for latest packages present on indexes
+* Release of version 0.3.0
+* using thoth zuul jobs now
+* Adjust setup.py to run testsuite correctly
+* Run testsuite using setup.py
+* Output to JSON in adviser
+* Link PackageVersion to Source index used
+* Report dict reporesentation of input instead of raw strings
+* Add missing parameters to template
+* Fix labels section in template
+* Dependency monkey is a template
+* Move dependency monkey to a job template
+* Rename adviser template to be more clear
+* Move from Pods to Jobs
+* Directly pass adviser subcommand that should be run
+* Introduce Dependency Monkey template
+* Update README file
+* Fix link to Thamos
+* Possible different source is info
+* Add Codacy badge
+* Fix testsuite respecting last changes
+* Link to Pipenv docs for specifying package indexes
+* Fix console figure
+* State configured index in the report message
+* Adjust reported issue id for possible different source
+* Add installation section and adjust based on review comments
+* Document provenance checks
+* Quote relevant parts of string
+* Make artifact names lowercase by deafult
+* Finish provenance reports
+* Report directly findings in the provenance check report
+* Adviser report should be always an array
+* Ignore s2i's virtualenv in which adviser is run
+* Increase memory for adviser due to OOMs
+* Release of version 0.2.0
+* Do not use command in openshift template
+* Release of version 0.1.1
+* Release of version 0.1.0
+* Initial dependency lock
+* Add forgotten lxml library for bs4 parsing
+* Provide JanusGraph configuration in provenance-checker template
+* Provide JanusGraph configuration in adviser template
+* Pass full path to Python3 in s2i
+* Make CLI executable
+* Install forgotten packages
+* Add execute bit to app.sh
+* Revert "Provide entrypoint for OpenShift s2i"
+* Provide a script to run desired subcommand
+* Provide entrypoint for OpenShift s2i
+* Remove unused script as adviser is s2i now
+* Remove Dockerfile as adviser is s2i now
+* Initial dependency lock
+* Let Kebechet pin down deps
+* Remove old TODO
+* Implement sorting based on semver
+* Create abstraction classes
+* Initial python recommendation implementation
+* Introduce provenance checker template
+* change the queue
+* State all template parameters
+* Be consistent with label naming
+* Update requirements.txt respecting requirements in Pipfile
+* Add app=thoth label to pod template
+* Adjust template labels
+* Fix image stream kind in template
+* Fix coala naming convention configuration
+* Add OpenShift templates for deployment
+* Initial dependency lock
+* Delete Pipfile.lock for relocking dependencies
+* relocked, travis removed, zuul added
+* Update thoth packageswq
+* Do not restrict Thoth packages
+* Run coala in non-interactive mode
+* Run coala in CI
+* Create OWNERS
+* Remove dependencies.yml
+* Fix package name in license header
+* Use thoth's common logging
+* Add README file
+* Version 0.0.2
+* State only direct dependencies in requirements.txt
+* Version 0.0.1
+* Update dependencies
+* Update thoth-storages from 0.0.3 to 0.0.4
+* Rename environment variables to respect user-api arguments passing
+* Create initial dependencies.yml config
+* Change envvar for --requirements option
+* Expose advise_pypi function
+* Version 0.0.0
+* Build adviser image in CI
+* Initial template for implementation
+* Initial project import
+### Bug Fixes
+* Handle cannot produce stack exception so results are not overwritten
+* Provide stack info if resolver failed to resolve direct dependencies
+* Minor fixes in docs
+* Minor fixes in the README file
+* Do not accept CVEs when recommendation type is set to security
+* Do not accept stacks with TF 2.1 and urllib3 that cause issues
+* Extend the tf-probability import error to all tensorflow-packages
+* Add a wrap that notifies about a bug in the summary output
+* Notify users about accuracy bug when TensorFlow 2.3 is used (#1200)
+* Adjust testsuite to the unresolved optimization fix
+* Relock dependencies due to Pipenv/Kebechet bug
+* fix test and upgrade to warning
+* Fix detection of OOM when os.waitpid is used (#1138)
+* Adjust message when resolver does not find any stack (#1109)
+* fix pytest failures by moving attributes due to bad instantiation order
+* add pre-commit and fix all except mypy errors
+* Dependency relocking to fix CI
+* Call destructor of the final state explictly once done with the state
+* Coala fix
+* fix parameter passing
+* Sync variable fix for provenance check
+* Update dependencies to pass the test suite
+* fixed coala errors
+* fixed coala complaint
+* fixed the apiVersion of all the OpenShift Templates
+* Improve message when adviser is stopped based on CPU time
+* Fix bug causing adviser halt for shared resolved packages
+* Fix info message causing issues when the beam is empty
+* Minor fixes in api_compat
+* Address issues spotted in resolution when MCTS is used
+* Fix context handling when passing in as raw JSON
+* Make sure the error report for adviser exceptions is always present
+* Rewrite beam so that it does not use fext
+* fixed coala
+* Distinguish different types of errors of adviser runs for SLO
+* Do not overwrite results computed in the forked process
+* Add default value when user does not provided Pipfile.lock
+* back to should receive after storages update
+* Propagate information about missing configuration in report
+* Fix a bug when env is not fully specified and env marker filters out deps
+* Terminal output is slow, log only after N stacks generated
+* Fix bug shown when sieves or steps filtered out dependecies
+* Raise an error if no direct dependencies were found
+* Report error on resolution failure
+* Fix exception error messages produced
+* Correct wrong key in template
+* Use r""" if any backslashes in a docstring
+* Implement resolving stop when SIGINT is caught
+* Fix issue when there are no unresolved dependencies left in the state
+* Produce more descriptive message if any of direct dependencies was not resolved
+* Minor typo fixes
+* Fix resolving direct dependencies when pagination is used
+* Add spaces to fix toml issues
+* Introduce a stable sorting of packages in sieve context
+* Create a check and test case to handle errors when trying to resolve unsolved packages
+* Improve error message reported if no releases were found
+* Inform user that the missing release will be analyzed later on
+* Add error message if no stacks were produced
+* Report error if no recommendation was produced
+* Additional fixes and additions
+* Parse a special value of -1 in the cluster to workaround click's errors
+* Place toolchain cut after semver sort
+* Re-introduce filedump for fixes on long-lasting queries
+* Propagate information about project runtime when checking buildtime error
+* Fix empty paths if there is raised an exception about invalid pkg removal
+* Log message was missleading if package_tuple gets overwritten
+* hot fixing the timeout
+* Minor fix in logged message
+* Take into account packages that are not installable into the given env
+* Raise an exception on premature stream end
+* Minor docs fixes
+* Minor fixes in decision functions
+* Minor fixes in dependency monkey
+* Minor fixes
+* Structure error reports correctly respecting schema
+* CI fixes
+* Minor fix in docstring
+* CI fixes
+* fixing coala
+* Report back error if we cannot conclude on application stack
+* Setuptools find_packages does not respect namespaces
+* Some CI fixes
+* Another CI fix
+* Another CI fix
+* CI fix
+### Improvements
+* Link Jupyter notebook showing TD-learning and MCTS predictors
+* Minor refactoring and a note addition
+* Add docs for package combinations predictor
+* Make multi_package_resolution part of the step unit configuration
+* Add tests for product addition to report
+* Add documentation for predictor that uses a gradient based method
+* Print found stack score to logs
+* Add documentation for adaptive simulated annealing predictor
+* Document sampling, random walk and hill climbing predictors
+* Remove unused parts
+* Keep resolver history only if needed
+* Turn off multi package resolution for debug units
+* Remove unused imports
+* Rework generate score unit not to use random module
+* Make temperature coefficient parametrize and increase it
+* Deinstantiate solver and let gc do its job
+* Update docs to reflect package_name in boots, strides and wraps
+* Fix typo
+* Adjust the unit section of documentation
+* Add images for pipeline and pipeline builder
+* Add tests for skipping a package from steps (#1411)
+* Add tests related to unit_run flag
+* Introduce Pseudonym pipeline unit type (#1313)
+* Introduce a base class for implementing pipeline unit tests (#1314)
+* Include pre-releases pipeline unit only if pre-releases are disabled (#1284)
+* Turn warnings into errors reported when AICoE index cannot be parsed
+* Add test for intel TensorFlow (#1231)
+* Rephrase code to make pydocstyle and black happy at the same time
+* Restructure how unit modules are shipped within the package
+* Fix warnings produced during executing the test suite (#1162)
+* Fix recommendation name - use security
+* clean-up tests
+* use self.configuration for weights
+* include for stable recommendation and parameterize weights
+* Add a pipeline unit for suggesting Intel TensorFlow builds (#1093)
+* Add docs to pipeline units and their usage (#1082)
+* Turn skip package to debug message (#1083)
+* Added notes to tests
+* Rename to PERFORMANCE and SECURITY (#1078)
+* Document how to do unit placement in modules
+* Add tests for skipped packages
+* State aicoe and upstream specific build info for TensorFlow (#1070)
+* MyPy type annotations and checking
+* Document Wrap pipeline unit type (#1047)
+* Disable setup.py processing in s2i builds
+* More optimizations to speed up adviser
+* Do not use OrderedDict for internal state representation
+* Preserve order in pre and post run methods
+* correct typo
+* use workflow-helpers
+* kebechet->KEBECHET because of enum values
+* use THOTH_ in fron env
+* use workflow-helpers for tasks
+* clean up tasks, remove unnecessary stuff
+* Remove sieve and use inital query
+* added to do for thoth.storages
+* Adjust test accordingly
+* Fixes needed to make this package available on PyPI
+* Tweak temperature function for ASA, TD and MCTS
+* Introduce heat up part of MCTS
+* Do not keep beam history if not necessary
+* Wrong variable name
+* remove default values
+* Fixed error log and old api
+* Introduce package source index sieve for filtering based on index
+* Use the correct condition for checking parameters
+* Add URLs to GitHub and PyPI
+* Adjust version and use correct keys
+* Use correct storage to store results
+* Make decision type and recommendation type lowercase
+* Move cache to storage level
+* shortcut if package requires no symbols
+* Try its best to always come up with a latest stack
+* Use WARNING log level in thoth.common
+* Ask for thoth.adviser log to have clean logs and respect log configuration
+* Introduce version constrain sieve pipeline unit
+* Refactor keep history into an utility function for reusability
+* Add tests for no dependencies cases during resolution
+* Rebase and simplify code
+* Introduce finalizers for predictor's memory footprint optimization
+* Do not run adviser from bc in debug mode
+* Do not run adviser from bc in debug mode
+* Add testsuite for solved software environment pipeline unit
+* Beam is part of context, no need to pass it explictly
+* Add few more asserts
+* Add tests for leaf node expansion with marker set to False
+* Adjust API and tests to the new change
+* Log also beam size
+* Match only first part of tuple
+* Adjust relative order for steps registration
+* Revert "Add new iteration method for sieves and steps"
+* Add new iteration method for sieves and steps
+* Add tests for limit latest versions and semver sort
+* Rename and move history related bits in predictors
+* Remove debug print
+* Tests for hill climbing and sampling, minor refactoring
+* Document beam width and how to plot it
+* Remove old comment
+* Point to source code documentation for described methods
+* Adjust parameters for adviser and dependency-monkey
+* Some docs for readers and developers
+* Log package version before pipeline step execution
+* Remove unused method
+* Test simulated annealing primitives, refactor core annealing part
+* Add tests for two corner cases for package clash during resolution
+* Adjust limit latest versions signature, do not perform shallow copy
+* Fix typo in docstring
+* Even more tests
+* Remove unused imports
+* Split adviser implementation for extensibility and testing
+* Update README to show how to run adviser locally
+* Use THOTH_ADVISE variable for consistency
+* Do not use cached adviser
+* Re-anable operating system sieve
+* Check we do not raise exception if os sieve wants to filter out all packages
+* Just a minor change to make code great again
+* Introduce tests for checking correct parsing of AICoE releases
+* Add seldon and seldon-core to cached packages
+* Corrected typos
+* Print out packages before each pipeline unit
+* Do not use -e flag
+* Add more packages to cache config file
+* Do not use setuptools.find_namespace_packages() for now
+* Change name of Thoth template to make Coala happy
+* Adjust testsuite to use only_solved flag
+* Fix reference to variable - do not pass class
+* Move logic of stack candidates preparation to finalization part
+* Rewrite core adviser logic for dependency graph manipulation
+* Adjust testing recommendation type for now
+* Add tests for observation based reduction
+* Implement structure for dependency graph adjustment
+* Increase default adviser's requests and limits
+* Keep stats for package removals per step run
+* Simplify module structure to libdependency_graph library
+* Give adviser more time to process rest of the stacks in queue
+* Remove toolchain to always use latest toolchain release
+* Provide fast-path when checking for already removed packages
+* Adjust Dependency Monkey to use Dgraph
+* :bug: put some sane default for IMAGE_STREAM_NAMESPACE into each template
+* :sparkles: ImageStream Tag and Namespace
+* Do not score more than requested number of latest stacks
+* Fix some test errors
+* Minor improvements
+* Use black for formatting tests
+* Report CVE count only if there were some found
+* Open source documentation for dependency graph
+* Minor changes in comment and logging message
+* Use proper loglevel for debug message
+* Reuse connected graph adapter do reduce number of connections
+* Remove unused imports
+* Link to Dependency Monkey design document
+* Add dependency monkey design document into docs
+* Cut off and minor adjustmets
+* Adjust dependency graph to use ids
+* Fix handling of runtime environment, remove unused bits
+* Utilize iter_dependencies locked method
+* Mark jobs for cleanup
+* Remove unused perf type
+* Prepare dependency graph for graph slicing
+* Restructure scoring and decision functions
+* Minor code refactoring
+* Do not print reasoning into logs
+* Move relevant test files to thoth-python package
+* Fixes and improvements
+* Adjust temporary filling package hashes
+* Place all decision functions at one place
+* Add ability to submit a testing stack
+* Temporary fill package digests by querying PyPI index
+* Adjust output methods
+* Minor improvements in implementation
+* A package version is distinguished by name, version and index
+* Add testsuite for graph solver, dependency graph implementation
+* typo :/
+* Introduce method for converting model to object
+* Add the current PyPI index to default warehouses
+* Introduce add_source and add_package methods
+* State we want to run provenance rather than adviser in template
+* Let's reuse parameter names from adviser
+* Use local tensorflow index page for gathering versions
+* Fix warehouse test
+* Add LICENSE and license headers
+* Fix naming typo
+### Non-functional
+* State is no longer using OrderedDict to gain performance
+* Fix performance recommendation name
+* Add pull request template (#1065)
+* Use MCTS predictor for stable and testing recommendations
+* Add a link to performance article published
+* Remove performance related tests
+* Drop generic performance querying
+* Add docs for performance indicators
+* Introduce performance based queries to Isis
+### Other
+* Adjust types in history kept in annealing
+* Fix handling of return code when using os.waitpid (#1136)
+* remove imagestream envs
+* remove image stream params
+* remove debugging step
+* Test suite and duplicate code refactoring
+* Child exists with status code 256
+* remove metadata
+* remove service account argo
+* Minor code refactoring, update requirements
+* Remove duplicit code for loading Amun context
+* Use coala for code checks
+### Automatic Updates
+* :pushpin: Automatic update of dependency pytest from 6.1.1 to 6.1.2 (#1512)
+* :pushpin: Automatic update of dependency hypothesis from 5.37.3 to 5.38.1 (#1499)
+* :pushpin: Automatic update of dependency hypothesis from 5.37.0 to 5.37.1 (#1440)
+* :pushpin: Automatic update of dependency pytest from 6.1.0 to 6.1.1 (#1425)
+* :pushpin: Automatic update of dependency hypothesis from 5.36.1 to 5.37.0 (#1424)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.14 to 0.25.15 (#1423)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.13 to 0.25.14 (#1413)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.12 to 0.25.13 (#1402)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1398)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.11 to 0.25.12 (#1401)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1397)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1396)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1395)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1394)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1393)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1392)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1391)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1390)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1389)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1386)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1382)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1381)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1380)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1379)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1378)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1377)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1376)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1375)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1371)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1370)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1369)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1368)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1367)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1366)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1365)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1364)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1363)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1362)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1361)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1360)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1359)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1358)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1356)
+* :pushpin: Automatic update of dependency pytest from 6.0.2 to 6.1.0 (#1357)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1355)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1354)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1353)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1352)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1351)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1350)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1349)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1348)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1347)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1346)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1345)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1344)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1343)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1342)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1341)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1340)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1339)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1338)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1337)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1336)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1335)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1334)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1333)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1332)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1331)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1330)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1329)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1328)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1327)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1326)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1325)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1324)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1323)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1322)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1320)
+* :pushpin: Automatic update of dependency hypothesis from 5.36.0 to 5.36.1 (#1321)
+* :pushpin: Automatic update of dependency hypothesis from 5.36.0 to 5.36.1 (#1319)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1318)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1316)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1315)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1311)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1310)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1309)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1308)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1307)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1306)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1305)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1304)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1303)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1302)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1301)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1299)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1297)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1296)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1295)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1294)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1289)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1278)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1277)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1276)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1274)
+* :pushpin: Automatic update of dependency thoth-python from 0.10.1 to 0.10.2 (#1272)
+* :pushpin: Automatic update of dependency hypothesis from 5.35.4 to 5.36.0 (#1271)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1270)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1269)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1267)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1265)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1259)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1258)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1257)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1256)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1255)
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1251)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.10 to 0.25.11 (#1250)
+* :pushpin: Automatic update of dependency hypothesis from 5.35.3 to 5.35.4
+* :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.9 to 0.25.10 (#1223)
+* :pushpin: Automatic update of dependency hypothesis from 5.35.2 to 5.35.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.8 to 0.25.9 (#1209)
+* :pushpin: Automatic update of dependency hypothesis from 5.35.0 to 5.35.2 (#1203)
+* :pushpin: Automatic update of dependency matplotlib from 3.3.1 to 3.3.2 (#1201)
+* :pushpin: Automatic update of dependency pytest from 6.0.1 to 6.0.2 (#1193)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.7 to 0.25.8 (#1192)
+* :pushpin: Automatic update of dependency hypothesis from 5.34.1 to 5.35.0 (#1187)
+* :pushpin: Automatic update of dependency hypothesis from 5.33.2 to 5.34.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.6 to 0.25.7 (#1185)
+* :pushpin: Automatic update of dependency hypothesis from 5.33.1 to 5.33.2 (#1181)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.5 to 0.25.6 (#1180)
+* :pushpin: Automatic update of dependency attrs from 20.1.0 to 20.2.0 (#1179)
+* :pushpin: Automatic update of dependency attrs from 20.1.0 to 20.2.0 (#1175)
+* :pushpin: Automatic update of dependency hypothesis from 5.30.0 to 5.33.1 (#1170)
+* :pushpin: Automatic update of dependency hypothesis from 5.29.4 to 5.30.0 (#1153)
+* :pushpin: Automatic update of dependency hypothesis from 5.29.3 to 5.29.4 (#1152)
+* :pushpin: Automatic update of dependency hypothesis from 5.29.0 to 5.29.1 (#1150)
+* :pushpin: Automatic update of dependency hypothesis from 5.28.0 to 5.29.0 (#1137)
+* :pushpin: Automatic update of dependency pytest-mypy from 0.6.2 to 0.7.0 (#1135)
+* :pushpin: Automatic update of dependency hypothesis from 5.27.0 to 5.28.0 (#1133)
+* :pushpin: Automatic update of dependency pytest-mypy from 0.6.2 to 0.7.0 (#1132)
+* :pushpin: Automatic update of dependency hypothesis from 5.27.0 to 5.28.0 (#1131)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.2 to 0.25.5 (#1130)
+* :pushpin: Automatic update of dependency attrs from 19.3.0 to 20.1.0 (#1129)
+* :pushpin: Automatic update of dependency hypothesis from 5.26.0 to 5.27.0 (#1125)
+* :pushpin: Automatic update of dependency hypothesis from 5.26.0 to 5.27.0 (#1124)
+* :pushpin: Automatic update of dependency hypothesis from 5.26.0 to 5.27.0 (#1123)
+* :pushpin: Automatic update of dependency pytest-cov from 2.10.0 to 2.10.1 (#1122)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.1 to 0.25.2 (#1121)
+* :pushpin: Automatic update of dependency hypothesis from 5.24.0 to 5.26.0 (#1117)
+* :pushpin: Automatic update of dependency matplotlib from 3.3.0 to 3.3.1 (#1116)
+* :pushpin: Automatic update of dependency matplotlib from 3.3.0 to 3.3.1 (#1114)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.0 to 0.25.1 (#1113)
+* :pushpin: Automatic update of dependency thoth-python from 0.10.0 to 0.10.1 (#1110)
+* :pushpin: Automatic update of dependency hypothesis from 5.23.11 to 5.24.0 (#1107)
+* :pushpin: Automatic update of dependency hypothesis from 5.23.9 to 5.23.11 (#1104)
+* :pushpin: Automatic update of dependency hypothesis from 5.23.8 to 5.23.9 (#1102)
+* :pushpin: Automatic update of dependency thoth-solver from 1.5.2 to 1.6.0 (#1098)
+* :pushpin: Automatic update of dependency hypothesis from 5.23.7 to 5.23.8 (#1097)
+* :pushpin: Automatic update of dependency pytest from 6.0.0 to 6.0.1 (#1096)
+* :pushpin: Automatic update of dependency thoth-solver from 1.5.2 to 1.6.0 (#1095)
+* :pushpin: Automatic update of dependency thoth-storages from 0.24.4 to 0.25.0 (#1094)
+* :pushpin: Automatic update of dependency hypothesis from 5.23.3 to 5.23.7 (#1092)
+* :pushpin: Automatic update of dependency pytest from 5.4.3 to 6.0.0 (#1089)
+* :pushpin: Automatic update of dependency hypothesis from 5.21.0 to 5.23.3 (#1086)
+* :pushpin: Automatic update of dependency hypothesis from 5.21.0 to 5.23.3 (#1085)
+* :pushpin: Automatic update of dependency hypothesis from 5.20.3 to 5.21.0 (#1080)
+* :pushpin: Automatic update of dependency hypothesis from 5.20.2 to 5.20.3 (#1073)
+* :pushpin: Automatic update of dependency hypothesis from 5.19.3 to 5.20.2
+* :pushpin: Automatic update of dependency matplotlib from 3.2.2 to 3.3.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.24.3 to 0.24.4
+* :pushpin: Automatic update of dependency hypothesis from 5.19.0 to 5.19.3 (#1055)
+* :pushpin: Automatic update of dependency pytest-timeout from 1.4.1 to 1.4.2 (#1054)
+* :pushpin: Automatic update of dependency thoth-storages from 0.24.2 to 0.24.3 (#1051)
+* :pushpin: Automatic update of dependency thoth-storages from 0.24.0 to 0.24.2 (#1048)
+* :pushpin: Automatic update of dependency hypothesis from 5.18.3 to 5.19.0 (#1043)
+* :pushpin: Automatic update of dependency hypothesis from 5.18.0 to 5.18.3 (#1041)
+* :pushpin: Automatic update of dependency hypothesis from 5.16.3 to 5.18.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.23.2 to 0.24.0
+* :pushpin: Automatic update of dependency hypothesis from 5.16.1 to 5.16.3
+* :pushpin: Automatic update of dependency matplotlib from 3.2.1 to 3.2.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.23.0 to 0.23.2
+* :pushpin: Automatic update of dependency thoth-python from 0.9.2 to 0.10.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.12 to 0.23.0
+* :pushpin: Automatic update of dependency hypothesis from 5.16.0 to 5.16.1
+* :pushpin: Automatic update of dependency pytest from 5.4.2 to 5.4.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.11 to 0.22.12
+* :pushpin: Automatic update of dependency hypothesis from 5.15.1 to 5.16.0
+* :pushpin: Automatic update of dependency pytest-cov from 2.8.1 to 2.9.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.10 to 0.22.11
+* :pushpin: Automatic update of dependency hypothesis from 5.15.0 to 5.15.1
+* :pushpin: Automatic update of dependency hypothesis from 5.14.0 to 5.15.0
+* :pushpin: Automatic update of dependency packaging from 20.3 to 20.4
+* :pushpin: Automatic update of dependency toml from 0.10.0 to 0.10.1
+* :pushpin: Automatic update of dependency hypothesis from 5.13.1 to 5.14.0
+* :pushpin: Automatic update of dependency hypothesis from 5.11.0 to 5.13.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.9 to 0.22.10
+* :pushpin: Automatic update of dependency pytest from 5.4.1 to 5.4.2
+* :pushpin: Automatic update of dependency hypothesis from 5.10.5 to 5.11.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.8 to 0.22.9
+* :pushpin: Automatic update of dependency hypothesis from 5.10.4 to 5.10.5
+* :pushpin: Automatic update of dependency hypothesis from 5.9.1 to 5.10.0
+* :pushpin: Automatic update of dependency hypothesis from 5.9.0 to 5.9.1
+* :pushpin: Automatic update of dependency hypothesis from 5.8.6 to 5.9.0
+* :pushpin: Automatic update of dependency hypothesis from 5.8.5 to 5.8.6
+* :pushpin: Automatic update of dependency hypothesis from 5.8.4 to 5.8.5
+* :pushpin: Automatic update of dependency hypothesis from 5.8.3 to 5.8.4
+* :pushpin: Automatic update of dependency hypothesis from 5.8.2 to 5.8.3
+* :pushpin: Automatic update of dependency hypothesis from 5.8.1 to 5.8.2
+* :pushpin: Automatic update of dependency hypothesis from 5.8.0 to 5.8.1
+* :pushpin: Automatic update of dependency pytest-mypy from 0.6.0 to 0.6.1
+* :pushpin: Automatic update of dependency pyyaml from 3.13 to 5.3.1
+* :pushpin: Automatic update of dependency thoth-solver from 1.5.0 to 1.5.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.6 to 0.22.7
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.5 to 0.22.6
+* :pushpin: Automatic update of dependency pyyaml from 5.3.1 to 3.13
+* :pushpin: Automatic update of dependency hypothesis from 5.7.2 to 5.8.0
+* :pushpin: Automatic update of dependency hypothesis from 5.7.1 to 5.7.2
+* :pushpin: Automatic update of dependency pyyaml from 3.13 to 5.3.1
+* :pushpin: Automatic update of dependency hypothesis from 5.7.0 to 5.7.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.4 to 0.22.5
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.3 to 0.22.4
+* :pushpin: Automatic update of dependency hypothesis from 5.6.1 to 5.7.0
+* :pushpin: Automatic update of dependency hypothesis from 5.6.0 to 5.6.1
+* :pushpin: Automatic update of dependency matplotlib from 3.2.0 to 3.2.1
+* :pushpin: Automatic update of dependency pytest from 5.3.5 to 5.4.1
+* :pushpin: Automatic update of dependency pytest-mypy from 0.5.0 to 0.6.0
+* :pushpin: Automatic update of dependency pyyaml from 5.3 to 3.13
+* :pushpin: Automatic update of dependency click from 7.0 to 7.1.1
+* :pushpin: Automatic update of dependency click from 7.0 to 7.1.1
+* :pushpin: Automatic update of dependency packaging from 20.1 to 20.3
+* :pushpin: Automatic update of dependency matplotlib from 3.1.3 to 3.2.0
+* :pushpin: Automatic update of dependency hypothesis from 5.5.3 to 5.5.4
+* :pushpin: Automatic update of dependency hypothesis from 5.5.2 to 5.5.3
+* :pushpin: Automatic update of dependency hypothesis from 5.5.1 to 5.5.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.1 to 0.22.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.22.0 to 0.22.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.11 to 0.22.0
+* :pushpin: Automatic update of dependency hypothesis from 5.4.2 to 5.5.1
+* :pushpin: Automatic update of dependency hypothesis from 5.4.1 to 5.4.2
+* :pushpin: Automatic update of dependency hypothesis from 4.57.1 to 5.4.1
+* :pushpin: Automatic update of dependency hypothesis-auto from 1.1.3 to 1.1.4
+* :pushpin: Automatic update of dependency matplotlib from 3.1.2 to 3.1.3
+* :pushpin: Automatic update of dependency pytest from 5.3.4 to 5.3.5
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.10 to 0.21.11
+* :pushpin: Automatic update of dependency packaging from 20.0 to 20.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.9 to 0.21.10
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.8 to 0.21.9
+* :pushpin: Automatic update of dependency pytest from 5.3.3 to 5.3.4
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.7 to 0.21.8
+* :pushpin: Automatic update of dependency pytest from 5.3.2 to 5.3.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.6 to 0.21.7
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.5 to 0.21.6
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.4 to 0.21.5
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.3 to 0.21.4
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.2 to 0.21.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.1 to 0.21.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.21.0 to 0.21.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.6 to 0.21.0
+* :pushpin: Automatic update of dependency thoth-python from 0.9.0 to 0.9.1
+* :pushpin: Automatic update of dependency thoth-solver from 1.4.1 to 1.5.0
+* :pushpin: Automatic update of dependency thoth-python from 0.8.0 to 0.9.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.5 to 0.20.6
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.4 to 0.20.5
+* :pushpin: Automatic update of dependency thoth-python from 0.7.1 to 0.8.0
+* :pushpin: Automatic update of dependency pytest-timeout from 1.3.3 to 1.3.4
+* :pushpin: Automatic update of dependency pyyaml from 5.2 to 5.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.3 to 0.20.4
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.2 to 0.20.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.1 to 0.20.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.20.0 to 0.20.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.30 to 0.20.0
+* :pushpin: Automatic update of dependency hypothesis-auto from 1.1.2 to 1.1.3
+* :pushpin: Automatic update of dependency hypothesis from 4.57.0 to 4.57.1
+* :pushpin: Automatic update of dependency hypothesis from 4.56.3 to 4.57.0
+* :pushpin: Automatic update of dependency hypothesis from 4.56.2 to 4.56.3
+* :pushpin: Automatic update of dependency hypothesis from 4.56.1 to 4.56.2
+* :pushpin: Automatic update of dependency hypothesis from 4.56.0 to 4.56.1
+* :pushpin: Automatic update of dependency hypothesis from 4.55.4 to 4.56.0
+* :pushpin: Automatic update of dependency hypothesis from 4.55.3 to 4.55.4
+* :pushpin: Automatic update of dependency hypothesis from 4.55.2 to 4.55.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.27 to 0.19.30
+* :pushpin: Automatic update of dependency hypothesis from 4.55.1 to 4.55.2
+* :pushpin: Automatic update of dependency hypothesis from 4.55.0 to 4.55.1
+* :pushpin: Automatic update of dependency hypothesis from 4.54.2 to 4.55.0
+* :pushpin: Automatic update of dependency hypothesis from 4.54.1 to 4.54.2
+* :pushpin: Automatic update of dependency hypothesis from 4.54.0 to 4.54.1
+* :pushpin: Automatic update of dependency hypothesis from 4.53.3 to 4.54.0
+* :pushpin: Automatic update of dependency hypothesis from 4.53.2 to 4.53.3
+* :pushpin: Automatic update of dependency pytest from 5.3.1 to 5.3.2
+* :pushpin: Automatic update of dependency hypothesis from 4.53.1 to 4.53.2
+* :pushpin: Automatic update of dependency hypothesis from 4.53.0 to 4.53.1
+* :pushpin: Automatic update of dependency hypothesis from 4.52.0 to 4.53.0
+* :pushpin: Automatic update of dependency hypothesis from 4.51.1 to 4.52.0
+* :pushpin: Automatic update of dependency hypothesis from 4.51.0 to 4.51.1
+* :pushpin: Automatic update of dependency hypothesis from 4.50.8 to 4.51.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.26 to 0.19.27
+* :pushpin: Automatic update of dependency hypothesis from 4.50.7 to 4.50.8
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.25 to 0.19.26
+* :pushpin: Automatic update of dependency thoth-solver from 1.4.0 to 1.4.1
+* :pushpin: Automatic update of dependency hypothesis from 4.50.6 to 4.50.7
+* :pushpin: Automatic update of dependency hypothesis from 4.50.5 to 4.50.6
+* :pushpin: Automatic update of dependency hypothesis from 4.50.4 to 4.50.5
+* :pushpin: Automatic update of dependency hypothesis from 4.50.3 to 4.50.4
+* :pushpin: Automatic update of dependency hypothesis from 4.50.2 to 4.50.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.24 to 0.19.25
+* :pushpin: Automatic update of dependency hypothesis from 4.50.1 to 4.50.2
+* :pushpin: Automatic update of dependency hypothesis from 4.50.0 to 4.50.1
+* :pushpin: Automatic update of dependency hypothesis from 4.49.0 to 4.50.0
+* :pushpin: Automatic update of dependency hypothesis from 4.48.0 to 4.49.0
+* :pushpin: Automatic update of dependency hypothesis from 4.47.4 to 4.48.0
+* :pushpin: Automatic update of dependency hypothesis from 4.47.3 to 4.47.4
+* :pushpin: Automatic update of dependency hypothesis from 4.47.2 to 4.47.3
+* :pushpin: Automatic update of dependency pytest from 5.3.0 to 5.3.1
+* :pushpin: Automatic update of dependency hypothesis from 4.47.1 to 4.47.2
+* :pushpin: Automatic update of dependency hypothesis from 4.47.0 to 4.47.1
+* :pushpin: Automatic update of dependency hypothesis from 4.46.1 to 4.47.0
+* :pushpin: Automatic update of dependency hypothesis from 4.46.0 to 4.46.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.23 to 0.19.24
+* :pushpin: Automatic update of dependency hypothesis from 4.45.1 to 4.46.0
+* :pushpin: Automatic update of dependency matplotlib from 3.1.1 to 3.1.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.22 to 0.19.23
+* :pushpin: Automatic update of dependency hypothesis from 4.45.0 to 4.45.1
+* :pushpin: Automatic update of dependency hypothesis from 4.44.4 to 4.45.0
+* :pushpin: Automatic update of dependency hypothesis from 4.44.2 to 4.44.4
+* :pushpin: Automatic update of dependency pytest from 5.2.4 to 5.3.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.21 to 0.19.22
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.19 to 0.19.21
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.18 to 0.19.19
+* :pushpin: Automatic update of dependency hypothesis from 4.44.1 to 4.44.2
+* :pushpin: Automatic update of dependency hypothesis from 4.44.0 to 4.44.1
+* :pushpin: Automatic update of dependency hypothesis from 4.43.8 to 4.44.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.17 to 0.19.18
+* :pushpin: Automatic update of dependency hypothesis from 4.43.6 to 4.43.8
+* :pushpin: Automatic update of dependency hypothesis from 4.43.5 to 4.43.6
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.15 to 0.19.17
+* :pushpin: Automatic update of dependency hypothesis from 4.43.4 to 4.43.5
+* :pushpin: Automatic update of dependency hypothesis from 4.43.3 to 4.43.4
+* :pushpin: Automatic update of dependency hypothesis from 4.43.2 to 4.43.3
+* :pushpin: Automatic update of dependency hypothesis from 4.43.1 to 4.43.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.14 to 0.19.15
+* :pushpin: Automatic update of dependency hypothesis from 4.43.0 to 4.43.1
+* :pushpin: Automatic update of dependency hypothesis from 4.42.10 to 4.43.0
+* :pushpin: Automatic update of dependency pytest-mypy from 0.4.1 to 0.4.2
+* :pushpin: Automatic update of dependency hypothesis from 4.42.9 to 4.42.10
+* :pushpin: Automatic update of dependency hypothesis from 4.42.8 to 4.42.9
+* :pushpin: Automatic update of dependency hypothesis from 4.42.7 to 4.42.8
+* :pushpin: Automatic update of dependency hypothesis from 4.42.6 to 4.42.7
+* :pushpin: Automatic update of dependency hypothesis from 4.42.5 to 4.42.6
+* :pushpin: Automatic update of dependency hypothesis from 4.42.4 to 4.42.5
+* :pushpin: Automatic update of dependency hypothesis from 4.42.0 to 4.42.4
+* :pushpin: Automatic update of dependency methodtools from 0.1.1 to 0.1.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.11 to 0.19.12
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.10 to 0.19.11
+* :pushpin: Automatic update of dependency pytest from 5.2.1 to 5.2.2
+* :pushpin: Automatic update of dependency methodtools from 0.1.0 to 0.1.1
+* :pushpin: Automatic update of dependency thoth-python from 0.6.4 to 0.6.5
+* :pushpin: Automatic update of dependency pylint from 2.4.2 to 2.4.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.9 to 0.19.10
+* :pushpin: Automatic update of dependency thoth-python from 0.6.3 to 0.6.4
+* :pushpin: Automatic update of dependency thoth-common from 0.9.12 to 0.9.14
+* :pushpin: Automatic update of dependency thoth-common from 0.9.11 to 0.9.12
+* :pushpin: Automatic update of dependency pytest from 5.2.0 to 5.2.1
+* :pushpin: Automatic update of dependency pytest-cov from 2.8.0 to 2.8.1
+* :pushpin: Automatic update of dependency pytest-cov from 2.7.1 to 2.8.0
+* :pushpin: Automatic update of dependency thoth-common from 0.9.10 to 0.9.11
+* :pushpin: Automatic update of dependency pylint from 2.4.1 to 2.4.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.8 to 0.19.9
+* :pushpin: Automatic update of dependency pytest from 5.1.3 to 5.2.0
+* :pushpin: Automatic update of dependency thoth-analyzer from 0.1.3 to 0.1.4
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.7 to 0.19.8
+* :pushpin: Automatic update of dependency pylint from 2.4.0 to 2.4.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.6 to 0.19.7
+* :pushpin: Automatic update of dependency pylint from 2.3.1 to 2.4.0
+* :pushpin: Automatic update of dependency thoth-python from 0.6.2 to 0.6.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.5 to 0.19.6
+* :pushpin: Automatic update of dependency pytest from 5.1.2 to 5.1.3
+* :pushpin: Automatic update of dependency thoth-analyzer from 0.1.2 to 0.1.3
+* :pushpin: Automatic update of dependency thoth-common from 0.9.9 to 0.9.10
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.4 to 0.19.5
+* :pushpin: Automatic update of dependency thoth-common from 0.9.8 to 0.9.9
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.3 to 0.19.4
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.2 to 0.19.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.1 to 0.19.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.19.0 to 0.19.1
+* :pushpin: Automatic update of dependency thoth-python from 0.6.1 to 0.6.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.18.6 to 0.19.0
+* :pushpin: Automatic update of dependency semantic-version from 2.8.1 to 2.8.2
+* :pushpin: Automatic update of dependency pytest from 5.1.1 to 5.1.2
+* :pushpin: Automatic update of dependency semantic-version from 2.8.0 to 2.8.1
+* :pushpin: Automatic update of dependency semantic-version from 2.7.1 to 2.8.0
+* :pushpin: Automatic update of dependency semantic-version from 2.7.0 to 2.7.1
+* :pushpin: Automatic update of dependency semantic-version from 2.6.0 to 2.7.0
+* :pushpin: Automatic update of dependency pytest from 5.1.0 to 5.1.1
+* :pushpin: Automatic update of dependency pytest from 5.0.1 to 5.1.0
+* :pushpin: Automatic update of dependency pydocstyle from 4.0.0 to 4.0.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.18.5 to 0.18.6
+* :pushpin: Automatic update of dependency thoth-common from 0.9.7 to 0.9.8
+* :pushpin: Automatic update of dependency thoth-common from 0.9.6 to 0.9.7
+* :pushpin: Automatic update of dependency voluptuous from 0.11.5 to 0.11.7
+* :pushpin: Automatic update of dependency thoth-python from 0.6.0 to 0.6.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.18.4 to 0.18.5
+* :pushpin: Automatic update of dependency thoth-storages from 0.18.3 to 0.18.4
+* :pushpin: Automatic update of dependency thoth-common from 0.9.5 to 0.9.6
+* :pushpin: Automatic update of dependency thoth-storages from 0.18.1 to 0.18.3
+* :pushpin: Automatic update of dependency thoth-storages from 0.18.0 to 0.18.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.17.0 to 0.18.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.16.0 to 0.17.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.15.2 to 0.16.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.15.1 to 0.15.2
+* :pushpin: Automatic update of dependency thoth-python from 0.5.0 to 0.6.0
+* :pushpin: Automatic update of dependency thoth-solver from 1.2.1 to 1.2.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.15.0 to 0.15.1
+* :pushpin: Automatic update of dependency thoth-storages from 0.14.8 to 0.15.0
+* :pushpin: Automatic update of dependency thoth-common from 0.9.3 to 0.9.4
+* :pushpin: Automatic update of dependency thoth-storages from 0.11.4 to 0.14.1
+* :pushpin: Automatic update of dependency thoth-common from 0.8.11 to 0.9.0
+* :pushpin: Automatic update of dependency pytest from 4.6.2 to 4.6.3
+* :pushpin: Automatic update of dependency thoth-common from 0.8.7 to 0.8.11
+* :pushpin: Automatic update of dependency pytest from 4.5.0 to 4.6.2
+* :pushpin: Automatic update of dependency thoth-common from 0.8.5 to 0.8.7
+* :pushpin: Automatic update of dependency pytest from 4.4.2 to 4.5.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.11.3 to 0.11.4
+* :pushpin: Automatic update of dependency thoth-storages from 0.11.2 to 0.11.3
+* :pushpin: Automatic update of dependency pytest from 4.4.1 to 4.4.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.11.1 to 0.11.2
+* :pushpin: Automatic update of dependency mock from 3.0.4 to 3.0.5
+* :pushpin: Automatic update of dependency mock from 3.0.3 to 3.0.4
+* :pushpin: Automatic update of dependency thoth-storages from 0.11.0 to 0.11.1
+* :pushpin: Automatic update of dependency pytest-cov from 2.6.1 to 2.7.1
+* :pushpin: Automatic update of dependency mock from 3.0.2 to 3.0.3
+* :pushpin: Automatic update of dependency mock from 2.0.0 to 3.0.2
+* :pushpin: Automatic update of dependency thoth-storages from 0.10.0 to 0.11.0
+* :pushpin: Automatic update of dependency thoth-storages from 0.9.7 to 0.10.0
+* :pushpin: Automatic update of dependency pytest from 4.4.0 to 4.4.1
+* :pushpin: Automatic update of dependency thoth-common from 0.8.4 to 0.8.5
+* Automatic update of dependency thoth-common from 0.8.3 to 0.8.4
+* Automatic update of dependency thoth-common from 0.8.2 to 0.8.3
+* Automatic update of dependency thoth-common from 0.8.1 to 0.8.2
+* Automatic update of dependency pytest from 4.3.1 to 4.4.0
+* Automatic update of dependency flexmock from 0.10.3 to 0.10.4
+* Automatic update of dependency thoth-storages from 0.9.6 to 0.9.7
+* Automatic update of dependency thoth-python from 0.4.6 to 0.5.0
+* Automatic update of dependency thoth-common from 0.2.6 to 0.2.7
+* Automatic update of dependency thoth-common from 0.2.5 to 0.2.6
+* Automatic update of dependency thoth-storages from 0.5.1 to 0.5.2
+* Automatic update of dependency thoth-common from 0.2.4 to 0.2.5
+* Automatic update of dependency thoth-common from 0.2.3 to 0.2.4
+* Automatic update of dependency thoth-common from 0.2.2 to 0.2.3
+* Automatic update of dependency thoth-storages from 0.5.0 to 0.5.1
+* Automatic update of dependency thoth-storages from 0.4.0 to 0.5.0
+* Automatic update of dependency thoth-storages from 0.3.0 to 0.4.0
+* Automatic update of dependency thoth-storages from 0.2.0 to 0.3.0
+* Automatic update of dependency thoth-storages from 0.1.1 to 0.2.0
+* Automatic update of dependency thoth-common from 0.2.1 to 0.2.2
+* Automatic update of dependency thoth-storages from 0.1.0 to 0.1.1
+* Automatic update of dependency thoth-storages from 0.0.33 to 0.1.0
+* Automatic update of dependency thoth-common from 0.2.0 to 0.2.1
+* Automatic update of dependency thoth-common from 0.2.0 to 0.2.1
+* Automatic update of dependency thoth-common from 0.2.0 to 0.2.1
+* Automatic update of dependency thoth-common from 0.0.9 to 0.1.0
+* Automatic update of dependency thoth-analyzer from 0.0.6 to 0.0.7
+* Automatic update of dependency thoth-analyzer from 0.0.5 to 0.0.6
+* Automatic update of dependency thoth-storages from 0.0.32 to 0.0.33
+* Automatic update of dependency thoth-storages from 0.0.29 to 0.0.32
+* Automatic update of dependency thoth-common from 0.0.6 to 0.0.9
+* Automatic update of dependency thoth-storages from 0.0.25 to 0.0.28
