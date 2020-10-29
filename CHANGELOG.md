@@ -5935,3 +5935,16 @@
 * :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1303)
 * :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1302)
 * :pushpin: Automatic update of dependency voluptuous from 0.11.7 to 0.12.0 (#1301)
+
+## Release 0.19.1 (2020-10-29T15:22:35)
+### Features
+* Add a generic alias pseudonym unit
+* Add a link to Jupyter Notebook demonstrating pipelines
+* Minor formatting changes in Kebechet docs (#1507)
+* Propagate statistics to the final report
+* Log message only if relevant (#1506)
+* Fix trailing whitespace in docs (#1505)
+### Bug Fixes
+* Handle cannot produce stack exception so results are not overwritten
+### Improvements
+* Link Jupyter notebook showing TD-learning and MCTS predictors
