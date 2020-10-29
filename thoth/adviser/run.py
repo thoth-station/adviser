@@ -35,7 +35,7 @@ import time
 
 from thoth.common import get_justification_link as jl
 
-from .exceptions import AdviserRunException
+from .exceptions import CannotProduceStack
 from .exceptions import UnresolvedDependencies
 from .dependency_monkey import DependencyMonkey
 from .dm_report import DependencyMonkeyReport
@@ -108,20 +108,18 @@ def subprocess_run(
                     _LOGGER.info("Resolver history saved to %r", resolver_history_file)
 
             result_dict.update(dict(error=False, error_msg=None, report=report.to_dict()))
-        except AdviserRunException as exc:
-            if isinstance(exc, UnresolvedDependencies):
-                _LOGGER.error(
-                    "Resolver failed due to unsolved dependencies for packages %s; these dependencies will be "
-                    "automatically marked for solving by the system for future resolutions",
-                    ", ".join(exc.unresolved),
-                )
-                return_code = 2
-            else:
-                _LOGGER.error("Resolver run failed: %s", str(exc))
-                return_code = 1
-
+        except UnresolvedDependencies as exc:
+            _LOGGER.error(
+                "Resolver failed due to unsolved dependencies for packages %s; these dependencies will be "
+                "automatically marked for solving by the system for future resolutions",
+                ", ".join(exc.unresolved),
+            )
+            return_code = 2  # If forked, do not overwrite results by parent process.
             result_dict.update(dict(error=True, error_msg=str(exc), report=exc.to_dict()))
-
+        except CannotProduceStack as exc:
+            _LOGGER.error("Resolver did not produce any software stack: %s", str(exc))
+            return_code = 2  # If forked, do not overwrite results by parent process.
+            result_dict.update(dict(error=True, error_msg=str(exc), report=exc.to_dict()))
         except Exception as exc:
             _LOGGER.exception("Adviser raised exception: %s", str(exc))
             result_dict.update(
