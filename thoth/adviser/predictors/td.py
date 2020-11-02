@@ -41,6 +41,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
 
     step = attr.ib(type=int, default=1, kw_only=True)
     trace = attr.ib(type=bool, default=True, kw_only=True)
+    mark_zero_reward = attr.ib(type=bool, default=False, kw_only=True)
     _policy = attr.ib(type=Dict[Tuple[str, str, str], List[Union[float, int]]], factory=dict, init=False)
     _steps_reward = attr.ib(type=float, default=0.0, init=False)
     _steps_taken = attr.ib(type=int, default=0, init=False)
@@ -73,6 +74,12 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
 
         self._steps_reward += reward
         if self._steps_taken < self.step and not trajectory_end:
+            return
+
+        if not self.mark_zero_reward and self._steps_reward == 0.0:
+            # We do not mark zero reward as an optimization if the knowledge
+            # base has no causal rewards for packages.
+            self._steps_taken = 0
             return
 
         if self.trace:

@@ -132,6 +132,7 @@ def _get_adviser_predictor(predictor: str, recommendation_type: RecommendationTy
                     "temperature_coefficient"
                 ),
                 "trace": False,
+                "mark_zero_reward": True,
             },
         )
 
