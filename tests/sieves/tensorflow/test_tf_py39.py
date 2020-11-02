@@ -110,7 +110,7 @@ class TestTensorFlowPython39Sieve(AdviserUnitTestCase):
 
     @pytest.mark.parametrize(
         "package_name,package_version",
-        [("intel-tensorflow", "2.4.0"), ("tensorflow", "2.4.0"), ("tensorflow-gpu", "2.4.0"),],
+        [("intel-tensorflow", "2.5.0"), ("tensorflow", "2.5.0"), ("tensorflow-gpu", "2.5.0"),],
     )
     def test_run_yield(self, context: Context, package_name: str, package_version: str) -> None:
         """Test packages the pipeline unit yields respecting Python version compatibility."""
@@ -128,6 +128,9 @@ class TestTensorFlowPython39Sieve(AdviserUnitTestCase):
     @pytest.mark.parametrize(
         "package_name,package_version",
         [
+            ("intel-tensorflow", "2.4.0"),
+            ("tensorflow", "2.4.0"),
+            ("tensorflow-gpu", "2.4.0"),
             ("intel-tensorflow", "2.3.0"),
             ("tensorflow", "2.3.0"),
             ("tensorflow-gpu", "2.3.0"),

@@ -84,7 +84,7 @@ class TensorFlowPython39Sieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Use specific TensorFlow release based on Python version present in the runtime environment."""
         for package_version in package_versions:
-            if package_version.semantic_version.release[:2] <= (2, 3):
+            if package_version.semantic_version.release[:2] <= (2, 4):
                 if not self._message_logged:
                     _LOGGER.warning("%s - %s", self._MESSAGE, self._LINK)
                     self.context.stack_info.append(
