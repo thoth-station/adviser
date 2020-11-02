@@ -28,6 +28,7 @@ from .tensorflow import TensorFlow113NumPyStep
 from .tensorflow import TensorFlow114GastStep
 from .tensorflow import TensorFlow22NumPyStep
 from .tensorflow import TensorFlowRemoveSciPyStep
+from .tensorflow import TensorFlow21H5pyStep
 
 from ._debug import GenerateScoreStep
 from ._debug import MockScoreStep
@@ -46,6 +47,7 @@ __all__ = [
     "SetScoreStep",
     "GenerateScoreStep",
     "TensorFlow21Urllib3Step",
+    "TensorFlow21H5pyStep",
     "TensorFlow22ProbabilityStep",
     "TensorFlowAVX2Step",
     "TensorFlow113NumPyStep",
