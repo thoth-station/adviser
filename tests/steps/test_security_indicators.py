@@ -27,6 +27,7 @@ from thoth.adviser.exceptions import NotAcceptable
 from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages import GraphDatabase
+from thoth.storages.exceptions import NotFoundError
 
 from ..base import AdviserUnitTestCase
 
@@ -112,7 +113,7 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("get_si_aggregated_python_package_version").with_args(
             package_name="flask", package_version="0.12.0", index_url="https://pypi.org/simple"
-        ).and_return(None).once()
+        ).and_raise(NotFoundError).once()
 
         package_version = PackageVersion(
             name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
@@ -131,7 +132,7 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("get_si_aggregated_python_package_version").with_args(
             package_name="flask", package_version="0.12.0", index_url="https://pypi.org/simple"
-        ).and_return(None).once()
+        ).and_raise(NotFoundError).once()
 
         package_version = PackageVersion(
             name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
