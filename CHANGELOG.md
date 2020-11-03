@@ -5948,3 +5948,17 @@
 * Handle cannot produce stack exception so results are not overwritten
 ### Improvements
 * Link Jupyter notebook showing TD-learning and MCTS predictors
+
+## Release 0.20.0 (2020-11-03T15:20:00)
+### Features
+* Handle SIGUSR1 handler to stop exploitation phase (#1527)
+* Introduce a sieve for filtering out incompatible TensorFlow for Py3.9 (#1528)
+### Improvements
+* A pipeline unit that suggests not to use h5py>=3 with TF==2.1 (#1529)
+* Add links to TDS and Jupyter Notebook
+### Automatic Updates
+* :pushpin: Automatic update of dependency hypothesis from 5.41.0 to 5.41.1 (#1530)
+* :pushpin: Automatic update of dependency hypothesis from 5.39.0 to 5.41.0 (#1523)
+* :pushpin: Automatic update of dependency toml from 0.10.1 to 0.10.2 (#1522)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.15 to 0.25.16 (#1521)
+* :pushpin: Automatic update of dependency hypothesis from 5.38.1 to 5.39.0 (#1518)
