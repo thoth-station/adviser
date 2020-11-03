@@ -39,7 +39,7 @@ _INSTANCE = None
 
 
 def _sigusr1_handler(sig_num: int, _: Any) -> None:
-    """A SIGUSR1 handler that switches the predictor to exploitation (soon resolution timeout)."""
+    """Handle SIGUSR1 that switches the predictor to exploitation (soon resolution timeout)."""
     global _INSTANCE
 
     _LOGGER.debug("Switching to exploitation phase based on a signal")
