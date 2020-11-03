@@ -17,6 +17,7 @@
 
 """Implementation of Temporal Difference (TD) based predictor with adaptive simulated annealing schedule."""
 
+from typing import Any
 from typing import Dict
 from typing import List
 from typing import Tuple
@@ -25,6 +26,7 @@ from typing import Optional
 import logging
 import math
 import random
+import signal
 
 import attr
 
@@ -33,6 +35,15 @@ from ..state import State
 
 
 _LOGGER = logging.getLogger(__name__)
+_INSTANCE = None
+
+
+def _sigusr1_handler(sig_num: int, _: Any) -> None:
+    """Handle SIGUSR1 that switches the predictor to exploitation (soon resolution timeout)."""
+    global _INSTANCE
+
+    _LOGGER.debug("Switching to exploitation phase based on a signal")
+    _INSTANCE._temperature = 0.0  # type: ignore
 
 
 @attr.s(slots=True)
@@ -45,6 +56,7 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
     _steps_reward = attr.ib(type=float, default=0.0, init=False)
     _steps_taken = attr.ib(type=int, default=0, init=False)
     _next_state = attr.ib(type=Optional[State], default=None, init=False)
+    _old_handler = attr.ib(type=Any, init=False, default=None)
 
     @step.validator
     def _step_validator(self, _: str, value: int) -> None:
@@ -57,12 +69,27 @@ class TemporalDifference(AdaptiveSimulatedAnnealing):
 
     def pre_run(self) -> None:
         """Initialize pre-running of this predictor."""
+        global _INSTANCE
+
         super().pre_run()
         self._policy.clear()
         self._temperature = float(self.context.limit)
         self._steps_taken = 0
         self._steps_reward = 0.0
         self._next_state = None
+
+        # Setup handler that responds to SIGUSR1 and switches to exploitation phase.
+        self._old_handler = signal.getsignal(signal.SIGUSR1)
+        signal.signal(signal.SIGUSR1, _sigusr1_handler)
+        _INSTANCE = self
+
+    def post_run(self) -> None:
+        """De-initialize resources used by this predictor."""
+        global _INSTANCE
+
+        signal.signal(signal.SIGUSR1, self._old_handler)
+        self._old_handler = None
+        _INSTANCE = None
 
     def set_reward_signal(self, state: State, package_tuple: Tuple[str, str, str], reward: float) -> None:
         """Note down reward signal of the last action performed."""
