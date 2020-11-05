@@ -75,7 +75,8 @@ class SecurityIndicatorStep(Step):
             Required("si_reward_weight"): float,
         }
     )
-    _JUSTIFICATION_LINK = jl("security")
+    _JUSTIFICATION_LINK_SECURITY = jl("security")
+    _JUSTIFICATION_LINK_BANDIT = jl("si_bandit")
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -94,7 +95,7 @@ class SecurityIndicatorStep(Step):
             {
                 "type": "WARNING",
                 "message": f"{name}==={version} on {index} has no gathered information regarding security.",
-                "link": cls._JUSTIFICATION_LINK,
+                "link": cls._JUSTIFICATION_LINK_SECURITY,
             }
         ]
 
@@ -119,12 +120,14 @@ class SecurityIndicatorStep(Step):
             if self.context.recommendation_type == RecommendationType.SECURITY:
                 if package_version_tuple not in self._logged_packages:
                     self._logged_packages.add(package_version_tuple)
-                    _LOGGER.warning(
-                        "No security info for %s===%s on %s",
-                        package_version.name,
-                        package_version.locked_version,
-                        package_version.index.url,
+                    msg = (
+                        f"No security info for {package_version.name}==={package_version.locked_version} "
+                        f"on {package_version.index.url}"
                     )
+                    self.context.stack_info.append(
+                        {"type": "WARNING", "message": msg, "link": self._JUSTIFICATION_LINK_SECURITY}
+                    )
+                    _LOGGER.warning("%s - see %s", msg, self._JUSTIFICATION_LINK_SECURITY)
                 raise NotAcceptable
             return (
                 0,
@@ -139,9 +142,13 @@ class SecurityIndicatorStep(Step):
         ):
             if package_version_tuple not in self._logged_packages:
                 self._logged_packages.add(package_version_tuple)
-                _LOGGER.warning(
-                    "Skipping including package %r because bandit found high security high confidence issue(s).",
-                    package_version_tuple,
+                msg = (
+                    f"Skipping including package {package_version_tuple} because bandit found "
+                    f"high security high confidence issue(s)."
+                )
+                _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_LINK_BANDIT)
+                self.context.stack_info.append(
+                    {"type": "WARNING", "message": msg, "link": self._JUSTIFICATION_LINK_BANDIT}
                 )
             raise NotAcceptable
 
