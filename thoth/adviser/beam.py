@@ -208,7 +208,12 @@ class Beam:
 
     def remove(self, state: State) -> None:
         """Remove the given state from beam."""
-        self._heap.remove(state)
+        try:
+            self._heap.remove(state)
+        except ValueError:  # TODO: fix
+            _LOGGER.exception(
+                "Encountered exception reported in https://github.com/thoth-station/adviser/issues/1541, ignoring..."
+            )
 
     def pop(self, idx: Optional[int] = None) -> State:
         """Pop i-th element from the beam and remove it from the beam (this is actually toppop).
