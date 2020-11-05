@@ -17,12 +17,17 @@
 
 """A liveness probe run in OpenShift.
 
-This liveness probe is run by OpenShift in a deployment where adviser is run. It's intention is
-to always kill stack producer (libdependency_graph.so) on request timeout so that the main process
-reports back what stacks were scored meanwhile.
+This liveness probe is run by OpenShift in a deployment where adviser computes
+results. It's intention is to:
 
-This Python script *HAS TO* be run in a container as it kills all the processes except the
-main process (PID 1).
+1. Notify about soon-to-terminate pod by using SIGUSR1 - adviser's predictor
+should wrap up work and perform exploitation phase.
+
+2. Send SIGINT to notify resolver to stop the resolution and report results
+computed so far.
+
+This Python script *HAS TO* be run in a container as it kills all the processes
+except the main process (PID 1).
 """
 
 import sys
@@ -43,7 +48,7 @@ def main() -> int:
             # No attempt to kill main process.
             continue
         if os.getpid() == pid:
-            # Do not kill self.
+            # Do not commit suicide.
             continue
 
         liveness_file = Path(_LIVENESS_PROBE_KILL_FILE)
