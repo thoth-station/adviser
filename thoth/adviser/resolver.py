@@ -1185,7 +1185,7 @@ class Resolver:
                     or self.context.accepted_final_states_count == 1
                 ):
                     _LOGGER.info(
-                        "Pipeline reached %d final states out of %d requested in iteration %d "
+                        "Pipeline reached %d software stacks out of %d requested in iteration %d "
                         "(pipeline pace %.02f stacks/second); top rated software stack in beam has a score of %.2f; "
                         "top rated software stack found so far has a score of %.2f",
                         self.context.accepted_final_states_count,
@@ -1213,7 +1213,7 @@ class Resolver:
             _LOGGER.info("The highest rated software stack resolved has a score of %0.2f", max_score)
 
         _LOGGER.info(
-            "Pipeline strides discarded %d and accepted %d final states in total",
+            "Pipeline strides discarded %d and accepted %d software stacks in total",
             self.context.discarded_final_states_count,
             self.context.accepted_final_states_count,
         )
