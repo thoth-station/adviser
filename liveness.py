@@ -43,6 +43,13 @@ def main() -> int:
     """Kill all processes except for main."""
     pids = [int(pid) for pid in os.listdir("/proc") if pid.isdigit()]
 
+    liveness_file = Path(_LIVENESS_PROBE_KILL_FILE)
+    if liveness_file.exists():
+        signal_num = signal.SIGINT
+    else:
+        liveness_file.touch()
+        signal_num = signal.SIGUSR1
+
     for pid in pids:
         if pid == 1:
             # No attempt to kill main process.
@@ -51,14 +58,8 @@ def main() -> int:
             # Do not commit suicide.
             continue
 
-        liveness_file = Path(_LIVENESS_PROBE_KILL_FILE)
-        if liveness_file.exists():
-            print("Killing process with PID %d with SIGINT" % pid)
-            os.kill(pid, signal.SIGINT)
-        else:
-            print("Killing process with PID %d with SIGUSR1" % pid)
-            os.kill(pid, signal.SIGUSR1)
-            liveness_file.touch()
+        print("Killing process with PID %d with %d" % (pid, signal_num))
+        os.kill(pid, signal_num)
 
     # Let liveness probe always fail with timeout.
     signal.pause()
