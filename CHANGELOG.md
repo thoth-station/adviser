@@ -5962,3 +5962,19 @@
 * :pushpin: Automatic update of dependency toml from 0.10.1 to 0.10.2 (#1522)
 * :pushpin: Automatic update of dependency thoth-storages from 0.25.15 to 0.25.16 (#1521)
 * :pushpin: Automatic update of dependency hypothesis from 5.38.1 to 5.39.0 (#1518)
+
+## Release 0.20.1 (2020-11-05T21:30:58)
+### Features
+* Add a temporary workaround for #1541
+* Provide stack info in security indicators
+* Adjust message logged to reduce confusion
+* Increase verbosity to see where inspections are triggered
+* Adjust description in liveness.py
+* Add links to termial random
+### Bug Fixes
+* Fix issue when signal is sent in one call in livenenss.py
+### Improvements
+* :sparkles: remove the Zuul config file, as we dont use Zuul anymore
+* Adjust tests for stack_info provided by security indicators
+### Automatic Updates
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.16 to 0.25.17 (#1540)
