@@ -118,12 +118,15 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
             name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
         )
 
-        context = flexmock(graph=GraphDatabase())
+        context = flexmock(graph=GraphDatabase(), stack_info=[])
         context.recommendation_type = recommendation_type
         with pytest.raises(NotAcceptable):
             with SecurityIndicatorStep.assigned_context(context):
                 step = SecurityIndicatorStep()
                 step.run(None, package_version)
+
+        assert len(context.stack_info) == 1
+        assert set(context.stack_info[0].keys()) == {"message", "type", "link"}
 
     @pytest.mark.parametrize("recommendation_type", [RecommendationType.STABLE])
     def test_security_indicator_scoring_missing_stable(self, recommendation_type) -> None:
@@ -165,9 +168,11 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
             name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
         )
 
-        context = flexmock(graph=GraphDatabase())
+        context = flexmock(graph=GraphDatabase(), stack_info=[])
         context.recommendation_type = RecommendationType.SECURITY
         with pytest.raises(NotAcceptable):
             with SecurityIndicatorStep.assigned_context(context):
                 step = SecurityIndicatorStep()
                 step.run(None, package_version)
+        assert len(context.stack_info) == 1
+        assert set(context.stack_info[0].keys()) == {"message", "type", "link"}
