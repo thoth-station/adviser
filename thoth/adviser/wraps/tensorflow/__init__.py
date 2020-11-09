@@ -17,8 +17,9 @@
 
 """Implementation of wraps used, specific for TensorFlow."""
 
-from .tf_23_dict_bug import TensorFlow23DictSummary
 from .tf_23_accuracy import TensorFlow23Accuracy
+from .tf_23_dict_bug import TensorFlow23DictSummary
+from .tf_38518 import TensorFlowMultipleProcessesGPUBug
 from .tf_intel import IntelTensorFlowWrap
 from .tf_mkl_threads import MKLThreadsWrap
 
@@ -27,4 +28,5 @@ __all__ = [
     "TensorFlow23Accuracy",
     "IntelTensorFlowWrap",
     "MKLThreadsWrap",
+    "TensorFlowMultipleProcessesGPUBug",
 ]
