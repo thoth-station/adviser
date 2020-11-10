@@ -75,10 +75,7 @@ class TestIntelTensorflowWrap(AdviserUnitTestCase):
         unit = self.UNIT_TESTED()
 
         tf_package_version = PackageVersion(
-            name="tensorflow",
-            version="==2.3.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
+            name="tensorflow", version="==2.3.0", index=Source("https://pypi.org/simple"), develop=False,
         )
 
         context.register_package_version(tf_package_version)
