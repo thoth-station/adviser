@@ -97,7 +97,7 @@ setup(
     packages=find_namespace_packages(),
     url="https://github.com/thoth-station/adviser",
     download_url="https://pypi.org/project/thoth-adviser",
-    package_data={"thoth.adviser": ["py.typed"]},
+    package_data={"thoth.adviser": ["py.typed", "data/tensorflow/api.json"]},
     entry_points={"console_scripts": ["thoth-adviser=thoth.adviser.cli:cli"]},
     zip_safe=False,
     install_requires=get_install_requires(),
