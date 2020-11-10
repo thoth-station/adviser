@@ -23,6 +23,7 @@ from typing import Optional
 from typing import TYPE_CHECKING
 
 from thoth.common import get_justification_link as jl
+from thoth.python import PackageVersion
 
 from ...state import State
 from ...wrap import Wrap
@@ -75,6 +76,6 @@ class TensorFlowMultipleProcessesGPUBug(Wrap):
         if tensorflow_any is None:
             return None
 
-        tf_package_version = self.context.get_package_version(tensorflow_any)
+        tf_package_version: PackageVersion = self.context.get_package_version(tensorflow_any)
         if tf_package_version.semantic_version.release[:2] == (2, 3):
             state.add_justification(self._JUSTIFICATION)

@@ -89,7 +89,8 @@ class TestIntelTensorflowWrap(AdviserUnitTestCase):
         assert state.justification[0]["type"] == "WARNING"
         assert (
             state.justification[0]["message"]
-            == "TensorFlow in version 2.3 has a bug that prevents from running if multiple TensorFlow processes are running"
+            == "TensorFlow in version 2.3 has a bug that prevents from running if multiple "
+            "TensorFlow processes are running"
         )
 
     def test_run_no_justification(self, state: State) -> None:
