@@ -23,6 +23,7 @@ from .tensorflow import TensorFlow23DictSummary
 from .tensorflow import TensorFlow23Accuracy
 from .tensorflow import IntelTensorFlowWrap
 from .tensorflow import MKLThreadsWrap
+from .tensorflow import TensorFlowMultipleProcessesGPUBug
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -35,4 +36,5 @@ __all__ = [
     "TensorFlow23Accuracy",
     "IntelTensorFlowWrap",
     "MKLThreadsWrap",
+    "TensorFlowMultipleProcessesGPUBug",
 ]
