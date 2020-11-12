@@ -24,6 +24,7 @@ from .tensorflow import TensorFlow23Accuracy
 from .tensorflow import IntelTensorFlowWrap
 from .tensorflow import MKLThreadsWrap
 from .tensorflow import TensorFlowMultipleProcessesGPUBug
+from .tensorflow import TensorFlowSlowKerasEmbedding
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -37,4 +38,5 @@ __all__ = [
     "IntelTensorFlowWrap",
     "MKLThreadsWrap",
     "TensorFlowMultipleProcessesGPUBug",
+    "TensorFlowSlowKerasEmbedding",
 ]
