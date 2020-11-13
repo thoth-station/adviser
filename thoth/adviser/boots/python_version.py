@@ -73,3 +73,12 @@ class PythonVersionBoot(Boot):
             _LOGGER.warning("%s - see %s", msg, self._LINK_PY_VER_THOTH_CONF)
             self.context.project.pipfile.meta.requires["python_version"] = python_version
             self.context.stack_info.append({"type": "WARNING", "message": msg, "link": self._LINK_PY_VER_THOTH_CONF})
+        elif python_version != pipfile_python_version:
+            msg = (
+                f"Python version stated in Pipfile ({pipfile_python_version!r}) does not match with the one "
+                f"specified in the Thoth configuration ({python_version!r}), using Python version from Thoth "
+                f"configuration implicitly"
+            )
+            _LOGGER.warning("%s - see %s", msg, self._LINK_PY_VER_THOTH_CONF)
+            self.context.project.pipfile.meta.requires["python_version"] = python_version
+            self.context.stack_info.append({"type": "WARNING", "message": msg, "link": self._LINK_PY_VER_THOTH_CONF})
