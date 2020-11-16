@@ -107,3 +107,27 @@ python_version = "3.6"
                 "link": jl("py_version"),
             }
         ]
+
+    def test_python_version_mismatch(self) -> None:
+        """Test when python version stated in Pipfile does not match with the one provided in the configuration."""
+        context = flexmock(project=Project.from_strings(self._CASE_PIPFILE_PYTHON), stack_info=[])
+        context.project.runtime_environment.operating_system.name = "rhel"
+        context.project.runtime_environment.operating_system.version = "8"
+        context.project.runtime_environment.python_version = "3.8"
+
+        boot = PythonVersionBoot()
+        with PythonVersionBoot.assigned_context(context):
+            boot.run()
+
+        assert context.project.runtime_environment.operating_system.name == "rhel"
+        assert context.project.runtime_environment.operating_system.version == "8"
+        assert context.project.runtime_environment.python_version == "3.8"
+        assert context.stack_info == [
+            {
+                "message": "Python version stated in Pipfile ('3.6') does not match with the one "
+                "specified in the Thoth configuration ('3.8'), using Python version from Thoth "
+                "configuration implicitly",
+                "type": "WARNING",
+                "link": jl("py_version"),
+            }
+        ]
