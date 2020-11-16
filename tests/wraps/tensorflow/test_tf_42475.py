@@ -59,11 +59,29 @@ class TestIntelTensorflowWrap(AdviserUnitTestCase):
         assert not builder_context.is_dependency_monkey_pipeline()
         assert self.UNIT_TESTED.should_include(builder_context) is not None
 
+    def test_include_library_usage(self, builder_context: PipelineBuilderContext) -> None:
+        """Test including this pipeline unit."""
+        builder_context.decision_type = None
+        builder_context.recommendation_type = RecommendationType.STABLE
+        builder_context.library_usage = {"tensorflow": ["tensorflow.keras.layers.Embedding", "tensorflow.__version__"]}
+        assert builder_context.is_adviser_pipeline()
+        assert not builder_context.is_dependency_monkey_pipeline()
+        assert self.UNIT_TESTED.should_include(builder_context) is not None
+
     def test_no_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test not including this pipeline unit."""
         builder_context.decision_type = DecisionType.RANDOM
         builder_context.recommendation_type = None
         assert builder_context.is_dependency_monkey_pipeline()
+        assert self.UNIT_TESTED.should_include(builder_context) is None
+
+    def test_no_include_library_usage(self, builder_context: PipelineBuilderContext) -> None:
+        """Test not including this pipeline unit based on library usage."""
+        builder_context.decision_type = None
+        builder_context.recommendation_type = RecommendationType.STABLE
+        builder_context.library_usage = {"tensorflow": ["tensorflow.__version__"]}
+        assert builder_context.is_adviser_pipeline()
+        assert not builder_context.is_dependency_monkey_pipeline()
         assert self.UNIT_TESTED.should_include(builder_context) is None
 
     def test_run(self, state: State, context: Context) -> None:

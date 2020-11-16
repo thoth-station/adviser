@@ -53,6 +53,11 @@ class TensorFlowSlowKerasEmbedding(Wrap):
         if not builder_context.is_adviser_pipeline():
             return None
 
+        if builder_context.library_usage is not None and "tensorflow.keras.layers.Embedding" not in (
+            builder_context.library_usage.get("tensorflow") or []
+        ):
+            return None
+
         units_included = builder_context.get_included_wraps(cls)
         if len(units_included) == 4:
             return None
