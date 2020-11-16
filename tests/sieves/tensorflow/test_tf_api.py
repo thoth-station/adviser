@@ -17,9 +17,6 @@
 
 """Test using the right TensorFlow release based on library usage (symbols used) supplied."""
 
-from typing import Tuple
-from itertools import product
-
 import pytest
 
 from thoth.adviser.enums import DecisionType
@@ -170,4 +167,3 @@ class TestTensorFlowAPISieve(AdviserUnitTestCase):
             result = list(unit.run((pv for pv in (pv_1, pv_2))))
             assert len(result) == 2
             assert result == [pv_1, pv_2]
-

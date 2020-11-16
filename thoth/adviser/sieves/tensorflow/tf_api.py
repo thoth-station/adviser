@@ -72,7 +72,9 @@ class TensorFlowAPISieve(Sieve):
             known_api = json.load(api_file)
 
         self._acceptable_releases = set()
-        tf_api_used = set(i for i in ((self.context.library_usage.get("report") or {}).get("tensorflow") or []))  # type: ignore
+        tf_api_used = set(
+            i for i in ((self.context.library_usage.get("report") or {}).get("tensorflow") or [])  # type: ignore
+        )
         for tf_version, tf_api in known_api.items():
             if tf_api_used.issubset(tf_api):
                 self._acceptable_releases.add(tf_version)
