@@ -609,7 +609,7 @@ class Resolver:
         )
         self._run_wraps(state)
         self.beam.add_state(state)
-        _LOGGER.info("User's software stack has a score of %g - see %s", state.score, jl("user_stack"))
+        _LOGGER.info("User's software stack has a score of %.2f - see %s", state.score, jl("user_stack"))
         return state
 
     def _resolve_direct_dependencies(self, *, with_devel: bool) -> Dict[str, List[PackageVersion]]:
