@@ -53,7 +53,12 @@ class FilterIndexSieve(Sieve):
     """
 
     CONFIGURATION_DEFAULT = {"package_name": None, "index_url": None}
-    CONFIGURATION_SCHEMA = Schema({Required("package_name"): str, Required("index_url"): [str],})
+    CONFIGURATION_SCHEMA = Schema(
+        {
+            Required("package_name"): str,
+            Required("index_url"): [str],
+        }
+    )
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:

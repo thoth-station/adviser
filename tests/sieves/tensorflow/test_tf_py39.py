@@ -71,7 +71,10 @@ class TestTensorFlowPython39Sieve(AdviserUnitTestCase):
     @pytest.mark.parametrize(
         "recommendation_type,python_version",
         list(
-            product([RecommendationType.STABLE, RecommendationType.PERFORMANCE, RecommendationType.SECURITY], ["3.9"],)
+            product(
+                [RecommendationType.STABLE, RecommendationType.PERFORMANCE, RecommendationType.SECURITY],
+                ["3.9"],
+            )
         ),
     )
     def test_include(
@@ -110,12 +113,19 @@ class TestTensorFlowPython39Sieve(AdviserUnitTestCase):
 
     @pytest.mark.parametrize(
         "package_name,package_version",
-        [("intel-tensorflow", "2.5.0"), ("tensorflow", "2.5.0"), ("tensorflow-gpu", "2.5.0"),],
+        [
+            ("intel-tensorflow", "2.5.0"),
+            ("tensorflow", "2.5.0"),
+            ("tensorflow-gpu", "2.5.0"),
+        ],
     )
     def test_run_yield(self, context: Context, package_name: str, package_version: str) -> None:
         """Test packages the pipeline unit yields respecting Python version compatibility."""
         package_version = PackageVersion(
-            name=package_name, version=f"=={package_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name=package_name,
+            version=f"=={package_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         unit = self.UNIT_TESTED()
@@ -145,7 +155,10 @@ class TestTensorFlowPython39Sieve(AdviserUnitTestCase):
     def test_run_no_yield(self, context: Context, package_name: str, package_version: str) -> None:
         """Test packages the pipeline unit does not yield respecting Python version compatibility."""
         package_version = PackageVersion(
-            name=package_name, version=f"=={package_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name=package_name,
+            version=f"=={package_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         unit = self.UNIT_TESTED()
@@ -158,9 +171,24 @@ class TestTensorFlowPython39Sieve(AdviserUnitTestCase):
         """Test proper implementation of the filtering mechanism."""
         context.project.runtime_environment.python_version = "3.9"
         source = Source("https://pypi.org/simple")
-        pv_1 = PackageVersion(name="tensorflow-gpu", version="==1.12.0", develop=False, index=source,)
-        pv_2 = PackageVersion(name="tensorflow", version="==2.0.0", develop=False, index=source,)
-        pv_3 = PackageVersion(name="intel-tensorflow", version="==1.13.0", develop=False, index=source,)
+        pv_1 = PackageVersion(
+            name="tensorflow-gpu",
+            version="==1.12.0",
+            develop=False,
+            index=source,
+        )
+        pv_2 = PackageVersion(
+            name="tensorflow",
+            version="==2.0.0",
+            develop=False,
+            index=source,
+        )
+        pv_3 = PackageVersion(
+            name="intel-tensorflow",
+            version="==1.13.0",
+            develop=False,
+            index=source,
+        )
 
         unit = self.UNIT_TESTED()
         with unit.assigned_context(context):

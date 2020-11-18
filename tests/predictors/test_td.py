@@ -45,7 +45,9 @@ class TestTemporalDifference(AdviserTestCase):
     def test_acceptance_probability(self, top_score: float, neighbour_score: float, temperature: float) -> None:
         """Test acceptance probability is always between 0 and 1."""
         acceptance_probability = TemporalDifference._compute_acceptance_probability(
-            top_score=top_score, neighbour_score=neighbour_score, temperature=temperature,
+            top_score=top_score,
+            neighbour_score=neighbour_score,
+            temperature=temperature,
         )
         assert 0.0 <= acceptance_probability <= 1.0, "Acceptance probability not within 0 and 1"
 
@@ -57,7 +59,12 @@ class TestTemporalDifference(AdviserTestCase):
         integers(min_value=0),
     )
     def test_temperature_function(
-        self, t0: float, accepted_final_states_count: int, limit: int, iteration: int, count: int,
+        self,
+        t0: float,
+        accepted_final_states_count: int,
+        limit: int,
+        iteration: int,
+        count: int,
     ) -> None:
         """Test the temperature function never drops bellow 0."""
         context = flexmock(
@@ -184,7 +191,11 @@ class TestTemporalDifference(AdviserTestCase):
         ).once()
 
         state.should_receive("get_random_unresolved_dependency").times(0)
-        assert predictor._do_exploitation(state) == ("tensorflow", "2.1.0", "https://thoth-station.ninja",)
+        assert predictor._do_exploitation(state) == (
+            "tensorflow",
+            "2.1.0",
+            "https://thoth-station.ninja",
+        )
 
     def test_do_exploitation_no_records(self) -> None:
         """Tests on exploitation when no relevant records found."""
@@ -195,7 +206,10 @@ class TestTemporalDifference(AdviserTestCase):
 
         state = flexmock()
         state.should_receive("iter_unresolved_dependencies").and_return(
-            [("micropipenv", "0.1.4", "https://pypi.org/simple"), random_unresolved_dependency,]
+            [
+                ("micropipenv", "0.1.4", "https://pypi.org/simple"),
+                random_unresolved_dependency,
+            ]
         ).once()
 
         state.should_receive("get_random_unresolved_dependency").with_args(prefer_recent=True).and_return(

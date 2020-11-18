@@ -132,7 +132,11 @@ class TensorFlowCUDASieve(Sieve):
         )
         _LOGGER.error("%s - see %s", message, jl("cuda_unknown_tf"))
         self.context.stack_info.append(
-            {"type": "ERROR", "message": message, "link": jl("cuda_unknown_tf"),}
+            {
+                "type": "ERROR",
+                "message": message,
+                "link": jl("cuda_unknown_tf"),
+            }
         )
 
     def _maybe_log_no_recommendations(self, package_version: PackageVersion) -> None:

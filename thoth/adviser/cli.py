@@ -82,7 +82,9 @@ def _print_version(ctx: click.Context, _, value: str):
 
 
 def _instantiate_project(
-    requirements: str, requirements_locked: Optional[str] = None, runtime_environment: RuntimeEnvironment = None,
+    requirements: str,
+    requirements_locked: Optional[str] = None,
+    runtime_environment: RuntimeEnvironment = None,
 ):
     """Create Project instance based on arguments passed to CLI."""
     try:
@@ -166,7 +168,11 @@ def _get_predictor_kwargs(predictor_config: Optional[str]) -> Dict[str, Any]:
 @click.group()
 @click.pass_context
 @click.option(
-    "-v", "--verbose", is_flag=True, envvar="THOTH_ADVISER_DEBUG", help="Be verbose about what's going on.",
+    "-v",
+    "--verbose",
+    is_flag=True,
+    envvar="THOTH_ADVISER_DEBUG",
+    help="Be verbose about what's going on.",
 )
 @click.option(
     "--version",
@@ -258,7 +264,8 @@ def provenance(
         project = _instantiate_project(requirements, requirements_locked)
         result["parameters"]["project"] = project.to_dict()
         report = project.check_provenance(
-            whitelisted_sources=whitelisted_sources, digests_fetcher=GraphDigestsFetcher(),
+            whitelisted_sources=whitelisted_sources,
+            digests_fetcher=GraphDigestsFetcher(),
         )
     except (AdviserException, UnsupportedConfiguration) as exc:
         if isinstance(exc, InternalError):

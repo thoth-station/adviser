@@ -62,10 +62,16 @@ class TestTensorFlow22NumPyStep(AdviserUnitTestCase):
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type",
-        [(RecommendationType.LATEST, None), (None, DecisionType.RANDOM),],  # A Dependency Monkey run.
+        [
+            (RecommendationType.LATEST, None),
+            (None, DecisionType.RANDOM),
+        ],  # A Dependency Monkey run.
     )
     def test_no_include(
-        self, builder_context: PipelineBuilderContext, recommendation_type, decision_type: DecisionType,
+        self,
+        builder_context: PipelineBuilderContext,
+        recommendation_type,
+        decision_type: DecisionType,
     ) -> None:
         """Test not including this pipeline unit step."""
         builder_context.decision_type = decision_type
@@ -85,11 +91,17 @@ class TestTensorFlow22NumPyStep(AdviserUnitTestCase):
     def test_run_not_acceptable(self, context: Context, tf_name: str, tf_version: str, np_version: str) -> None:
         """Test resolutions that are not acceptable."""
         package_version = PackageVersion(
-            name="numpy", version=f"=={np_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="numpy",
+            version=f"=={np_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         tf_package_version = PackageVersion(
-            name=tf_name, version=f"=={tf_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name=tf_name,
+            version=f"=={tf_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         state = State()
@@ -118,11 +130,17 @@ class TestTensorFlow22NumPyStep(AdviserUnitTestCase):
     def _test_run_noop(self, context: Context, tf_name: str, tf_version: str, np_version: str) -> None:
         """Test wrong resolutions are not acceptable."""
         package_version = PackageVersion(
-            name="numpy", version=f"=={np_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="numpy",
+            version=f"=={np_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         tf_package_version = PackageVersion(
-            name=tf_name, version=f"=={tf_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name=tf_name,
+            version=f"=={tf_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         state = State()

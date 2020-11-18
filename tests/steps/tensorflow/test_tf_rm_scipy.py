@@ -93,10 +93,16 @@ class TestTensorFlowRemoveSciPyStep(AdviserUnitTestCase):
     def test_run_skip_package(self, context: Context, state: State, tf_name: str, tf_version: str) -> None:
         """Test removing scipy from a TensorFlow stack."""
         scipy_package_version = PackageVersion(
-            name="scipy", version="==1.2.2", develop=False, index=Source("https://pypi.org/simple"),
+            name="scipy",
+            version="==1.2.2",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
         tf_package_version = PackageVersion(
-            name=tf_name, version=f"=={tf_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name=tf_name,
+            version=f"=={tf_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         assert "tensorflow" not in state.resolved_dependencies
@@ -123,10 +129,16 @@ class TestTensorFlowRemoveSciPyStep(AdviserUnitTestCase):
     def test_run_noop(self, context: Context, state: State, tf_name: str, tf_version: str) -> None:
         """Test not removing scipy from a TensorFlow stack."""
         scipy_package_version = PackageVersion(
-            name="scipy", version="==1.2.2", develop=False, index=Source("https://pypi.org/simple"),
+            name="scipy",
+            version="==1.2.2",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
         tf_package_version = PackageVersion(
-            name=tf_name, version=f"=={tf_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name=tf_name,
+            version=f"=={tf_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         assert "tensorflow" not in state.resolved_dependencies
@@ -143,13 +155,22 @@ class TestTensorFlowRemoveSciPyStep(AdviserUnitTestCase):
     def test_run_deps(self, context: Context, state: State) -> None:
         """Test not removing scipy from a TensorFlow stack if introduced by another dependency."""
         scipy_package_version = PackageVersion(
-            name="scipy", version="==1.2.2", develop=False, index=Source("https://pypi.org/simple"),
+            name="scipy",
+            version="==1.2.2",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
         tf_package_version = PackageVersion(
-            name="tensorflow", version="==2.2.0", develop=False, index=Source("https://pypi.org/simple"),
+            name="tensorflow",
+            version="==2.2.0",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
         another_package_version = PackageVersion(
-            name="some-package", version="==1.0.0", develop=False, index=Source("https://pypi.org/simple"),
+            name="some-package",
+            version="==1.0.0",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         assert "tensorflow" not in state.resolved_dependencies

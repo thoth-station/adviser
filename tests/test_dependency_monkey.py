@@ -53,7 +53,13 @@ class TestDependencyMonkey(AdviserTestCase):
         (PipelineConfig.should_receive("call_post_run_report").and_return(None).once())
 
         dependency_monkey = DependencyMonkey(
-            resolver=Resolver(pipeline=PipelineConfig(), project=None, library_usage=None, graph=None, predictor=None,),
+            resolver=Resolver(
+                pipeline=PipelineConfig(),
+                project=None,
+                library_usage=None,
+                graph=None,
+                predictor=None,
+            ),
             stack_output=stack_output,
             decision_type=DecisionType.ALL,
             context=amun_context or {},
@@ -106,7 +112,10 @@ class TestDependencyMonkey(AdviserTestCase):
         ).and_return({"inspection_id": "inspection-deadbeef"}).once()
 
         dependency_monkey = self._get_test_dm(
-            stack_output=amun_api, with_devel=True, products=[product], amun_context=amun_context,
+            stack_output=amun_api,
+            with_devel=True,
+            products=[product],
+            amun_context=amun_context,
         )
 
         report: DependencyMonkeyReport = dependency_monkey.resolve(with_devel=True)

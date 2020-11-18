@@ -148,7 +148,10 @@ class TestTensorFlowCUDASieve(AdviserUnitTestCase):
         """Test not discarding if an unknown TensorFlow release is spotted."""
         context.project.runtime_environment.cuda_version = "10.0"
         package_version = PackageVersion(
-            name=package_name, version="==42.30.03", develop=False, index=Source("https://pypi.org/simple"),
+            name=package_name,
+            version="==42.30.03",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         unit = TensorFlowCUDASieve()
@@ -195,7 +198,10 @@ class TestTensorFlowCUDASieve(AdviserUnitTestCase):
         """
         context.project.runtime_environment.cuda_version = cuda_version
         package_version = PackageVersion(
-            name=package_name, version=f"=={package_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name=package_name,
+            version=f"=={package_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         unit = TensorFlowCUDASieve()
@@ -239,7 +245,10 @@ class TestTensorFlowCUDASieve(AdviserUnitTestCase):
         """
         context.project.runtime_environment.cuda_version = cuda_version
         package_version = PackageVersion(
-            name=pv[0], version=f"=={pv[1]}", develop=False, index=Source("https://pypi.org/simple"),
+            name=pv[0],
+            version=f"=={pv[1]}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         unit = TensorFlowCUDASieve()
@@ -252,9 +261,24 @@ class TestTensorFlowCUDASieve(AdviserUnitTestCase):
         """Test proper implementation of the filtering mechanism."""
         context.project.runtime_environment.cuda_version = "10.0"
         source = Source("https://pypi.org/simple")
-        pv_1 = PackageVersion(name="tensorflow-gpu", version="==1.12.0", develop=False, index=source,)
-        pv_2 = PackageVersion(name="tensorflow", version="==2.0.0", develop=False, index=source,)
-        pv_3 = PackageVersion(name="tensorflow", version="==1.13.0", develop=False, index=source,)
+        pv_1 = PackageVersion(
+            name="tensorflow-gpu",
+            version="==1.12.0",
+            develop=False,
+            index=source,
+        )
+        pv_2 = PackageVersion(
+            name="tensorflow",
+            version="==2.0.0",
+            develop=False,
+            index=source,
+        )
+        pv_3 = PackageVersion(
+            name="tensorflow",
+            version="==1.13.0",
+            develop=False,
+            index=source,
+        )
 
         unit = TensorFlowCUDASieve()
         with unit.assigned_context(context):

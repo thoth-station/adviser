@@ -46,7 +46,11 @@ class Report:
     accepted_final_states_count = attr.ib(type=int, kw_only=True, default=0)
     discarded_final_states_count = attr.ib(type=int, kw_only=True, default=0)
     _stack_info = attr.ib(type=Optional[List[Dict[str, Any]]], kw_only=True, default=None)
-    _heapq = attr.ib(type=List[Tuple[Tuple[float, int], Product]], default=attr.Factory(list), kw_only=True,)
+    _heapq = attr.ib(
+        type=List[Tuple[Tuple[float, int], Product]],
+        default=attr.Factory(list),
+        kw_only=True,
+    )
     _heapq_counter = attr.ib(type=int, default=0, kw_only=True)
 
     @property

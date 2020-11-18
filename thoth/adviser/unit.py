@@ -133,7 +133,9 @@ class Unit(metaclass=abc.ABCMeta):
                 self.CONFIGURATION_SCHEMA(self.configuration)
             except Exception as exc:
                 _LOGGER.exception(
-                    "Failed to validate schema for pipeline unit %r: %s", self.name, str(exc),
+                    "Failed to validate schema for pipeline unit %r: %s",
+                    self.name,
+                    str(exc),
                 )
                 raise PipelineUnitConfigurationSchemaError(str(exc))
 
@@ -183,7 +185,8 @@ class Unit(metaclass=abc.ABCMeta):
             }
 
         _LOGGER.warning(
-            "Failed to parse AICoE specific package source index configuration: %r", package_version.index.url,
+            "Failed to parse AICoE specific package source index configuration: %r",
+            package_version.index.url,
         )
         return None
 

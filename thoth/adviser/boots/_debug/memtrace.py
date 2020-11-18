@@ -51,7 +51,11 @@ class MemTraceBoot(Boot):
         "frame_count": 100,  # Number of frames traced.
         "top_limit": 100,  # Number of top mem usage consumers printed.
     }
-    CONFIGURATION_SCHEMA = Schema({SchemaOptional("frame_count"): int,})
+    CONFIGURATION_SCHEMA = Schema(
+        {
+            SchemaOptional("frame_count"): int,
+        }
+    )
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
@@ -75,7 +79,10 @@ class MemTraceBoot(Boot):
           https://docs.python.org/3/library/tracemalloc.html#get-the-traceback-of-a-memory-block
         """
         snapshot = snapshot.filter_traces(
-            (tracemalloc.Filter(False, "<frozen importlib._bootstrap>"), tracemalloc.Filter(False, "<unknown>"),)
+            (
+                tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
+                tracemalloc.Filter(False, "<unknown>"),
+            )
         )
         top_stats = snapshot.statistics(key_type)
 

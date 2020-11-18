@@ -101,7 +101,10 @@ class TestFunctools32BackportSieve(AdviserUnitTestCase):
     def test_remove(self, context: Context) -> None:
         """Test removing functools32 dependency."""
         package_version = PackageVersion(
-            name="functools32", version="==3.2.3-2", develop=False, index=Source("https://pypi.org/simple"),
+            name="functools32",
+            version="==3.2.3-2",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         unit = Functools32BackportSieve()

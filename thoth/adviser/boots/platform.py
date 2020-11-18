@@ -43,7 +43,11 @@ class PlatformBoot(Boot):
     """A boot that checks for platform used and adjust to the default one if not provided explicitly."""
 
     CONFIGURATION_DEFAULT = {"default_platform": "linux-x86_64"}
-    CONFIGURATION_SCHEMA = Schema({Required("default_platform"): str,})
+    CONFIGURATION_SCHEMA = Schema(
+        {
+            Required("default_platform"): str,
+        }
+    )
     _JUSTIFICATION_LINK = jl("platform")
 
     @classmethod

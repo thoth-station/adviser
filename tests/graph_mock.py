@@ -88,7 +88,11 @@ class MockedGraphDatabase:
                 for depends_on_entry in version_entry.get("depends_on", []):
                     for version in depends_on_entry["resolved"]:
                         queue.append(
-                            [depends_on_entry["package_name"], version, depends_on_entry["index_url"],]
+                            [
+                                depends_on_entry["package_name"],
+                                version,
+                                depends_on_entry["index_url"],
+                            ]
                         )
 
                         source = (package_name, package_version, index)

@@ -79,7 +79,11 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
     @pytest.mark.parametrize(
         "recommendation_type", [RecommendationType.LATEST, RecommendationType.PERFORMANCE, RecommendationType.TESTING]
     )
-    def test_no_include(self, builder_context: PipelineBuilderContext, recommendation_type,) -> None:
+    def test_no_include(
+        self,
+        builder_context: PipelineBuilderContext,
+        recommendation_type,
+    ) -> None:
         """Test not including this pipeline unit step."""
         builder_context.decision_type = None
         builder_context.recommendation_type = recommendation_type
@@ -93,7 +97,10 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
         ).and_return(self._SECURITY_INFO_EXISTS).once()
 
         package_version = PackageVersion(
-            name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
+            name="flask",
+            version="==0.12.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
         )
 
         context = flexmock(graph=GraphDatabase())
@@ -116,7 +123,10 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
         ).and_raise(NotFoundError).once()
 
         package_version = PackageVersion(
-            name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
+            name="flask",
+            version="==0.12.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
         )
 
         context = flexmock(graph=GraphDatabase(), stack_info=[])
@@ -138,7 +148,10 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
         ).and_raise(NotFoundError).once()
 
         package_version = PackageVersion(
-            name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
+            name="flask",
+            version="==0.12.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
         )
 
         context = flexmock(graph=GraphDatabase())
@@ -166,7 +179,10 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
         ).and_return(self._HIGH_HIGH_SECURITY_INFO).once()
 
         package_version = PackageVersion(
-            name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
+            name="flask",
+            version="==0.12.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
         )
 
         context = flexmock(graph=GraphDatabase(), stack_info=[])

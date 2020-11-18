@@ -110,7 +110,10 @@ class TestTensorFlowAVX2Step(AdviserUnitTestCase):
     def test_no_tf_avx2(self) -> None:
         """Test not recommending TensorFlow without AVX2 support."""
         package_version = PackageVersion(
-            name="tensorflow", version="==2.2.0", develop=False, index=Source("https://pypi.org/simple"),
+            name="tensorflow",
+            version="==2.2.0",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         # State and context are unused in the actual pipeline run.

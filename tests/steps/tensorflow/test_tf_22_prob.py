@@ -52,10 +52,16 @@ class TestTensorFlow22ProbabilityStep(AdviserUnitTestCase):
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type",
-        [(RecommendationType.LATEST, None), (None, DecisionType.RANDOM),],  # A Dependency Monkey run.
+        [
+            (RecommendationType.LATEST, None),
+            (None, DecisionType.RANDOM),
+        ],  # A Dependency Monkey run.
     )
     def test_no_include(
-        self, builder_context: PipelineBuilderContext, recommendation_type, decision_type: DecisionType,
+        self,
+        builder_context: PipelineBuilderContext,
+        recommendation_type,
+        decision_type: DecisionType,
     ) -> None:
         """Test not including this pipeline unit step."""
         builder_context.decision_type = decision_type
@@ -66,7 +72,10 @@ class TestTensorFlow22ProbabilityStep(AdviserUnitTestCase):
     def test_run(self, context: Context, package_name: str) -> None:
         """Test recommending not to use TensorFlow 2.2 with tensorflow-probability."""
         package_version = PackageVersion(
-            name="tensorflow-probability", version="==0.11.0", develop=False, index=Source("https://pypi.org/simple"),
+            name="tensorflow-probability",
+            version="==0.11.0",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         state = State()
@@ -89,11 +98,17 @@ class TestTensorFlow22ProbabilityStep(AdviserUnitTestCase):
     def test_run_acceptable_tf(self) -> None:
         """Test noop for this pipeline unit."""
         package_version_1 = PackageVersion(
-            name="tensorflow-probability", version="==0.11.0", develop=False, index=Source("https://pypi.org/simple"),
+            name="tensorflow-probability",
+            version="==0.11.0",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         package_version_2 = PackageVersion(
-            name="flask", version="==0.12", develop=False, index=Source("https://pypi.org/simple"),
+            name="flask",
+            version="==0.12",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         state = State()

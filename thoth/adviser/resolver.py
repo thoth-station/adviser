@@ -160,7 +160,10 @@ class Resolver:
     limit = attr.ib(type=int, kw_only=True, default=DEFAULT_LIMIT)
     count = attr.ib(type=int, kw_only=True, default=DEFAULT_COUNT)
     beam_width = attr.ib(
-        type=Optional[int], kw_only=True, default=DEFAULT_BEAM_WIDTH, converter=_beam_width,  # type: ignore
+        type=Optional[int],
+        kw_only=True,
+        default=DEFAULT_BEAM_WIDTH,
+        converter=_beam_width,  # type: ignore
     )
     limit_latest_versions = attr.ib(
         type=Optional[int],
@@ -258,7 +261,10 @@ class Resolver:
             except NotAcceptable as exc:
                 msg = f"Boot pipeline unit {boot.__class__.__name__!r} failed: {str(exc)}"
                 self.context.stack_info.append(
-                    {"message": msg, "type": "ERROR",}
+                    {
+                        "message": msg,
+                        "type": "ERROR",
+                    }
                 )
                 raise CannotProduceStack(msg, stack_info=self.context.stack_info)
             except Exception as exc:
@@ -281,7 +287,10 @@ class Resolver:
                     raise
                 except NotAcceptable as exc:
                     _LOGGER.log(
-                        log_level, "Sieve %r removed packages %r: %s", sieve.__class__.__name__, str(exc),
+                        log_level,
+                        "Sieve %r removed packages %r: %s",
+                        sieve.__class__.__name__,
+                        str(exc),
                     )
                     result = []  # type: ignore
                     break
@@ -385,10 +394,14 @@ class Resolver:
 
                 if step_score_addition is not None:
                     if math.isnan(step_score_addition):
-                        raise StepError(f"Step {step.__class__.__name__} returned score which is not a number",)
+                        raise StepError(
+                            f"Step {step.__class__.__name__} returned score which is not a number",
+                        )
 
                     if math.isinf(step_score_addition):
-                        raise StepError(f"Step {step.__class__.__name__} returned score that is infinite",)
+                        raise StepError(
+                            f"Step {step.__class__.__name__} returned score that is infinite",
+                        )
 
                     if step_score_addition > step.SCORE_MAX:
                         _LOGGER.warning(
@@ -463,7 +476,10 @@ class Resolver:
                 stride.run(state)
             except NotAcceptable as exc:
                 _LOGGER.debug(
-                    "Stride %r removed final state %r: %s", stride.__class__.__name__, state, str(exc),
+                    "Stride %r removed final state %r: %s",
+                    stride.__class__.__name__,
+                    state,
+                    str(exc),
                 )
                 return False
             except Exception as exc:
@@ -517,7 +533,9 @@ class Resolver:
                 for source in sources:
                     known_hashes = set(
                         self.graph.get_python_package_hashes_sha256(
-                            package_version.name, package_version.locked_version, source.url,
+                            package_version.name,
+                            package_version.locked_version,
+                            source.url,
                         )
                     )
 
@@ -618,7 +636,11 @@ class Resolver:
         # This is also a requirement for running under Python3.6+!!!
         _LOGGER.info("Resolving direct dependencies")
         resolved_direct_dependencies: Dict[str, List[PackageVersion]] = self.solver.solve(
-            sorted(self.project.iter_dependencies(with_devel=with_devel), key=lambda p: p.name,), graceful=True,
+            sorted(
+                self.project.iter_dependencies(with_devel=with_devel),
+                key=lambda p: p.name,
+            ),
+            graceful=True,
         )
 
         unresolved = []
@@ -643,7 +665,11 @@ class Resolver:
                     error_msg += f" using platform {runtime_environment.platform!r}"
 
                 self.context.stack_info.append(
-                    {"message": error_msg, "type": "ERROR", "link": jl("solve_direct"),}
+                    {
+                        "message": error_msg,
+                        "type": "ERROR",
+                        "link": jl("solve_direct"),
+                    }
                 )
                 _LOGGER.warning("%s - see %s", error_msg, jl("solve_direct"))
                 continue
@@ -674,7 +700,11 @@ class Resolver:
         if not direct_dependencies:
             msg = "No direct dependencies found"
             self.context.stack_info.append(
-                {"message": msg, "type": "ERROR", "link": jl("solve_direct"),}
+                {
+                    "message": msg,
+                    "type": "ERROR",
+                    "link": jl("solve_direct"),
+                }
             )
             raise CannotProduceStack(msg, stack_info=self.context.stack_info)
 
@@ -698,7 +728,10 @@ class Resolver:
                     "were removed by pipeline sieves"
                 )
                 self.context.stack_info.append(
-                    {"type": "ERROR", "message": msg,}
+                    {
+                        "type": "ERROR",
+                        "message": msg,
+                    }
                 )
                 raise CannotProduceStack(msg, stack_info=self.context.stack_info)
 
@@ -827,11 +860,16 @@ class Resolver:
             return None
 
         return self._expand_state_add_dependencies(
-            state=state, package_version=package_version, dependencies=list(chain(*dependencies.values())),
+            state=state,
+            package_version=package_version,
+            dependencies=list(chain(*dependencies.values())),
         )
 
     def _expand_state_add_dependencies(
-        self, state: State, package_version: PackageVersion, dependencies: List[Tuple[str, str]],
+        self,
+        state: State,
+        package_version: PackageVersion,
+        dependencies: List[Tuple[str, str]],
     ) -> Optional[State]:
         """Create new state out of existing ones based on dependencies if necessary.
 
@@ -1056,7 +1094,10 @@ class Resolver:
         return self._run_steps(state, package_version, all_dependencies, newly_added)
 
     def _do_resolve_states_raw(
-        self, *, with_devel: bool = True, user_stack_scoring: bool = True,
+        self,
+        *,
+        with_devel: bool = True,
+        user_stack_scoring: bool = True,
     ) -> Generator[State, None, None]:
         """Actually perform states resolution."""
         self._log_once_init()
@@ -1117,7 +1158,10 @@ class Resolver:
                 state, unresolved_package_tuple = self.predictor.run()
 
                 _LOGGER.debug(
-                    "Resolving package %r in state with score %g: %r", unresolved_package_tuple, state.score, state,
+                    "Resolving package %r in state with score %g: %r",
+                    unresolved_package_tuple,
+                    state.score,
+                    state,
                 )
                 state_returned = self._expand_state(state, unresolved_package_tuple)
                 if state_returned is not None and not state_returned.unresolved_dependencies:
@@ -1151,12 +1195,18 @@ class Resolver:
             )
 
     def _do_resolve_states(
-        self, *, with_devel: bool = True, user_stack_scoring: bool = True,
+        self,
+        *,
+        with_devel: bool = True,
+        user_stack_scoring: bool = True,
     ) -> Generator[State, None, None]:
         """Resolve states as produced by this resolver pipeline, ready to be used to build a product."""
         if self.count > self.limit:
             _LOGGER.warning(
-                "Count (%d) is higher than limit (%d), setting count to %d", self.count, self.limit, self.limit,
+                "Count (%d) is higher than limit (%d), setting count to %d",
+                self.count,
+                self.limit,
+                self.limit,
             )
             self.count = self.limit
 
@@ -1252,7 +1302,11 @@ class Resolver:
                 )
                 link = jl("no_stack")
                 self.context.stack_info.append(
-                    {"message": msg, "type": "ERROR", "link": link,}
+                    {
+                        "message": msg,
+                        "type": "ERROR",
+                        "link": link,
+                    }
                 )
                 raise CannotProduceStack(msg + f"- see {link}", stack_info=self.context.stack_info)
 
@@ -1306,7 +1360,12 @@ class Resolver:
         font_prop = FontProperties()
         font_prop.set_size("medium")
         fig.legend(
-            loc="upper center", bbox_to_anchor=(0.50, 1.00), ncol=2, fancybox=True, shadow=True, prop=font_prop,
+            loc="upper center",
+            bbox_to_anchor=(0.50, 1.00),
+            ncol=2,
+            fancybox=True,
+            shadow=True,
+            prop=font_prop,
         )
         return fig
 
@@ -1333,7 +1392,10 @@ class Resolver:
 
         if pipeline_config is None:
             pipeline = PipelineBuilder.get_adviser_pipeline_config(
-                recommendation_type=recommendation_type, project=project, library_usage=library_usage, graph=graph,
+                recommendation_type=recommendation_type,
+                project=project,
+                library_usage=library_usage,
+                graph=graph,
             )
         else:
             if isinstance(pipeline_config, PipelineConfig):
@@ -1379,7 +1441,10 @@ class Resolver:
 
         if pipeline_config is None:
             pipeline = PipelineBuilder.get_dependency_monkey_pipeline_config(
-                decision_type=decision_type, graph=graph, project=project, library_usage=library_usage,
+                decision_type=decision_type,
+                graph=graph,
+                project=project,
+                library_usage=library_usage,
             )
         else:
             if isinstance(pipeline_config, PipelineConfig):

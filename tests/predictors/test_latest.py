@@ -33,7 +33,9 @@ from ..base import AdviserTestCase
 class TestApproximatingLatest(AdviserTestCase):
     """Test implementation of predictor approximating latest resolution."""
 
-    @given(integers(min_value=1, max_value=256),)
+    @given(
+        integers(min_value=1, max_value=256),
+    )
     def test_run(self, state_factory: Callable[[], State], state_count: int) -> None:
         """Test running the approximating latest method."""
         state = state_factory()
@@ -73,7 +75,10 @@ class TestApproximatingLatest(AdviserTestCase):
                     hash(dependency_tuple_2): dependency_tuple_2,
                     hash(dependency_tuple_3): dependency_tuple_3,
                 },
-                "flask": {hash(dependency_tuple_4): dependency_tuple_4, hash(dependency_tuple_5): dependency_tuple_5,},
+                "flask": {
+                    hash(dependency_tuple_4): dependency_tuple_4,
+                    hash(dependency_tuple_5): dependency_tuple_5,
+                },
             },
         )
 
@@ -118,7 +123,10 @@ class TestApproximatingLatest(AdviserTestCase):
                     hash(dependency_tuple_2): dependency_tuple_2,
                     hash(dependency_tuple_3): dependency_tuple_3,
                 },
-                "flask": {hash(dependency_tuple_4): dependency_tuple_4, hash(dependency_tuple_5): dependency_tuple_5,},
+                "flask": {
+                    hash(dependency_tuple_4): dependency_tuple_4,
+                    hash(dependency_tuple_5): dependency_tuple_5,
+                },
             },
         )
 

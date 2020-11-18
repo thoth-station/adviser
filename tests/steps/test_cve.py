@@ -64,7 +64,10 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
         ).and_return([self._FLASK_CVE]).once()
 
         package_version = PackageVersion(
-            name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
+            name="flask",
+            version="==0.12.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
         )
 
         context = flexmock(graph=GraphDatabase(), recommendation_type=RecommendationType.TESTING)
@@ -88,7 +91,10 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
         ).and_return([]).once()
 
         package_version = PackageVersion(
-            name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
+            name="flask",
+            version="==0.12.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
         )
 
         context = flexmock(graph=GraphDatabase())
@@ -106,7 +112,10 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
         ).and_return([self._FLASK_CVE]).once()
 
         package_version = PackageVersion(
-            name="flask", version="==0.12.0", index=Source("https://pypi.org/simple"), develop=False,
+            name="flask",
+            version="==0.12.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
         )
 
         context = flexmock(graph=GraphDatabase(), recommendation_type=RecommendationType.SECURITY)

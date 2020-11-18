@@ -289,7 +289,8 @@ class PipelineBuilder:
             for unit_class in cls._iter_units():
                 if unit_class.__name__ in blocked_units:
                     _LOGGER.debug(
-                        "Avoiding adding pipeline unit %r based on blocked units configuration", unit_class.__name__,
+                        "Avoiding adding pipeline unit %r based on blocked units configuration",
+                        unit_class.__name__,
                     )
                     continue
 
@@ -332,7 +333,8 @@ class PipelineBuilder:
 
         if _LOGGER.getEffectiveLevel() <= logging.DEBUG:
             _LOGGER.debug(
-                "Pipeline configuration creation ended, configuration:\n%s", json.dumps(pipeline.to_dict(), indent=2),
+                "Pipeline configuration creation ended, configuration:\n%s",
+                json.dumps(pipeline.to_dict(), indent=2),
             )
 
         return pipeline
@@ -419,10 +421,16 @@ class PipelineBuilder:
             _LOGGER.warning("Unknown entry in pipeline configuration: %r", dict_)
 
         pipeline = PipelineConfig(
-            boots=boots, pseudonyms=pseudonyms, sieves=sieves, steps=steps, strides=strides, wraps=wraps,
+            boots=boots,
+            pseudonyms=pseudonyms,
+            sieves=sieves,
+            steps=steps,
+            strides=strides,
+            wraps=wraps,
         )
         _LOGGER.debug(
-            "Pipeline configuration creation ended, configuration:\n%s", json.dumps(pipeline.to_dict(), indent=2),
+            "Pipeline configuration creation ended, configuration:\n%s",
+            json.dumps(pipeline.to_dict(), indent=2),
         )
         return pipeline
 
@@ -448,7 +456,10 @@ class PipelineBuilder:
         """Get adviser's pipeline configuration."""
         return cls._build_configuration(
             PipelineBuilderContext(
-                graph=graph, project=project, library_usage=library_usage, recommendation_type=recommendation_type,
+                graph=graph,
+                project=project,
+                library_usage=library_usage,
+                recommendation_type=recommendation_type,
             )
         )
 
@@ -464,6 +475,9 @@ class PipelineBuilder:
         """Get dependency-monkey's pipeline configuration."""
         return cls._build_configuration(
             PipelineBuilderContext(
-                graph=graph, project=project, library_usage=library_usage, decision_type=decision_type,
+                graph=graph,
+                project=project,
+                library_usage=library_usage,
+                decision_type=decision_type,
             )
         )

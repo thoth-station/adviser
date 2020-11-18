@@ -99,7 +99,10 @@ class TestImportlibMetadataBackportSieve(AdviserUnitTestCase):
     def test_remove(self, context: Context) -> None:
         """Test removing importlib-metadata dependency."""
         package_version = PackageVersion(
-            name="importlib-metadata", version="==1.7.0", develop=False, index=Source("https://pypi.org/simple"),
+            name="importlib-metadata",
+            version="==1.7.0",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         unit = ImportlibMetadataBackportSieve()

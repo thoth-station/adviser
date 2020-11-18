@@ -41,7 +41,13 @@ class TestNoSemanticInterpositionWrap(AdviserUnitTestCase):
         builder_context.project.runtime_environment.python_version = "3.6"
         self.verify_multiple_should_include(builder_context)
 
-    @pytest.mark.parametrize("os_name,os_version,python_version", [("rhel", "8.2", "3.6"), ("ubi", "8.2", "3.7"),])
+    @pytest.mark.parametrize(
+        "os_name,os_version,python_version",
+        [
+            ("rhel", "8.2", "3.6"),
+            ("ubi", "8.2", "3.7"),
+        ],
+    )
     def test_include(
         self, builder_context: PipelineBuilderContext, os_name: str, os_version: str, python_version: str
     ) -> None:

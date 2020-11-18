@@ -52,7 +52,11 @@ from .helpers import use_test_units
 def builder_context() -> PipelineBuilderContext:
     """Fixture for a builder context."""
     builder_context = PipelineBuilderContext(
-        graph=None, project=None, library_usage=None, decision_type=DecisionType.RANDOM, recommendation_type=None,
+        graph=None,
+        project=None,
+        library_usage=None,
+        decision_type=DecisionType.RANDOM,
+        recommendation_type=None,
     )
     builder_context.add_unit(units.boots.Boot1())
     builder_context.add_unit(units.pseudonyms.Pseudonym1())
@@ -96,7 +100,11 @@ class TestPipelineBuilderContext(AdviserTestCase):
     def test_is_dependency_monkey_pipeline(self) -> None:
         """Test check for a dependency monkey build context."""
         builder_context = PipelineBuilderContext(
-            graph=None, project=None, library_usage=None, decision_type=DecisionType.RANDOM, recommendation_type=None,
+            graph=None,
+            project=None,
+            library_usage=None,
+            decision_type=DecisionType.RANDOM,
+            recommendation_type=None,
         )
         assert builder_context.is_dependency_monkey_pipeline()
         assert not builder_context.is_adviser_pipeline()
@@ -106,7 +114,11 @@ class TestPipelineBuilderContext(AdviserTestCase):
         # Exactly one from decision type/recommendation type has to be specified.
         with pytest.raises(ValueError):
             PipelineBuilderContext(
-                graph=None, project=None, library_usage=None, decision_type=None, recommendation_type=None,
+                graph=None,
+                project=None,
+                library_usage=None,
+                decision_type=None,
+                recommendation_type=None,
             )
 
         with pytest.raises(ValueError):
@@ -130,7 +142,10 @@ class TestPipelineBuilderContext(AdviserTestCase):
         ],
     )
     def test_add_unit(
-        self, builder_context: PipelineBuilderContext, unit_class: Unit, builder_context_attr: str,
+        self,
+        builder_context: PipelineBuilderContext,
+        unit_class: Unit,
+        builder_context_attr: str,
     ) -> None:
         """Test addition of a unit."""
         assert not builder_context.is_included(unit_class)
@@ -195,12 +210,20 @@ class TestPipelineBuilder(AdviserTestCase):
     @pytest.mark.parametrize(
         "pipeline_config_method,kwargs",
         [
-            ("get_adviser_pipeline_config", {"recommendation_type": RecommendationType.LATEST},),
-            ("get_dependency_monkey_pipeline_config", {"decision_type": DecisionType.RANDOM},),
+            (
+                "get_adviser_pipeline_config",
+                {"recommendation_type": RecommendationType.LATEST},
+            ),
+            (
+                "get_dependency_monkey_pipeline_config",
+                {"decision_type": DecisionType.RANDOM},
+            ),
         ],
     )
     def test_build_configuration(
-        self, pipeline_config_method: str, kwargs: Dict[str, Union[RecommendationType, DecisionType]],
+        self,
+        pipeline_config_method: str,
+        kwargs: Dict[str, Union[RecommendationType, DecisionType]],
     ) -> None:
         """Test building configuration."""
         # All test units do not register themselves - let's cherry-pick ones that should be present.
@@ -257,7 +280,14 @@ class TestPipelineBuilder(AdviserTestCase):
             ],
             "strides": [
                 {"name": "Stride2", "configuration": {"foo": None, "package_name": "thamos"}, "unit_run": False},
-                {"name": "Stride1", "configuration": {"linus": "torvalds", "package_name": None,}, "unit_run": False},
+                {
+                    "name": "Stride1",
+                    "configuration": {
+                        "linus": "torvalds",
+                        "package_name": None,
+                    },
+                    "unit_run": False,
+                },
             ],
             "wraps": [{"name": "Wrap2", "configuration": {"package_name": "hexsticker"}, "unit_run": False}],
         }
@@ -269,7 +299,10 @@ class TestPipelineBuilder(AdviserTestCase):
         flexmock(units.steps.Step1).should_receive("should_include").and_return({}).and_return(None).times(2)
 
         pipeline = PipelineBuilder.get_adviser_pipeline_config(
-            recommendation_type=RecommendationType.LATEST, graph=None, project=project, library_usage=None,
+            recommendation_type=RecommendationType.LATEST,
+            graph=None,
+            project=project,
+            library_usage=None,
         )
 
         assert len(pipeline.boots) == 1
@@ -287,7 +320,10 @@ class TestPipelineBuilder(AdviserTestCase):
             flexmock(units.steps.Step1).should_receive("should_include").times(0)
 
             pipeline = PipelineBuilder.get_adviser_pipeline_config(
-                recommendation_type=RecommendationType.LATEST, graph=None, project=None, library_usage=None,
+                recommendation_type=RecommendationType.LATEST,
+                graph=None,
+                project=None,
+                library_usage=None,
             )
             assert len(pipeline.boots) == 0
             assert len(pipeline.steps) == 0

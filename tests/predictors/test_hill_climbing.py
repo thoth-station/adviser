@@ -33,7 +33,9 @@ from ..base import AdviserTestCase
 class TestHillClimbing(AdviserTestCase):
     """Tests related to hill climbing in the state space."""
 
-    @given(integers(min_value=1, max_value=256),)
+    @given(
+        integers(min_value=1, max_value=256),
+    )
     def test_run(self, state_factory: Callable[[], State], state_count: int) -> None:
         """Test running the hill climbing method."""
         state = state_factory()

@@ -46,7 +46,9 @@ class AdaptiveSimulatedAnnealing(Predictor):
     temperature_coefficient = attr.ib(type=float, default=0.999, kw_only=True)
 
     _temperature_history = attr.ib(
-        type=List[Tuple[Optional[float], Optional[bool], Optional[float], int]], factory=list, kw_only=True,
+        type=List[Tuple[Optional[float], Optional[bool], Optional[float], int]],
+        factory=list,
+        kw_only=True,
     )
     _temperature = attr.ib(type=float, kw_only=True, default=0.0)
 
@@ -104,7 +106,8 @@ class AdaptiveSimulatedAnnealing(Predictor):
         if probable_state_idx != 0 and acceptance_probability >= random.random():
             # Skip to probable state, do not use the top rated state.
             _LOGGER.debug(
-                "Performing transition to a neighbour state with score %g", probable_state.score,
+                "Performing transition to a neighbour state with score %g",
+                probable_state.score,
             )
             # state_expansion_idx = probable_state_idx
             state = probable_state
@@ -202,6 +205,11 @@ class AdaptiveSimulatedAnnealing(Predictor):
         font_prop = FontProperties()
         font_prop.set_size("small")
         fig.legend(
-            loc="upper center", bbox_to_anchor=(0.50, 1.00), ncol=2, fancybox=True, shadow=True, prop=font_prop,
+            loc="upper center",
+            bbox_to_anchor=(0.50, 1.00),
+            ncol=2,
+            fancybox=True,
+            shadow=True,
+            prop=font_prop,
         )
         return fig

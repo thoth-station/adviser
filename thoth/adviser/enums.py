@@ -30,7 +30,11 @@ class _ExtendedEnum(Enum):
         try:
             return cls.__members__[name.upper()]
         except KeyError as exc:
-            raise ValueError("Unknown value for type {}, available: {}", cls, list(cls.__members__.values()),) from exc
+            raise ValueError(
+                "Unknown value for type {}, available: {}",
+                cls,
+                list(cls.__members__.values()),
+            ) from exc
 
 
 class RecommendationType(_ExtendedEnum):

@@ -44,16 +44,23 @@ class TestTensorFlow21H5PyStep(AdviserUnitTestCase):
         self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize(
-        "tf_version,h5py_version", list(product(("2.1.0", "2.1.1", "2.1.2"), ("3.0.0", "3.0.1", "4.0.0", "3.2.0"))),
+        "tf_version,h5py_version",
+        list(product(("2.1.0", "2.1.1", "2.1.2"), ("3.0.0", "3.0.1", "4.0.0", "3.2.0"))),
     )
     def test_tf_21(self, context: Context, tf_version: str, h5py_version: str) -> None:
         """Test blocking resolution of h5py with TensorFlow==2.1."""
         tf_package_version = PackageVersion(
-            name="tensorflow", version=f"=={tf_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="tensorflow",
+            version=f"=={tf_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         h5py_package_version = PackageVersion(
-            name="h5py", version=f"=={h5py_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="h5py",
+            version=f"=={h5py_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         state = State()
@@ -76,11 +83,17 @@ class TestTensorFlow21H5PyStep(AdviserUnitTestCase):
     def test_no_tf_21(self, h5py_version: str, tf_version: str) -> None:
         """Test no blocking when using h5py<3 or TensorFlow!=2.1."""
         h5py_package_version = PackageVersion(
-            name="h5py", version=f"=={h5py_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="h5py",
+            version=f"=={h5py_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         tf_package_version = PackageVersion(
-            name="tensorflow", version=f"=={tf_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="tensorflow",
+            version=f"=={tf_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         state = State()

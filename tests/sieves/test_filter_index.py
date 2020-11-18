@@ -43,7 +43,10 @@ class TestFilterIndexSieve(AdviserUnitTestCase):
     def test_run_filter(self) -> None:
         """Test filtering a package based on source index used."""
         package_version = PackageVersion(
-            name="tensorflow", version="==2.0.0", index=Source("https://pypi.org/simple"), develop=False,
+            name="tensorflow",
+            version="==2.0.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
         )
         unit = FilterIndexSieve()
         unit.update_configuration(
@@ -76,7 +79,10 @@ class TestFilterIndexSieve(AdviserUnitTestCase):
     def test_run_no_filter_multiple(self) -> None:
         """Test not filtering a package based on source index used."""
         package_version = PackageVersion(
-            name="tensorboard", version="==2.1.0", index=Source("https://pypi.org/simple"), develop=False,
+            name="tensorboard",
+            version="==2.1.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
         )
         unit = FilterIndexSieve()
         unit.update_configuration(

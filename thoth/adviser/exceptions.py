@@ -136,7 +136,9 @@ class UnresolvedDependencies(AdviserRunException):
             f"{', '.join(f'{dep!r}' for dep in self.unresolved)}  - these "
             "dependencies were not yet solved in Thoth "
             "cannot resolve all direct dependencies",
-            "_ERROR_DETAILS": {"unresolved": self.unresolved,},
+            "_ERROR_DETAILS": {
+                "unresolved": self.unresolved,
+            },
             "stack_info": self.stack_info,
         }
 

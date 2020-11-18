@@ -52,7 +52,10 @@ class TestUnit(AdviserTestCase):
             ),
             (
                 PackageVersion(
-                    name="tensorflow", version="2.0.0rc2", index=Source("https://pypi.org/simple"), develop=False,
+                    name="tensorflow",
+                    version="2.0.0rc2",
+                    index=Source("https://pypi.org/simple"),
+                    develop=False,
                 ),
                 False,
             ),
@@ -72,7 +75,12 @@ class TestUnit(AdviserTestCase):
                     index=Source("https://tensorflow.pypi.thoth-station.ninja/index/os/fedora/30/jemalloc/simple"),
                     develop=False,
                 ),
-                {"os_name": "fedora", "os_version": "30", "configuration": "jemalloc", "platform_tag": None,},
+                {
+                    "os_name": "fedora",
+                    "os_version": "30",
+                    "configuration": "jemalloc",
+                    "platform_tag": None,
+                },
             ),
             (
                 PackageVersion(
@@ -81,11 +89,19 @@ class TestUnit(AdviserTestCase):
                     index=Source("https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/cuda/simple"),
                     develop=False,
                 ),
-                {"os_name": None, "os_version": None, "configuration": "cuda", "platform_tag": "manylinux2010",},
+                {
+                    "os_name": None,
+                    "os_version": None,
+                    "configuration": "cuda",
+                    "platform_tag": "manylinux2010",
+                },
             ),
             (
                 PackageVersion(
-                    name="tensorflow", version="1.11.0", index=Source("https://pypi.org/simple"), develop=False,
+                    name="tensorflow",
+                    version="1.11.0",
+                    index=Source("https://pypi.org/simple"),
+                    develop=False,
                 ),
                 None,
             ),
