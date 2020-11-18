@@ -47,14 +47,17 @@ class PipfileHashBoot(Boot):
         if builder_context.is_included(cls):
             return None
 
-        if builder_context.project.pipfile_lock is not None and builder_context.project.meta.hash is not None:
+        if (
+            builder_context.project.pipfile_lock is not None
+            and builder_context.project.pipfile_lock.meta.hash is not None
+        ):
             return {}
 
         return None
 
     def run(self) -> None:
         """Check for platform configured and adjust to the default one if not provided by user."""
-        pipfile_hash = self.context.project.meta.hash.get("sha256")
+        pipfile_hash = self.context.project.pipfile_lock.meta.hash.get("sha256")
         computed_hash = self.context.project.pipfile.hash().get("sha256")
         if pipfile_hash != computed_hash:
             msg = (
