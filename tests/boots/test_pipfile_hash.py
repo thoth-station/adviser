@@ -17,8 +17,6 @@
 
 """Test a boot that checks for Pipfile hash and reports any mismatch to users.."""
 
-import pytest
-
 from thoth.adviser.boots import PipfileHashBoot
 from thoth.adviser.context import Context
 from thoth.python import Project
@@ -41,8 +39,8 @@ class TestPipifleHashBoot(AdviserUnitTestCase):
         requirements_txt = str(self.data_dir / "projects" / "requirements.txt")
 
         project = Project.from_pip_compile_files(
-                requirements_path=requirements_in,
-                requirements_lock_path=requirements_txt,
+            requirements_path=requirements_in,
+            requirements_lock_path=requirements_txt,
         )
 
         builder_context.project = project
