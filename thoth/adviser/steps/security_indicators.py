@@ -29,6 +29,7 @@ import logging
 import attr
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
+from thoth.storages.exceptions import NotFoundError
 from voluptuous import Schema
 from voluptuous import Required
 
@@ -108,15 +109,15 @@ class SecurityIndicatorStep(Step):
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Score package based on security indicators gathered, do not include if not analyzed."""
-        s_info = self.context.graph.get_si_aggregated_python_package_version(
-            package_name=package_version.name,
-            package_version=package_version.locked_version,
-            index_url=package_version.index.url,
-        )
-
         package_version_tuple = package_version.to_tuple_locked()
 
-        if s_info is None:
+        try:
+            s_info = self.context.graph.get_si_aggregated_python_package_version(
+                package_name=package_version.name,
+                package_version=package_version.locked_version,
+                index_url=package_version.index.url,
+            )
+        except NotFoundError:
             if self.context.recommendation_type == RecommendationType.SECURITY:
                 if package_version_tuple not in self._logged_packages:
                     self._logged_packages.add(package_version_tuple)
