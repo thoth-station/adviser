@@ -89,7 +89,10 @@ class TestPy36SetuptoolsSieve(AdviserUnitTestCase):
     def test_filter(self, context: Context) -> None:
         """Test filtering out setuptools that do not work with Python 3.6."""
         package_version = PackageVersion(
-            name="setuptools", version="==14.2", develop=False, index=Source("https://pypi.org/simple"),
+            name="setuptools",
+            version="==14.2",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         unit = Py36SetuptoolsSieve()
@@ -104,13 +107,22 @@ class TestPy36SetuptoolsSieve(AdviserUnitTestCase):
     def test_no_filter(self) -> None:
         """Test not filtering packages that can be included."""
         pkg1 = PackageVersion(
-            name="setuptools", version="==17.0", develop=False, index=Source("https://pypi.org/simple"),
+            name="setuptools",
+            version="==17.0",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
         pkg2 = PackageVersion(
-            name="setuptools", version="==49.1.0", develop=False, index=Source("https://pypi.org/simple"),
+            name="setuptools",
+            version="==49.1.0",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
         pkg3 = PackageVersion(
-            name="setuptools", version="==50.30.8", develop=False, index=Source("https://thoth-station.ninja/simple"),
+            name="setuptools",
+            version="==50.30.8",
+            develop=False,
+            index=Source("https://thoth-station.ninja/simple"),
         )
 
         pkgs = [pkg1, pkg2, pkg3]

@@ -88,7 +88,11 @@ class TensorFlowPython39Sieve(Sieve):
                 if not self._message_logged:
                     _LOGGER.warning("%s - %s", self._MESSAGE, self._LINK)
                     self.context.stack_info.append(
-                        {"type": "WARNING", "message": self._MESSAGE, "link": self._LINK,}
+                        {
+                            "type": "WARNING",
+                            "message": self._MESSAGE,
+                            "link": self._LINK,
+                        }
                     )
                 continue
 

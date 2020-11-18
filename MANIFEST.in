@@ -12,6 +12,8 @@ include OWNERS
 include Pipfile
 include Pipfile.lock
 include requirements.txt
+include tests/data/projects/requirements.in
+include tests/data/projects/requirements.txt
 include tests/data/projects/Pipfile
 include tests/data/projects/Pipfile_project0
 include tests/data/projects/Pipfile_project1

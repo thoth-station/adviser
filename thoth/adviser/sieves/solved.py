@@ -83,7 +83,9 @@ class SolvedSieve(Sieve):
                 )
             except NotFoundError as exc:
                 _LOGGER.debug(
-                    "Removing package %r as it was not solved: %s", package_tuple, str(exc),
+                    "Removing package %r as it was not solved: %s",
+                    package_tuple,
+                    str(exc),
                 )
                 continue
 
@@ -93,7 +95,11 @@ class SolvedSieve(Sieve):
                     message = f"Removing package {package_tuple} due to build time error in the software environment"
                     _LOGGER.warning("%s - see %s", message, self._JUSTIFICATION_LINK)
                     self.context.stack_info.append(
-                        {"type": "WARNING", "message": message, "link": self._JUSTIFICATION_LINK,}
+                        {
+                            "type": "WARNING",
+                            "message": message,
+                            "link": self._JUSTIFICATION_LINK,
+                        }
                     )
                 continue
 

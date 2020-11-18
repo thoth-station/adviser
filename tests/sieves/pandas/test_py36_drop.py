@@ -44,9 +44,17 @@ class TestPandasPy36Sieve(AdviserUnitTestCase):
 
     @pytest.mark.parametrize(
         "recommendation_type",
-        [RecommendationType.STABLE, RecommendationType.PERFORMANCE, RecommendationType.SECURITY,],
+        [
+            RecommendationType.STABLE,
+            RecommendationType.PERFORMANCE,
+            RecommendationType.SECURITY,
+        ],
     )
-    def test_include(self, builder_context: PipelineBuilderContext, recommendation_type: RecommendationType,) -> None:
+    def test_include(
+        self,
+        builder_context: PipelineBuilderContext,
+        recommendation_type: RecommendationType,
+    ) -> None:
         """Test including this pipeline unit."""
         builder_context.recommendation_type = recommendation_type
         builder_context.project.runtime_environment.python_version = "3.6"
@@ -81,7 +89,10 @@ class TestPandasPy36Sieve(AdviserUnitTestCase):
     def test_run(self, context: Context, pandas_version: str) -> None:
         """Test filtering out Pandas that dropped Python 3.6 support."""
         package_version = PackageVersion(
-            name="pandas", version=f"=={pandas_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="pandas",
+            version=f"=={pandas_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         unit = PandasPy36Sieve()
@@ -93,10 +104,23 @@ class TestPandasPy36Sieve(AdviserUnitTestCase):
 
     def test_no_filter(self) -> None:
         """Test not filtering packages that can be included."""
-        pkg1 = PackageVersion(name="pandas", version="==1.1.2", develop=False, index=Source("https://pypi.org/simple"),)
-        pkg2 = PackageVersion(name="pandas", version="==1.0.0", develop=False, index=Source("https://pypi.org/simple"),)
+        pkg1 = PackageVersion(
+            name="pandas",
+            version="==1.1.2",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
+        )
+        pkg2 = PackageVersion(
+            name="pandas",
+            version="==1.0.0",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
+        )
         pkg3 = PackageVersion(
-            name="pandas", version="==0.24.2", develop=False, index=Source("https://pypi.org/simple"),
+            name="pandas",
+            version="==0.24.2",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         pkgs = [pkg1, pkg2, pkg3]

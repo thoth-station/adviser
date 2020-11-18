@@ -19,6 +19,7 @@
 
 from .fully_specified_environment import FullySpecifiedEnvironment
 from .platform import PlatformBoot
+from .pipfile_hash import PipfileHashBoot
 from .python_version import PythonVersionBoot
 from .rhel_version import RHELVersionBoot
 from .solved_software_environment import SolvedSoftwareEnvironmentBoot
@@ -32,6 +33,7 @@ from .ubi import UbiBoot
 # can be mentioned here.
 __all__ = [
     # "MemTraceBoot",
+    "PipfileHashBoot",  # Should be placed before any changes to the input.
     "UbiBoot",
     "PythonVersionBoot",
     "SolvedSoftwareEnvironmentBoot",

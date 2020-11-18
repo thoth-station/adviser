@@ -49,11 +49,17 @@ class TestTensorFlow21Urllib32Step(AdviserUnitTestCase):
     def test_tf_21(self, context: Context, urllib3_version: str, tf_version: str) -> None:
         """Test penalizing TensorFlow in version 2.1."""
         tf_package_version = PackageVersion(
-            name="tensorflow", version=f"=={tf_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="tensorflow",
+            version=f"=={tf_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         urllib3_package_version = PackageVersion(
-            name="urllib3", version=f"=={urllib3_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="urllib3",
+            version=f"=={urllib3_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         state = State()
@@ -76,11 +82,17 @@ class TestTensorFlow21Urllib32Step(AdviserUnitTestCase):
     def test_no_tf_21(self, urllib3_version: str, tf_version: str) -> None:
         """Test no penalization for TensorFlow other than 2.1 by this pipeline step."""
         urllib3_package_version = PackageVersion(
-            name="urllib3", version=f"=={urllib3_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="urllib3",
+            version=f"=={urllib3_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         tf_package_version = PackageVersion(
-            name="tensorflow", version=f"=={tf_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="tensorflow",
+            version=f"=={tf_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         state = State()

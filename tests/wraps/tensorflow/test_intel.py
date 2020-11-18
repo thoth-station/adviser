@@ -45,7 +45,8 @@ class TestIntelTensorflowWrap(AdviserUnitTestCase):
         self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize(
-        "cpu_model,cpu_family,recommendation_type", [(13, 6, rt) for rt in RecommendationType],
+        "cpu_model,cpu_family,recommendation_type",
+        [(13, 6, rt) for rt in RecommendationType],
     )
     def test_include(
         self,

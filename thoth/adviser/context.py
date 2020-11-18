@@ -58,15 +58,29 @@ class Context:
     recommendation_type = attr.ib(type=Optional[RecommendationType], kw_only=True, default=None)
     decision_type = attr.ib(type=Optional[DecisionType], kw_only=True, default=None)
     package_versions = attr.ib(
-        type=Dict[Tuple[str, str, str], PackageVersion], kw_only=True, default=attr.Factory(dict),
+        type=Dict[Tuple[str, str, str], PackageVersion],
+        kw_only=True,
+        default=attr.Factory(dict),
     )
     dependencies = attr.ib(
-        type=Dict[str, Dict[Tuple[str, str, str], Set[Tuple[str, str, str]]]], kw_only=True, default=attr.Factory(dict),
+        type=Dict[str, Dict[Tuple[str, str, str], Set[Tuple[str, str, str]]]],
+        kw_only=True,
+        default=attr.Factory(dict),
     )
     dependents = attr.ib(
         type=Dict[
             str,
-            Dict[Tuple[str, str, str], Set[Tuple[Tuple[str, str, str], Optional[str], Optional[str], Optional[str],]],],
+            Dict[
+                Tuple[str, str, str],
+                Set[
+                    Tuple[
+                        Tuple[str, str, str],
+                        Optional[str],
+                        Optional[str],
+                        Optional[str],
+                    ]
+                ],
+            ],
         ],
         kw_only=True,
         default=attr.Factory(dict),
@@ -78,7 +92,11 @@ class Context:
     accepted_final_states_count = attr.ib(type=int, kw_only=True, default=0)
     discarded_final_states_count = attr.ib(type=int, kw_only=True, default=0)
 
-    _accepted_states = attr.ib(type=List[Tuple[Tuple[float, int], State]], kw_only=True, default=attr.Factory(list),)
+    _accepted_states = attr.ib(
+        type=List[Tuple[Tuple[float, int], State]],
+        kw_only=True,
+        default=attr.Factory(list),
+    )
     _accepted_states_counter = attr.ib(type=int, kw_only=True, default=0)
 
     def __attrs_post_init__(self) -> None:
@@ -162,7 +180,11 @@ class Context:
             # If the given package is shared in develop and in the main part, make it main stack part.
             registered.develop = registered.develop or develop
             self._note_dependencies(
-                dependent_tuple, package_tuple, os_name=os_name, os_version=os_version, python_version=python_version,
+                dependent_tuple,
+                package_tuple,
+                os_name=os_name,
+                os_version=os_version,
+                python_version=python_version,
             )
             # This method is called solely on transitive dependencies - for those we do not track
             # extras as extras are already resolved by solver runs (pre-computed). Keep extras untouched
@@ -175,11 +197,19 @@ class Context:
             self.sources[package_tuple[2]] = source
 
         package_version = PackageVersion(
-            name=package_tuple[0], version="==" + package_tuple[1], index=source, extras=extras, develop=develop,
+            name=package_tuple[0],
+            version="==" + package_tuple[1],
+            index=source,
+            extras=extras,
+            develop=develop,
         )
         self.package_versions[package_tuple] = package_version
         self._note_dependencies(
-            dependent_tuple, package_tuple, os_name=os_name, os_version=os_version, python_version=python_version,
+            dependent_tuple,
+            package_tuple,
+            os_name=os_name,
+            os_version=os_version,
+            python_version=python_version,
         )
         return package_version
 

@@ -62,10 +62,16 @@ class TestTensorFlow114GastStep(AdviserUnitTestCase):
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type",
-        [(RecommendationType.LATEST, None), (None, DecisionType.RANDOM),],  # A Dependency Monkey run.
+        [
+            (RecommendationType.LATEST, None),
+            (None, DecisionType.RANDOM),
+        ],  # A Dependency Monkey run.
     )
     def test_no_include(
-        self, builder_context: PipelineBuilderContext, recommendation_type, decision_type: DecisionType,
+        self,
+        builder_context: PipelineBuilderContext,
+        recommendation_type,
+        decision_type: DecisionType,
     ) -> None:
         """Test not including this pipeline unit step."""
         builder_context.decision_type = decision_type
@@ -85,10 +91,16 @@ class TestTensorFlow114GastStep(AdviserUnitTestCase):
     def test_run_not_acceptable(self, context: Context, tf_name: str, tf_version: str, gast_version: str) -> None:
         """Test not acceptable TensorFlow<=1.14 with gast>0.2.2."""
         gast_package_version = PackageVersion(
-            name="gast", version=f"=={gast_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="gast",
+            version=f"=={gast_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
         tf_package_version = PackageVersion(
-            name=tf_name, version=f"=={tf_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name=tf_name,
+            version=f"=={tf_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         state = State()
@@ -115,10 +127,16 @@ class TestTensorFlow114GastStep(AdviserUnitTestCase):
     def test_run_noop(self, context: Context, tf_name: str, tf_version: str, gast_version: str) -> None:
         """Test no operation performed when not invalid combination is seen."""
         gast_package_version = PackageVersion(
-            name="gast", version=f"=={gast_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name="gast",
+            version=f"=={gast_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
         tf_package_version = PackageVersion(
-            name=tf_name, version=f"=={tf_version}", develop=False, index=Source("https://pypi.org/simple"),
+            name=tf_name,
+            version=f"=={tf_version}",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         state = State()

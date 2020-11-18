@@ -81,7 +81,11 @@ allow_prereleases = true
             RecommendationType.TESTING,
         ],
     )
-    def test_include(self, builder_context: PipelineBuilderContext, recommendation_type: RecommendationType,) -> None:
+    def test_include(
+        self,
+        builder_context: PipelineBuilderContext,
+        recommendation_type: RecommendationType,
+    ) -> None:
         """Test including this pipeline unit."""
         builder_context.recommendation_type = recommendation_type
         builder_context.project = Project.from_strings(self._CASE_DISALLOWED_PIPFILE)
@@ -100,7 +104,9 @@ allow_prereleases = true
         ],
     )
     def test_not_include(
-        self, builder_context: PipelineBuilderContext, recommendation_type: RecommendationType,
+        self,
+        builder_context: PipelineBuilderContext,
+        recommendation_type: RecommendationType,
     ) -> None:
         """Test not including this pipeline unit."""
         builder_context.recommendation_type = recommendation_type
@@ -118,7 +124,10 @@ allow_prereleases = true
     def test_remove_pre_releases_disallowed_noop(self) -> None:
         """Test removing dependencies not hitting limit causes a noop."""
         tf_2_0_0 = PackageVersion(
-            name="tensorflow", version="==2.0.0", index=Source("https://pypi.org/simple"), develop=False,
+            name="tensorflow",
+            version="==2.0.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
         )
 
         context = flexmock(project=Project.from_strings(self._CASE_DISALLOWED_PIPFILE))

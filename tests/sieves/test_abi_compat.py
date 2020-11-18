@@ -57,7 +57,9 @@ class TestAbiCompatSieve(AdviserUnitTestCase):
             graph=GraphDatabase(),
             project=flexmock(
                 runtime_environment=flexmock(
-                    operating_system=flexmock(name="rhel", version="8.0"), cuda_version="4.6", python_version="3.6",
+                    operating_system=flexmock(name="rhel", version="8.0"),
+                    cuda_version="4.6",
+                    python_version="3.6",
                 )
             ),
         )
@@ -78,7 +80,9 @@ class TestAbiCompatSieve(AdviserUnitTestCase):
             graph=GraphDatabase,
             project=flexmock(
                 runtime_environment=flexmock(
-                    operating_system=flexmock(name="rhel", version="8.0"), cuda_version="4.6", python_version="3.6",
+                    operating_system=flexmock(name="rhel", version="8.0"),
+                    cuda_version="4.6",
+                    python_version="3.6",
                 )
             ),
         )

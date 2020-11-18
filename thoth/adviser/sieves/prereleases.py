@@ -58,7 +58,8 @@ class CutPreReleasesSieve(Sieve):
         for package_version in package_versions:
             if package_version.semantic_version.is_prerelease:
                 _LOGGER.debug(
-                    "Removing package %s - pre-releases are disabled", package_version.to_tuple(),
+                    "Removing package %s - pre-releases are disabled",
+                    package_version.to_tuple(),
                 )
                 continue
 

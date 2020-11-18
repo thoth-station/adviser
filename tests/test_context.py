@@ -36,7 +36,12 @@ from .base import AdviserTestCase
 @pytest.fixture
 def package_version() -> PackageVersion:  # noqa: D401
     """A fixture for a package version representative."""
-    return PackageVersion(name="selinon", version="==1.0.0", index=Source("https://pypi.org/simple"), develop=False,)
+    return PackageVersion(
+        name="selinon",
+        version="==1.0.0",
+        index=Source("https://pypi.org/simple"),
+        develop=False,
+    )
 
 
 @pytest.fixture
@@ -186,7 +191,10 @@ class TestContext(AdviserTestCase):
 
         context.register_package_version(
             PackageVersion(
-                name=package_tuple[0], version="==" + package_tuple[1], index=Source(package_tuple[2]), develop=False,
+                name=package_tuple[0],
+                version="==" + package_tuple[1],
+                index=Source(package_tuple[2]),
+                develop=False,
             )
         )
 

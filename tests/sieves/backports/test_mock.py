@@ -99,7 +99,10 @@ class TestMockBackportSieve(AdviserUnitTestCase):
     def test_remove(self, context: Context) -> None:
         """Test removing importlib-resources dependency."""
         package_version = PackageVersion(
-            name="mock", version="==4.0.2", develop=False, index=Source("https://pypi.org/simple"),
+            name="mock",
+            version="==4.0.2",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         unit = MockBackportSieve()

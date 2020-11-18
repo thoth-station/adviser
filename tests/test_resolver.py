@@ -76,7 +76,12 @@ from .base import AdviserTestCase
 @pytest.fixture
 def package_version() -> List[PackageVersion]:
     """Return a package version."""
-    return PackageVersion(name="tensorflow", version="==2.0.0", index=Source("https://pypi.org/simple"), develop=False,)
+    return PackageVersion(
+        name="tensorflow",
+        version="==2.0.0",
+        index=Source("https://pypi.org/simple"),
+        develop=False,
+    )
 
 
 @pytest.fixture
@@ -87,7 +92,10 @@ def tf_package_versions() -> List[PackageVersion]:
         PackageVersion(name="tensorflow", version="==1.9.0rc1", index=pypi, develop=False),
         PackageVersion(name="tensorflow", version="==1.9.0", index=pypi, develop=False),
         PackageVersion(
-            name="tensorflow", version="==2.0.0", index=Source("https://thoth-station.ninja/simple"), develop=False,
+            name="tensorflow",
+            version="==2.0.0",
+            index=Source("https://thoth-station.ninja/simple"),
+            develop=False,
         ),
     ]
 
@@ -122,7 +130,10 @@ def package_versions() -> List[PackageVersion]:
     return [
         PackageVersion(name="numpy", version="==1.17.4", index=pypi, develop=False),
         PackageVersion(
-            name="tensorflow", version="==2.0.0", index=Source("https://thoth-station.ninja/simple"), develop=False,
+            name="tensorflow",
+            version="==2.0.0",
+            index=Source("https://thoth-station.ninja/simple"),
+            develop=False,
         ),
         PackageVersion(name="flask", version="==1.1.1", index=pypi, develop=False),
     ]
@@ -289,7 +300,9 @@ class TestResolver(AdviserTestCase):
         resolver.pipeline._steps = {package_version.name: [steps.Step1()]}
         with pytest.raises(StepError):
             resolver._run_steps(
-                state, package_version, {"flask": [("flask", "0.12", "https://pypi.org/simple")]},
+                state,
+                package_version,
+                {"flask": [("flask", "0.12", "https://pypi.org/simple")]},
             )
 
         assert original_state == state, "State is not untouched"
@@ -358,7 +371,9 @@ class TestResolver(AdviserTestCase):
 
         with pytest.raises(StepError):
             resolver._run_steps(
-                state, package_version, {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
+                state,
+                package_version,
+                {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
             )
 
         assert original_state == state, "State is not untouched"
@@ -384,7 +399,9 @@ class TestResolver(AdviserTestCase):
 
         with pytest.raises(StepError):
             resolver._run_steps(
-                state, package_version, {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
+                state,
+                package_version,
+                {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
             )
 
         assert original_state == state, "State is not untouched"
@@ -498,7 +515,11 @@ class TestResolver(AdviserTestCase):
         """Test error produced if no direct dependencies were resolved."""
         solver_mock = flexmock()
         solver_mock.should_receive("solve").with_args(
-            sorted(resolver.project.iter_dependencies(with_devel=True), key=lambda p: p.name,), graceful=True,
+            sorted(
+                resolver.project.iter_dependencies(with_devel=True),
+                key=lambda p: p.name,
+            ),
+            graceful=True,
         ).and_return({}).once()
 
         resolver._solver = solver_mock
@@ -516,7 +537,11 @@ class TestResolver(AdviserTestCase):
         """Test error produced if not all direct dependencies were resolved."""
         solver_mock = flexmock()
         solver_mock.should_receive("solve").with_args(
-            sorted(resolver.project.iter_dependencies(with_devel=True), key=lambda p: p.name,), graceful=True,
+            sorted(
+                resolver.project.iter_dependencies(with_devel=True),
+                key=lambda p: p.name,
+            ),
+            graceful=True,
         ).and_return({"tensorflow": tf_package_versions, "flask": []}).once()
 
         resolver._solver = solver_mock
@@ -531,12 +556,21 @@ class TestResolver(AdviserTestCase):
         resolved = {
             "tensorflow": tf_package_versions,
             "flask": [
-                PackageVersion(name="numpy", version="==1.1.1", index=Source("https://pypi.org/simple"), develop=False,)
+                PackageVersion(
+                    name="numpy",
+                    version="==1.1.1",
+                    index=Source("https://pypi.org/simple"),
+                    develop=False,
+                )
             ],
         }
         solver_mock = flexmock()
         solver_mock.should_receive("solve").with_args(
-            sorted(resolver.project.iter_dependencies(with_devel=True), key=lambda p: p.name,), graceful=True,
+            sorted(
+                resolver.project.iter_dependencies(with_devel=True),
+                key=lambda p: p.name,
+            ),
+            graceful=True,
         ).and_return(resolved).once()
 
         resolver._solver = solver_mock
@@ -566,7 +600,10 @@ class TestResolver(AdviserTestCase):
         random.shuffle(flask_package_versions_shuffled)
 
         resolver.should_receive("_resolve_direct_dependencies").with_args(with_devel=False).and_return(
-            {"tensorflow": tf_package_versions_shuffled, "flask": flask_package_versions_shuffled,}
+            {
+                "tensorflow": tf_package_versions_shuffled,
+                "flask": flask_package_versions_shuffled,
+            }
         ).once()
 
         resolver.should_receive("_run_sieves").with_args(tf_package_versions).and_return(tf_package_versions).ordered()
@@ -773,7 +810,12 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
         resolver.beam.add_state(state)
         resolver.context.register_package_tuple(
-            to_expand_package_tuple, develop=False, extras=None, os_name="rhel", os_version="8.0", python_version="3.7",
+            to_expand_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="rhel",
+            os_version="8.0",
+            python_version="3.7",
         )
 
         resolver.context.register_package_tuple(
@@ -828,11 +870,21 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
         resolver.beam.add_state(state)
         resolver.context.register_package_tuple(
-            to_expand_package_tuple, develop=False, extras=None, os_name="ubi", os_version="8.1", python_version="3.6",
+            to_expand_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="ubi",
+            os_version="8.1",
+            python_version="3.6",
         )
 
         resolver.context.register_package_tuple(
-            additional_package_tuple, develop=False, extras=None, os_name="ubi", os_version="8.1", python_version="3.6",
+            additional_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="ubi",
+            os_version="8.1",
+            python_version="3.6",
         )
 
         state.add_unresolved_dependency(to_expand_package_tuple)
@@ -886,11 +938,21 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
         resolver.beam.add_state(state)
         resolver.context.register_package_tuple(
-            to_expand_package_tuple, develop=False, extras=None, os_name="ubi", os_version="8.1", python_version="3.6",
+            to_expand_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="ubi",
+            os_version="8.1",
+            python_version="3.6",
         )
 
         resolver.context.register_package_tuple(
-            additional_package_tuple, develop=False, extras=None, os_name="ubi", os_version="8.1", python_version="3.6",
+            additional_package_tuple,
+            develop=False,
+            extras=None,
+            os_name="ubi",
+            os_version="8.1",
+            python_version="3.6",
         )
 
         # Discard any present.
@@ -1168,15 +1230,39 @@ class TestResolver(AdviserTestCase):
         assert state0 is state
         assert state_returned is state1
 
-        assert ("absl-py", "0.8.0", "https://pypi.org/simple",) in state.iter_unresolved_dependencies()
-        assert ("absl-py", "0.6.0", "https://pypi.org/simple",) in state.iter_unresolved_dependencies()
-        assert ("absl-py", "0.9.0", "https://pypi.org/simple",) not in state.iter_unresolved_dependencies()
+        assert (
+            "absl-py",
+            "0.8.0",
+            "https://pypi.org/simple",
+        ) in state.iter_unresolved_dependencies()
+        assert (
+            "absl-py",
+            "0.6.0",
+            "https://pypi.org/simple",
+        ) in state.iter_unresolved_dependencies()
+        assert (
+            "absl-py",
+            "0.9.0",
+            "https://pypi.org/simple",
+        ) not in state.iter_unresolved_dependencies()
 
         # Only ("absl-py", "0.8.0", "https://pypi.org/simple") is in intersection.
 
-        assert ("absl-py", "0.8.0", "https://pypi.org/simple",) in state1.iter_unresolved_dependencies()
-        assert ("absl-py", "0.9.0", "https://pypi.org/simple",) not in state1.iter_unresolved_dependencies()
-        assert ("absl-py", "0.6.0", "https://pypi.org/simple",) not in state1.iter_unresolved_dependencies()
+        assert (
+            "absl-py",
+            "0.8.0",
+            "https://pypi.org/simple",
+        ) in state1.iter_unresolved_dependencies()
+        assert (
+            "absl-py",
+            "0.9.0",
+            "https://pypi.org/simple",
+        ) not in state1.iter_unresolved_dependencies()
+        assert (
+            "absl-py",
+            "0.6.0",
+            "https://pypi.org/simple",
+        ) not in state1.iter_unresolved_dependencies()
 
     def test_expand_state_no_dependencies_not_final(self, resolver: Resolver, state: State) -> None:
         """Test expanding a state when the given package has no dependencies producing not final state."""
@@ -1275,7 +1361,11 @@ class TestResolver(AdviserTestCase):
     def test_expand_state_add_dependencies_unsolved(self, resolver: Resolver) -> None:
         """Test aborting state expansion if dependency graph is not fully resolved."""
         package_version = PackageVersion(
-            name="tensorflow", version="==2.0.0", index=Source("https://pypi.org.simple"), extras=None, develop=False,
+            name="tensorflow",
+            version="==2.0.0",
+            index=Source("https://pypi.org.simple"),
+            extras=None,
+            develop=False,
         )
 
         resolver.project.runtime_environment.should_receive("is_fully_specified").with_args().and_return(False)
@@ -1320,7 +1410,9 @@ class TestResolver(AdviserTestCase):
         resolver.context.register_package_version(package_version)
         resolver.beam.should_receive("remove").with_args(state).once()
         resolver._expand_state_add_dependencies(
-            state=state, package_version=package_version, dependencies=[("absl-py", "0.8.1"), ("tensorboard", "2.0.0")],
+            state=state,
+            package_version=package_version,
+            dependencies=[("absl-py", "0.8.1"), ("tensorboard", "2.0.0")],
         )
 
         assert resolver.beam.size == 0, "A new state was added even the dependency sub-graph is not resolved"
@@ -1442,7 +1534,11 @@ class TestResolver(AdviserTestCase):
         resolver.project.runtime_environment.should_receive("is_fully_specified").and_return(True).once()
 
         package_version = resolver.context.register_package_tuple(
-            package_tuple, develop=False, os_name=None, os_version=None, python_version=None,
+            package_tuple,
+            develop=False,
+            os_name=None,
+            os_version=None,
+            python_version=None,
         )
 
         step = steps.Step1()
@@ -1485,7 +1581,11 @@ class TestResolver(AdviserTestCase):
         resolver.project.runtime_environment.should_receive("is_fully_specified").and_return(True).once()
 
         resolver.context.register_package_tuple(
-            package_tuple, develop=False, os_name=None, os_version=None, python_version=None,
+            package_tuple,
+            develop=False,
+            os_name=None,
+            os_version=None,
+            python_version=None,
         )
 
         assert resolver._expand_state(state, package_tuple) is state
@@ -1525,7 +1625,8 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
 
         resolver.should_receive("_do_resolve_states_raw").with_args(
-            with_devel=True, user_stack_scoring=True,
+            with_devel=True,
+            user_stack_scoring=True,
         ).and_yield(final_state1, final_state2).once()
 
         flexmock(Product)
@@ -1698,7 +1799,12 @@ class TestResolver(AdviserTestCase):
 
     @pytest.mark.parametrize("limit,count", [(-1, 10), (10, -1), (-1, -1), (0, 10), (10, 0), (0, 0)])
     def test_positive_int_validator(
-        self, pipeline_config: PipelineConfig, project: Project, predictor_mock: Predictor, limit: int, count: int,
+        self,
+        pipeline_config: PipelineConfig,
+        project: Project,
+        predictor_mock: Predictor,
+        limit: int,
+        count: int,
     ) -> Resolver:
         """Check parameter validation for attributes that should be positive int."""
         with pytest.raises(ValueError):
@@ -1803,7 +1909,11 @@ class TestResolver(AdviserTestCase):
         ).and_return(click_records).once()
 
         resolver.context.register_package_tuple(
-            package_tuple, develop=False, os_name=None, os_version=None, python_version=None,
+            package_tuple,
+            develop=False,
+            os_name=None,
+            os_version=None,
+            python_version=None,
         )
 
         state_returned = resolver._expand_state(state, package_tuple)
@@ -1820,10 +1930,17 @@ class TestResolver(AdviserTestCase):
 
     @pytest.mark.parametrize(
         "score_returned, score_expected",
-        [(Step.SCORE_MAX + 100.0, Step.SCORE_MAX), (Step.SCORE_MIN - 100.0, Step.SCORE_MIN),],
+        [
+            (Step.SCORE_MAX + 100.0, Step.SCORE_MAX),
+            (Step.SCORE_MIN - 100.0, Step.SCORE_MIN),
+        ],
     )
     def test_step_boundaries(
-        self, score_returned: float, score_expected: float, resolver: Resolver, package_version: PackageVersion,
+        self,
+        score_returned: float,
+        score_expected: float,
+        resolver: Resolver,
+        package_version: PackageVersion,
     ) -> None:
         """Test adjusting return values of step units."""
         state = State()
@@ -1842,7 +1959,9 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
         with steps.Step1.assigned_context(resolver.context):
             resolver._run_steps(
-                state, package_version, {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
+                state,
+                package_version,
+                {"flask": ("flask", "1.0.0", "https://pypi.org/simple")},
             )
 
         state = resolver.beam.max()
@@ -1917,12 +2036,17 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
 
         package_version = PackageVersion(
-            name="tensorflow", version="==2.0.0", index=Source("https://foo.bar/simple"), develop=False,
+            name="tensorflow",
+            version="==2.0.0",
+            index=Source("https://foo.bar/simple"),
+            develop=False,
         )
 
         # We do not care about the linkage to not relevant Pipfile here.
         pipfile_lock = PipfileLock.from_package_versions(
-            pipfile=resolver.project.pipfile, packages=[package_version], meta=resolver.project.pipfile.meta,
+            pipfile=resolver.project.pipfile,
+            packages=[package_version],
+            meta=resolver.project.pipfile.meta,
         )
         resolver.project.pipfile_lock = pipfile_lock
         resolver.project.pipfile_lock.meta.sources = {
@@ -1936,7 +2060,8 @@ class TestResolver(AdviserTestCase):
         ).once()
 
         with pytest.raises(
-            UserLockFileError, match=r"User's lock file uses one or more indexes that are not enabled: .*",
+            UserLockFileError,
+            match=r"User's lock file uses one or more indexes that are not enabled: .*",
         ):
             resolver._prepare_user_lock_file()
 
@@ -1945,7 +2070,11 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
 
         package_version = PackageVersion(
-            name="tensorflow", version="==2.0.0", index=None, develop=False, hashes=["sha256:foo", "sha256:bar"],
+            name="tensorflow",
+            version="==2.0.0",
+            index=None,
+            develop=False,
+            hashes=["sha256:foo", "sha256:bar"],
         )
 
         thoth_station_source = Source("https://thoth-station.ninja/simple")
@@ -1953,7 +2082,9 @@ class TestResolver(AdviserTestCase):
 
         # We do not care about the linkage to not relevant Pipfile here.
         pipfile_lock = PipfileLock.from_package_versions(
-            pipfile=resolver.project.pipfile, packages=[package_version], meta=resolver.project.pipfile.meta,
+            pipfile=resolver.project.pipfile,
+            packages=[package_version],
+            meta=resolver.project.pipfile.meta,
         )
         resolver.project.pipfile_lock = pipfile_lock
         resolver.project.pipfile_lock.meta.sources = {
@@ -1967,7 +2098,9 @@ class TestResolver(AdviserTestCase):
         ).once()
 
         resolver.graph.should_receive("get_python_package_hashes_sha256").with_args(
-            package_version.name, package_version.locked_version, thoth_station_source.url,
+            package_version.name,
+            package_version.locked_version,
+            thoth_station_source.url,
         ).and_return(["unknown"]).once()
 
         resolver.graph.should_receive("get_python_package_hashes_sha256").with_args(
@@ -1975,7 +2108,8 @@ class TestResolver(AdviserTestCase):
         ).and_return(["just-another-unknown", "foo-unknown"]).once()
 
         with pytest.raises(
-            UserLockFileError, match="Could not determine provenance of package 'tensorflow' in version '2.0.0'",
+            UserLockFileError,
+            match="Could not determine provenance of package 'tensorflow' in version '2.0.0'",
         ):
             resolver._prepare_user_lock_file()
 
@@ -1984,14 +2118,20 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
 
         package_version = PackageVersion(
-            name="tensorflow", version="==2.0.0", index=None, develop=False, hashes=["sha256:foo", "sha256:bar"],
+            name="tensorflow",
+            version="==2.0.0",
+            index=None,
+            develop=False,
+            hashes=["sha256:foo", "sha256:bar"],
         )
 
         thoth_station_source = Source("https://thoth-station.ninja/simple")
 
         # We do not care about the linkage to not relevant Pipfile here.
         pipfile_lock = PipfileLock.from_package_versions(
-            pipfile=resolver.project.pipfile, packages=[package_version], meta=resolver.project.pipfile.meta,
+            pipfile=resolver.project.pipfile,
+            packages=[package_version],
+            meta=resolver.project.pipfile.meta,
         )
         resolver.project.pipfile_lock = pipfile_lock
         resolver.project.pipfile_lock.meta.sources = {
@@ -2004,7 +2144,9 @@ class TestResolver(AdviserTestCase):
         ).once()
 
         resolver.graph.should_receive("get_python_package_hashes_sha256").with_args(
-            package_version.name, package_version.locked_version, thoth_station_source.url,
+            package_version.name,
+            package_version.locked_version,
+            thoth_station_source.url,
         ).and_return(["unknown"]).times(0)
 
         resolver._prepare_user_lock_file()
@@ -2015,7 +2157,11 @@ class TestResolver(AdviserTestCase):
         resolver._init_context()
 
         package_version = PackageVersion(
-            name="tensorflow", version="==2.0.0", index=None, develop=False, hashes=["sha256:foo", "sha256:bar"],
+            name="tensorflow",
+            version="==2.0.0",
+            index=None,
+            develop=False,
+            hashes=["sha256:foo", "sha256:bar"],
         )
 
         thoth_station_source = Source("https://thoth-station.ninja/simple")
@@ -2023,7 +2169,9 @@ class TestResolver(AdviserTestCase):
 
         # We do not care about the linkage to not relevant Pipfile here.
         pipfile_lock = PipfileLock.from_package_versions(
-            pipfile=resolver.project.pipfile, packages=[package_version], meta=resolver.project.pipfile.meta,
+            pipfile=resolver.project.pipfile,
+            packages=[package_version],
+            meta=resolver.project.pipfile.meta,
         )
         resolver.project.pipfile_lock = pipfile_lock
         resolver.project.pipfile_lock.meta.sources = {
@@ -2038,7 +2186,9 @@ class TestResolver(AdviserTestCase):
 
         # We use sets so there is no counting on these two methods - their evaluation is hash dependent.
         resolver.graph.should_receive("get_python_package_hashes_sha256").with_args(
-            package_version.name, package_version.locked_version, thoth_station_source.url,
+            package_version.name,
+            package_version.locked_version,
+            thoth_station_source.url,
         ).and_return(["foo"])
         resolver.graph.should_receive("get_python_package_hashes_sha256").with_args(
             package_version.name, package_version.locked_version, pypi_source.url
@@ -2225,7 +2375,11 @@ class TestResolver(AdviserTestCase):
         assert len(state_returned.unresolved_dependencies["absl-py"]) == 1
         assert "functools32" not in state_returned.unresolved_dependencies
 
-    def test_sieve_skip_package_direct(self, resolver: Resolver, numpy_package_versions: List[PackageVersion],) -> None:
+    def test_sieve_skip_package_direct(
+        self,
+        resolver: Resolver,
+        numpy_package_versions: List[PackageVersion],
+    ) -> None:
         """Test raising a SkipPackage exception causes a direct dependency to be excluded."""
         flexmock(sieves.Sieve1)
         sieves.Sieve1.should_call("run").times(2)
@@ -2262,7 +2416,9 @@ class TestResolver(AdviserTestCase):
 
         pypi = Source("https://pypi.org/simple")
         resolver.project = Project.from_package_versions(
-            packages=[PackageVersion(name="tensorflow", version=">=2.0", index=pypi, develop=False),],
+            packages=[
+                PackageVersion(name="tensorflow", version=">=2.0", index=pypi, develop=False),
+            ],
             packages_locked=[
                 PackageVersion(name="functools32", version="==3.2.3-1", index=pypi, develop=False),
                 PackageVersion(name="tensorflow", version="==2.2.0", index=pypi, develop=False),
@@ -2331,7 +2487,10 @@ class TestResolver(AdviserTestCase):
         resolver.pipeline._steps = {"scipy": [steps.Step1(), _SciPySkipPackageStep(), steps.Step2()]}
 
         package_version = PackageVersion(
-            name="scipy", version="==1.2.2", index=Source("https://pypi.org/simple"), develop=False,
+            name="scipy",
+            version="==1.2.2",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
         )
 
         unresolved_dependencies = {
@@ -2352,9 +2511,15 @@ class TestResolver(AdviserTestCase):
             ("tensorflow", "2.3.0", "https://pypi.org/simple"),
         ]
 
-        resolver.should_receive("_run_pseudonym_units").with_args(state, package_tuples[0],).and_return(None).ordered()
+        resolver.should_receive("_run_pseudonym_units").with_args(
+            state,
+            package_tuples[0],
+        ).and_return(None).ordered()
 
-        resolver.should_receive("_run_pseudonym_units").with_args(state, package_tuples[1],).and_return(None).ordered()
+        resolver.should_receive("_run_pseudonym_units").with_args(
+            state,
+            package_tuples[1],
+        ).and_return(None).ordered()
 
         resolver._init_context()
         resolver._run_pseudonyms(state, package_tuples)
@@ -2374,9 +2539,15 @@ class TestResolver(AdviserTestCase):
         state.add_unresolved_dependency(package_tuples[1])
         state.add_unresolved_dependency(package_tuples[2])
 
-        resolver.should_receive("_run_pseudonym_units").with_args(state, package_tuples[0],).and_return(None).ordered()
+        resolver.should_receive("_run_pseudonym_units").with_args(
+            state,
+            package_tuples[0],
+        ).and_return(None).ordered()
 
-        resolver.should_receive("_run_pseudonym_units").with_args(state, package_tuples[1],).and_return(None).ordered()
+        resolver.should_receive("_run_pseudonym_units").with_args(
+            state,
+            package_tuples[1],
+        ).and_return(None).ordered()
 
         assert "tensorflow" in resolver.pipeline.pseudonyms_dict
         assert "flask" not in resolver.pipeline.pseudonyms_dict

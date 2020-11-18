@@ -148,7 +148,9 @@ class PipelineConfig:
                 unit.pre_run()
             except Exception as exc:
                 raise PipelineUnitError(
-                    "Failed to run pre_run method on unit %r: %s", unit.__class__.__name__, str(exc),
+                    "Failed to run pre_run method on unit %r: %s",
+                    unit.__class__.__name__,
+                    str(exc),
                 ) from exc
 
     def call_post_run(self) -> None:
@@ -158,7 +160,9 @@ class PipelineConfig:
                 unit.post_run()
             except Exception as exc:
                 raise PipelineUnitError(
-                    "Failed to run post_run method on unit %r: %s", unit.__class__.__name__, str(exc),
+                    "Failed to run post_run method on unit %r: %s",
+                    unit.__class__.__name__,
+                    str(exc),
                 ) from exc
 
     def call_post_run_report(self, report):
@@ -169,5 +173,7 @@ class PipelineConfig:
                 unit.post_run_report(report)
             except Exception as exc:
                 raise PipelineUnitError(
-                    "Failed to run pre_run_report method on unit %r: %s", unit.__class__.__name__, str(exc),
+                    "Failed to run pre_run_report method on unit %r: %s",
+                    unit.__class__.__name__,
+                    str(exc),
                 ) from exc

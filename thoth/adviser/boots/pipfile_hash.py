@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A boot that checks for platform used and adjust to the default one if not provided explicitly."""
+"""A boot that checks for Pipfile hash and reports any mismatch to users.."""
 
 import logging
 from typing import Optional
@@ -26,11 +26,8 @@ from typing import TYPE_CHECKING
 from thoth.common import get_justification_link as jl
 
 import attr
-from voluptuous import Required
-from voluptuous import Schema
 
 from ..boot import Boot
-from ..exceptions import NotAcceptable
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
@@ -39,37 +36,33 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class PlatformBoot(Boot):
-    """A boot that checks for platform used and adjust to the default one if not provided explicitly."""
+class PipfileHashBoot(Boot):
+    """A boot that checks for Pipfile hash and reports any mismatch to users.."""
 
-    CONFIGURATION_DEFAULT = {"default_platform": "linux-x86_64"}
-    CONFIGURATION_SCHEMA = Schema(
-        {
-            Required("default_platform"): str,
-        }
-    )
-    _JUSTIFICATION_LINK = jl("platform")
+    _JUSTIFICATION_LINK = jl("pipfile_hash")
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
         """Register self, always."""
-        if not builder_context.is_included(cls):
+        if builder_context.is_included(cls):
+            return None
+
+        if (
+            builder_context.project.pipfile_lock is not None
+            and builder_context.project.pipfile_lock.meta.hash is not None
+        ):
             return {}
 
         return None
 
     def run(self) -> None:
         """Check for platform configured and adjust to the default one if not provided by user."""
-        if self.context.project.runtime_environment.platform is None:
+        pipfile_hash = self.context.project.pipfile_lock.meta.hash.get("sha256")
+        computed_hash = self.context.project.pipfile.hash().get("sha256")
+        if pipfile_hash != computed_hash:
             msg = (
-                f"No platform provided in the configuration, setting to "
-                f"{self.configuration['default_platform']!r} implicitly"
+                f"Pipfile hash stated in the Pipfile.lock ({pipfile_hash[:6]}) does not correspond to the "
+                f"hash computed ({computed_hash[:6]}) - was Pipfile adjusted?"
             )
-
-            _LOGGER.warning("%s - see %s", msg, self._JUSTIFICATION_LINK)
-            self.context.project.runtime_environment.platform = self.configuration["default_platform"]
+            _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_LINK)
             self.context.stack_info.append({"type": "WARNING", "message": msg, "link": self._JUSTIFICATION_LINK})
-
-        platform = self.context.project.runtime_environment.platform
-        if not self.context.graph.python_package_version_depends_on_platform_exists(platform):
-            raise NotAcceptable(f"No platform conforming to {platform!r} found in the database")

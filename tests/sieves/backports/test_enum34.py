@@ -101,7 +101,10 @@ class TestEnum34BackportSieve(AdviserUnitTestCase):
     def test_remove(self, context: Context) -> None:
         """Test removing enum34 dependency."""
         package_version = PackageVersion(
-            name="enum34", version="==1.1.10", develop=False, index=Source("https://pypi.org/simple"),
+            name="enum34",
+            version="==1.1.10",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         unit = Enum34BackportSieve()

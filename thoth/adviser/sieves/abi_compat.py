@@ -70,7 +70,9 @@ class AbiCompatibilitySieve(Sieve):
         for pkg_vers in package_versions:
             package_symbols = set(
                 self.context.graph.get_python_package_required_symbols(
-                    package_name=pkg_vers.name, package_version=pkg_vers.locked_version, index_url=pkg_vers.index.url,
+                    package_name=pkg_vers.name,
+                    package_version=pkg_vers.locked_version,
+                    index_url=pkg_vers.index.url,
                 )
             )
 

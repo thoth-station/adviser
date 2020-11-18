@@ -44,7 +44,7 @@ repos:
         additional_dependencies: [attrs~=19.3]
 
   - repo: https://github.com/psf/black
-    rev: 19.10b0
+    rev: 20.8b1
     hooks:
       - id: black
 

@@ -43,7 +43,12 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
         integers(min_value=0),
     )
     def test_temperature_function(
-        self, t0: float, accepted_final_states_count: int, limit: int, iteration: int, count: int,
+        self,
+        t0: float,
+        accepted_final_states_count: int,
+        limit: int,
+        iteration: int,
+        count: int,
     ) -> None:
         """Test the temperature function never drops bellow 0."""
         context = flexmock(
@@ -65,7 +70,9 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
     def test_acceptance_probability(self, top_score: float, neighbour_score: float, temperature: float) -> None:
         """Test acceptance probability is always between 0 and 1."""
         acceptance_probability = AdaptiveSimulatedAnnealing._compute_acceptance_probability(
-            top_score=top_score, neighbour_score=neighbour_score, temperature=temperature,
+            top_score=top_score,
+            neighbour_score=neighbour_score,
+            temperature=temperature,
         )
         assert 0.0 <= acceptance_probability <= 1.0, "Acceptance probability not within 0 and 1"
 
@@ -109,7 +116,11 @@ class TestAdaptiveSimulatedAnnealing(AdviserTestCase):
 
         predictor = AdaptiveSimulatedAnnealing()
         context = flexmock(
-            accepted_final_states_count=accepted_final_states, count=count, iteration=iteration, limit=limit, beam=beam,
+            accepted_final_states_count=accepted_final_states,
+            count=count,
+            iteration=iteration,
+            limit=limit,
+            beam=beam,
         )
         with predictor.assigned_context(context):
             next_state, package_tuple = predictor.run()

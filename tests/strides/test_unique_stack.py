@@ -41,7 +41,10 @@ class TestUniqueStackStride(AdviserUnitTestCase):
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type",
-        [*((v, None) for v in RecommendationType.__members__), *((None, d) for d in DecisionType.__members__),],
+        [
+            *((v, None) for v in RecommendationType.__members__),
+            *((None, d) for d in DecisionType.__members__),
+        ],
     )
     def test_should_include(
         self,

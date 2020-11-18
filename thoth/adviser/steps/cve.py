@@ -84,7 +84,8 @@ class CvePenalizationStep(Step):
         """Penalize stacks with a CVE."""
         try:
             cve_records = self.context.graph.get_python_cve_records_all(
-                package_name=package_version.name, package_version=package_version.locked_version,
+                package_name=package_version.name,
+                package_version=package_version.locked_version,
             )
         except NotFoundError as exc:
             _LOGGER.warning("Package %r in version %r not found: %r", str(exc))

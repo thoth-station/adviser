@@ -55,7 +55,12 @@ class TestAliasPseudonym(AdviserUnitTestCase):
 
     @pytest.mark.parametrize(
         "tf_version,index_url",
-        [("2.2.0", "https://pypi.org/simple"), (None, "https://pypi.org/simple"), ("2.2.0", None), (None, None),],
+        [
+            ("2.2.0", "https://pypi.org/simple"),
+            (None, "https://pypi.org/simple"),
+            ("2.2.0", None),
+            (None, None),
+        ],
     )
     def test_run_pseudonym(self, context: Context, tf_version: str, index_url: str) -> None:
         """Test adding a pseudonym for the given package."""

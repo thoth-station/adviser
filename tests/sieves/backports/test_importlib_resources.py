@@ -99,7 +99,10 @@ class TestImportlibResourcesBackportSieve(AdviserUnitTestCase):
     def test_remove(self, context: Context) -> None:
         """Test removing importlib-resources dependency."""
         package_version = PackageVersion(
-            name="importlib-resources", version="==3.0.0", develop=False, index=Source("https://pypi.org/simple"),
+            name="importlib-resources",
+            version="==3.0.0",
+            develop=False,
+            index=Source("https://pypi.org/simple"),
         )
 
         unit = ImportlibResourcesBackportSieve()

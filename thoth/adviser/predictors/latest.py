@@ -109,7 +109,12 @@ class ApproximatingLatest(HillClimbing):
             )
 
             if self.keep_history:
-                self._history.append((self._initial_state.score, self.context.accepted_final_states_count,))
+                self._history.append(
+                    (
+                        self._initial_state.score,
+                        self.context.accepted_final_states_count,
+                    )
+                )
 
             return self._initial_state, unresolved_dependency_tuple
 

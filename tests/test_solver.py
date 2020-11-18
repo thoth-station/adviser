@@ -38,17 +38,30 @@ class TestSolver(AdviserTestCase):
         """Check that there is raised an exception if no releases were found."""
         with pytest.raises(SolverException):
             PythonGraphSolver(
-                dependency_parser=PackageVersionDependencyParser(), releases_fetcher=GraphReleasesFetcher(graph=graph),
+                dependency_parser=PackageVersionDependencyParser(),
+                releases_fetcher=GraphReleasesFetcher(graph=graph),
             ).solve(
-                [PackageVersion(name="nonexisting-foo", version="==1.0.0", index=None, develop=False,)], graceful=False,
+                [
+                    PackageVersion(
+                        name="nonexisting-foo",
+                        version="==1.0.0",
+                        index=None,
+                        develop=False,
+                    )
+                ],
+                graceful=False,
             )
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
     def test_db_0(self, graph: MockedGraphDatabase) -> None:
         """Check that resolving can gather all versions available in the graph database."""
         resolved = PythonGraphSolver(
-            dependency_parser=PackageVersionDependencyParser(), releases_fetcher=GraphReleasesFetcher(graph=graph),
-        ).solve([PackageVersion(name="a", version="*", index=None, develop=False)], graceful=False,)
+            dependency_parser=PackageVersionDependencyParser(),
+            releases_fetcher=GraphReleasesFetcher(graph=graph),
+        ).solve(
+            [PackageVersion(name="a", version="*", index=None, develop=False)],
+            graceful=False,
+        )
         assert len(resolved) == 1
         assert "a" in resolved
         assert set(resolved["a"]) == {
@@ -61,7 +74,8 @@ class TestSolver(AdviserTestCase):
     def test_db_0_multiple(self, graph: MockedGraphDatabase) -> None:
         """Check that resolving can resolve multiple Python packages."""
         resolved = PythonGraphSolver(
-            dependency_parser=PackageVersionDependencyParser(), releases_fetcher=GraphReleasesFetcher(graph=graph),
+            dependency_parser=PackageVersionDependencyParser(),
+            releases_fetcher=GraphReleasesFetcher(graph=graph),
         ).solve(
             [
                 PackageVersion(name="a", version="*", index=None, develop=False),
@@ -87,14 +101,23 @@ class TestSolver(AdviserTestCase):
         """Check that there is raised an exception if no releases were found."""
         with pytest.raises(SolverException):
             PythonPackageGraphSolver(graph=graph).solve(
-                [PackageVersion(name="nonexisting-foo", version="==1.0.0", index=None, develop=False,)], graceful=False,
+                [
+                    PackageVersion(
+                        name="nonexisting-foo",
+                        version="==1.0.0",
+                        index=None,
+                        develop=False,
+                    )
+                ],
+                graceful=False,
             )
 
     @pytest.mark.parametrize("graph", [MockedGraphDatabase("db_0.yaml")])
     def test_db_0_all_package_versions(self, graph: MockedGraphDatabase) -> None:
         """Check that resolving can gather all versions available in the graph database."""
         resolved = PythonPackageGraphSolver(graph=graph).solve(
-            [PackageVersion(name="a", version="*", index=None, develop=False)], graceful=False,
+            [PackageVersion(name="a", version="*", index=None, develop=False)],
+            graceful=False,
         )
 
         assert len(resolved) == 1

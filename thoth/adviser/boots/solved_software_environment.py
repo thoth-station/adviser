@@ -73,7 +73,10 @@ class SolvedSoftwareEnvironmentBoot(Boot):
 
         configurations = self.context.graph.get_solved_python_package_versions_software_environment_all()
         _LOGGER.warning("{:<16} {:<16} {:<8}".format("OS name", "OS version", "Python version"))
-        for conf in sorted(configurations, key=lambda i: (i["os_name"], i["os_version"], i["python_version"]),):
+        for conf in sorted(
+            configurations,
+            key=lambda i: (i["os_name"], i["os_version"], i["python_version"]),
+        ):
             _LOGGER.warning("{:<16} {:<16} {:<8}".format(conf["os_name"], conf["os_version"], conf["python_version"]))
 
         raise NotAcceptable(msg)

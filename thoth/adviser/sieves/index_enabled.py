@@ -66,13 +66,15 @@ class PackageIndexSieve(Sieve):
             self._cached_records[package_version.index.url] = is_enabled
             if is_enabled is None:
                 _LOGGER.debug(
-                    "Removing Python package version %r as used index is not registered", package_version.to_tuple(),
+                    "Removing Python package version %r as used index is not registered",
+                    package_version.to_tuple(),
                 )
                 continue
 
             if not is_enabled:
                 _LOGGER.debug(
-                    "Removing Python package version %r as used index is not enabled", package_version.to_tuple(),
+                    "Removing Python package version %r as used index is not enabled",
+                    package_version.to_tuple(),
                 )
                 continue
 

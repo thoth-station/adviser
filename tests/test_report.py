@@ -44,7 +44,14 @@ class TestReport(AdviserTestCase):
 
         assert report.product_count() == 0
         assert report.to_dict() == {
-            "pipeline": {"boots": [], "pseudonyms": [], "sieves": [], "steps": [], "strides": [], "wraps": [],},
+            "pipeline": {
+                "boots": [],
+                "pseudonyms": [],
+                "sieves": [],
+                "steps": [],
+                "strides": [],
+                "wraps": [],
+            },
             "products": [],
             "stack_info": [{"foo": "bar"}],
             "resolver_iterations": 0,
@@ -78,7 +85,12 @@ class TestReport(AdviserTestCase):
         assert list(report.iter_products_sorted(reverse=True)) == [product3, product1]
         assert list(report.iter_products_sorted(reverse=False)) == [product1, product3]
 
-        product4 = Product(project=None, score=0.666, justification=[], advised_runtime_environment=None,)
+        product4 = Product(
+            project=None,
+            score=0.666,
+            justification=[],
+            advised_runtime_environment=None,
+        )
         assert report.add_product(product4) is True
         assert report.product_count() == 2
         assert set(report.iter_products()) == {product3, product4}
@@ -86,7 +98,12 @@ class TestReport(AdviserTestCase):
         assert list(report.iter_products_sorted(reverse=True)) == [product3, product4]
         assert list(report.iter_products_sorted(reverse=False)) == [product4, product3]
 
-        product5 = Product(project=None, score=-0.99999, justification=[], advised_runtime_environment=None,)
+        product5 = Product(
+            project=None,
+            score=-0.99999,
+            justification=[],
+            advised_runtime_environment=None,
+        )
         assert report.add_product(product5) is False
         assert report.product_count() == 2
         assert set(report.iter_products()) == {product3, product4}
