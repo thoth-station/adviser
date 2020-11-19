@@ -18,7 +18,6 @@
 """Test suggesting not to use TensorFlow 2.1 with h5py>=3."""
 
 from itertools import product
-import flexmock
 import pytest
 
 from thoth.adviser.context import Context
@@ -45,10 +44,10 @@ class TestTensorFlow21H5PyStep(AdviserUnitTestCase):
 
     @pytest.mark.parametrize(
         "tf_version,h5py_version",
-        list(product(("2.1.0", "2.1.1", "2.1.2"), ("3.0.0", "3.0.1", "4.0.0", "3.2.0"))),
+        list(product(("2.1.0", "2.1.1", "2.1.2", "2.3.1"), ("3.0.0", "3.0.1", "4.0.0", "3.2.0"))),
     )
     def test_tf_21(self, context: Context, tf_version: str, h5py_version: str) -> None:
-        """Test blocking resolution of h5py with TensorFlow==2.1."""
+        """Test blocking resolution of h5py with TensorFlow==2.1 or TensorFlow==2.3.1."""
         tf_package_version = PackageVersion(
             name="tensorflow",
             version=f"=={tf_version}",
@@ -65,6 +64,7 @@ class TestTensorFlow21H5PyStep(AdviserUnitTestCase):
 
         state = State()
         state.resolved_dependencies["tensorflow"] = tf_package_version.to_tuple()
+        context.register_package_version(tf_package_version)
 
         assert not context.stack_info
 
@@ -79,8 +79,8 @@ class TestTensorFlow21H5PyStep(AdviserUnitTestCase):
         assert context.stack_info
         assert self.verify_justification_schema(context.stack_info)
 
-    @pytest.mark.parametrize("h5py_version,tf_version", [("2.9", "2.1.0"), ("3.0", "2.3")])
-    def test_no_tf_21(self, h5py_version: str, tf_version: str) -> None:
+    @pytest.mark.parametrize("h5py_version,tf_version", [("2.9", "2.1.0"), ("3.0", "2.4")])
+    def test_no_tf_21(self, context: Context, h5py_version: str, tf_version: str) -> None:
         """Test no blocking when using h5py<3 or TensorFlow!=2.1."""
         h5py_package_version = PackageVersion(
             name="h5py",
@@ -100,7 +100,7 @@ class TestTensorFlow21H5PyStep(AdviserUnitTestCase):
         state.resolved_dependencies["tensorflow"] = tf_package_version.to_tuple()
 
         # Context is not used during the actual pipeline run.
-        context = flexmock()
+        context.register_package_version(tf_package_version)
         with self.UNIT_TESTED.assigned_context(context):
             unit = self.UNIT_TESTED()
             assert unit.run(state, h5py_package_version) is None

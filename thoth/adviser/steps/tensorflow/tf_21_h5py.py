@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Suggest not to use TensorFlow 2.1 with h5py>=3."""
+"""Suggest not to use TensorFlow 2.1 and TensorFlow 2.3 with h5py>=3."""
 
 import attr
 from typing import Any
@@ -44,7 +44,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @attr.s(slots=True)
 class TensorFlow21H5pyStep(Step):
-    """A step that suggests not to use TensorFlow 2.1 with specific h5py versions that cause issues.
+    """A step that suggests not to use TensorFlow 2.1/2.3 with specific h5py versions that cause issues.
 
     See overpinning issue reported:
 
@@ -56,7 +56,8 @@ class TensorFlow21H5pyStep(Step):
     CONFIGURATION_DEFAULT = {"package_name": "h5py", "multi_package_resolution": False}
 
     _MESSAGE = (
-        "TensorFlow in version 2.1 can cause runtime errors when running with h5py>=3 caused by library overpinning"
+        "TensorFlow in versions 2.1 and 2.3 can cause runtime errors when running with h5py>=3 caused "
+        "by library overpinning"
     )
     _LINK = jl("tf_21_h5py")
 
@@ -82,7 +83,7 @@ class TensorFlow21H5pyStep(Step):
     def run(
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
-        """Suggest not to use TensorFlow 2.1 with h5py>=3."""
+        """Suggest not to use TensorFlow 2.1/2.3 with h5py>=3."""
         if package_version.semantic_version.major < 3:
             return None
 
@@ -93,7 +94,11 @@ class TensorFlow21H5pyStep(Step):
             or state.resolved_dependencies.get("intel-tensorflow")
         )
 
-        if not tensorflow_any or (tensorflow_any[1] != "2.1" and not tensorflow_any[1].startswith("2.1.")):
+        if not tensorflow_any:
+            return None
+
+        tf_package_version: PackageVersion = self.context.get_package_version(tensorflow_any)
+        if tf_package_version.semantic_version.release[:2] not in ((2, 1), (2, 3)):
             return None
 
         if not self._message_logged:
