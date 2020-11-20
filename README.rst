@@ -76,7 +76,7 @@ in the animation) that creates the pipeline configuration (a set of pipeline uni
 
 **See also:**
 
-* `TowardsDataScience: How to beat Python’s pip: Software stack resolution pipelines <https://towardsdatascience.com/how-to-beat-pythons-pip-software-stack-resolution-pipelines-21bc37f01a93>`__
+* `dev.to: How to beat Python’s pip: Software stack resolution pipelines <https://dev.to/fridex/how-to-beat-python-s-pip-software-stack-resolution-pipelines-19kg>`__
 * `YouTube: Pipeline units in a software stack resolution process <https://www.youtube.com/watch?v=OCX8JQDXP9s>`__
 * `Jupyter Notebook: Pipeline units in a software stack resolution process <https://github.com/thoth-station/notebooks/blob/master/notebooks/development/Pipeline%20units.ipynb>`__
 
@@ -136,7 +136,7 @@ reinforcement learning algorithms, such as `MCTS
 
 **See also:**
 
-* `TowardsDataScience: How to beat Python’s pip: Reinforcement learning-based dependency resolution <https://towardsdatascience.com/how-to-beat-pythons-pip-254c2635197>`__
+* `dev.to: How to beat Python’s pip: Reinforcement learning-based dependency resolution <https://dev.to/fridex/how-to-beat-python-s-pip-reinforcement-learning-based-dependency-resolution-2he2>`__
 * `YouTube: Reinforcement learning-based dependency resolution <https://www.youtube.com/watch?v=WEJ65Rvj3lc>`__
 
 Resolution process as Markov Decision Process
@@ -157,7 +157,7 @@ hill-climbing, random walks in the dependency graph, ...).
 
 **See also:**
 
-* `TowardsDataScience: How to beat Python’s pip: Reinforcement learning-based dependency resolution <https://towardsdatascience.com/how-to-beat-pythons-pip-254c2635197>`__
+* `dev.to: How to beat Python’s pip: Reinforcement learning-based dependency resolution <https://dev.to/fridex/how-to-beat-python-s-pip-reinforcement-learning-based-dependency-resolution-2he2>`__
 * `YouTube: Reinforcement learning-based dependency resolution <https://www.youtube.com/watch?v=WEJ65Rvj3lc>`__
 
 Dependency Monkey
@@ -184,9 +184,9 @@ for more info.
 **See also:**
 
 * `Developers Red Hat: AI software stack inspection with Thoth and TensorFlow <https://developers.redhat.com/blog/2020/09/30/ai-software-stack-inspection-with-thoth-and-tensorflow/?sc_cid=7013a000002gbzfAAA>`__
-* `TowardsDataScience: How to beat Python’s pip: Inspecting the quality of machine learning software <https://towardsdatascience.com/how-to-beat-pythons-pip-inspecting-the-quality-of-machine-learning-software-f1a028f0c42a>`__
+* `dev.to: How to beat Python’s pip: Inspecting the quality of machine learning software <https://dev.to/fridex/how-to-beat-python-s-pip-inspecting-the-quality-of-machine-learning-software-1pkp>`__
 * `YouTube: Thoth Amun API: Inspecting the quality of software <https://www.youtube.com/watch?v=yeBjnZpdMwY>`__
-* `TowardsDataScience: How to beat Python’s pip: Dependency Monkey inspecting the quality of TensorFlow dependencies <https://towardsdatascience.com/how-to-beat-pythons-pip-dependency-monkey-inspecting-the-quality-of-tensorflow-dependencies-2503bed30450>`__
+* `dev.to: How to beat Python’s pip: Dependency Monkey inspecting the quality of TensorFlow dependencies <https://dev.to/fridex/how-to-beat-python-s-pip-dependency-monkey-inspecting-the-quality-of-tensorflow-dependencies-6fc>`__
 * `YouTube: Dependency Monkey inspecting Python dependencies of TensorFlow <https://www.youtube.com/watch?v=S3hFn8KRsKc>`__
 
 Advises and Recommendations

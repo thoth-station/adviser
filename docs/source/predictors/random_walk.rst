@@ -15,7 +15,7 @@ It's mostly suitable when dealing with `cold start problem
 
 An example of using this predictor can be `seen in this YouTube video
 <https://www.youtube.com/watch?v=S3hFn8KRsKc>`__ or `this blog post
-<https://towardsdatascience.com/how-to-beat-pythons-pip-dependency-monkey-inspecting-the-quality-of-tensorflow-dependencies-2503bed30450>`__.
+<https://dev.to/fridex/how-to-beat-python-s-pip-dependency-monkey-inspecting-the-quality-of-tensorflow-dependencies-6fc>`__.
 A summary of results can be seen in `this article
 <https://developers.redhat.com/blog/2020/09/30/ai-software-stack-inspection-with-thoth-and-tensorflow/?sc_cid=7013a000002gbzfAAA>`__.
 
