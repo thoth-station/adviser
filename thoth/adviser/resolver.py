@@ -1236,12 +1236,12 @@ class Resolver:
                     or self.context.accepted_final_states_count == 1
                 ):
                     _LOGGER.info(
-                        "Pipeline reached %d software stacks out of %d requested in iteration %d "
-                        "(pipeline pace %.02f stacks/second); top rated software stack in beam has a score of %.2f; "
-                        "top rated software stack found so far has a score of %.2f",
+                        "Pipeline performed %d moves in the dependency graph and generated %d software stacks out "
+                        "of %d requested (pipeline pace %.02f stacks/second); top rated software stack in beam "
+                        "has a score of %.2f; top rated software stack found so far has a score of %.2f",
+                        self.context.iteration,
                         self.context.accepted_final_states_count,
                         self.context.limit,
-                        self.context.iteration,
                         self.context.accepted_final_states_count / (time.monotonic() - start_time),
                         self.beam.max().score if self.beam.size > 0 else float("nan"),
                         float("nan") if max_score is None else max_score,
