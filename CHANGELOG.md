@@ -5978,3 +5978,28 @@
 * Adjust tests for stack_info provided by security indicators
 ### Automatic Updates
 * :pushpin: Automatic update of dependency thoth-storages from 0.25.16 to 0.25.17 (#1540)
+
+## Release 0.21.0 (2020-11-20T06:19:52)
+### Features
+* Implement a sieve that filters out TensorFlow releases based on API (#1560)
+* Consider library usage for TF 42475 wrap (#1564)
+* Add a pipeline unit wrap for slow keras embedding layer (#1558)
+* Add missing link to user-stack scoring justification (#1556)
+### Bug Fixes
+* Improve message logged when reporting resolver's progress (#1569)
+* Match score of the user's stack printed with the final score reported (#1570)
+* Add a wrap that notifies about a bug when mutliple instances of TF are running (#1559)
+* Handle exception raised when the given record was not found
+### Improvements
+* Implement a boot pipeline unit for checking Pipfile hash (#1571)
+* Report warning if Python versions do not match (#1565)
+* Adjust tests accordingly
+### Automatic Updates
+* :pushpin: Automatic update of dependency pytest-mypy from 0.7.0 to 0.8.0 (#1567)
+* :pushpin: Automatic update of dependency matplotlib from 3.3.2 to 3.3.3 (#1563)
+* :pushpin: Automatic update of dependency thoth-storages from 0.26.0 to 0.26.1 (#1562)
+* :pushpin: Automatic update of dependency hypothesis from 5.41.1 to 5.41.2 (#1554)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.17 to 0.26.0 (#1552)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.17 to 0.26.0 (#1547)
+* :pushpin: Automatic update of dependency attrs from 20.2.0 to 20.3.0 (#1551)
+* :pushpin: Automatic update of dependency attrs from 20.2.0 to 20.3.0 (#1544)
