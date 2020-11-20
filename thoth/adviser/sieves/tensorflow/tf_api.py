@@ -110,6 +110,7 @@ class TensorFlowAPISieve(Sieve):
             if not self._no_api_logged:
                 self._no_api_logged = True
                 msg = "No TensorFlow symbols API found in the database that would match TensorFlow symbols used"
+                _LOGGER.warning("%s - see %s", msg, self._LINK_NO_API)
                 self.context.stack_info.append(
                     {"type": "WARNING", "message": msg, "link": self._LINK_NO_API,}
                 )
