@@ -17,11 +17,13 @@
 
 """Implementation of sieves used, specific for TensorFlow."""
 
+from .tf_api import TensorFlowAPISieve
 from .tf_cuda import TensorFlowCUDASieve
 from .tf_py39 import TensorFlowPython39Sieve
 
 
 __all__ = [
+    "TensorFlowAPISieve",
     "TensorFlowCUDASieve",
     "TensorFlowPython39Sieve",
 ]

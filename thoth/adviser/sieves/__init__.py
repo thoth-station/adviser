@@ -30,6 +30,7 @@ from .pandas import PandasPy36Sieve
 from .prereleases import CutPreReleasesSieve
 from .setuptools import Py36SetuptoolsSieve
 from .solved import SolvedSieve
+from .tensorflow import TensorFlowAPISieve
 from .tensorflow import TensorFlowCUDASieve
 from .tensorflow import TensorFlowPython39Sieve
 from .version_constraint import VersionConstraintSieve
@@ -52,6 +53,7 @@ __all__ = [
     "ImportlibResourcesBackportSieve",
     "MockBackportSieve",
     "Py36SetuptoolsSieve",
+    "TensorFlowAPISieve",
     "TensorFlowCUDASieve",
     "TensorFlowPython39Sieve",
     "PandasPy36Sieve",

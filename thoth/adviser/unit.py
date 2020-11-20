@@ -64,6 +64,7 @@ class Unit(metaclass=abc.ABCMeta):
     _RE_CAMEL2SNAKE = re.compile("(?!^)([A-Z]+)")
     _AICOE_PYTHON_PACKAGE_INDEX_URL = "https://tensorflow.pypi.thoth-station.ninja/index/"
     _VALIDATE_UNIT_CONFIGURATION_SCHEMA = bool(int(os.getenv("THOTH_ADVISER_VALIDATE_UNIT_CONFIGURATION_SCHEMA", 1)))
+    _DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
