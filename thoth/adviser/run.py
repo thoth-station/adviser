@@ -121,9 +121,10 @@ def subprocess_run(
             return_code = 2  # If forked, do not overwrite results by parent process.
             result_dict.update(dict(error=True, error_msg=str(exc), report=exc.to_dict()))
         except Exception as exc:
-            _LOGGER.exception("Adviser raised exception: %s", str(exc))
+            error_msg = f"The resolution failed as an error was encountered: {str(exc)}"
+            _LOGGER.exception(error_msg)
             result_dict.update(
-                dict(error=True, error_msg=str(exc), report=dict(ERROR="An error occurred, see logs for more info"))
+                dict(error=True, error_msg=error_msg, report=dict(ERROR="An error occurred, see logs for more info"))
             )
             return_code = 2
 
