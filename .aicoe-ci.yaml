@@ -1,0 +1,16 @@
+check:
+  - thoth-build
+  - thoth-precommit
+  - thoth-pytest-py38
+build:
+  base-image: quay.io/thoth-station/s2i-thoth-ubi8-py38:latest
+  build-stratergy: Source
+  registry: quay.io
+  registry-org: thoth-station
+  registry-project: adviser
+  registry-secret: thoth-station-thoth-pusher-secret
+deploy:
+  project-org: "thoth-station"
+  project-name: "thoth-application"
+  image-name: "adviser"
+  overlay-contextpath: "adviser/overlays/test/imagestreamtag.yaml"
