@@ -67,7 +67,8 @@ class TestTensorFlowAPISieve(AdviserUnitTestCase):
         }
 
     @pytest.mark.parametrize(
-        "recommendation_type", [RecommendationType.STABLE, RecommendationType.PERFORMANCE, RecommendationType.SECURITY],
+        "recommendation_type",
+        [RecommendationType.STABLE, RecommendationType.PERFORMANCE, RecommendationType.SECURITY],
     )
     def test_include(self, builder_context: PipelineBuilderContext, recommendation_type: RecommendationType) -> None:
         """Test including this pipeline unit."""
@@ -108,11 +109,36 @@ class TestTensorFlowAPISieve(AdviserUnitTestCase):
             "report": {"tensorflow": ["tensorflow.v2.__version__", "tensorflow.raw_ops.LoadDataset"]}
         }
         source = Source("https://pypi.org/simple")
-        pv_0 = PackageVersion(name="tensorflow-gpu", version="==2.2.0", develop=False, index=source,)
-        pv_1 = PackageVersion(name="tensorflow", version="==2.2.0", develop=False, index=source,)
-        pv_2 = PackageVersion(name="tensorflow", version="==2.3.0", develop=False, index=source,)
-        pv_3 = PackageVersion(name="intel-tensorflow", version="==2.4.0", develop=False, index=source,)
-        pv_4 = PackageVersion(name="tensorflow", version="==1.13.0", develop=False, index=source,)
+        pv_0 = PackageVersion(
+            name="tensorflow-gpu",
+            version="==2.2.0",
+            develop=False,
+            index=source,
+        )
+        pv_1 = PackageVersion(
+            name="tensorflow",
+            version="==2.2.0",
+            develop=False,
+            index=source,
+        )
+        pv_2 = PackageVersion(
+            name="tensorflow",
+            version="==2.3.0",
+            develop=False,
+            index=source,
+        )
+        pv_3 = PackageVersion(
+            name="intel-tensorflow",
+            version="==2.4.0",
+            develop=False,
+            index=source,
+        )
+        pv_4 = PackageVersion(
+            name="tensorflow",
+            version="==1.13.0",
+            develop=False,
+            index=source,
+        )
 
         unit = self.UNIT_TESTED()
         with unit.assigned_context(context):
@@ -128,9 +154,24 @@ class TestTensorFlowAPISieve(AdviserUnitTestCase):
             "report": {"tensorflow": ["tensorflow.SomeUnknownSymbol"]}
         }
         source = Source("https://pypi.org/simple")
-        pv_0 = PackageVersion(name="tensorflow", version="==2.2.0", develop=False, index=source,)
-        pv_1 = PackageVersion(name="tensorflow", version="==2.3.0", develop=False, index=source,)
-        pv_2 = PackageVersion(name="tensorflow", version="==2.4.0", develop=False, index=source,)
+        pv_0 = PackageVersion(
+            name="tensorflow",
+            version="==2.2.0",
+            develop=False,
+            index=source,
+        )
+        pv_1 = PackageVersion(
+            name="tensorflow",
+            version="==2.3.0",
+            develop=False,
+            index=source,
+        )
+        pv_2 = PackageVersion(
+            name="tensorflow",
+            version="==2.4.0",
+            develop=False,
+            index=source,
+        )
 
         unit = self.UNIT_TESTED()
         with unit.assigned_context(context):
@@ -146,8 +187,18 @@ class TestTensorFlowAPISieve(AdviserUnitTestCase):
             "report": {"tensorflow": ["tensorflow.v2.__version__", "tensorflow.raw_ops.LoadDataset"]}
         }
         source = Source("https://pypi.org/simple")
-        pv_1 = PackageVersion(name="tensorflow", version="==2.2.0", develop=False, index=source,)
-        pv_2 = PackageVersion(name="tensorflow", version="==2.3.0", develop=False, index=source,)
+        pv_1 = PackageVersion(
+            name="tensorflow",
+            version="==2.2.0",
+            develop=False,
+            index=source,
+        )
+        pv_2 = PackageVersion(
+            name="tensorflow",
+            version="==2.3.0",
+            develop=False,
+            index=source,
+        )
 
         unit = self.UNIT_TESTED()
         with unit.assigned_context(context):
