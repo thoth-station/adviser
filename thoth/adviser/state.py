@@ -49,7 +49,7 @@ class State:
     # An example entry for a manifest change:
     #   [
     #     {
-    #       "apiVersion:": "apps.openshift.io/v1",
+    #       "apiVersion": "apps.openshift.io/v1",
     #       "kind": "DeploymentConfig",
     #       "patch": {
     #         "op": "add",

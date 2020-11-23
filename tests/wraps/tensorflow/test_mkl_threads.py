@@ -96,7 +96,7 @@ spec:
         assert len(state.advised_manifest_changes) == 1
         assert state.advised_manifest_changes[0] == [
             {
-                "apiVersion:": "apps.openshift.io/v1",
+                "apiVersion": "apps.openshift.io/v1",
                 "kind": "DeploymentConfig",
                 "patch": {
                     "op": "add",

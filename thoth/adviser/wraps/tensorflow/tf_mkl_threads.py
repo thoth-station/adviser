@@ -59,7 +59,7 @@ class MKLThreadsWrap(Wrap):
 
     _ADVISED_MANIFEST_CHANGE_PREPEND = [
         {
-            "apiVersion:": "apps.openshift.io/v1",
+            "apiVersion": "apps.openshift.io/v1",
             "kind": "DeploymentConfig",
             "patch": {
                 "op": "add",

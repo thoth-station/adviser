@@ -103,26 +103,17 @@ python_version = "3.7"
 
         context.project = project
         context.dependencies = {
-            "daiquiri": {
-                ("daiquiri", "1.6.0", "https://pypi.org/simple"): set(),
-            },
+            "daiquiri": {("daiquiri", "1.6.0", "https://pypi.org/simple"): set(),},
             "numpy": {("numpy", "1.17.4", "https://pypi.org/simple"): set()},
             "tensorflow": {
                 ("tensorflow", "2.0.0", "https://pypi.org/simple"): {("numpy", "1.17.4", "https://pypi.org/simple")}
             },
         }
         context.dependents = {
-            "daiquiri": {
-                ("daiquiri", "1.6.0", "https://pypi.org/simple"): set(),
-            },
+            "daiquiri": {("daiquiri", "1.6.0", "https://pypi.org/simple"): set(),},
             "numpy": {
                 ("numpy", "1.17.4", "https://pypi.org/simple"): {
-                    (
-                        ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                        "fedora",
-                        "31",
-                        "3.7",
-                    )
+                    (("tensorflow", "2.0.0", "https://pypi.org/simple"), "fedora", "31", "3.7",)
                 }
             },
             "tensorflow": {("tensorflow", "2.0.0", "https://pypi.org/simple"): set()},
@@ -150,44 +141,24 @@ python_version = "3.7"
                 },
                 "dev-packages": {},
                 "requires": {"python_version": "3.7"},
-                "source": [
-                    {
-                        "url": "https://pypi.org/simple",
-                        "verify_ssl": True,
-                        "name": "pypi-org",
-                    }
-                ],
+                "source": [{"url": "https://pypi.org/simple", "verify_ssl": True, "name": "pypi-org",}],
             },
             "requirements_locked": {
                 "_meta": {
-                    "sources": [
-                        {
-                            "url": "https://pypi.org/simple",
-                            "verify_ssl": True,
-                            "name": "pypi-org",
-                        }
-                    ],
+                    "sources": [{"url": "https://pypi.org/simple", "verify_ssl": True, "name": "pypi-org",}],
                     "requires": {"python_version": "3.7"},
                     "hash": {"sha256": "f08689732b596fd705a45bbf9ec44c3995b17a1aa6392c46500aeb736c4d4e88"},
                     "pipfile-spec": 6,
                 },
                 "default": {
-                    "daiquiri": {
-                        "version": "==1.6.0",
-                        "hashes": ["sha256:000"],
-                        "index": "pypi-org",
-                    },
+                    "daiquiri": {"version": "==1.6.0", "hashes": ["sha256:000"], "index": "pypi-org",},
                     "numpy": {
                         "version": "==1.17.4",
                         "hashes": ["sha256:111"],
                         "index": "pypi-org",
                         "markers": "python_version >= '3.7'",
                     },
-                    "tensorflow": {
-                        "version": "==2.0.0",
-                        "hashes": ["sha256:222"],
-                        "index": "pypi-org",
-                    },
+                    "tensorflow": {"version": "==2.0.0", "hashes": ["sha256:222"], "index": "pypi-org",},
                 },
                 "develop": {},
             },
@@ -212,7 +183,7 @@ python_version = "3.7"
         advised_manifest_changes = [
             [
                 {
-                    "apiVersion:": "apps.openshift.io/v1",
+                    "apiVersion": "apps.openshift.io/v1",
                     "kind": "DeploymentConfig",
                     "patch": {
                         "op": "add",
@@ -273,12 +244,7 @@ python_version = "3.7"
         context.dependents = {
             "numpy": {
                 ("numpy", "1.0.0", "https://pypi.org/simple"): {
-                    (
-                        ("tensorflow", "2.0.0", "https://pypi.org/simple"),
-                        "fedora",
-                        "31",
-                        "3.7",
-                    )
+                    (("tensorflow", "2.0.0", "https://pypi.org/simple"), "fedora", "31", "3.7",)
                 }
             },
             "tensorflow": {("tensorflow", "2.0.0", "https://pypi.org/simple"): set()},
@@ -306,16 +272,8 @@ python_version = "3.7"
                     "packages": {"flask": "*", "tensorflow": "==1.9.0"},
                     "requires": {"python_version": "3.6"},
                     "source": [
-                        {
-                            "name": "pypi",
-                            "url": "https://pypi.org/simple",
-                            "verify_ssl": True,
-                        },
-                        {
-                            "name": "pypi-org",
-                            "url": "https://pypi.org/simple",
-                            "verify_ssl": True,
-                        },
+                        {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True,},
+                        {"name": "pypi-org", "url": "https://pypi.org/simple", "verify_ssl": True,},
                     ],
                 },
                 "requirements_locked": {
@@ -324,16 +282,8 @@ python_version = "3.7"
                         "pipfile-spec": 6,
                         "requires": {"python_version": "3.6"},
                         "sources": [
-                            {
-                                "name": "pypi",
-                                "url": "https://pypi.org/simple",
-                                "verify_ssl": True,
-                            },
-                            {
-                                "name": "pypi-org",
-                                "url": "https://pypi.org/simple",
-                                "verify_ssl": True,
-                            },
+                            {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True,},
+                            {"name": "pypi-org", "url": "https://pypi.org/simple", "verify_ssl": True,},
                         ],
                     },
                     "default": {
@@ -343,11 +293,7 @@ python_version = "3.7"
                             "markers": "python_version >= '3.7'",
                             "version": "==1.0.0",
                         },
-                        "tensorflow": {
-                            "hashes": ["sha256:111"],
-                            "index": "pypi-org",
-                            "version": "==2.0.0",
-                        },
+                        "tensorflow": {"hashes": ["sha256:111"], "index": "pypi-org", "version": "==2.0.0",},
                     },
                     "develop": {},
                 },
