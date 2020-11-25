@@ -6003,3 +6003,13 @@
 * :pushpin: Automatic update of dependency thoth-storages from 0.25.17 to 0.26.0 (#1547)
 * :pushpin: Automatic update of dependency attrs from 20.2.0 to 20.3.0 (#1551)
 * :pushpin: Automatic update of dependency attrs from 20.2.0 to 20.3.0 (#1544)
+
+## Release 0.21.1 (2020-11-25T16:44:27)
+### Features
+* Include dependency if at least one lib always requires it (#1594)
+* :arrow_up: Automatic update of dependencies by kebechet. (#1589)
+* Fix pre-commit issues
+* properly JSON formatted advised manifest changes (#1584)
+* Add a warning to TF API (#1581)
+* h5py==3 causes troubles also on TensorFlow 2.3.1 (#1576)
+* Be open, always
