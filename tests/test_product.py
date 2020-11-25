@@ -369,3 +369,133 @@ python_version = "3.7"
         product = Product.from_final_state(context=context, state=state)
         expected["project"]["requirements_locked"]["default"]["numpy"]["markers"] = "python_version >= '3' or 1"
         assert product.to_dict() == expected
+
+    def test_environment_markers_shared(self, context: Context) -> None:
+        """Test handling of environment markers when multiple dependencies share one."""
+        state = State(
+            score=0.0,
+            resolved_dependencies={
+                "pandas": ("pandas", "1.0.0", "https://pypi.org/simple"),
+                "numpy": ("numpy", "1.0.0", "https://pypi.org/simple"),
+                "tensorflow": ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+            },
+            unresolved_dependencies={},
+        )
+
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            "numpy", "1.0.0", "https://pypi.org/simple"
+        ).and_return(["000"]).once()
+
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            "tensorflow", "2.0.0", "https://pypi.org/simple"
+        ).and_return(["111"]).once()
+
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            "pandas", "1.0.0", "https://pypi.org/simple"
+        ).and_return(["222"]).once()
+
+        pypi = Source("https://pypi.org/simple")
+        pv_numpy_locked = PackageVersion(name="numpy", version="==1.0.0", index=pypi, develop=False)
+        pv_tensorflow_locked = PackageVersion(name="tensorflow", version="==2.0.0", index=pypi, develop=False)
+        pv_pandas_locked = PackageVersion(name="pandas", version="==1.0.0", index=pypi, develop=False)
+
+        context.should_receive("get_package_version").with_args(
+            ("numpy", "1.0.0", "https://pypi.org/simple"), graceful=False
+        ).and_return(pv_numpy_locked).once()
+
+        context.should_receive("get_package_version").with_args(
+            ("pandas", "1.0.0", "https://pypi.org/simple"), graceful=False
+        ).and_return(pv_pandas_locked).once()
+
+        context.should_receive("get_package_version").with_args(
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"), graceful=False
+        ).and_return(pv_tensorflow_locked).once()
+
+        context.dependents = {
+            "numpy": {
+                ("numpy", "1.0.0", "https://pypi.org/simple"): [  # set to list for reproducible runs.
+                    (
+                        ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                        "fedora",
+                        "31",
+                        "3.7",
+                    ),
+                    (
+                        ("pandas", "1.0.0", "https://pypi.org/simple"),
+                        "fedora",
+                        "31",
+                        "3.7",
+                    ),
+                ]
+            },
+            "tensorflow": {("tensorflow", "2.0.0", "https://pypi.org/simple"): set()},
+            "pandas": {("pandas", "1.0.0", "https://pypi.org/simple"): set()},
+        }
+
+        context.graph.should_receive("get_python_environment_marker").with_args(
+            "tensorflow",
+            "2.0.0",
+            "https://pypi.org/simple",
+            dependency_name="numpy",
+            dependency_version="1.0.0",
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7",
+        ).and_return("python_version >= '3.8'").once()
+
+        context.graph.should_receive("get_python_environment_marker").with_args(
+            "pandas",
+            "1.0.0",
+            "https://pypi.org/simple",
+            dependency_name="numpy",
+            dependency_version="1.0.0",
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7",
+        ).and_return(None).once()
+
+        product = Product.from_final_state(context=context, state=state)
+        expected = {
+            "advised_manifest_changes": [],
+            "advised_runtime_environment": None,
+            "justification": [],
+            "project": {
+                "requirements": {
+                    "dev-packages": {},
+                    "packages": {"flask": "*", "tensorflow": "==1.9.0"},
+                    "requires": {"python_version": "3.6"},
+                    "source": [
+                        {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True},
+                        {"name": "pypi-org", "url": "https://pypi.org/simple", "verify_ssl": True},
+                    ],
+                },
+                "requirements_locked": {
+                    "_meta": {
+                        "hash": {"sha256": "e55b6bbaba9467f1629c34e7a4180a6a2d82df37e02e762866e7aac27ced0f99"},
+                        "pipfile-spec": 6,
+                        "requires": {"python_version": "3.6"},
+                        "sources": [
+                            {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True},
+                            {"name": "pypi-org", "url": "https://pypi.org/simple", "verify_ssl": True},
+                        ],
+                    },
+                    "default": {
+                        "numpy": {"hashes": ["sha256:000"], "index": "pypi-org", "version": "==1.0.0"},
+                        "pandas": {"hashes": ["sha256:222"], "index": "pypi-org", "version": "==1.0.0"},
+                        "tensorflow": {"hashes": ["sha256:111"], "index": "pypi-org", "version": "==2.0.0"},
+                    },
+                    "develop": {},
+                },
+                "runtime_environment": {
+                    "cuda_version": None,
+                    "hardware": {"cpu_family": None, "cpu_model": None},
+                    "name": None,
+                    "operating_system": {"name": None, "version": None},
+                    "platform": None,
+                    "python_version": None,
+                },
+            },
+            "score": 0.0,
+        }
+
+        assert product.to_dict() == expected

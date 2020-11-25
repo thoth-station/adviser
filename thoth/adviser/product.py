@@ -101,6 +101,11 @@ class Product:
 
                 if marker and marker not in environment_markers:
                     environment_markers.append(marker)
+                elif not marker:
+                    # One or multiple dependencies require this dependency to be always present, clear any
+                    # environment markers.
+                    environment_markers.clear()
+                    break
 
             if environment_markers:
                 if len(environment_markers) > 1:
