@@ -146,6 +146,9 @@ supplied to the build config:
 * ``THOTH_ADVISE`` - always use the recommended stack by Thoth (even if the
   lock file is present in the repo)
 
+* ``THOTH_CONFIG_CHECK`` - verify values stated in the configuration file match
+  the build environment
+
 * ``THOTH_PROVENANCE_CHECK`` - verify stack provenance - the provenance check
   is triggered only if the lock file is not comming from Thoth's recommendation
   engine (otherwise the stack has already verified provenance)
