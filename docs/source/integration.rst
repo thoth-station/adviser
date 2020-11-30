@@ -237,11 +237,9 @@ available configurations issue:
 Now that you are done with the setup of which managers you want to be run on
 your project, you are done with the major part.  We would next install the
 GitHub app to ensure we receive webhooks from the repository, please install
-`Khebhut <https://github.com/apps/khebhut>`__, which is an alias for Kebechet.
+`Khebhut <https://github.com/marketplace/khebhut>`__, which is an alias for Kebechet.
+That's it, Kebechet is now ready to maintain your Python project.
 
-And finally, let’s add our bot friend as a collaborator, so that he can help
-you maintain your project.  In GitHub go to ``Settings`` -> ``Manage access``
-and invite `@sesheta <https://github.com/sesheta>`__ as a collaborator.
 
 Jupyter Notebooks
 =================
