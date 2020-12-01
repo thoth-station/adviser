@@ -74,7 +74,7 @@ class TestTensorFlowCUDASieve(AdviserUnitTestCase):
         list(
             product(
                 [RecommendationType.STABLE, RecommendationType.PERFORMANCE, RecommendationType.SECURITY],
-                ["8", "9", "10.0", "10.1"],
+                ["8", "9", "10.0", "10.1", "11.0"],
             )
         ),
     )
@@ -119,6 +119,7 @@ class TestTensorFlowCUDASieve(AdviserUnitTestCase):
             ("9", "_TF_1_CUDA_9_SUPPORT", "_EMPTY"),
             ("10.0", "_TF_1_CUDA_10_0_SUPPORT", "_TF_2_CUDA_10_0_SUPPORT"),
             ("10.1", "_EMPTY", "_TF_2_CUDA_10_1_SUPPORT"),
+            ("11.0", "_EMPTY", "_TF_2_CUDA_11_0_SUPPORT"),
             ("UNKNOWN_CUDA_VERSION", "_EMPTY", "_EMPTY"),  # Should not happen based on should_include
         ],
     )
@@ -164,6 +165,7 @@ class TestTensorFlowCUDASieve(AdviserUnitTestCase):
     @pytest.mark.parametrize(
         "package_name,package_version,cuda_version",
         [
+            ("tensorflow", "2.4.0", "11.0"),
             ("tensorflow", "2.3.0", "10.1"),
             ("tensorflow-gpu", "2.3.0", "10.1"),
             ("tensorflow", "2.2.0", "10.1"),
@@ -214,6 +216,7 @@ class TestTensorFlowCUDASieve(AdviserUnitTestCase):
     @pytest.mark.parametrize(
         "pv,cuda_version",
         [
+            *product((("tensorflow", "2.4.0"),), ("10.0", "9", "8")),
             *product((("tensorflow", "2.3.0"),), ("10.0", "9", "8")),
             *product((("tensorflow", "2.2.0"),), ("10.0", "9", "8")),
             *product((("tensorflow", "2.1.0"),), ("10.0", "9", "8")),

@@ -58,7 +58,8 @@ class TensorFlowCUDASieve(Sieve):
     _TF_1_CUDA_10_0_SUPPORT = frozenset({(1, 13), (1, 14), (1, 15)})
     _TF_2_CUDA_10_0_SUPPORT = frozenset({(2, 0)})
     _TF_2_CUDA_10_1_SUPPORT = frozenset({(2, 1), (2, 2), (2, 3)})
-    _KNOWN_CUDA = frozenset({"8", "9", "10.0", "10.1"})
+    _TF_2_CUDA_11_0_SUPPORT = frozenset({(2, 4)})
+    _KNOWN_CUDA = frozenset({"8", "9", "10.0", "10.1", "11.0"})
 
     # Holds tensorflow version for which a message was printed to logs.
     _messages_logged = attr.ib(type=Set[str], default=attr.Factory(set), init=False)
@@ -83,6 +84,9 @@ class TensorFlowCUDASieve(Sieve):
         elif cuda_version == "10.1":
             self._tf_1_cuda_support = self._EMPTY
             self._tf_2_cuda_support = self._TF_2_CUDA_10_1_SUPPORT
+        elif cuda_version == "11.0":
+            self._tf_1_cuda_support = self._EMPTY
+            self._tf_2_cuda_support = self._TF_2_CUDA_11_0_SUPPORT
         else:
             _LOGGER.error("Unsupported CUDA version, cannot provide recommendations for TensorFlow")
             self._tf_1_cuda_support = self._EMPTY
@@ -158,7 +162,7 @@ class TensorFlowCUDASieve(Sieve):
         if tf_semantic_version[0] == 1:
             self._maybe_log_no_recommendations(package_version)
             return False
-        elif tf_semantic_version <= (2, 3):
+        elif tf_semantic_version <= (2, 4):
             if tf_semantic_version in self._tf_2_cuda_support:
                 return True
 
