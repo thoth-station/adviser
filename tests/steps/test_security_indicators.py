@@ -168,7 +168,7 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
         assert result[1][0]["type"] == "WARNING"
         assert (
             result[1][0]["message"] == "flask===0.12.0 on https://pypi.org/simple has no "
-            "gathered information regarding security."
+            "gathered information regarding security"
         )
 
     def test_security_indicator_with_high_confidence(self) -> None:
@@ -193,3 +193,35 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
                 step.run(None, package_version)
         assert len(context.stack_info) == 1
         assert set(context.stack_info[0].keys()) == {"message", "type", "link"}
+
+    @pytest.mark.parametrize("score,adjective", [(-0.5, "negative"), (0.0, "neutral"), (0.5, "positive")])
+    def test_security_indicator_with_security_info(self, score: float, adjective: str) -> None:
+        """Test propagating message about positive/neutral/negative security score."""
+        flexmock(GraphDatabase)
+        GraphDatabase.should_receive("get_si_aggregated_python_package_version").with_args(
+            package_name="flask", package_version="0.12.0", index_url="https://pypi.org/simple"
+        ).and_return(self._HIGH_HIGH_SECURITY_INFO).once()
+
+        package_version = PackageVersion(
+            name="flask",
+            version="==0.12.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
+
+        context = flexmock(graph=GraphDatabase(), stack_info=[])
+        context.recommendation_type = RecommendationType.STABLE
+        with SecurityIndicatorStep.assigned_context(context):
+            step = SecurityIndicatorStep()
+            result = step.run(None, package_version)
+
+        assert len(context.stack_info) == 0
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+        assert result[0] == score
+        assert len(result[1]) == 1
+        assert set(result[1][0].keys()) == {"type", "message", "link"}
+        assert (
+            result[1]["message"]
+            == f"flask===0.12.0 on https://pypi.org/simple has {adjective} security related information"
+        )

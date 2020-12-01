@@ -91,11 +91,29 @@ class SecurityIndicatorStep(Step):
         return None
 
     @classmethod
-    def _generate_justification(cls, name: str, version: str, index: str) -> List[Dict[str, Any]]:
+    def _generate_justification_no_security(cls, name: str, version: str, index: str) -> List[Dict[str, Any]]:
         return [
             {
                 "type": "WARNING",
-                "message": f"{name}==={version} on {index} has no gathered information regarding security.",
+                "message": f"{name}==={version} on {index} has no gathered information regarding security",
+                "link": cls._JUSTIFICATION_LINK_SECURITY,
+            }
+        ]
+
+    @classmethod
+    def _generate_justification_security(
+        cls, name: str, version: str, index: str, score: float
+    ) -> List[Dict[str, Any]]:
+        adjective = "neutral"
+        if score > 0.0:
+            adjective = "positive"
+        elif score < 0.0:
+            adjective = "negative"
+
+        return [
+            {
+                "type": "INFO",
+                "message": f"{name}==={version} on {index} has {adjective} security related information",
                 "link": cls._JUSTIFICATION_LINK_SECURITY,
             }
         ]
@@ -132,7 +150,7 @@ class SecurityIndicatorStep(Step):
                 raise NotAcceptable
             return (
                 0,
-                self._generate_justification(
+                self._generate_justification_no_security(
                     name=package_version.name, version=package_version.locked_version, index=package_version.index.url
                 ),
             )
@@ -176,5 +194,13 @@ class SecurityIndicatorStep(Step):
 
         s_score = s_score / s_info["number_of_lines_with_code_in_python_files"]
         if s_score < 1:
-            return self.configuration["si_reward_weight"], None
-        return self.configuration["si_reward_weight"] / s_score, None
+            s_score = self.configuration["si_reward_weight"]
+        else:
+            s_score = self.configuration["si_reward_weight"] / s_score
+
+        return s_score, self._generate_justification_security(
+            name=package_version.name,
+            version=package_version.locked_version,
+            index=package_version.index.url,
+            score=s_score,
+        )
