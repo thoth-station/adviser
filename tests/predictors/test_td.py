@@ -239,7 +239,7 @@ class TestTemporalDifference(AdviserTestCase):
 
         flexmock(random)
         random.should_receive("randrange").with_args(1, 2).and_return(0).once()
-        random.should_receive("random").with_args().and_return(
+        random.should_receive("random").and_return(
             0.50
         ).once()  # *lower* than acceptance_probability that is 0.75 so we do exploitation
         probable_state.should_receive("get_random_unresolved_dependency").with_args(prefer_recent=True).and_return(
@@ -277,7 +277,7 @@ class TestTemporalDifference(AdviserTestCase):
 
         flexmock(random)
         random.should_receive("randrange").with_args(1, 2).and_return(0).once()
-        random.should_receive("random").with_args().and_return(
+        random.should_receive("random").and_return(
             0.99
         ).once()  # *higher* than acceptance_probability that is 0.75 so we do exploitation
         TemporalDifference.should_receive("_do_exploitation").with_args(max_state).and_return(
