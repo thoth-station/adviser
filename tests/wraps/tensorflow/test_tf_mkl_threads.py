@@ -94,9 +94,10 @@ spec:
                 },
             }
         ]
-        patch = jsonpatch.JsonPatch(obj["patch"] for obj in state.advised_manifest_changes[0])
+        patch = jsonpatch.JsonPatch([obj["patch"] for obj in state.advised_manifest_changes[0]])
         deployment_config = yaml.safe_load(cls._DEPLOYMENT_CONFIG)
-        assert jsonpatch.apply_patch(deployment_config, patch) == {
+        jsonpatch.apply_patch(deployment_config, patch, in_place=True)
+        assert deployment_config == {
             "apiVersion": "apps.openshift.io/v1",
             "kind": "DeploymentConfig",
             "metadata": {"name": "foo", "namespace": "some-namespace"},
