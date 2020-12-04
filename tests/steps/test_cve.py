@@ -118,7 +118,7 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
             develop=False,
         )
 
-        context = flexmock(graph=GraphDatabase(), recommendation_type=RecommendationType.SECURITY)
+        context = flexmock(graph=GraphDatabase(), recommendation_type=RecommendationType.SECURITY, stack_info=[])
         step = CvePenalizationStep()
         with CvePenalizationStep.assigned_context(context):
             assert not step._messages_logged
@@ -127,3 +127,6 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
 
         assert len(step._messages_logged) == 1
         assert ("flask", "0.12.0", "https://pypi.org/simple") in step._messages_logged
+        assert len(context.stack_info) == 1
+        assert set(context.stack_info[0].keys()) == {"message", "link", "type"}
+        assert self.verify_justification_schema(context.stack_info)
