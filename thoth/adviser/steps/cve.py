@@ -99,11 +99,18 @@ class CvePenalizationStep(Step):
                 if package_version_tuple not in self._messages_logged:
                     self._messages_logged.add(package_version_tuple)
                     for cve_record in cve_records:
+                        message = (
+                            f"Skipping including package {package_version_tuple!r} as a CVE "
+                            f"{cve_record.get('cve_name') or cve_record.get('cve_id')!r} was found"
+                        )
                         _LOGGER.warning(
-                            "Skipping including package %r as a CVE %s was found: %s",
-                            package_version_tuple,
-                            cve_record.get("cve_name") or cve_record.get("cve_id"),
+                            "%s: %s",
+                            message,
                             cve_record["advisory"],
+                        )
+
+                        self.context.stack_info.append(
+                            {"type": "WARNING", "message": message, "link": self._JUSTIFICATION_LINK}
                         )
 
                 raise NotAcceptable
