@@ -59,7 +59,7 @@ class TensorFlowAVX2Step(Step):
     # A tuple (CPU_FAMILY, CPU_MODEL) of Intel processors supporting AVX2:
     #   https://en.wikipedia.org/wiki/Advanced_Vector_Extensions#CPUs_with_AVX2
     #   https://en.wikichip.org/wiki/intel/cpuid
-    _AVX2_CPUS = frozenset(
+    AVX2_CPUS = frozenset(
         {
             (0x6, 0x5),  # Cascade Lake
             (0x6, 0x6),  # Broadwell, Cannon Lake
@@ -84,7 +84,7 @@ class TensorFlowAVX2Step(Step):
             builder_context.project.runtime_environment.hardware.cpu_family,
             builder_context.project.runtime_environment.hardware.cpu_model,
         )
-        if cpu_tuple not in cls._AVX2_CPUS:
+        if cpu_tuple not in cls.AVX2_CPUS:
             # No AVX2 support for the given CPU or no CPU info.
             return None
 
