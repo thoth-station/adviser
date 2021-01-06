@@ -1,4 +1,4 @@
-.. _compatibility:
+. _compatibility:
 
 Thoth's adviser recommendation format
 =====================================
@@ -68,13 +68,31 @@ stored in Thoth's knowledge base.
 
 .. note::
 
-  It's a good practice to create different Thoth configuration files (e.g.
-  different git branches) if you plan to run your application on different
-  software or hardware environments and use Thoth's recommendations.
+  It's a good practice to create overlays for different software or hardware
+  environments you want to run. Check `Thamos documentation
+  <https://github.com/thoth-station/thamos>`__ for more details.
 
 Environment markers applied on direct dependencies are not evaluated during
 the resolution done on server but are taken into account once packages are
 installed by Pipenv.
+
+Thoth's resolver considers also ``python_requires`` as provided by package
+maintainers, see `PEP-440 <https://www.python.org/dev/peps/pep-0440/>`__ or
+`packaging documentation
+<https://packaging.python.org/guides/distributing-packages-using-setuptools/?highlight=python_requires#python-requires>`__
+for more info and semantics. The Python requirement information is aggregated
+during `Thoth's solver <https://github.com/thoth-station/solver>`__ runs as
+part of data aggregation and considered during the resolution (implemented by
+``SolvedSieve`` pipeline unit).  As the interpreter information is evaluated
+during solver runs for the given package they are specific for the given solver
+(e.g. ubi-8 solver running Python 3.6).
+
+In some cases these Python requirements might give misleading results. For
+example, consider ``python_requires>3.9.1`` for some package. If solver is
+running Python interpreter in version 3.9.0, the given package fails to install
+and thus the recommendation engine never recommends the given package when
+running any Python 3.9. This is considered a corner case as this is not seen
+much in the Python ecosystem.
 
 Python package indexes
 ======================
