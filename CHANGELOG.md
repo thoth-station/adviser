@@ -6013,3 +6013,23 @@
 * Add a warning to TF API (#1581)
 * h5py==3 causes troubles also on TensorFlow 2.3.1 (#1576)
 * Be open, always
+
+## Release 0.22.0 (2021-01-19T17:37:39)
+### Features
+* State python_requires in the compatibility section of docs (#1619)
+* Implement a sieve that filters out TensorFlow==2.4.0 on non-AVX2 CPU (#1617)
+* :arrow_up: Automatic update of dependencies by kebechet. (#1612)
+* Add justification to stack info if a package with CVE is avoided (#1611)
+* Recommend TensorFlow 2.4 based on CUDA support (#1605)
+* Relock so that typing extensions have the right environment marker (#1607)
+* :arrow_up: Automatic update of dependencies by kebechet. (#1609)
+* Fix testsuite for Python 3.8 (#1603)
+* Updated marketplace app link
+* Update .aicoe-ci.yaml
+* Introduce THOTH_CONFIG_CHECK environment variable (#1592)
+* Update TensorFlow symbols database (#1587)
+* port to python 38
+### Bug Fixes
+* Improve error message reported to the user (#1588)
+### Improvements
+* removed bissenbay, thanks for your contributions!
