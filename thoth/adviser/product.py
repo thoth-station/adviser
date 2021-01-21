@@ -17,13 +17,16 @@
 
 """Representation of an advised stack."""
 
+import os
+import json
 import logging
+from itertools import chain
 from typing import Any
-from typing import Optional
 from typing import Dict
 from typing import List
-from typing import Tuple
+from typing import Optional
 from typing import Set
+from typing import Tuple
 
 import attr
 
@@ -130,10 +133,19 @@ class Product:
         # Keep thoth section untouched.
         advised_project.pipfile.thoth = context.project.pipfile.thoth
 
+        justification_metadata = []
+        metadata = os.getenv("THOTH_ADVISER_METADATA")
+        if metadata:
+            try:
+                metadata_content = json.loads(metadata)
+                justification_metadata = (metadata_content.get("thoth.adviser") or {}).get("justification") or []
+            except Exception:
+                _LOGGER.exception("Failed to parse adviser metadata")
+
         return cls(
             project=advised_project,
             score=state.score,
-            justification=state.justification,
+            justification=list(chain(justification_metadata, state.justification)),
             advised_runtime_environment=state.advised_runtime_environment,
             advised_manifest_changes=state.advised_manifest_changes,
         )

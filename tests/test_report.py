@@ -134,7 +134,7 @@ class TestReport(AdviserTestCase):
         assert report.to_dict() == {
             "pipeline": pipeline_config.to_dict(),
             "products": [product.to_dict()],
-            "stack_info": None,
+            "stack_info": [],
             "resolver_iterations": 0,
             "accepted_final_states_count": 0,
             "discarded_final_states_count": 0,

@@ -17,7 +17,9 @@
 
 """A class for adviser's report - output of an adviser run."""
 
+import os
 import heapq
+import json
 import logging
 import operator
 from typing import Any
@@ -76,10 +78,18 @@ class Report:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert pipeline report to a dict representation."""
+        stack_info = []
+        stack_info_metadata = os.getenv("THOTH_ADVISER_METADATA")
+        if stack_info_metadata:
+            try:
+                stack_info = ((json.loads(stack_info_metadata).get("thoth.adviser") or {}).get("stack_info")) or []
+            except Exception:
+                _LOGGER.exception("Failed to load adviser metadata")
+
         return {
             "pipeline": self.pipeline.to_dict(),
             "products": [product.to_dict() for product in self.iter_products()],
-            "stack_info": self._stack_info,
+            "stack_info": stack_info + (self._stack_info or []),
             "resolver_iterations": self.resolver_iterations,
             "accepted_final_states_count": self.accepted_final_states_count,
             "discarded_final_states_count": self.discarded_final_states_count,
