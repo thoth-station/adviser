@@ -240,6 +240,13 @@ GitHub app to ensure we receive webhooks from the repository, please install
 `Khebhut <https://github.com/marketplace/khebhut>`__, which is an alias for Kebechet.
 That's it, Kebechet is now ready to maintain your Python project.
 
+build-watcher
+=============
+
+To help us improving recommendations, you can use build-watcher which will send
+us relevant information so that we can improve Thoth's recommendation engine.
+Follow instructions that can be found in `thoth-station/build-watcher
+<https://github.com/thoth-station/build-watcher/>`__ repository for more info.
 
 Jupyter Notebooks
 =================
