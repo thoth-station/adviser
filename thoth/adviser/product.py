@@ -134,6 +134,7 @@ class Product:
         advised_project.pipfile.thoth = context.project.pipfile.thoth
 
         justification_metadata = []
+        justification_metadata: List[Dict[str, Any]] = []
         metadata = os.getenv("THOTH_ADVISER_METADATA")
         if metadata:
             try:

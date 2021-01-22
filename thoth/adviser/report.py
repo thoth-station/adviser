@@ -78,7 +78,7 @@ class Report:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert pipeline report to a dict representation."""
-        stack_info = []
+        stack_info: List[Dict[str, Any]] = []
         stack_info_metadata = os.getenv("THOTH_ADVISER_METADATA")
         if stack_info_metadata:
             try:
