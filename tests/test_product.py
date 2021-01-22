@@ -18,7 +18,10 @@
 """Test manipulation with a pipeline product."""
 
 
+import os
+import json
 import flexmock
+from itertools import chain
 
 from thoth.adviser.product import Product
 from thoth.adviser.state import State
@@ -256,6 +259,34 @@ black = true
             "advised_runtime_environment": {"hello": "thoth"},
             "advised_manifest_changes": advised_manifest_changes,
         }
+
+    def test_to_dict_metadata(self) -> None:
+        """Test conversion of this product into a dictionary representation with metadata."""
+        project = flexmock()
+        project.should_receive("to_dict").with_args().and_return({"baz": "bar"}).once()
+
+        justification = [{"foo": "bar"}]
+
+        product = Product(
+            justification=justification,
+            project=project,
+            score=0.999,
+        )
+
+        assert "THOTH_ADVISER_METADATA" not in os.environ
+        metadata_justification = [{"bar": "baz"}]
+        os.environ["THOTH_ADVISER_METADATA"] = json.dumps(metadata_justification)
+
+        try:
+            assert product.to_dict() == {
+                "score": 0.999,
+                "project": {"baz": "bar"},
+                "justification": list(chain(metadata_justification, justification)),
+                "advised_runtime_environment": {"hello": "thoth"},
+                "advised_manifest_changes": None,
+            }
+        except Exception:
+            os.environ.pop("THOTH_ADVISER_METADATA")
 
     def test_environment_markers(self, context: Context) -> None:
         """Test handling of environment markers across multiple runs."""

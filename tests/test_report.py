@@ -17,8 +17,11 @@
 
 """Test report as product by a resolver."""
 
-import pytest
 import flexmock
+import json
+import os
+import pytest
+from itertools import chain
 
 from thoth.adviser.pipeline_config import PipelineConfig
 from thoth.adviser.product import Product
@@ -139,3 +142,44 @@ class TestReport(AdviserTestCase):
             "accepted_final_states_count": 0,
             "discarded_final_states_count": 0,
         }
+
+    def test_to_dict_metadata(self) -> None:
+        """Test conversion to a dict with passed metadata."""
+        report = Report(count=3, pipeline=pipeline_config)
+
+        project = flexmock()
+        project_dict = {"aresto momentum": "avada kedavra"}
+        project.should_receive("to_dict").with_args().and_return(project_dict)
+
+        product = Product(
+            project=project,
+            score=0.666,
+            justification=[{"gryffindor": "le gladium leviosa"}],
+            advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
+        )
+        report.add_product(product)
+
+        stack_info = [{"type": "WARNING", "message": "Hello, metadata"}]
+        stack_info_metadata = {
+            "thoth.adviser": {
+                "stack_info": stack_info,
+            }
+        }
+        report.set_stack_info([{"foo": "bar"}])
+
+        assert "THOTH_ADVISER_METADATA" not in os.environ
+        os.environ["THOTH_ADVISER_METADATA"] = json.dumps(stack_info_metadata)
+
+        try:
+            assert report.product_count() == 1
+            assert list(report.iter_products()) == [product]
+            assert report.to_dict() == {
+                "pipeline": pipeline_config.to_dict(),
+                "products": [product.to_dict()],
+                "stack_info": list(chain(stack_info, report.stack_info)),
+                "resolver_iterations": 0,
+                "accepted_final_states_count": 0,
+                "discarded_final_states_count": 0,
+            }
+        except Exception:
+            os.environ.pop("THOTH_ADVISER_METADATA")
