@@ -3,11 +3,9 @@ Welcome to Thoth's adviser documentation
 
 Thoth's adviser is a recommendation engine for Python applications.
 
-This documentation corresponds to a component called "adviser". Sources can be
-found on `GitHub <https://github.com/thoth-station/adviser>`_.
+.. note::
 
-See `thoth-station <https://thoth-station.ninja>`_ website and `Thoth-Station
-organization on GitHub <https://github.com/thoth-station>`_.
+  See ":ref:`Thoth's landing page <landing_page>`" to see generic info if you are new to Thoth.
 
 Introductory sections
 =====================
