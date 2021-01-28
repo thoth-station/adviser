@@ -18,8 +18,9 @@
 """Boot units implemented in adviser."""
 
 from .fully_specified_environment import FullySpecifiedEnvironment
-from .platform import PlatformBoot
+from .gpu import GPUBoot
 from .pipfile_hash import PipfileHashBoot
+from .platform import PlatformBoot
 from .python_version import PythonVersionBoot
 from .rhel_version import RHELVersionBoot
 from .solved_software_environment import SolvedSoftwareEnvironmentBoot
@@ -34,6 +35,7 @@ from .ubi import UbiBoot
 __all__ = [
     # "MemTraceBoot",
     "PipfileHashBoot",  # Should be placed before any changes to the input.
+    "GPUBoot",  # Should be placed before any GPU specific pipeline unit.
     "UbiBoot",
     "PythonVersionBoot",
     "SolvedSoftwareEnvironmentBoot",
