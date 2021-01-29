@@ -38,9 +38,7 @@ class TestThothS2IWrap(AdviserUnitTestCase):
         builder_context.project.runtime_environment.base_image = "quay.io/thoth-station/s2i-thoth-ubi8-py38:v0.23.0"
         self.verify_multiple_should_include(builder_context)
 
-    @pytest.mark.parametrize(
-        "base_image", [None, "fedora:33", "quay.io/thoth-station/solver-ubi8-py38:v0.23.0"]
-    )
+    @pytest.mark.parametrize("base_image", [None, "fedora:33", "quay.io/thoth-station/solver-ubi8-py38:v0.23.0"])
     def test_no_include(self, base_image: Optional[str], builder_context: PipelineBuilderContext) -> None:
         """Test not including the pipeline unit."""
         builder_context.project.runtime_environment.base_image = base_image
