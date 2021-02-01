@@ -35,14 +35,14 @@ class TestThothS2IWrap(AdviserUnitTestCase):
 
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
-        builder_context.project.runtime_environment.base_image = "quay.io/thoth-station/s2i-thoth-ubi8-py38:v0.23.0"
+        builder_context.project.runtime_environment.base_image = "rhel:8"
         self.verify_multiple_should_include(builder_context)
 
     @pytest.mark.parametrize("base_image", [None, "fedora:33", "quay.io/thoth-station/solver-ubi8-py38:v0.23.0"])
-    def test_no_include(self, base_image: Optional[str], builder_context: PipelineBuilderContext) -> None:
+    def test_include(self, base_image: Optional[str], builder_context: PipelineBuilderContext) -> None:
         """Test not including the pipeline unit."""
         builder_context.project.runtime_environment.base_image = base_image
-        assert self.UNIT_TESTED.should_include(builder_context) is None
+        assert self.UNIT_TESTED.should_include(builder_context) is not None
 
     def test_run(self, context: Context) -> None:
         """Test running and recommending to use Thoth's s2i base image."""

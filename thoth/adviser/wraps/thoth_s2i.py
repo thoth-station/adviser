@@ -49,7 +49,7 @@ class ThothS2IWrap(Wrap):
 
         base_image = builder_context.project.runtime_environment.base_image
 
-        if base_image and not base_image.startswith(cls._THOTH_S2I_PREFIX):
+        if base_image is None or (base_image and not base_image.startswith(cls._THOTH_S2I_PREFIX)):
             return {}
 
         return None
