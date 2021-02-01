@@ -44,6 +44,9 @@ class ThothS2IWrap(Wrap):
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
         """Include this wrap in adviser if Thoth s2i is not used.."""
+        if builder_context.is_included(cls):
+            return None
+
         base_image = builder_context.project.runtime_environment.base_image
 
         if base_image and not base_image.startswith(cls._THOTH_S2I_PREFIX):
