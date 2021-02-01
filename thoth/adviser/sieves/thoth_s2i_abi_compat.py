@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019, 2020 Kevin Postlehtwait
+# Copyright(C) 2019-2021 Kevin Postlehtwait
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Filter out stacks which have require non-existent ABI symbols."""
+"""Filter out stacks which have require non-existent ABI symbols in Thoth's s2i base image."""
 
 import logging
 from typing import Any, Dict, Optional, Generator, Set, TYPE_CHECKING, Tuple
@@ -33,32 +33,61 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class AbiCompatibilitySieve(Sieve):
-    """Remove packages if the image being used doesn't have necessary ABI."""
+class ThothS2IAbiCompatibilitySieve(Sieve):
+    """Remove packages if the Thoth's s2i image being used doesn't have necessary ABI."""
 
+    _THOTH_S2I_PREFIX = "quay.io/thoth-station/"
     CONFIGURATION_DEFAULT = {"package_name": None}
     image_symbols = attr.ib(type=Set[str], factory=set, init=False)
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
 
     _LINK = jl("abi_missing")
+    _LINK_BAD_IMAGE = jl("bad_base_image")
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
-        """Include sieve which checks for abi compatability."""
-        if not builder_context.is_included(cls) and builder_context.project.runtime_environment.is_fully_specified():
+        """Register if the base image provided is Thoth's s2i."""
+        if builder_context.is_included(cls):
+            return None
+
+        base_image = builder_context.project.runtime_environment.base_image
+        if base_image and base_image.startswith(cls._THOTH_S2I_PREFIX):
             return {}
 
         return None
 
     def pre_run(self) -> None:
         """Initialize image_symbols."""
-        runtime_environment = self.context.project.runtime_environment
+        base_image = self.context.project.runtime_environment.base_image
+        parts = base_image.split(":", maxsplit=1)
+        if len(parts) != 2:
+            error_msg = (
+                f"Cannot determine Thoth s2i version information from {base_image}, "
+                "recommendations specific for ABI used will not be taken into account"
+            )
+            _LOGGER.warning("%s - see %s", error_msg, self._LINK_BAD_IMAGE)
+            self.context.stack_info.append(
+                {
+                    "type": "WARNING",
+                    "message": error_msg,
+                    "link": self._LINK_BAD_IMAGE,
+                }
+            )
+
+            self.image_symbols = set()
+            return
+
+        thoth_s2i_image_name, thoth_s2i_image_version = parts
+        if thoth_s2i_image_version.startswith("v"):
+            # Not nice as we always prefix with "v" but do not store it with "v" in the database
+            # (based on env var exported and detected in Thoth's s2i).
+            thoth_s2i_image_version = thoth_s2i_image_version[1:]
+
         self.image_symbols = set(
-            self.context.graph.get_analyzed_image_symbols_all(
-                os_name=runtime_environment.operating_system.name,
-                os_version=runtime_environment.operating_system.version,
-                cuda_version=runtime_environment.cuda_version,
-                python_version=runtime_environment.python_version,
+            self.context.graph.get_thoth_s2i_analyzed_image_symbols_all(
+                thoth_s2i_image_name=thoth_s2i_image_name,
+                thoth_s2i_image_version=thoth_s2i_image_version,
+                is_external=False,
             )
         )
         self._messages_logged.clear()
@@ -67,6 +96,10 @@ class AbiCompatibilitySieve(Sieve):
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """If package requires non-present symbols remove it."""
+        if not self.image_symbols:
+            # No image symbols or the version was not provided.
+            return
+
         for pkg_vers in package_versions:
             package_symbols = set(
                 self.context.graph.get_python_package_required_symbols(

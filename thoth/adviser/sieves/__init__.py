@@ -17,7 +17,6 @@
 
 """Implementation of sieves used in adviser pipeline."""
 
-from .abi_compat import AbiCompatibilitySieve
 from .backports import Enum34BackportSieve
 from .backports import Functools32BackportSieve
 from .backports import ImportlibMetadataBackportSieve
@@ -34,6 +33,7 @@ from .tensorflow import TensorFlow240AVX2IllegalInstructionSieve
 from .tensorflow import TensorFlowAPISieve
 from .tensorflow import TensorFlowCUDASieve
 from .tensorflow import TensorFlowPython39Sieve
+from .thoth_s2i_abi_compat import ThothS2IAbiCompatibilitySieve
 from .version_constraint import VersionConstraintSieve
 
 
@@ -46,7 +46,7 @@ __all__ = [
     "PackageIndexSieve",
     "SolvedSieve",
     "VersionConstraintSieve",
-    "AbiCompatibilitySieve",
+    "ThothS2IAbiCompatibilitySieve",
     "FilterIndexSieve",
     "Enum34BackportSieve",
     "Functools32BackportSieve",
