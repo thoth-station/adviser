@@ -6033,3 +6033,21 @@
 * Improve error message reported to the user (#1588)
 ### Improvements
 * removed bissenbay, thanks for your contributions!
+
+## Release 0.23.0 (2021-02-01T22:07:33)
+### Features
+* Fix pre-commit issues
+* :arrow_up: Automatic update of dependencies by kebechet.
+* Add a wrap that adds information about Thoth s2i used
+* Invert inclusion logic, include if Thoth s2i is not used
+* Fix S2I multiple include pipeline unit
+* Add a sieve to filter out packages based on ABI provided by s2i Thoth
+* Reformat using black
+* Add a pipeline unit recommending Thoth's s2i as a base
+* :arrow_up: Automatic update of dependencies by kebechet.
+* Implement a pipeline unit which checks GPU and CUDA supplied
+* :arrow_up: Automatic update of dependencies by kebechet.
+* docs: State build-watcher in the integration section (#1620)
+### Improvements
+* Fix tests related to Thoth's common config changes
+* Add tests for Thoth's s2i wrap pipeline unit
