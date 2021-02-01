@@ -145,8 +145,8 @@ python_version = "3.7"
         assert product.project.to_dict() == {
             "requirements": {
                 "packages": {
-                    "daiquiri": {"index": "pypi-org", "version": "*"},
-                    "tensorflow": {"index": "pypi-org", "version": ">=2.0.0"},
+                    "daiquiri": {"index": "pypi-org-simple", "version": "*"},
+                    "tensorflow": {"index": "pypi-org-simple", "version": ">=2.0.0"},
                 },
                 "dev-packages": {},
                 "requires": {"python_version": "3.7"},
@@ -155,49 +155,60 @@ python_version = "3.7"
                         "url": "https://pypi.org/simple",
                         "verify_ssl": True,
                         "name": "pypi-org",
-                    }
+                    },
+                    {
+                        "url": "https://pypi.org/simple",
+                        "verify_ssl": True,
+                        "name": "pypi-org-simple",
+                    },
                 ],
             },
             "requirements_locked": {
                 "_meta": {
                     "sources": [
+                        {"name": "pypi-org", "url": "https://pypi.org/simple", "verify_ssl": True},
                         {
                             "url": "https://pypi.org/simple",
                             "verify_ssl": True,
-                            "name": "pypi-org",
-                        }
+                            "name": "pypi-org-simple",
+                        },
                     ],
                     "requires": {"python_version": "3.7"},
-                    "hash": {"sha256": "f08689732b596fd705a45bbf9ec44c3995b17a1aa6392c46500aeb736c4d4e88"},
+                    "hash": {"sha256": "6cc8365e799b949fb6cc564cea2d8e0e8a782ab676a006e65abbe14621b93381"},
                     "pipfile-spec": 6,
                 },
                 "default": {
                     "daiquiri": {
                         "version": "==1.6.0",
                         "hashes": ["sha256:000"],
-                        "index": "pypi-org",
+                        "index": "pypi-org-simple",
                     },
                     "numpy": {
                         "version": "==1.17.4",
                         "hashes": ["sha256:111"],
-                        "index": "pypi-org",
+                        "index": "pypi-org-simple",
                         "markers": "python_version >= '3.7'",
                     },
                     "tensorflow": {
                         "version": "==2.0.0",
                         "hashes": ["sha256:222"],
-                        "index": "pypi-org",
+                        "index": "pypi-org-simple",
                     },
                 },
                 "develop": {},
             },
             "runtime_environment": {
-                "hardware": {"cpu_family": None, "cpu_model": None},
+                "hardware": {"cpu_family": None, "cpu_model": None, "gpu_model": None},
                 "operating_system": {"name": "rhel", "version": None},
                 "python_version": None,
                 "cuda_version": None,
+                "cudnn_version": None,
                 "name": None,
                 "platform": None,
+                "base_image": None,
+                "mkl_version": None,
+                "openblas_version": None,
+                "openmpi_version": None,
             },
         }
 
@@ -312,7 +323,7 @@ python_version = "3.7"
                             "verify_ssl": True,
                         },
                         {
-                            "name": "pypi-org",
+                            "name": "pypi-org-simple",
                             "url": "https://pypi.org/simple",
                             "verify_ssl": True,
                         },
@@ -320,17 +331,13 @@ python_version = "3.7"
                 },
                 "requirements_locked": {
                     "_meta": {
-                        "hash": {"sha256": "e55b6bbaba9467f1629c34e7a4180a6a2d82df37e02e762866e7aac27ced0f99"},
+                        "hash": {"sha256": "4628b328465fa6946ca9abf9c3576fb502436d0a40300d798058677de0f6128a"},
                         "pipfile-spec": 6,
                         "requires": {"python_version": "3.6"},
                         "sources": [
+                            {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True},
                             {
-                                "name": "pypi",
-                                "url": "https://pypi.org/simple",
-                                "verify_ssl": True,
-                            },
-                            {
-                                "name": "pypi-org",
+                                "name": "pypi-org-simple",
                                 "url": "https://pypi.org/simple",
                                 "verify_ssl": True,
                             },
@@ -339,23 +346,28 @@ python_version = "3.7"
                     "default": {
                         "numpy": {
                             "hashes": ["sha256:000"],
-                            "index": "pypi-org",
+                            "index": "pypi-org-simple",
                             "markers": "python_version >= '3.7'",
                             "version": "==1.0.0",
                         },
                         "tensorflow": {
                             "hashes": ["sha256:111"],
-                            "index": "pypi-org",
+                            "index": "pypi-org-simple",
                             "version": "==2.0.0",
                         },
                     },
                     "develop": {},
                 },
                 "runtime_environment": {
+                    "base_image": None,
                     "cuda_version": None,
-                    "hardware": {"cpu_family": None, "cpu_model": None},
+                    "cudnn_version": None,
+                    "hardware": {"cpu_family": None, "cpu_model": None, "gpu_model": None},
                     "name": None,
                     "operating_system": {"name": None, "version": None},
+                    "openblas_version": None,
+                    "openmpi_version": None,
+                    "mkl_version": None,
                     "python_version": None,
                     "platform": None,
                 },
@@ -466,32 +478,37 @@ python_version = "3.7"
                     "requires": {"python_version": "3.6"},
                     "source": [
                         {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True},
-                        {"name": "pypi-org", "url": "https://pypi.org/simple", "verify_ssl": True},
+                        {"name": "pypi-org-simple", "url": "https://pypi.org/simple", "verify_ssl": True},
                     ],
                 },
                 "requirements_locked": {
                     "_meta": {
-                        "hash": {"sha256": "e55b6bbaba9467f1629c34e7a4180a6a2d82df37e02e762866e7aac27ced0f99"},
+                        "hash": {"sha256": "4628b328465fa6946ca9abf9c3576fb502436d0a40300d798058677de0f6128a"},
                         "pipfile-spec": 6,
                         "requires": {"python_version": "3.6"},
                         "sources": [
                             {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True},
-                            {"name": "pypi-org", "url": "https://pypi.org/simple", "verify_ssl": True},
+                            {"name": "pypi-org-simple", "url": "https://pypi.org/simple", "verify_ssl": True},
                         ],
                     },
                     "default": {
-                        "numpy": {"hashes": ["sha256:000"], "index": "pypi-org", "version": "==1.0.0"},
-                        "pandas": {"hashes": ["sha256:222"], "index": "pypi-org", "version": "==1.0.0"},
-                        "tensorflow": {"hashes": ["sha256:111"], "index": "pypi-org", "version": "==2.0.0"},
+                        "numpy": {"hashes": ["sha256:000"], "index": "pypi-org-simple", "version": "==1.0.0"},
+                        "pandas": {"hashes": ["sha256:222"], "index": "pypi-org-simple", "version": "==1.0.0"},
+                        "tensorflow": {"hashes": ["sha256:111"], "index": "pypi-org-simple", "version": "==2.0.0"},
                     },
                     "develop": {},
                 },
                 "runtime_environment": {
+                    "base_image": None,
                     "cuda_version": None,
-                    "hardware": {"cpu_family": None, "cpu_model": None},
+                    "cudnn_version": None,
+                    "hardware": {"cpu_family": None, "cpu_model": None, "gpu_model": None},
                     "name": None,
                     "operating_system": {"name": None, "version": None},
                     "platform": None,
+                    "mkl_version": None,
+                    "openmpi_version": None,
+                    "openblas_version": None,
                     "python_version": None,
                 },
             },
