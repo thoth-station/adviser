@@ -160,21 +160,18 @@ python_version = "3.7"
                         "url": "https://pypi.org/simple",
                         "verify_ssl": True,
                         "name": "pypi-org-simple",
-                    }
+                    },
                 ],
             },
             "requirements_locked": {
                 "_meta": {
-                    "sources": [{
-                            "name": "pypi-org",
-                            "url": "https://pypi.org/simple",
-                            "verify_ssl": True
-                        },
+                    "sources": [
+                        {"name": "pypi-org", "url": "https://pypi.org/simple", "verify_ssl": True},
                         {
                             "url": "https://pypi.org/simple",
                             "verify_ssl": True,
                             "name": "pypi-org-simple",
-                        }
+                        },
                     ],
                     "requires": {"python_version": "3.7"},
                     "hash": {"sha256": "6cc8365e799b949fb6cc564cea2d8e0e8a782ab676a006e65abbe14621b93381"},
@@ -338,12 +335,8 @@ python_version = "3.7"
                         "pipfile-spec": 6,
                         "requires": {"python_version": "3.6"},
                         "sources": [
+                            {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True},
                             {
-                                "name": "pypi",
-                                "url": "https://pypi.org/simple",
-                                "verify_ssl": True
-                             },
-                             {
                                 "name": "pypi-org-simple",
                                 "url": "https://pypi.org/simple",
                                 "verify_ssl": True,
