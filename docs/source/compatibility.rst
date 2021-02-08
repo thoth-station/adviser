@@ -94,6 +94,9 @@ and thus the recommendation engine never recommends the given package when
 running any Python 3.9. This is considered a corner case as this is not seen
 much in the Python ecosystem.
 
+Resolver also implements experimental features that extend the current feature
+set of Pipenv or pip. See :ref:`experimental_features` for more details.
+
 Python package indexes
 ======================
 
