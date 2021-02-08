@@ -27,6 +27,7 @@ from .index_enabled import PackageIndexSieve
 from .locked import CutLockedSieve
 from .pandas import PandasPy36Sieve
 from .prereleases import CutPreReleasesSieve
+from .experimental_prereleases import SelectiveCutPreReleasesSieve
 from .setuptools import Py36SetuptoolsSieve
 from .solved import SolvedSieve
 from .tensorflow import TensorFlow240AVX2IllegalInstructionSieve
@@ -42,6 +43,7 @@ from .version_constraint import VersionConstraintSieve
 # can be mentioned here.
 __all__ = [
     "CutPreReleasesSieve",
+    "SelectiveCutPreReleasesSieve",
     "CutLockedSieve",
     "PackageIndexSieve",
     "SolvedSieve",
