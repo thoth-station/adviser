@@ -1029,11 +1029,11 @@
         },
         "thoth-python": {
             "hashes": [
-                "sha256:25042e9357d09173820ef83bf40e6fcf4f60e3e2c4a368e341add7e218d326c0",
-                "sha256:d8f9afbf2f1a8a2375dc0c6e4b2611afea5bcaaadf27d60d53201bbc1a60666b"
+                "sha256:26ae99f5ddeabe719843debd93beff0cf825dc32019df86ff23b713eaa19eb0d",
+                "sha256:f8ea20a38f5e62be1f7dd7c3f9938e4c3f4fec87168e38218adda596dce39b06"
             ],
             "index": "pypi",
-            "version": "==0.11.0"
+            "version": "==0.12.0"
         },
         "thoth-solver": {
             "hashes": [
