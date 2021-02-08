@@ -2,8 +2,8 @@
 name: Major release
 about: Create a new major release
 title: New major release
-assignees: ''
-
+assignees: 'sesheta'
+labels: bot
 ---
 
 Hey, Kebechet!
