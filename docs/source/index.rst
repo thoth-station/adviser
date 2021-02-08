@@ -18,6 +18,7 @@ Introductory sections
    introduction
    integration
    compatibility
+   experimental_features
    developers_guide
    architecture
    deployment
