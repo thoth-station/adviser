@@ -71,6 +71,22 @@ tensorflow = "*"
 allow_prereleases = true
 """
 
+    _CASE_SELECTIVE_PRERELEASES_ALLOWED_PIPFILE = """
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+tensorflow = "*"
+
+[pipenv]
+allow_prereleases = true
+
+[thoth.allow_prereleases]
+tensorflow = true
+"""
+
     @pytest.mark.parametrize(
         "recommendation_type",
         [
@@ -111,6 +127,14 @@ allow_prereleases = true
         """Test not including this pipeline unit."""
         builder_context.recommendation_type = recommendation_type
         builder_context.project = Project.from_strings(self._CASE_ALLOWED_PIPFILE)
+
+        assert builder_context.is_adviser_pipeline()
+        assert CutPreReleasesSieve.should_include(builder_context) is None
+
+    def test_not_include_thoth_prereleases_allowed(self, builder_context: PipelineBuilderContext) -> None:
+        """Test not including this pipeline unit."""
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.project = Project.from_strings(self._CASE_SELECTIVE_PRERELEASES_ALLOWED_PIPFILE)
 
         assert builder_context.is_adviser_pipeline()
         assert CutPreReleasesSieve.should_include(builder_context) is None
