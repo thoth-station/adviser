@@ -6062,3 +6062,7 @@
 * Add standard Thoth templates
 * :arrow_up: Automatic update of dependencies by Kebechet
 * :arrow_up: Automatic update of dependencies by Kebechet (#1647)
+
+## Release 0.24.1 (2021-02-09T10:13:09)
+### Features
+* Thoth's additional features can be None
