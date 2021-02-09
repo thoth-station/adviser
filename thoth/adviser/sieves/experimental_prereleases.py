@@ -56,7 +56,11 @@ class SelectiveCutPreReleasesSieve(Sieve):
 
             return None
 
-        if builder_context.is_included(cls) or not builder_context.project.pipfile.thoth.allow_prereleases:
+        if (
+            builder_context.is_included(cls)
+            or not builder_context.project.pipfile.thoth
+            or not builder_context.project.pipfile.thoth.allow_prereleases
+        ):
             return None
 
         return {
