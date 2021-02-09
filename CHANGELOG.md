@@ -6051,3 +6051,14 @@
 ### Improvements
 * Fix tests related to Thoth's common config changes
 * Add tests for Thoth's s2i wrap pipeline unit
+
+## Release 0.24.0 (2021-02-09T09:06:23)
+### Features
+* Do not enable cut pre-releases step if selective pre-releases are allowed
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Link Experimental features section from docs index (#1656)
+* Document selective pre-releases (#1650)
+* Implement a pipeline unit for selective pre-release filtering (#1648)
+* Add standard Thoth templates
+* :arrow_up: Automatic update of dependencies by Kebechet
+* :arrow_up: Automatic update of dependencies by Kebechet (#1647)
