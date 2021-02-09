@@ -1,4 +1,4 @@
-. _experimental_features:
+.. _experimental_features:
 
 Resolver's experimental features
 --------------------------------
