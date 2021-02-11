@@ -24,6 +24,7 @@ from .backports import ImportlibResourcesBackportSieve
 from .backports import MockBackportSieve
 from .filter_index import FilterIndexSieve
 from .index_enabled import PackageIndexSieve
+from .legacy_version import LegacyVersionSieve
 from .locked import CutLockedSieve
 from .pandas import PandasPy36Sieve
 from .prereleases import CutPreReleasesSieve
@@ -37,11 +38,11 @@ from .tensorflow import TensorFlowPython39Sieve
 from .thoth_s2i_abi_compat import ThothS2IAbiCompatibilitySieve
 from .version_constraint import VersionConstraintSieve
 
-
 # Relative ordering of units is relevant, as the order specifies order
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
 __all__ = [
+    "LegacyVersionSieve",
     "CutPreReleasesSieve",
     "SelectiveCutPreReleasesSieve",
     "CutLockedSieve",
