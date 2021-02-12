@@ -73,7 +73,7 @@ An example implementation
 
   from typing import Any
   from typing import Dict
-  from typing import Optional
+  from typing import Generator
   from typing import TYPE_CHECKING
 
   from thoth.adviser.state import State
@@ -97,12 +97,14 @@ An example implementation
     ]
 
       @classmethod
-      def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+      def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any]]:
           """Include this wrap in adviser for RHEL/UBI 8.2."""
           if builder_context.is_included(cls):
+              yield from ()
               return None
 
           if not builder_context.is_adviser_pipeline():
+              yield from ()
               return None
 
           if (
@@ -110,8 +112,10 @@ An example implementation
               and builder_context.project.runtime_environment.operating_system.version == "8.2"
               and builder_context.project.runtime_environment.python_version != "3.8"
           ):
-              return {}
+              yield {}
+              return None
 
+          yield from ()
           return None
 
       def run(self, state: State) -> None:

@@ -58,7 +58,7 @@ class TestTensorFlow114GastStep(AdviserUnitTestCase):
         builder_context.decision_type = None
         builder_context.recommendation_type = recommendation_type
         assert builder_context.is_adviser_pipeline()
-        assert TensorFlow114GastStep.should_include(builder_context) == {}
+        assert list(TensorFlow114GastStep.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type",
@@ -76,7 +76,7 @@ class TestTensorFlow114GastStep(AdviserUnitTestCase):
         """Test not including this pipeline unit step."""
         builder_context.decision_type = decision_type
         builder_context.recommendation_type = recommendation_type
-        assert TensorFlow114GastStep.should_include(builder_context) is None
+        assert list(TensorFlow114GastStep.should_include(builder_context)) == []
 
     @pytest.mark.parametrize(
         "tf_name,tf_version,gast_version",

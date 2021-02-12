@@ -63,7 +63,7 @@ class TestIntelTensorflowWrap(AdviserUnitTestCase):
         builder_context.project.runtime_environment.platform = "linux-x86_64"
         assert builder_context.is_adviser_pipeline()
         assert not builder_context.is_dependency_monkey_pipeline()
-        assert IntelTensorFlowWrap.should_include(builder_context) == {}
+        assert list(IntelTensorFlowWrap.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "decision_type,recommendation_type,cpu_model,cpu_family,platform",
@@ -91,7 +91,7 @@ class TestIntelTensorflowWrap(AdviserUnitTestCase):
         builder_context.project.runtime_environment.platform = platform
 
         assert builder_context.is_adviser_pipeline() or builder_context.is_dependency_monkey_pipeline()
-        assert IntelTensorFlowWrap.should_include(builder_context) is None
+        assert list(IntelTensorFlowWrap.should_include(builder_context)) == []
 
     def test_run(self, state: State) -> None:
         """Test running this wrap."""

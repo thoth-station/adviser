@@ -44,7 +44,7 @@ class TestLegacyVersionSieve(AdviserUnitTestCase):
         """Test including this pipeline unit."""
         builder_context.recommendation_type = RecommendationType.LATEST
         assert builder_context.is_adviser_pipeline()
-        assert self.UNIT_TESTED.should_include(builder_context) == {}
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == [{}]
 
     def test_remove_legacy_version_noop(self, context: Context) -> None:
         """Test not removing not legacy versions."""

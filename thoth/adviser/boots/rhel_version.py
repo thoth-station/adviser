@@ -18,9 +18,9 @@
 """A boot to adjust RHEL version to its major version."""
 
 import logging
-from typing import Optional
-from typing import Dict
 from typing import Any
+from typing import Dict
+from typing import Generator
 from typing import TYPE_CHECKING
 
 import attr
@@ -43,11 +43,13 @@ class RHELVersionBoot(Boot):
     """
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register self, always."""
         if not builder_context.is_included(cls):
-            return {}
+            yield {}
+            return None
 
+        yield from ()
         return None
 
     def run(self) -> None:

@@ -18,7 +18,12 @@
 """Filter out stacks which have require non-existent ABI symbols in Thoth's s2i base image."""
 
 import logging
-from typing import Any, Dict, Optional, Generator, Set, TYPE_CHECKING, Tuple
+from typing import Any
+from typing import Dict
+from typing import Generator
+from typing import Set
+from typing import Tuple
+from typing import TYPE_CHECKING
 
 import attr
 from thoth.common import get_justification_link as jl
@@ -45,15 +50,14 @@ class ThothS2IAbiCompatibilitySieve(Sieve):
     _LINK_BAD_IMAGE = jl("bad_base_image")
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register if the base image provided is Thoth's s2i."""
-        if builder_context.is_included(cls):
+        base_image = builder_context.project.runtime_environment.base_image
+        if not builder_context.is_included(cls) and base_image and base_image.startswith(cls._THOTH_S2I_PREFIX):
+            yield {}
             return None
 
-        base_image = builder_context.project.runtime_environment.base_image
-        if base_image and base_image.startswith(cls._THOTH_S2I_PREFIX):
-            return {}
-
+        yield from ()
         return None
 
     def pre_run(self) -> None:

@@ -19,7 +19,7 @@
 
 from typing import Any
 from typing import Dict
-from typing import Optional
+from typing import Generator
 from typing import TYPE_CHECKING
 
 from thoth.common import get_justification_link as jl
@@ -48,28 +48,21 @@ class TensorFlowSlowKerasEmbedding(Wrap):
     ]
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include this wrap in adviser."""
-        if not builder_context.is_adviser_pipeline():
-            return None
-
-        if builder_context.library_usage is not None and "tensorflow.keras.layers.Embedding" not in (
-            builder_context.library_usage.get("tensorflow") or []
+        if (
+            builder_context.is_adviser_pipeline()
+            and not builder_context.is_included(cls)
+            and builder_context.library_usage is not None
+            and "tensorflow.keras.layers.Embedding" in (builder_context.library_usage.get("tensorflow") or [])
         ):
+            yield {"package_name": "tensorflow"}
+            yield {"package_name": "tensorflow-cpu"}
+            yield {"package_name": "tensorflow-gpu"}
+            yield {"package_name": "intel-tensorflow"}
             return None
 
-        units_included = builder_context.get_included_wraps(cls)
-        if len(units_included) == 4:
-            return None
-        elif len(units_included) == 0:
-            return {"package_name": "tensorflow"}
-        elif len(units_included) == 1:
-            return {"package_name": "tensorflow-cpu"}
-        elif len(units_included) == 2:
-            return {"package_name": "tensorflow-gpu"}
-        elif len(units_included) == 3:
-            return {"package_name": "intel-tensorflow"}
-
+        yield from ()
         return None
 
     def run(self, state: State) -> None:

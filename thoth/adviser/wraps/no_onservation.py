@@ -18,7 +18,9 @@
 """A wrap that notifies about missing observations."""
 
 from typing import TYPE_CHECKING
-from typing import Optional, Dict, Any
+from typing import Generator
+from typing import Dict
+from typing import Any
 
 from thoth.common import get_justification_link as jl
 
@@ -41,11 +43,13 @@ class NoObservationWrap(Wrap):
     ]
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[Any, Any], None, None]:
         """Include this wrap in adviser, once."""
         if not builder_context.is_included(cls) and builder_context.is_adviser_pipeline():
-            return {}
+            yield {}
+            return None
 
+        yield from ()
         return None
 
     def run(self, state: State) -> None:

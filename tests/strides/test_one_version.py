@@ -45,7 +45,7 @@ class TestOneVersionStride(AdviserUnitTestCase):
 
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test no inclusion of this pipeline unit."""
-        assert OneVersionStride.should_include(builder_context) is None
+        assert list(OneVersionStride.should_include(builder_context)) == []
 
     def test_pre_run_error(self) -> None:
         """Test error produced in pre-run if configuration is wrong."""

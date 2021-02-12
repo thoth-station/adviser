@@ -104,13 +104,15 @@ flask = false
         builder_context.project = Project.from_strings(self._CASE_GLOBAL_DISALLOWED_PIPFILE)
 
         assert builder_context.is_adviser_pipeline()
-        assert self.UNIT_TESTED.should_include(builder_context) == {
-            "package_name": None,
-            "allow_prereleases": {
-                "tensorflow": True,
-                "flask": False,
-            },
-        }
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == [
+            {
+                "package_name": None,
+                "allow_prereleases": {
+                    "tensorflow": True,
+                    "flask": False,
+                },
+            }
+        ]
 
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
@@ -146,7 +148,7 @@ flask = false
         builder_context.project = Project.from_strings(self._CASE_GLOBAL_ALLOWED_PIPFILE)
 
         assert builder_context.is_adviser_pipeline()
-        assert self.UNIT_TESTED.should_include(builder_context) is None
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == []
 
     @pytest.mark.parametrize("package_name,package_version", [("tensorflow", "2.4.0rc1"), ("flask", "1.0")])
     def test_remove_pre_releases_disallowed_noop(self, package_name: str, package_version: str) -> None:

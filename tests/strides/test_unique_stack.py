@@ -56,7 +56,7 @@ class TestUniqueStackStride(AdviserUnitTestCase):
         builder_context.decision_type = decision_type
         builder_context.recommendation_type = recommendation_type
         assert builder_context.is_adviser_pipeline() or builder_context.is_dependency_monkey_pipeline()
-        assert UniqueStackStride.should_include(builder_context) is None
+        assert list(UniqueStackStride.should_include(builder_context)) == []
 
     def test_run(self) -> None:
         """Test running this stride to filter same stacks."""

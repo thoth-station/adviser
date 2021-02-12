@@ -294,33 +294,33 @@ class PipelineBuilder:
                     )
                     continue
 
-                unit_configuration = unit_class.should_include(ctx)  # type: ignore
-                if unit_configuration is None:
+                for unit_configuration in unit_class.should_include(ctx):  # type: ignore
+                    if unit_configuration is None:
+                        _LOGGER.debug(
+                            "Pipeline unit %r will not be included in the pipeline configuration in this round",
+                            unit_class.__name__,
+                        )
+                        continue
+
+                    change = True
+
                     _LOGGER.debug(
-                        "Pipeline unit %r will not be included in the pipeline configuration in this round",
+                        "Including pipeline unit %r in pipeline configuration with unit configuration %r",
                         unit_class.__name__,
+                        unit_configuration,
                     )
-                    continue
+                    unit_instance = unit_class()
 
-                change = True
+                    # Always perform update, even with an empty dict. Update triggers a schema check.
+                    try:
+                        unit_instance.update_configuration(unit_configuration)
+                    except Exception as exc:
+                        raise PipelineConfigurationError(
+                            f"Filed to initialize pipeline unit configuration for {unit_class.__name__!r} "
+                            f"with configuration {unit_configuration!r}: {str(exc)}"
+                        ) from exc
 
-                _LOGGER.debug(
-                    "Including pipeline unit %r in pipeline configuration with unit configuration %r",
-                    unit_class.__name__,
-                    unit_configuration,
-                )
-                unit_instance = unit_class()
-
-                # Always perform update, even with an empty dict. Update triggers a schema check.
-                try:
-                    unit_instance.update_configuration(unit_configuration)
-                except Exception as exc:
-                    raise PipelineConfigurationError(
-                        f"Filed to initialize pipeline unit configuration for {unit_class.__name__!r} "
-                        f"with configuration {unit_configuration!r}: {str(exc)}"
-                    ) from exc
-
-                ctx.add_unit(unit_instance)
+                    ctx.add_unit(unit_instance)
 
         pipeline = PipelineConfig(
             boots=ctx.boots_dict,

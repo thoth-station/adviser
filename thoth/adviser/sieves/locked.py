@@ -18,7 +18,6 @@
 """A step to filter out packages that are pinned to a specific version."""
 
 import logging
-from typing import Optional
 from typing import Dict
 from typing import Any
 from typing import Generator
@@ -47,11 +46,13 @@ class CutLockedSieve(Sieve):
     CONFIGURATION_DEFAULT = {"package_name": None}
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include cut-locked pipeline sieve for adviser or Dependency Monkey, always."""
         if not builder_context.is_included(cls):
-            return {}
+            yield {}
+            return None
 
+        yield from ()
         return None
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:

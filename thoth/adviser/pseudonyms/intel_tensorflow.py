@@ -49,22 +49,20 @@ class IntelTensorFlowPseudonym(Pseudonym):
     _pseudonyms = attr.ib(type=Optional[FrozenSet[str]], default=None, init=False)
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register self."""
-        if builder_context.project.runtime_environment.cuda_version is not None:
-            # No intel-tensorflow in GPU enabled environments.
+        if (
+            builder_context.project.runtime_environment.cuda_version is None
+            and builder_context.is_adviser_pipeline()
+            and builder_context.recommendation_type != RecommendationType.LATEST
+            and not builder_context.is_included(cls)
+        ):
+            # Register self for tensorflow and tensorflow-cpu.
+            yield {"package_name": "tensorflow"}
+            yield {"package_name": "tensorflow-cpu"}
             return None
 
-        if builder_context.is_adviser_pipeline() and builder_context.recommendation_type != RecommendationType.LATEST:
-            # Register self for tensorflow and tensorflow-cpu.
-            included_units = builder_context.get_included_pseudonyms(cls)
-            if len(included_units) == 2:
-                return None
-            elif len(included_units) == 0:
-                return {"package_name": "tensorflow"}
-            elif len(included_units) == 1:
-                return {"package_name": "tensorflow-cpu"}
-
+        yield from ()
         return None
 
     def pre_run(self) -> None:

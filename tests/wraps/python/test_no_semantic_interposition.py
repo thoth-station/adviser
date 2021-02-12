@@ -58,7 +58,7 @@ class TestNoSemanticInterpositionWrap(AdviserUnitTestCase):
         builder_context.project.runtime_environment.operating_system.version = os_version
         builder_context.project.runtime_environment.python_version = python_version
         assert builder_context.is_adviser_pipeline()
-        assert NoSemanticInterpositionWrap.should_include(builder_context) == {}
+        assert list(NoSemanticInterpositionWrap.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "decision_type,recommendation_type,os_name,os_version,python_version",
@@ -86,7 +86,7 @@ class TestNoSemanticInterpositionWrap(AdviserUnitTestCase):
         builder_context.project.runtime_environment.operating_system.version = os_version
         builder_context.project.runtime_environment.python_version = python_version
         assert builder_context.is_adviser_pipeline() or builder_context.is_dependency_monkey_pipeline()
-        assert NoSemanticInterpositionWrap.should_include(builder_context) is None
+        assert list(NoSemanticInterpositionWrap.should_include(builder_context)) == []
 
     def test_run(self, state: State) -> None:
         """Test running this wrap."""

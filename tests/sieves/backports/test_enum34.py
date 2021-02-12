@@ -69,7 +69,7 @@ class TestEnum34BackportSieve(AdviserUnitTestCase):
         builder_context.decision_type = decision_type
 
         assert builder_context.is_dependency_monkey_pipeline() or builder_context.is_adviser_pipeline()
-        assert Enum34BackportSieve.should_include(builder_context) == {}
+        assert list(Enum34BackportSieve.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "python_version,recommendation_type,decision_type,develop",
@@ -96,7 +96,7 @@ class TestEnum34BackportSieve(AdviserUnitTestCase):
         builder_context.decision_type = decision_type
 
         assert builder_context.is_dependency_monkey_pipeline() or builder_context.is_adviser_pipeline()
-        assert Enum34BackportSieve.should_include(builder_context) is None
+        assert list(Enum34BackportSieve.should_include(builder_context)) == []
 
     def test_remove(self, context: Context) -> None:
         """Test removing enum34 dependency."""

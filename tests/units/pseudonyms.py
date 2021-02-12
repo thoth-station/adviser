@@ -20,7 +20,6 @@
 from typing import Any
 from typing import Dict
 from typing import Generator
-from typing import Optional
 from typing import Tuple
 from typing import TYPE_CHECKING
 
@@ -40,8 +39,10 @@ class Pseudonym1(Pseudonym):
     CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str, Required("another_parameter"): float})
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
+        yield from ()
+        return None
 
     def run(self, package_version: PackageVersion) -> Generator[Tuple[str, str, str], None, None]:
         """Run noop method."""
@@ -54,8 +55,10 @@ class Pseudonym2(Pseudonym):
     CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str})
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
+        yield from ()
+        return None
 
     def run(self, package_version: PackageVersion) -> Generator[Tuple[str, str, str], None, None]:
         """Run noop method."""

@@ -18,7 +18,6 @@
 """A sieve to filter out packages based on Python package index configured."""
 
 import logging
-from typing import Optional
 from typing import Dict
 from typing import Any
 from typing import Generator
@@ -61,8 +60,9 @@ class FilterIndexSieve(Sieve):
     )
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register self, never."""
+        yield from ()
         return None
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:

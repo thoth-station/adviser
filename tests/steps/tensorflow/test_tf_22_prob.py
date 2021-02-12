@@ -48,7 +48,7 @@ class TestTensorFlow22ProbabilityStep(AdviserUnitTestCase):
         builder_context.decision_type = None
         builder_context.recommendation_type = recommendation_type
         assert builder_context.is_adviser_pipeline()
-        assert TensorFlow22ProbabilityStep.should_include(builder_context) == {}
+        assert list(TensorFlow22ProbabilityStep.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type",
@@ -66,7 +66,7 @@ class TestTensorFlow22ProbabilityStep(AdviserUnitTestCase):
         """Test not including this pipeline unit step."""
         builder_context.decision_type = decision_type
         builder_context.recommendation_type = recommendation_type
-        assert TensorFlow22ProbabilityStep.should_include(builder_context) is None
+        assert list(TensorFlow22ProbabilityStep.should_include(builder_context)) == []
 
     @pytest.mark.parametrize("package_name", ["tensorflow", "tensorflow-cpu", "tensorflow-gpu"])
     def test_run(self, context: Context, package_name: str) -> None:

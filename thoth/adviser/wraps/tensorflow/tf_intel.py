@@ -19,7 +19,7 @@
 
 from typing import Any
 from typing import Dict
-from typing import Optional
+from typing import Generator
 from typing import TYPE_CHECKING
 
 from thoth.common import get_justification_link as jl
@@ -71,19 +71,21 @@ class IntelTensorFlowWrap(Wrap):
     ]
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include this wrap for x86_64 architecture on CPU models with Ivy/Sandy bridge."""
-        if builder_context.is_included(cls):
-            return None
-
-        if not builder_context.is_adviser_pipeline():
-            return None
-
         runtime_environment = builder_context.project.runtime_environment
         cpu_tuple = (runtime_environment.hardware.cpu_model, runtime_environment.hardware.cpu_family)
-        if runtime_environment.platform == "linux-x86_64" and cpu_tuple in cls._CPU_TABLE:
-            return {}
 
+        if (
+            not builder_context.is_included(cls)
+            and builder_context.is_adviser_pipeline()
+            and runtime_environment.platform == "linux-x86_64"
+            and cpu_tuple in cls._CPU_TABLE
+        ):
+            yield {}
+            return None
+
+        yield from ()
         return None
 
     def run(self, state: State) -> None:

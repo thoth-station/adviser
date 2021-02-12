@@ -19,6 +19,7 @@
 
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import List
 from typing import Optional
 from typing import Tuple
@@ -43,8 +44,10 @@ class Step1(Step):
     )
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
+        yield from ()
+        return None
 
     def run(
         self, state: State, package_version: PackageVersion
@@ -65,8 +68,10 @@ class Step2(Step):
     )
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
+        yield from ()
+        return None
 
     def run(
         self, state: State, package_version: PackageVersion

@@ -21,6 +21,7 @@ import logging
 
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import List
 from typing import Optional
 from typing import Set
@@ -62,17 +63,17 @@ class CvePenalizationStep(Step):
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Remove CVEs only for advised stacks."""
-        if not builder_context.is_adviser_pipeline():
+        if (
+            builder_context.is_adviser_pipeline()
+            and builder_context.recommendation_type != RecommendationType.LATEST
+            and not builder_context.is_included(cls)
+        ):
+            yield {}
             return None
 
-        if builder_context.recommendation_type == RecommendationType.LATEST:
-            return None
-
-        if not builder_context.is_included(cls):
-            return {}
-
+        yield from ()
         return None
 
     def pre_run(self) -> None:

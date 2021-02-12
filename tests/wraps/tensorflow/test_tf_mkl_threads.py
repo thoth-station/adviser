@@ -56,17 +56,19 @@ spec:
         """Verify multiple should_include calls do not loop endlessly."""
         builder_context.recommendation_type = RecommendationType.LATEST
 
-        for package_name in ("torch", "pytorch", "intel-tensorflow"):
-            pipeline_config = self.UNIT_TESTED.should_include(builder_context)
-            assert pipeline_config is not None
-            assert pipeline_config == {"package_name": package_name}
+        pipeline_config = list(self.UNIT_TESTED.should_include(builder_context))
 
+        assert {"package_name": "torch"} in pipeline_config
+        assert {"package_name": "pytorch"} in pipeline_config
+        assert {"package_name": "intel-tensorflow"} in pipeline_config
+        assert len(pipeline_config) == 3
+
+        for item in pipeline_config:
             unit = self.UNIT_TESTED()
-            unit.update_configuration(pipeline_config)
-
+            unit.update_configuration(item)
             builder_context.add_unit(unit)
 
-        assert self.UNIT_TESTED.should_include(builder_context) is None, "The unit must not be included"
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == [], "The unit must not be included"
 
     def test_run_justification_noop(self) -> None:
         """Test no operation when PyTorch is not present."""

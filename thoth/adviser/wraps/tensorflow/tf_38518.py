@@ -19,7 +19,7 @@
 
 from typing import Any
 from typing import Dict
-from typing import Optional
+from typing import Generator
 from typing import TYPE_CHECKING
 
 from thoth.common import get_justification_link as jl
@@ -49,22 +49,18 @@ class TensorFlowMultipleProcessesGPUBug(Wrap):
     ]
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include this wrap in adviser."""
         if (
-            not builder_context.is_adviser_pipeline()
-            or builder_context.project.runtime_environment.cuda_version is not None
+            builder_context.is_adviser_pipeline()
+            and not builder_context.is_included(cls)
+            and builder_context.project.runtime_environment.cuda_version is not None
         ):
+            yield {"package_name": "tensorflow"}
+            yield {"package_name": "tensorflow-gpu"}
             return None
 
-        units_included = builder_context.get_included_wraps(cls)
-        if len(units_included) == 2:
-            return None
-        elif len(units_included) == 0:
-            return {"package_name": "tensorflow"}
-        elif len(units_included) == 1:
-            return {"package_name": "tensorflow-gpu"}
-
+        yield from ()
         return None
 
     def run(self, state: State) -> None:

@@ -18,6 +18,7 @@
 """A step that removes SciPy dependency from the dependency listing for TensorFlow>=2.1<=2.3."""
 
 from typing import Any
+from typing import Generator
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -62,21 +63,18 @@ class TensorFlowRemoveSciPyStep(Step):
     _RECOMMENDATION_TYPES = {RecommendationType.LATEST, RecommendationType.TESTING}
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[Any, Any], None, None]:
         """Include this unit in adviser, except for latest recommendations."""
         if (
-            not builder_context.is_adviser_pipeline()
-            or builder_context.recommendation_type in cls._RECOMMENDATION_TYPES
+            builder_context.is_adviser_pipeline()
+            and not builder_context.is_included(cls)
+            and "scipy" not in builder_context.project.pipfile.packages.packages
+            and builder_context.recommendation_type not in cls._RECOMMENDATION_TYPES
         ):
+            yield {}
             return None
 
-        if "scipy" in builder_context.project.pipfile.packages.packages:
-            # scipy is a direct dependency, it should be always present in the stack.
-            return None
-
-        if not builder_context.is_included(cls):
-            return {}
-
+        yield from ()
         return None
 
     def pre_run(self) -> None:

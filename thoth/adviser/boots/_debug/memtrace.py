@@ -26,9 +26,9 @@ explicitly turned on by a user (e.g. by providing explicit pipeline configuratio
 import linecache
 import logging
 import tracemalloc
-from typing import Optional
-from typing import Dict
 from typing import Any
+from typing import Dict
+from typing import Generator
 from typing import TYPE_CHECKING
 
 import attr
@@ -58,11 +58,13 @@ class MemTraceBoot(Boot):
     )
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register self, never."""
         # Uncomment this to release the beast.
         # if not builder_context.is_included(cls):
-        #     return {}
+        #     yield {}
+        #     return None
+        yield from ()
         return None
 
     def pre_run(self) -> None:

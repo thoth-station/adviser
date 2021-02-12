@@ -19,6 +19,7 @@
 
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import List
 from typing import Optional
 from typing import Set
@@ -80,14 +81,16 @@ class SecurityIndicatorStep(Step):
     _JUSTIFICATION_LINK_BANDIT = jl("si_bandit")
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register only if we are explicitly recommending secure stacks."""
         if (
-            builder_context.recommendation_type == RecommendationType.SECURITY
-            or builder_context.recommendation_type == RecommendationType.STABLE
-        ) and not builder_context.is_included(cls):
-            return {}
+            builder_context.recommendation_type in (RecommendationType.SECURITY, RecommendationType.STABLE)
+            and not builder_context.is_included(cls)
+        ):
+            yield {}
+            return None
 
+        yield from ()
         return None
 
     @classmethod

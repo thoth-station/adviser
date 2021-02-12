@@ -119,16 +119,18 @@ class AdviserUnitTestCase(AdviserTestCase):
     def verify_multiple_should_include(cls, builder_context: PipelineBuilderContext) -> bool:
         """Check multiple should_include calls do not end in an infinite loop."""
         assert cls.UNIT_TESTED is not None, "No unit assigned for testing"
-        pipeline_config = cls.UNIT_TESTED.should_include(builder_context)
-        assert pipeline_config is not None, "First call to should_include should be always non-None"
+        pipeline_config = list(cls.UNIT_TESTED.should_include(builder_context))
+        assert pipeline_config != [], "First call to should_include should be always non-empty generator"
+        assert (
+            len(pipeline_config) == 1
+        ), "First call to should_include should return one config, adjust the test if it requires additional logic"
 
         unit = cls.UNIT_TESTED()
-        if pipeline_config:
-            unit.update_configuration(pipeline_config)
+        unit.update_configuration(pipeline_config[0])
 
         builder_context.add_unit(unit)
         assert (
-            cls.UNIT_TESTED.should_include(builder_context) is None
+            list(cls.UNIT_TESTED.should_include(builder_context)) == []
         ), "Make sure the pipeline unit does not loop endlessly on multiple should_include calls"
         return True
 

@@ -23,6 +23,7 @@ import sys
 
 from typing import Any
 from typing import Optional
+from typing import Generator
 from typing import Tuple
 from typing import List
 from typing import Dict
@@ -69,8 +70,9 @@ class MockScoreStep(Step):
     _score_history = attr.ib(type=Dict[Tuple[str, str, str], float], factory=dict, init=False)
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register self, never."""
+        yield from ()
         return None
 
     def pre_run(self) -> None:

@@ -53,7 +53,6 @@ class TensorFlowAPISieve(Sieve):
     CONFIGURATION_DEFAULT = {"package_name": "tensorflow"}
     _LINK_API = jl("tf_api")
     _LINK_NO_API = jl("tf_no_api")
-    _PACKAGES_AFFECTED = ("tensorflow", "tensorflow-gpu", "intel-tensorflow", "tensorflow-cpu")
 
     _messages_logged = attr.ib(type=Set[str], factory=set, init=False)
     _no_api_logged = attr.ib(type=bool, default=False, init=False)
@@ -80,26 +79,23 @@ class TensorFlowAPISieve(Sieve):
                 self._acceptable_releases.add(tf_version)
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register this pipeline unit for adviser library usage is provided."""
-        if not builder_context.is_adviser_pipeline() or not builder_context.library_usage:
+        if (
+            builder_context.is_adviser_pipeline()
+            and not builder_context.is_included(cls)
+            and builder_context.library_usage
+            and builder_context.recommendation_type not in (RecommendationType.LATEST, RecommendationType.TESTING)
+            and "tensorflow" in (builder_context.library_usage.get("report") or {})
+        ):
+            yield {"package_name": "tensorflow"}
+            yield {"package_name": "tensorflow-gpu"}
+            yield {"package_name": "intel-tensorflow"}
+            yield {"package_name": "tensorflow-cpu"}
             return None
 
-        if builder_context.recommendation_type in (RecommendationType.LATEST, RecommendationType.TESTING):
-            # Use any TensorFlow for testing purposes or when resolving latest stack.
-            return None
-
-        if "tensorflow" not in (builder_context.library_usage.get("report") or {}):
-            return None
-
-        # Include this pipeline unit in configurations for various builds.
-        included_units = builder_context.get_included_sieves(cls)
-        if len(included_units) >= len(cls._PACKAGES_AFFECTED):
-            return None
-
-        return {
-            "package_name": cls._PACKAGES_AFFECTED[len(included_units)],
-        }
+        yield from ()
+        return None
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Use specific TensorFlow release based on library usage as supplied by the user."""

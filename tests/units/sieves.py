@@ -20,7 +20,6 @@
 from typing import Any
 from typing import Dict
 from typing import Generator
-from typing import Optional
 from typing import TYPE_CHECKING
 from thoth.python import PackageVersion
 
@@ -40,8 +39,10 @@ class Sieve1(Sieve):
     CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str, Required("flying_circus"): str})
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
+        yield from ()
+        return None
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Run noop method."""
@@ -57,8 +58,10 @@ class Sieve2(Sieve):
     )
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
+        yield from ()
+        return None
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Run noop method."""

@@ -19,7 +19,6 @@
 
 import attr
 from typing import Any
-from typing import Optional
 from typing import Generator
 from typing import Dict
 from typing import TYPE_CHECKING
@@ -50,30 +49,22 @@ class TensorFlowPython39Sieve(Sieve):
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register this pipeline unit for adviser when CUDA is present."""
-        if not builder_context.is_adviser_pipeline():
-            return None
-
-        if builder_context.recommendation_type in (RecommendationType.LATEST, RecommendationType.TESTING):
-            # Use any TensorFlow for testing purposes or when resolving latest stack.
-            return None
-
+        # Use any TensorFlow for testing purposes or when resolving latest stack.
         python_version = builder_context.project.runtime_environment.python_version
-        if python_version != "3.9":
+        if (
+            builder_context.is_adviser_pipeline()
+            and not builder_context.is_included(cls)
+            and builder_context.recommendation_type not in (RecommendationType.LATEST, RecommendationType.TESTING)
+            and python_version == "3.9"
+        ):
+            yield {"package_name": "tensorflow"}
+            yield {"package_name": "tensorflow-gpu"}
+            yield {"package_name": "intel-tensorflow"}
             return None
 
-        # Include this pipeline units in different configurations for tensorflow, intel-tensorflow and tensorflow-gpu.
-        included_units = builder_context.get_included_sieves(cls)
-        if len(included_units) == 3:
-            return None
-        if len(included_units) == 0:
-            return {"package_name": "tensorflow"}
-        elif len(included_units) == 1:
-            return {"package_name": "tensorflow-gpu"}
-        elif len(included_units) == 2:
-            return {"package_name": "intel-tensorflow"}
-
+        yield from ()
         return None
 
     def pre_run(self) -> None:

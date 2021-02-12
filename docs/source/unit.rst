@@ -36,27 +36,30 @@ This logic is implemented as part of :func:`Unit.should_include
 
     from typing import Any
     from typing import Dict
-    from typing import Optional
+    from typing import Generator
 
     from thoth.adviser import PipelineBuilderContext
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any]]:
         """Check if the given pipeline unit should be included into pipeline."""
         if builder_context.is_adviser_pipeline() and not builder_context.is_included(cls):
-            return {"configuration1": 0.33}
+            yield {"configuration1": 0.33}
+            return None
 
+        yield from ()
         return None
 
 The :func:`Unit.should_include <thoth.adviser.unit.Unit.should_include>` class
-method returns a value of ``None`` if the pipeline unit should not be
-registered into the pipeline configuration or a dictionary stating pipeline
-configuration that should be applied to pipeline unit instance (an empty
-dictionary if no configuration changes are applied to the default pipeline
-configuration but the pipeline unit should be included in the pipeline
-configuration). The default configuration is provided by pipeline in a
-dictionary available as a class attribute in ``Unit.CONFIGURATION_DEFAULT``.
-See :ref:`unit configuration section <unit_configuration>`.
+method returns a generator which yields configuration for each pipeline unit
+that should be registered into the pipeline configuration. The configuration is
+a dictionary stating pipeline configuration that should be applied to pipeline
+unit instance (an empty dictionary if no configuration changes are applied to
+the default pipeline configuration but the pipeline unit should be included in
+the pipeline configuration). The default configuration is provided by pipeline
+in a dictionary available as a class attribute in
+``Unit.CONFIGURATION_DEFAULT``.  See :ref:`unit configuration section
+<unit_configuration>`.
 
 The pipeline configuration creation is done in multiple rounds so
 :class:`PipelineBuilderContext

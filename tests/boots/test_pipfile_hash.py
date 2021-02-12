@@ -44,11 +44,11 @@ class TestPipifleHashBoot(AdviserUnitTestCase):
         )
 
         builder_context.project = project
-        assert self.UNIT_TESTED.should_include(builder_context) is None
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == []
 
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test registering this unit."""
-        assert self.UNIT_TESTED.should_include(builder_context) == {}
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == [{}]
 
     def test_run_hash_match(self, context: Context) -> None:
         """Test no stack info addition if hash mismatches."""
