@@ -17,6 +17,8 @@ include tests/data/projects/requirements.txt
 include tests/data/projects/Pipfile
 include tests/data/projects/Pipfile_project0
 include tests/data/projects/Pipfile_project1
+include .s2i/bin/run
+include prepare.py
 recursive-include docs *.dia
 recursive-include docs *.gif
 recursive-include docs *.html

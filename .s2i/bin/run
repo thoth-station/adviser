@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -e
+python3 /opt/app-root/src/prepare.py
+exec "${STI_SCRIPTS_PATH}/run"
