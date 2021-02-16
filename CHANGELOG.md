@@ -6074,3 +6074,12 @@
 * :arrow_up: Automatic update of dependencies by Kebechet (#1673)
 * Prepare inputs for adviser container run
 * Fix linkage in docs (#1663)
+
+## Release 0.24.3 (2021-02-16T14:47:15)
+### Features
+* No need to sort JSON keys when preparing inputs (#1677)
+* Provenance checker accepts only Pipfile/Pipfile.lock
+* Assign library usage only once
+* Show used library usage in the resulting JSON report
+* Properly open files for writing in prepare script
+* :arrow_up: Automatic update of dependencies by Kebechet (#1681)
