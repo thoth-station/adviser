@@ -54,11 +54,10 @@ def main() -> None:
 def _prepare_application_stack(request_file_content: Dict[str, Any]) -> None:
     """Prepare Pipfile and Pipfile.lock."""
     pipfile_content = request_file_content["application_stack"]["requirements"]
-    pipfile_lock_content = request_file_content["application_stack"]["requirements_lock"]
-
     with open(os.path.join(_ADVISER_INPUTS_DIR, "Pipfile"), "w") as pf:
         pf.write(pipfile_content)
 
+    pipfile_lock_content = request_file_content["application_stack"]["requirements_lock"] or None
     with open(os.path.join(_ADVISER_INPUTS_DIR, "Pipfile.lock"), "w") as pf:
         pf.write(pipfile_lock_content)
 
@@ -71,8 +70,8 @@ def prepare_adviser(request_file_content: Dict[str, Any]) -> None:
     with open(os.path.join(_ADVISER_INPUTS_DIR, "library_usage.json"), "w") as f:
         json.dump(library_usage, f, indent=2, sort_keys=True)
 
-    runtime_environment = request_file_content["runtime_environment"]
-    with open(os.path.join(_ADVISER_INPUTS_DIR, "runtime_environment.json")) as f:
+    runtime_environment = request_file_content["runtime_environment"] or None
+    with open(os.path.join(_ADVISER_INPUTS_DIR, "runtime_environment.json"), "w") as f:
         json.dump(runtime_environment, f, indent=2, sort_keys=True)
 
 
@@ -87,19 +86,19 @@ def prepare_provenance(request_file_content: Dict[str, Any]) -> None:
 def prepare_dependency_monkey(request_file_content: Dict[str, Any]) -> None:
     """Prepare inputs for dependency-monkey."""
     pipeline = request_file_content["pipeline"]
-    with open(os.path.join(_ADVISER_INPUTS_DIR, "pipeline.json")) as f:
+    with open(os.path.join(_ADVISER_INPUTS_DIR, "pipeline.json"), "w") as f:
         json.dump(pipeline, f, indent=2, sort_keys=True)
 
-    runtime_environment = request_file_content["runtime_environment"]
-    with open(os.path.join(_ADVISER_INPUTS_DIR, "runtime_environment.json")) as f:
+    runtime_environment = request_file_content["runtime_environment"] or None
+    with open(os.path.join(_ADVISER_INPUTS_DIR, "runtime_environment.json"), "w") as f:
         json.dump(runtime_environment, f, indent=2, sort_keys=True)
 
     requirements = request_file_content["requirements"]
-    with open(os.path.join(_ADVISER_INPUTS_DIR, "Pipfile")) as f:
+    with open(os.path.join(_ADVISER_INPUTS_DIR, "Pipfile"), "w") as f:
         json.dump(requirements, f, indent=2, sort_keys=True)
 
-    context = request_file_content["context"]
-    with open(os.path.join(_ADVISER_INPUTS_DIR, "context.json")) as f:
+    context = request_file_content["context"] or None
+    with open(os.path.join(_ADVISER_INPUTS_DIR, "context.json"), "w") as f:
         json.dump(context, f, indent=2, sort_keys=True)
 
 
