@@ -95,3 +95,73 @@ dependency graph but are not direct dependencies of the application stack:
 In this case, also pre-releases of NumPy will be considered during the
 dependency resolution if NumPy occurs in the stack (a transitively dependency
 of the application stack) and NumPy pre-releases are available.
+
+Strict index configuration
+==========================
+
+By default, Thoth suggests which Python package indexes should be used to
+consume recommended Python packages. If you wish to explicitly state Python
+package indexes from where your packages should be consumed, you can enforce
+this behavior by providing ``disable_index_adjustment = true`` experimental
+feature as follows:
+
+.. code-block:: toml
+
+  [[source]]
+  url = "https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/"
+  verify_ssl = true
+  name = "aicoe-tensorflow"
+
+  [packages]
+  tensorflow = "*"
+
+  [dev-packages]
+
+  [requires]
+  python_version = "3.9"
+
+  [thoth]
+  disable_index_adjustment = true
+
+Using the Pipfile shown above will enforce resolver to look for packages only
+on explicitly configured Python indexes, that is ``aicoe-tensorflow`` index in
+the example above. Note that all the packages, direct as well as transitive
+packages need to be hosted on the specified index in order to resolve the whole
+application stack. If that's not the case, the resolution process will fail.
+
+If you wish to consume some packages from one index and others from another
+index, you can provide multiple Python package sources as shown below:
+
+.. code-block:: toml
+
+  [[source]]
+  url = "https://pypi.org/simple"
+  verify_ssl = true
+  name = "pypi"
+
+  [[source]]
+  url = "https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/"
+  verify_ssl = true
+  name = "aicoe-tensorflow"
+
+  [packages]
+  tensorflow = {version="*", index="aicoe-tensorflow"}
+
+  [dev-packages]
+
+  [requires]
+  python_version = "3.9"
+
+  [thoth]
+  disable_index_adjustment = true
+
+Based on the configuration shown above, the resolver will restrict TensorFlow
+packages only to those hosted on ``aicoe-tensorflow`` (and will not take into
+account any other Python package indexes known where TensorFlow package is
+hosted) and the remaining packages will be looked up on ``aicoe-tensorflow``
+index as well as on ``pypi`` index as configured. No other Python package
+indexes will be considered during the resolution process. Note you can specify
+Python package index to be used per dependency, see `Pipenv configuration
+<https://pipenv.pypa.io/en/latest/advanced/#specifying-package-indexes>`__.
+Also note, Pipenv does not enforce this configuration as it treats Python
+package indexes as mirrors (see :ref:`compatibility` section for more info).
