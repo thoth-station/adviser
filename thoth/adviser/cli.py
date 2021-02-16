@@ -460,12 +460,16 @@ def advise(
     if library_usage:
         if os.path.isfile(library_usage):
             try:
-                library_usage = json.loads(Path(library_usage).read_text())
+                with open(library_usage, "r") as f:
+                    library_usage = json.load(f)
             except Exception:
                 _LOGGER.error("Failed to load library usage file %r", library_usage)
                 raise
         else:
             library_usage = json.loads(library_usage)
+
+        # Show library usage in the final report.
+        parameters["library_usage"] = library_usage
 
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
     recommendation_type = RecommendationType.by_name(recommendation_type)
@@ -476,6 +480,8 @@ def advise(
     parameters["project"] = project.to_dict()
     if pipeline_config is not None:
         parameters["pipeline"] = pipeline_config.to_dict()
+    if library_usage:
+        parameters["library_usage"] = library_usage
     predictor_class, predictor_kwargs = _get_adviser_predictor(predictor, recommendation_type)
     predictor_kwargs = _get_predictor_kwargs(predictor_config) or predictor_kwargs
     predictor_instance = predictor_class(**predictor_kwargs, keep_history=plot is not None)
@@ -697,12 +703,16 @@ def dependency_monkey(
     if library_usage:
         if os.path.isfile(library_usage):
             try:
-                library_usage = json.loads(Path(library_usage).read_text())
+                with open(library_usage, "r") as f:
+                    library_usage = json.load(f)
             except Exception:
                 _LOGGER.error("Failed to load library usage file %r", library_usage)
                 raise
         else:
             library_usage = json.loads(library_usage)
+
+        # Show library usage in the final report.
+        parameters["library_usage"] = library_usage
 
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
     decision_type = DecisionType.by_name(decision_type)
