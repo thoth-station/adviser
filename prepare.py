@@ -57,7 +57,7 @@ def _prepare_application_stack(request_file_content: Dict[str, Any]) -> None:
     with open(os.path.join(_ADVISER_INPUTS_DIR, "Pipfile"), "w") as pf:
         pf.write(pipfile_content)
 
-    pipfile_lock_content = request_file_content["application_stack"]["requirements_lock"] or None
+    pipfile_lock_content = request_file_content["application_stack"]["requirements_lock"] or "null"
     with open(os.path.join(_ADVISER_INPUTS_DIR, "Pipfile.lock"), "w") as pf:
         pf.write(pipfile_lock_content)
 
@@ -77,9 +77,6 @@ def prepare_adviser(request_file_content: Dict[str, Any]) -> None:
 
 def prepare_provenance(request_file_content: Dict[str, Any]) -> None:
     """Prepare inputs for provenance-checker."""
-    if request_file_content.get("requirements_format") != "pipenv":
-        raise ValueError("Only Pipenv file accepted as provenance check inputs")
-
     _prepare_application_stack(request_file_content)
 
 
