@@ -6066,3 +6066,11 @@
 ## Release 0.24.1 (2021-02-09T10:13:09)
 ### Features
 * Thoth's additional features can be None
+
+## Release 0.24.2 (2021-02-16T08:47:12)
+### Features
+* Introduce a sieve to filter out legacy versions from the resolution (#1665)
+* Parameterize preparing adviser inputs
+* :arrow_up: Automatic update of dependencies by Kebechet (#1673)
+* Prepare inputs for adviser container run
+* Fix linkage in docs (#1663)
