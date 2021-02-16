@@ -1037,11 +1037,11 @@
         },
         "thoth-python": {
             "hashes": [
-                "sha256:d0a3312c0e7ad30ade787a04dbd3d3783e1823d4165fddefece1b586a61405a6",
-                "sha256:e01755362a8fdd84199cf685330271bbfc776fac50a5efdb735988c8995e46e3"
+                "sha256:51608c7507a96c889bfac765e7b03fb8d57ffcafefb32760186116de410f90ad",
+                "sha256:e1e5aa9eea50a61bcabdf8af44709bea0ae045b702537d9fee2f7cb2cc9d5d06"
             ],
             "index": "pypi",
-            "version": "==0.13.0"
+            "version": "==0.14.0"
         },
         "thoth-solver": {
             "hashes": [
@@ -1241,7 +1241,7 @@
                 "sha256:fbb17c0d0822684b7d6c09915677a32319f16ff1115df5ec05bdcaaee40b35f3",
                 "sha256:fff1f3a586246110f34dc762098b5afd2de88de507559e63553d7da643053786"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4.0'",
             "version": "==5.4"
         },
         "filelock": {
