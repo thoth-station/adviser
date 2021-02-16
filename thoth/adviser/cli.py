@@ -480,8 +480,7 @@ def advise(
     parameters["project"] = project.to_dict()
     if pipeline_config is not None:
         parameters["pipeline"] = pipeline_config.to_dict()
-    if library_usage:
-        parameters["library_usage"] = library_usage
+
     predictor_class, predictor_kwargs = _get_adviser_predictor(predictor, recommendation_type)
     predictor_kwargs = _get_predictor_kwargs(predictor_config) or predictor_kwargs
     predictor_instance = predictor_class(**predictor_kwargs, keep_history=plot is not None)
