@@ -29,6 +29,7 @@ from .locked import CutLockedSieve
 from .pandas import PandasPy36Sieve
 from .prereleases import CutPreReleasesSieve
 from .experimental_filter_conf_index import FilterConfiguredIndexSieve
+from .experimental_package_index import PackageIndexConfigurationSieve
 from .experimental_prereleases import SelectiveCutPreReleasesSieve
 from .setuptools import Py36SetuptoolsSieve
 from .solved import SolvedSieve
@@ -48,6 +49,7 @@ __all__ = [
     "SelectiveCutPreReleasesSieve",
     "FilterAssignedIndexSieve",
     "FilterConfiguredIndexSieve",
+    "PackageIndexConfigurationSieve",
     "CutLockedSieve",
     "PackageIndexSieve",
     "SolvedSieve",
