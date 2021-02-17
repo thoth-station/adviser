@@ -23,6 +23,7 @@ from .tf_21_h5py import TensorFlow21H5pyStep
 from .tf_21_urllib3 import TensorFlow21Urllib3Step
 from .tf_22_numpy import TensorFlow22NumPyStep
 from .tf_22_prob import TensorFlow22ProbabilityStep
+from .tf_24_numpy import TensorFlow24NumPyStep
 from .tf_avx2 import TensorFlowAVX2Step
 from .tf_rm_scipy import TensorFlowRemoveSciPyStep
 
@@ -34,6 +35,7 @@ __all__ = [
     "TensorFlow21Urllib3Step",
     "TensorFlow22NumPyStep",
     "TensorFlow22ProbabilityStep",
+    "TensorFlow24NumPyStep",
     "TensorFlowAVX2Step",
     "TensorFlowRemoveSciPyStep",
 ]

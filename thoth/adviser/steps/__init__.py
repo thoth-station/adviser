@@ -27,6 +27,7 @@ from .tensorflow import TensorFlowAVX2Step
 from .tensorflow import TensorFlow113NumPyStep
 from .tensorflow import TensorFlow114GastStep
 from .tensorflow import TensorFlow22NumPyStep
+from .tensorflow import TensorFlow24NumPyStep
 from .tensorflow import TensorFlowRemoveSciPyStep
 from .tensorflow import TensorFlow21H5pyStep
 
@@ -49,6 +50,7 @@ __all__ = [
     "TensorFlow21Urllib3Step",
     "TensorFlow21H5pyStep",
     "TensorFlow22ProbabilityStep",
+    "TensorFlow24NumPyStep",
     "TensorFlowAVX2Step",
     "TensorFlow113NumPyStep",
     "TensorFlow114GastStep",
