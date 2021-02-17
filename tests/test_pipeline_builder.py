@@ -228,27 +228,21 @@ class TestPipelineBuilder(AdviserTestCase):
         """Test building configuration."""
         # All test units do not register themselves - let's cherry-pick ones that should be present.
         # There are done 3 iterations in total during pipeline configuration creation.
-        flexmock(units.boots.Boot1).should_receive("should_include").and_return({"some_parameter": 1.0}).and_return(
-            None
-        ).and_return(None).times(3)
-        flexmock(units.pseudonyms.Pseudonym2).should_receive("should_include").and_return({}).and_return(
-            None
-        ).and_return(None).times(3)
-        flexmock(units.sieves.Sieve2).should_receive("should_include").and_return({"foo": "bar"}).and_return(
-            None
-        ).and_return(None).times(3)
-        flexmock(units.steps.Step1).should_receive("should_include").and_return({}).and_return(None).and_return(
-            None
-        ).times(3)
-        flexmock(units.strides.Stride2).should_receive("should_include").and_return({}).and_return(None).and_return(
-            None
-        ).times(3)
-        flexmock(units.strides.Stride1).should_receive("should_include").and_return(None).and_return(
+        flexmock(units.boots.Boot1).should_receive("should_include").and_yield(
+            {"some_parameter": 1.0}
+        ).and_yield().and_yield().times(3)
+        flexmock(units.pseudonyms.Pseudonym2).should_receive("should_include").and_yield(
+            {}
+        ).and_yield().and_yield().times(3)
+        flexmock(units.sieves.Sieve2).should_receive("should_include").and_yield(
+            {"foo": "bar"}
+        ).and_yield().and_yield().times(3)
+        flexmock(units.steps.Step1).should_receive("should_include").and_yield({}).and_yield().and_yield().times(3)
+        flexmock(units.strides.Stride2).should_receive("should_include").and_yield({}).and_yield().and_yield().times(3)
+        flexmock(units.strides.Stride1).should_receive("should_include").and_yield().and_yield(
             {"linus": "torvalds"}
-        ).and_return(None).times(3)
-        flexmock(units.wraps.Wrap2).should_receive("should_include").and_return({}).and_return(None).and_return(
-            None
-        ).times(3)
+        ).and_yield().times(3)
+        flexmock(units.wraps.Wrap2).should_receive("should_include").and_yield({}).and_yield().and_yield().times(3)
 
         # It is not relevant if adviser/dependency monkey is called in this case.
         pipeline = getattr(PipelineBuilder, pipeline_config_method)(
@@ -295,8 +289,8 @@ class TestPipelineBuilder(AdviserTestCase):
     @use_test_units
     def test_blocked_units(self, project: Project) -> None:
         """Test preventing a pipeline unit from being added to pipeline configuration."""
-        flexmock(units.boots.Boot1).should_receive("should_include").and_return({}).and_return(None).times(2)
-        flexmock(units.steps.Step1).should_receive("should_include").and_return({}).and_return(None).times(2)
+        flexmock(units.boots.Boot1).should_receive("should_include").and_yield({}).and_yield().times(2)
+        flexmock(units.steps.Step1).should_receive("should_include").and_yield({}).and_yield().times(2)
 
         pipeline = PipelineBuilder.get_adviser_pipeline_config(
             recommendation_type=RecommendationType.LATEST,

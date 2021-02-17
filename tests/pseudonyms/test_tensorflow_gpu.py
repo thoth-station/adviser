@@ -72,7 +72,7 @@ class TestTensorFlowGPUPseudonym(AdviserUnitTestCase):
         builder_context.recommendation_type = recommendation_type
         builder_context.project.runtime_environment.cuda_version = "10.1"
         assert builder_context.is_adviser_pipeline()
-        assert self.UNIT_TESTED.should_include(builder_context) == {}
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type,cuda_version",
@@ -94,7 +94,7 @@ class TestTensorFlowGPUPseudonym(AdviserUnitTestCase):
         builder_context.recommendation_type = recommendation_type
         builder_context.project.runtime_environment.cuda_version = cuda_version
         assert builder_context.is_adviser_pipeline() or builder_context.is_dependency_monkey_pipeline()
-        assert self.UNIT_TESTED.should_include(builder_context) is None
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == []
 
     def test_pre_run(self, context: Context) -> None:
         """Test initializing the pipeline unit."""

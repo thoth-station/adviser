@@ -38,33 +38,36 @@ class TestIntelTensorflowWrap(AdviserUnitTestCase):
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
         builder_context.recommendation_type = RecommendationType.STABLE
+        builder_context.project.runtime_environment.cuda_version = "9"
 
-        for package_name in ("tensorflow",):
-            pipeline_config = self.UNIT_TESTED.should_include(builder_context)
-            assert pipeline_config is not None
-            assert pipeline_config == {"package_name": package_name}
+        pipeline_config = list(self.UNIT_TESTED.should_include(builder_context))
+        assert {"package_name": "tensorflow"} in pipeline_config
+        assert {"package_name": "tensorflow-gpu"} in pipeline_config
+        assert len(pipeline_config) == 2
 
+        for item in pipeline_config:
             unit = self.UNIT_TESTED()
-            unit.update_configuration(pipeline_config)
-
+            unit.update_configuration(item)
             builder_context.add_unit(unit)
 
-        self.verify_multiple_should_include(builder_context)
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == [], "The unit must not be included"
 
     def test_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test including this pipeline unit."""
         builder_context.decision_type = None
         builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.project.runtime_environment.cuda_version = "9"
         assert builder_context.is_adviser_pipeline()
         assert not builder_context.is_dependency_monkey_pipeline()
-        assert self.UNIT_TESTED.should_include(builder_context) is not None
+        assert list(self.UNIT_TESTED.should_include(builder_context)) != []
 
     def test_no_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test not including this pipeline unit."""
         builder_context.decision_type = DecisionType.RANDOM
         builder_context.recommendation_type = None
         assert builder_context.is_dependency_monkey_pipeline()
-        assert self.UNIT_TESTED.should_include(builder_context) is None
+        assert not builder_context.is_adviser_pipeline()
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == []
 
     def test_run(self, state: State, context: Context) -> None:
         """Test running this wrap."""

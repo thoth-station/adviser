@@ -40,10 +40,10 @@ class TestPlatformBoot(AdviserUnitTestCase):
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test registering this unit."""
         builder_context.should_receive("is_included").and_return(False)
-        assert PlatformBoot.should_include(builder_context) == {}
+        assert list(PlatformBoot.should_include(builder_context)) == [{}]
 
         builder_context.should_receive("is_included").and_return(True)
-        assert PlatformBoot.should_include(builder_context) is None
+        assert list(PlatformBoot.should_include(builder_context)) == []
 
     def test_adjust(self, context: Context) -> None:
         """Test adjusting the runtime environment to a default if not provided explicitly."""

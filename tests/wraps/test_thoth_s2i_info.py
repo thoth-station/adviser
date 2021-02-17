@@ -42,7 +42,7 @@ class TestThothS2IWrap(AdviserUnitTestCase):
     def test_no_include(self, base_image: Optional[str], builder_context: PipelineBuilderContext) -> None:
         """Test not including the pipeline unit."""
         builder_context.project.runtime_environment.base_image = base_image
-        assert self.UNIT_TESTED.should_include(builder_context) is None
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == []
 
     def test_run(self, context: Context) -> None:
         """Test running and recommending to use Thoth's s2i base image."""

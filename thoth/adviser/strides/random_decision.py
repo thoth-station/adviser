@@ -21,7 +21,7 @@ import logging
 import random
 from typing import Any
 from typing import Dict
-from typing import Optional
+from typing import Generator
 from typing import TYPE_CHECKING
 
 import attr
@@ -41,8 +41,9 @@ class RandomDecisionStride(Stride):
     """Filter out states randomly."""
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Allow inclusion only per user request."""
+        yield from ()
         return None
 
     def run(self, state: State) -> None:

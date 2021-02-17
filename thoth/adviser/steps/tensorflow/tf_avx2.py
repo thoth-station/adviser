@@ -18,10 +18,11 @@
 """Recommend TensorFlow builds optimized for AVX2 enabled CPU processors."""
 
 from typing import Any
+from typing import Dict
+from typing import Generator
+from typing import List
 from typing import Optional
 from typing import Tuple
-from typing import List
-from typing import Dict
 from typing import TYPE_CHECKING
 import logging
 
@@ -72,25 +73,23 @@ class TensorFlowAVX2Step(Step):
     )
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register this pipeline unit for adviser and stable/testing recommendation types."""
-        if not builder_context.is_adviser_pipeline():
-            return None
-
-        if builder_context.recommendation_type == RecommendationType.LATEST:
-            return None
-
         cpu_tuple = (
             builder_context.project.runtime_environment.hardware.cpu_family,
             builder_context.project.runtime_environment.hardware.cpu_model,
         )
-        if cpu_tuple not in cls.AVX2_CPUS:
-            # No AVX2 support for the given CPU or no CPU info.
+
+        if (
+            builder_context.is_adviser_pipeline()
+            and builder_context.recommendation_type != RecommendationType.LATEST
+            and cpu_tuple in cls.AVX2_CPUS
+            and not builder_context.is_included(cls)
+        ):
+            yield {}
             return None
 
-        if not builder_context.is_included(cls):
-            return {}
-
+        yield from ()
         return None
 
     def run(

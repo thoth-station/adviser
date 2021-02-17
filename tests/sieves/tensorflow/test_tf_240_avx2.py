@@ -54,7 +54,7 @@ class TestTensorFlowAVX2Step(AdviserUnitTestCase):
         builder_context.project.runtime_environment.hardware.cpu_family = 0x0
         builder_context.project.runtime_environment.hardware.cpu_model = 0x0
         assert builder_context.is_adviser_pipeline()
-        assert self.UNIT_TESTED.should_include(builder_context) == {}
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type,cpu_family,cpu_model",
@@ -77,7 +77,7 @@ class TestTensorFlowAVX2Step(AdviserUnitTestCase):
         builder_context.recommendation_type = recommendation_type
         builder_context.project.runtime_environment.hardware.cpu_family = cpu_family
         builder_context.project.runtime_environment.hardware.cpu_model = cpu_model
-        assert self.UNIT_TESTED.should_include(builder_context) is None
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == []
 
     def test_tf_avx2(self, context: Context) -> None:
         """Test recommending TensorFlow with AVX2 support."""

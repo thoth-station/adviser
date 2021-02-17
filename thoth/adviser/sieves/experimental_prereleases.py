@@ -18,7 +18,6 @@
 """A sieve to filter out pre-releases, selectively."""
 
 import logging
-from typing import Optional
 from typing import Dict
 from typing import Any
 from typing import Generator
@@ -47,13 +46,14 @@ class SelectiveCutPreReleasesSieve(Sieve):
     )
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Enable or disable specific pre-releases for the given set of packages.."""
         if builder_context.project.prereleases_allowed:
             if builder_context.project.prereleases_allowed:
                 msg = "Ignoring selective pre-releases in [thoth] section as global allow_prereleases flag is set"
                 _LOGGER.warning(msg)
 
+            yield from ()
             return None
 
         if (
@@ -61,9 +61,10 @@ class SelectiveCutPreReleasesSieve(Sieve):
             or not builder_context.project.pipfile.thoth
             or not builder_context.project.pipfile.thoth.allow_prereleases
         ):
+            yield from ()
             return None
 
-        return {
+        yield {
             "package_name": None,
             "allow_prereleases": builder_context.project.pipfile.thoth.allow_prereleases,
         }

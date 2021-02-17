@@ -58,12 +58,12 @@ class TestThothS2IAbiCompatibilitySieve(AdviserUnitTestCase):
     def test_no_should_include(self, base_image: Optional[str], builder_context: PipelineBuilderContext) -> None:
         """Test not including this pipeline unit."""
         builder_context.project.runtime_environment.base_image = base_image
-        assert self.UNIT_TESTED.should_include(builder_context) is None
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == []
 
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test including this pipeline unit."""
         builder_context.project.runtime_environment.base_image = "quay.io/thoth-station/s2i-thoth-ubi8-py38:v0.23.0"
-        assert self.UNIT_TESTED.should_include(builder_context) == {}
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == [{}]
 
     def test_no_thoth_s2i_version(self, context: Context) -> None:
         """Test no Thoth S2I version present."""

@@ -17,8 +17,10 @@
 
 """A wrap that adds information about Thoth s2i used."""
 
+from typing import Any
+from typing import Dict
+from typing import Generator
 from typing import TYPE_CHECKING
-from typing import Optional, Dict, Any
 from voluptuous import Required
 from voluptuous import Schema
 
@@ -47,22 +49,20 @@ class ThothS2IInfoWrap(Wrap):
     )
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[Any, Any], None, None]:
         """Include this wrap in adviser if Thoth s2i is used.."""
-        if builder_context.is_included(cls):
-            return None
-
         base_image = builder_context.project.runtime_environment.base_image
-
-        if base_image and base_image.startswith(cls._THOTH_S2I_PREFIX):
+        if not builder_context.is_included(cls) and base_image and base_image.startswith(cls._THOTH_S2I_PREFIX):
             thoth_s2i_name = base_image.split(":", maxsplit=1)[0]
             thoth_s2i_name = thoth_s2i_name[len(cls._THOTH_S2I_BASE)]
-            return {
+            yield {
                 "message": "Check more information about the runtime environment used",
                 "link": jl(thoth_s2i_name),
                 "type": "WARNING",
             }
+            return None
 
+        yield from ()
         return None
 
     def run(self, state: State) -> None:

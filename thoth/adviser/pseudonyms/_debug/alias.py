@@ -21,7 +21,6 @@ import logging
 from typing import Any
 from typing import Dict
 from typing import Generator
-from typing import Optional
 from typing import Tuple
 from typing import TYPE_CHECKING
 
@@ -56,8 +55,9 @@ class AliasPseudonym(Pseudonym):
     )
 
     @classmethod
-    def should_include(cls, _: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, _: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register self, never."""
+        yield from ()
         return None
 
     def run(self, package_version: PackageVersion) -> Generator[Tuple[str, str, str], None, None]:

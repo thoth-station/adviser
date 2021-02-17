@@ -53,8 +53,9 @@ class VersionConstraintSieve(Sieve):
     _specifier = attr.ib(type=Optional[Specifier], default=None, init=False)
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include this sieve only if user explicitly asks for it."""
+        yield from ()
         return None
 
     def pre_run(self) -> None:

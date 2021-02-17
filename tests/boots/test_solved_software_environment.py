@@ -43,16 +43,16 @@ class TestSolvedSoftwareEnvironmentBoot(AdviserUnitTestCase):
         builder_context.project.runtime_environment.should_receive("is_fully_specified").with_args().and_return(
             True
         ).twice()
-        assert SolvedSoftwareEnvironmentBoot.should_include(builder_context) == {}
+        assert list(SolvedSoftwareEnvironmentBoot.should_include(builder_context)) == [{}]
         builder_context.add_unit(SolvedSoftwareEnvironmentBoot())
-        assert SolvedSoftwareEnvironmentBoot.should_include(builder_context) is None
+        assert list(SolvedSoftwareEnvironmentBoot.should_include(builder_context)) == []
 
     def test_should_include_not_fully_specified(self, builder_context: PipelineBuilderContext) -> None:
         """Test not registering this unit if supplied software environment is not fully specified."""
         builder_context.project.runtime_environment.should_receive("is_fully_specified").with_args().and_return(
             False
         ).once()
-        assert SolvedSoftwareEnvironmentBoot.should_include(builder_context) is None
+        assert list(SolvedSoftwareEnvironmentBoot.should_include(builder_context)) == []
 
     def test_run(self, context: Context) -> None:
         """Test if the given software environment is solved."""

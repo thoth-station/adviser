@@ -60,7 +60,7 @@ class TestPandasPy36Sieve(AdviserUnitTestCase):
         builder_context.project.runtime_environment.python_version = "3.6"
 
         assert builder_context.is_adviser_pipeline()
-        assert PandasPy36Sieve.should_include(builder_context) == {}
+        assert list(PandasPy36Sieve.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type,python_version",
@@ -83,7 +83,7 @@ class TestPandasPy36Sieve(AdviserUnitTestCase):
         builder_context.decision_type = decision_type
         builder_context.recommendation_type = recommendation_type
         builder_context.project.runtime_environment.python_version = python_version
-        assert PandasPy36Sieve.should_include(builder_context) is None
+        assert list(PandasPy36Sieve.should_include(builder_context)) == []
 
     @pytest.mark.parametrize("pandas_version", ["1.2.0", "2.0.0"])
     def test_run(self, context: Context, pandas_version: str) -> None:

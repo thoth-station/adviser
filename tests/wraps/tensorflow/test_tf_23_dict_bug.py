@@ -36,17 +36,19 @@ class TestTensorFlow23DictSummary(AdviserUnitTestCase):
         """Verify multiple should_include calls do not loop endlessly."""
         builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
 
-        for package_name in ("tensorflow", "tensorflow-cpu", "tensorflow-gpu", "intel-tensorflow"):
-            pipeline_config = self.UNIT_TESTED.should_include(builder_context)
-            assert pipeline_config is not None
-            assert pipeline_config == {"package_name": package_name}
+        pipeline_config = list(self.UNIT_TESTED.should_include(builder_context))
+        assert {"package_name": "tensorflow"} in pipeline_config
+        assert {"package_name": "tensorflow-cpu"} in pipeline_config
+        assert {"package_name": "tensorflow-gpu"} in pipeline_config
+        assert {"package_name": "intel-tensorflow"} in pipeline_config
+        assert len(pipeline_config) == 4
 
+        for item in pipeline_config:
             unit = self.UNIT_TESTED()
-            unit.update_configuration(pipeline_config)
-
+            unit.update_configuration(item)
             builder_context.add_unit(unit)
 
-        assert self.UNIT_TESTED.should_include(builder_context) is None, "The unit must not be included"
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == [], "The unit must not be included"
 
     def test_run_noop(self) -> None:
         """Test no justification added if TensorFlow 2.3 is not resolved."""

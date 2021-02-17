@@ -20,8 +20,10 @@
 https://software.intel.com/en-us/mkl-linux-developer-guide-setting-the-number-of-openmp-threads
 """
 
+from typing import Any
+from typing import Dict
+from typing import Generator
 from typing import TYPE_CHECKING
-from typing import Optional, Dict, Any
 
 from thoth.common import get_justification_link as jl
 
@@ -70,18 +72,15 @@ class MKLThreadsWrap(Wrap):
     ]
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[Any, Any], None, None]:
         """Include this wrap in adviser, once."""
-        units_included = builder_context.get_included_wraps(cls)
-        if len(units_included) == 4:
+        if not builder_context.is_included(cls) and not builder_context.is_included(cls):
+            yield {"package_name": "torch"}
+            yield {"package_name": "pytorch"}
+            yield {"package_name": "intel-tensorflow"}
             return None
-        elif len(units_included) == 0:
-            return {"package_name": "torch"}
-        elif len(units_included) == 1:
-            return {"package_name": "pytorch"}
-        elif len(units_included) == 2:
-            return {"package_name": "intel-tensorflow"}
 
+        yield from ()
         return None
 
     def run(self, state: State) -> None:

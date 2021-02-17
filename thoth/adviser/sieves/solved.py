@@ -21,7 +21,6 @@ import logging
 from typing import Any
 from typing import Dict
 from typing import Generator
-from typing import Optional
 from typing import Set
 from typing import Tuple
 from typing import TYPE_CHECKING
@@ -55,11 +54,13 @@ class SolvedSieve(Sieve):
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include solved pipeline sieve for adviser or Dependency Monkey on pipeline creation."""
         if not builder_context.is_included(cls):
-            return {}
+            yield {}
+            return None
 
+        yield from ()
         return None
 
     def pre_run(self) -> None:

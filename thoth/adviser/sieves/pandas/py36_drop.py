@@ -19,7 +19,6 @@
 
 import attr
 from typing import Any
-from typing import Optional
 from typing import Generator
 from typing import Dict
 from typing import TYPE_CHECKING
@@ -58,19 +57,19 @@ class PandasPy36Sieve(Sieve):
         super().pre_run()
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register this pipeline unit for adviser when Python 3.6 is used, not latest/testing recommendations."""
-        if not builder_context.is_adviser_pipeline() or builder_context.is_included(cls):
+        if (
+            builder_context.is_adviser_pipeline()
+            and not builder_context.is_included(cls)
+            and builder_context.recommendation_type not in (RecommendationType.LATEST, RecommendationType.TESTING)
+            and builder_context.project.runtime_environment.get_python_version_tuple() <= (3, 6)
+        ):
+            yield {}
             return None
 
-        if builder_context.recommendation_type in (RecommendationType.LATEST, RecommendationType.TESTING):
-            return None
-
-        if builder_context.project.runtime_environment.get_python_version_tuple() > (3, 6):
-            # Not a Python 3.6 or older environment.
-            return None
-
-        return {}
+        yield from ()
+        return None
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Do not use Pandas>=1.2 on Python 3.6."""

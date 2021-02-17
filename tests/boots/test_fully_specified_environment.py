@@ -41,16 +41,16 @@ class TestFullySpecifiedEnvironment(AdviserUnitTestCase):
         """Test registering this unit for adviser runs."""
         builder_context.should_receive("is_adviser_pipeline").and_return(True)
 
-        assert FullySpecifiedEnvironment.should_include(builder_context) == {}
+        assert list(FullySpecifiedEnvironment.should_include(builder_context)) == [{}]
 
         builder_context.add_unit(FullySpecifiedEnvironment())
 
-        assert FullySpecifiedEnvironment.should_include(builder_context) is None
+        assert list(FullySpecifiedEnvironment.should_include(builder_context)) == []
 
     def test_should_include_no_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test not registering the pipeline unit."""
         builder_context.should_receive("is_adviser_pipeline").and_return(False)
-        assert FullySpecifiedEnvironment.should_include(builder_context) is None
+        assert list(FullySpecifiedEnvironment.should_include(builder_context)) == []
 
     def test_run(self, context: Context) -> None:
         """Test if the given software environment is fully specified."""

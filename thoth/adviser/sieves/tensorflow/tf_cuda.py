@@ -19,7 +19,6 @@
 
 import attr
 from typing import Any
-from typing import Optional
 from typing import Tuple
 from typing import Generator
 from typing import Dict
@@ -95,37 +94,29 @@ class TensorFlowCUDASieve(Sieve):
         super().pre_run()
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register this pipeline unit for adviser when CUDA is present."""
-        if not builder_context.is_adviser_pipeline():
-            return None
-
-        if builder_context.recommendation_type in (RecommendationType.LATEST, RecommendationType.TESTING):
-            # Use any TensorFlow for testing purposes or when resolving latest stack.
-            return None
-
         cuda_version = builder_context.project.runtime_environment.cuda_version
-        if cuda_version is None:
-            # No CUDA available in the given runtime environment.
+        if (
+            builder_context.is_adviser_pipeline()
+            and not builder_context.is_included(cls)
+            and builder_context.recommendation_type not in (RecommendationType.LATEST, RecommendationType.TESTING)
+            and cuda_version is not None
+        ):
+            if cuda_version not in cls._KNOWN_CUDA:
+                _LOGGER.warning(
+                    "Unable to perform recommendations for TensorFlow based on CUDA version: "
+                    "unknown CUDA version supplied - see %s",
+                    jl("tf_unknown_cuda"),
+                )
+                yield from ()
+                return None
+
+            yield {"package_name": "tensorflow"}
+            yield {"package_name": "tensorflow-gpu"}
             return None
 
-        if cuda_version not in cls._KNOWN_CUDA:
-            _LOGGER.warning(
-                "Unable to perform recommendations for TensorFlow based on CUDA version: "
-                "unknown CUDA version supplied - see %s",
-                jl("tf_unknown_cuda"),
-            )
-            return None
-
-        # Include this pipeline units in two configurations for tensorflow and tensorflow-gpu.
-        included_units = builder_context.get_included_sieves(cls)
-        if len(included_units) == 2:
-            return None
-        if len(included_units) == 0:
-            return {"package_name": "tensorflow"}
-        elif len(included_units) == 1:
-            return {"package_name": "tensorflow-gpu"}
-
+        yield from ()
         return None
 
     def _log_unknown_tf_version(self, package_version: PackageVersion) -> None:

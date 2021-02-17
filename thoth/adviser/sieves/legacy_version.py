@@ -18,7 +18,6 @@
 """A sieve to filter out legacy versions."""
 
 import logging
-from typing import Optional
 from typing import Dict
 from typing import Any
 from typing import Generator
@@ -46,11 +45,13 @@ class LegacyVersionSieve(Sieve):
     CONFIGURATION_DEFAULT = {"package_name": None}
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include this sieve once, always."""
         if not builder_context.is_included(cls):
-            return {}
+            yield {}
+            return None
 
+        yield from ()
         return None
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:

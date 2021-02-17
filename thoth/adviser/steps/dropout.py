@@ -20,6 +20,7 @@
 import random
 
 from typing import Any
+from typing import Generator
 from typing import Optional
 from typing import Tuple
 from typing import List
@@ -56,8 +57,9 @@ class DropoutStep(Step):
     )
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Do not register the dropout step."""
+        yield from ()
         return None
 
     def run(

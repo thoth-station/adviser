@@ -18,9 +18,9 @@
 """A boot to check if GPU specific recommendations should be done."""
 
 import logging
-from typing import Optional
-from typing import Dict
 from typing import Any
+from typing import Dict
+from typing import Generator
 from typing import TYPE_CHECKING
 
 import attr
@@ -44,17 +44,16 @@ class GPUBoot(Boot):
     _JUSTIFICATION_LINK = jl("no_gpu")
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register self, always."""
-        if builder_context.is_included(cls):
-            return None
-
-        if (
+        if not builder_context.is_included(cls) and (
             builder_context.project.runtime_environment.cuda_version
             or builder_context.project.runtime_environment.hardware.gpu_model
         ):
-            return {}
+            yield {}
+            return None
 
+        yield from ()
         return None
 
     def run(self) -> None:

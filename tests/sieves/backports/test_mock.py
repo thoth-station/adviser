@@ -67,7 +67,7 @@ class TestMockBackportSieve(AdviserUnitTestCase):
         builder_context.decision_type = decision_type
 
         assert builder_context.is_dependency_monkey_pipeline() or builder_context.is_adviser_pipeline()
-        assert MockBackportSieve.should_include(builder_context) == {}
+        assert list(MockBackportSieve.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "python_version,recommendation_type,decision_type,develop",
@@ -94,7 +94,7 @@ class TestMockBackportSieve(AdviserUnitTestCase):
         builder_context.decision_type = decision_type
 
         assert builder_context.is_dependency_monkey_pipeline() or builder_context.is_adviser_pipeline()
-        assert MockBackportSieve.should_include(builder_context) is None
+        assert list(MockBackportSieve.should_include(builder_context)) == []
 
     def test_remove(self, context: Context) -> None:
         """Test removing importlib-resources dependency."""

@@ -18,9 +18,9 @@
 """A boot that checks for Pipfile hash and reports any mismatch to users.."""
 
 import logging
-from typing import Optional
-from typing import Dict
 from typing import Any
+from typing import Dict
+from typing import Generator
 from typing import TYPE_CHECKING
 
 from thoth.common import get_justification_link as jl
@@ -42,17 +42,17 @@ class PipfileHashBoot(Boot):
     _JUSTIFICATION_LINK = jl("pipfile_hash")
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register self, always."""
-        if builder_context.is_included(cls):
-            return None
-
         if (
-            builder_context.project.pipfile_lock is not None
+            not builder_context.is_included(cls)
+            and builder_context.project.pipfile_lock is not None
             and builder_context.project.pipfile_lock.meta.hash is not None
         ):
-            return {}
+            yield {}
+            return None
 
+        yield from ()
         return None
 
     def run(self) -> None:

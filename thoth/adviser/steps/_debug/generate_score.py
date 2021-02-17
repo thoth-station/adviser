@@ -19,6 +19,7 @@
 
 from typing import Any
 from typing import Optional
+from typing import Generator
 from typing import Tuple
 from typing import List
 from typing import Dict
@@ -100,8 +101,9 @@ class GenerateScoreStep(Step):
         pprint(self._history)
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register self, never."""
+        yield from ()
         return None
 
     def run(

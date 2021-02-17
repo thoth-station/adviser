@@ -21,7 +21,6 @@ import logging
 from typing import Any
 from typing import Dict
 from typing import Generator
-from typing import Optional
 from typing import TYPE_CHECKING
 
 import attr
@@ -59,13 +58,15 @@ class Functools32BackportSieve(Sieve):
         super().pre_run()
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include for Python 3.3 and above for adviser and dependency monkey runs."""
-        if builder_context.is_included(cls) or builder_context.project.runtime_environment.python_version is None:
+        if (
+            not builder_context.is_included(cls)
+            and builder_context.project.runtime_environment.python_version is not None
+            and builder_context.project.runtime_environment.get_python_version_tuple() >= (3, 2)
+        ):
+            yield {}
             return None
-
-        if builder_context.project.runtime_environment.get_python_version_tuple() >= (3, 2):
-            return {}
 
         return None
 

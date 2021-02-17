@@ -58,7 +58,7 @@ class TestTensorFlow22NumPyStep(AdviserUnitTestCase):
         builder_context.decision_type = None
         builder_context.recommendation_type = recommendation_type
         assert builder_context.is_adviser_pipeline()
-        assert TensorFlow22NumPyStep.should_include(builder_context) == {}
+        assert list(TensorFlow22NumPyStep.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type",
@@ -76,7 +76,7 @@ class TestTensorFlow22NumPyStep(AdviserUnitTestCase):
         """Test not including this pipeline unit step."""
         builder_context.decision_type = decision_type
         builder_context.recommendation_type = recommendation_type
-        assert TensorFlow22NumPyStep.should_include(builder_context) is None
+        assert list(TensorFlow22NumPyStep.should_include(builder_context)) == []
 
     @pytest.mark.parametrize(
         "tf_name,tf_version,np_version",

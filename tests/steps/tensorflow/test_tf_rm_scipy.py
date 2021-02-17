@@ -53,7 +53,7 @@ class TestTensorFlowRemoveSciPyStep(AdviserUnitTestCase):
         builder_context.recommendation_type = recommendation_type
         assert "scipy" not in builder_context.project.pipfile.packages
         assert builder_context.is_adviser_pipeline()
-        assert TensorFlowRemoveSciPyStep.should_include(builder_context) == {}
+        assert list(TensorFlowRemoveSciPyStep.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type,add_direct_scipy",
@@ -79,7 +79,7 @@ class TestTensorFlowRemoveSciPyStep(AdviserUnitTestCase):
             builder_context.project.add_package(package_name="scipy", package_version="==1.2.2", develop=False)
             assert "scipy" in builder_context.project.pipfile.packages.packages
 
-        assert TensorFlowRemoveSciPyStep.should_include(builder_context) is None
+        assert list(TensorFlowRemoveSciPyStep.should_include(builder_context)) == []
 
     @pytest.mark.parametrize(
         "tf_name,tf_version",

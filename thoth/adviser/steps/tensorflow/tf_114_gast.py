@@ -20,6 +20,7 @@
 import attr
 from typing import Any
 from typing import Optional
+from typing import Generator
 from typing import Tuple
 from typing import List
 from typing import Dict
@@ -58,17 +59,17 @@ class TensorFlow114GastStep(Step):
     _LINK = jl("tf_114_gast")
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register this pipeline unit for adviser if not using latest recommendations."""
         if (
-            not builder_context.is_adviser_pipeline()
-            or builder_context.recommendation_type == RecommendationType.LATEST
+            builder_context.is_adviser_pipeline()
+            and builder_context.recommendation_type != RecommendationType.LATEST
+            and not builder_context.is_included(cls)
         ):
+            yield {}
             return None
 
-        if not builder_context.is_included(cls):
-            return {}
-
+        yield from ()
         return None
 
     def pre_run(self) -> None:

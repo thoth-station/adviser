@@ -18,7 +18,6 @@
 """A sieve to filter out pre-releases in direct dependencies."""
 
 import logging
-from typing import Optional
 from typing import Dict
 from typing import Any
 from typing import Generator
@@ -42,17 +41,20 @@ class CutPreReleasesSieve(Sieve):
     CONFIGURATION_DEFAULT = {"package_name": None}
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include cut-prereleases pipeline sieve for adviser or Dependency Monkey if pre-releases are not allowed."""
         if builder_context.project.prereleases_allowed or (
             builder_context.project.pipfile.thoth and builder_context.project.pipfile.thoth.allow_prereleases
         ):
             _LOGGER.info("Project accepts pre-releases, skipping cutting pre-releases step")
+            yield from ()
             return None
 
         if not builder_context.is_included(cls) and not builder_context.project.prereleases_allowed:
-            return {}
+            yield {}
+            return None
 
+        yield from ()
         return None
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:

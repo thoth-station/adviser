@@ -74,7 +74,7 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
         builder_context.decision_type = None
         builder_context.recommendation_type = recommendation_type
         assert builder_context.is_adviser_pipeline()
-        assert SecurityIndicatorStep.should_include(builder_context) == {}
+        assert list(SecurityIndicatorStep.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "recommendation_type", [RecommendationType.LATEST, RecommendationType.PERFORMANCE, RecommendationType.TESTING]
@@ -87,7 +87,7 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
         """Test not including this pipeline unit step."""
         builder_context.decision_type = None
         builder_context.recommendation_type = recommendation_type
-        assert SecurityIndicatorStep.should_include(builder_context) is None
+        assert list(SecurityIndicatorStep.should_include(builder_context)) == []
 
     def test_security_indicator_scoring(self) -> None:
         """Make sure we do score security indicators when the info is available."""

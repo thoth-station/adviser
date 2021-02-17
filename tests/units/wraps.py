@@ -19,7 +19,7 @@
 
 from typing import Any
 from typing import Dict
-from typing import Optional
+from typing import Generator
 from typing import TYPE_CHECKING
 
 from thoth.adviser.wrap import Wrap
@@ -45,8 +45,10 @@ class Wrap1(Wrap):
     )
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
+        yield from ()
+        return None
 
     def run(self, state: State) -> None:
         """Run noop method."""
@@ -59,8 +61,10 @@ class Wrap2(Wrap):
     CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str})
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
+        yield from ()
+        return None
 
     def run(self, state: State) -> None:
         """Run noop method."""

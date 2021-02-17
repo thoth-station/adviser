@@ -18,7 +18,9 @@
 """A wrap that recommends to use Thoth's s2i if users do not use it."""
 
 from typing import TYPE_CHECKING
-from typing import Optional, Dict, Any
+from typing import Generator
+from typing import Dict
+from typing import Any
 
 from thoth.common import get_justification_link as jl
 
@@ -42,16 +44,16 @@ class ThothS2IWrap(Wrap):
     ]
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[Any, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[Any, Any], None, None]:
         """Include this wrap in adviser if Thoth s2i is not used.."""
-        if builder_context.is_included(cls):
+        base_image = builder_context.project.runtime_environment.base_image
+        if not builder_context.is_included(cls) and (
+            base_image is None or (base_image and not base_image.startswith(cls._THOTH_S2I_PREFIX))
+        ):
+            yield {}
             return None
 
-        base_image = builder_context.project.runtime_environment.base_image
-
-        if base_image is None or (base_image and not base_image.startswith(cls._THOTH_S2I_PREFIX)):
-            return {}
-
+        yield from ()
         return None
 
     def run(self, state: State) -> None:

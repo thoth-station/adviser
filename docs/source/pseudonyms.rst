@@ -92,8 +92,10 @@ An example implementation
         def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
             """Register self."""
             if builder_context.is_adviser_pipeline() and not builder_context.is_included(cls):
-                return {}
+                yield {}
+                return None
 
+            yield from ()
             return None
 
         def run(self, package_version: PackageVersion) -> Generator[Tuple[str, str, str], None, None]:

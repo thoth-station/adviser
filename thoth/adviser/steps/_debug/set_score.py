@@ -18,6 +18,7 @@
 """A step that is setting score for packages."""
 
 from typing import Any
+from typing import Generator
 from typing import Optional
 from typing import Tuple
 from typing import List
@@ -68,8 +69,9 @@ class SetScoreStep(Step):
     }
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register self, never."""
+        yield from ()
         return None
 
     def pre_run(self) -> None:

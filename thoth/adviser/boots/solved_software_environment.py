@@ -18,7 +18,7 @@
 """A boot to check for solved software environment before running any resolution."""
 
 import logging
-from typing import Optional
+from typing import Generator
 from typing import Dict
 from typing import Any
 from typing import TYPE_CHECKING
@@ -42,14 +42,13 @@ class SolvedSoftwareEnvironmentBoot(Boot):
     _JUSTIFICATION_LINK = jl("solved_sw_env")
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register self, always."""
-        if not builder_context.project.runtime_environment.is_fully_specified():
+        if builder_context.project.runtime_environment.is_fully_specified() and not builder_context.is_included(cls):
+            yield {}
             return None
 
-        if not builder_context.is_included(cls):
-            return {}
-
+        yield from ()
         return None
 
     def run(self) -> None:

@@ -20,7 +20,6 @@
 from typing import Any
 from typing import Dict
 from typing import Generator
-from typing import Optional
 from typing import TYPE_CHECKING
 import logging
 
@@ -57,29 +56,24 @@ class TensorFlow240AVX2IllegalInstructionSieve(Sieve):
     }
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register this pipeline unit for adviser and stable/testing recommendation types."""
-        if not builder_context.is_adviser_pipeline():
-            return None
-
-        if builder_context.recommendation_type == RecommendationType.LATEST:
-            return None
-
         cpu_tuple = (
             builder_context.project.runtime_environment.hardware.cpu_family,
             builder_context.project.runtime_environment.hardware.cpu_model,
         )
 
-        if any(i is None for i in cpu_tuple):
+        if (
+            builder_context.is_adviser_pipeline()
+            and not builder_context.is_included(cls)
+            and builder_context.recommendation_type != RecommendationType.LATEST
+            and all(i is not None for i in cpu_tuple)
+            and cpu_tuple not in TensorFlowAVX2Step.AVX2_CPUS
+        ):
+            yield {}
             return None
 
-        if cpu_tuple in TensorFlowAVX2Step.AVX2_CPUS:
-            # AVX2 supported, TensorFlow will work.
-            return None
-
-        if not builder_context.is_included(cls):
-            return {}
-
+        yield from ()
         return None
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:

@@ -43,17 +43,17 @@ class TestTensorFlowCUDASieve(AdviserUnitTestCase):
         builder_context.recommendation_type = RecommendationType.STABLE
         builder_context.project.runtime_environment.cuda_version = "10.1"
 
-        for package_name in ("tensorflow", "tensorflow-gpu"):
-            pipeline_config = self.UNIT_TESTED.should_include(builder_context)
-            assert pipeline_config is not None
-            assert pipeline_config == {"package_name": package_name}
+        pipeline_config = list(self.UNIT_TESTED.should_include(builder_context))
+        assert {"package_name": "tensorflow"} in pipeline_config
+        assert {"package_name": "tensorflow-gpu"} in pipeline_config
+        assert len(pipeline_config) == 2
 
+        for item in pipeline_config:
             unit = self.UNIT_TESTED()
-            unit.update_configuration(pipeline_config)
-
+            unit.update_configuration(item)
             builder_context.add_unit(unit)
 
-        assert self.UNIT_TESTED.should_include(builder_context) is None, "The unit must not be included"
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == [], "The unit must not be included"
 
     def test_recommendation_types_considered(self) -> None:
         """Test recommendation types that were considered during implementation of this pipeline unit.
@@ -86,7 +86,7 @@ class TestTensorFlowCUDASieve(AdviserUnitTestCase):
         builder_context.recommendation_type = recommendation_type
         builder_context.project.runtime_environment.cuda_version = cuda_version
         assert builder_context.is_adviser_pipeline()
-        assert TensorFlowCUDASieve.should_include(builder_context) is not None
+        assert list(TensorFlowCUDASieve.should_include(builder_context)) != []
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type,cuda_version",
@@ -110,7 +110,7 @@ class TestTensorFlowCUDASieve(AdviserUnitTestCase):
         builder_context.recommendation_type = recommendation_type
         builder_context.project.runtime_environment.cuda_version = cuda_version
         assert builder_context.is_adviser_pipeline() or builder_context.is_dependency_monkey_pipeline()
-        assert TensorFlowCUDASieve.should_include(builder_context) is None
+        assert list(TensorFlowCUDASieve.should_include(builder_context)) == []
 
     @pytest.mark.parametrize(
         "cuda_version,expected_tf_1_support,expected_tf_2_support",

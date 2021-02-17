@@ -67,7 +67,7 @@ class Unit(metaclass=abc.ABCMeta):
     _DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         raise NotImplementedError(
             f"Please implement method to register pipeline unit {cls.__name__!r} to pipeline configuration"

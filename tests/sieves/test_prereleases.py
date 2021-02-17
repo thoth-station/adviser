@@ -107,7 +107,7 @@ tensorflow = true
         builder_context.project = Project.from_strings(self._CASE_DISALLOWED_PIPFILE)
 
         assert builder_context.is_adviser_pipeline()
-        assert CutPreReleasesSieve.should_include(builder_context) == {}
+        assert list(CutPreReleasesSieve.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "recommendation_type",
@@ -129,7 +129,7 @@ tensorflow = true
         builder_context.project = Project.from_strings(self._CASE_ALLOWED_PIPFILE)
 
         assert builder_context.is_adviser_pipeline()
-        assert CutPreReleasesSieve.should_include(builder_context) is None
+        assert list(CutPreReleasesSieve.should_include(builder_context)) == []
 
     def test_not_include_thoth_prereleases_allowed(self, builder_context: PipelineBuilderContext) -> None:
         """Test not including this pipeline unit."""
@@ -137,7 +137,7 @@ tensorflow = true
         builder_context.project = Project.from_strings(self._CASE_SELECTIVE_PRERELEASES_ALLOWED_PIPFILE)
 
         assert builder_context.is_adviser_pipeline()
-        assert CutPreReleasesSieve.should_include(builder_context) is None
+        assert list(CutPreReleasesSieve.should_include(builder_context)) == []
 
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""

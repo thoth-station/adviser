@@ -49,18 +49,18 @@ class TensorFlowGPUPseudonym(Pseudonym):
     _pseudonyms = attr.ib(type=Optional[FrozenSet[str]], default=None, init=False)
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register self."""
-        if builder_context.project.runtime_environment.cuda_version is None:
-            return None
-
         if (
-            builder_context.is_adviser_pipeline()
+            builder_context.project.runtime_environment.cuda_version is not None
+            and builder_context.is_adviser_pipeline()
             and builder_context.recommendation_type != RecommendationType.LATEST
             and not builder_context.is_included(cls)
         ):
-            return {}
+            yield {}
+            return None
 
+        yield from ()
         return None
 
     def pre_run(self) -> None:

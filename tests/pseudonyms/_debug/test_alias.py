@@ -51,7 +51,7 @@ class TestAliasPseudonym(AdviserUnitTestCase):
         builder_context.decision_type = None
         builder_context.recommendation_type = RecommendationType.STABLE
         assert builder_context.is_adviser_pipeline()
-        assert self.UNIT_TESTED.should_include(builder_context) is None
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == []
 
     @pytest.mark.parametrize(
         "tf_version,index_url",

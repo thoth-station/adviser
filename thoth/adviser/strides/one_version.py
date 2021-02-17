@@ -25,6 +25,7 @@ pipeline to produce just one software stack with tensorflow==2.0.0, other softwa
 import logging
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import Optional
 from typing import TYPE_CHECKING
 
@@ -55,8 +56,9 @@ class OneVersionStride(Stride):
     CONFIGURATION_SCHEMA = Schema({Required("package_name"): str, "only_once": bool})
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include this pipeline unit only if user asks for it explicitly."""
+        yield from ()
         return None
 
     def pre_run(self) -> None:

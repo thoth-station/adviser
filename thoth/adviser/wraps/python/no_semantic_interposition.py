@@ -19,7 +19,7 @@
 
 from typing import Any
 from typing import Dict
-from typing import Optional
+from typing import Generator
 from typing import TYPE_CHECKING
 
 from thoth.common import get_justification_link as jl
@@ -47,21 +47,19 @@ class NoSemanticInterpositionWrap(Wrap):
     ]
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include this wrap in adviser for RHEL/UBI 8.2."""
-        if builder_context.is_included(cls):
-            return None
-
-        if not builder_context.is_adviser_pipeline():
-            return None
-
         if (
-            builder_context.project.runtime_environment.operating_system.name in ("rhel", "ubi")
+            not builder_context.is_included(cls)
+            and builder_context.is_adviser_pipeline()
+            and builder_context.project.runtime_environment.operating_system.name in ("rhel", "ubi")
             and builder_context.project.runtime_environment.operating_system.version == "8.2"
             and builder_context.project.runtime_environment.python_version != "3.8"
         ):
-            return {}
+            yield {}
+            return None
 
+        yield from ()
         return None
 
     def run(self, state: State) -> None:

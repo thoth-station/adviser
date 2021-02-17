@@ -19,6 +19,7 @@
 
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import List
 from typing import Optional
 from typing import Tuple
@@ -44,8 +45,10 @@ class Stride1(Stride):
     CONFIGURATION_SCHEMA: Schema = Schema({Required("linus"): object, Required("package_name"): SchemaAny(str, None)})
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
+        yield from ()
+        return None
 
     def run(self, state: State) -> Optional[Tuple[float, List[Dict[str, str]]]]:
         """Run noop method."""
@@ -58,8 +61,10 @@ class Stride2(Stride):
     CONFIGURATION_SCHEMA: Schema = Schema({Required("foo"): object, Required("package_name"): SchemaAny(str, None)})
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if this pipeline unit should be included in the pipeline configuration."""
+        yield from ()
+        return None
 
     def run(self, state: State) -> Optional[Tuple[float, List[Dict[str, str]]]]:
         """Run noop method."""

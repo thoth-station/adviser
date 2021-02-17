@@ -63,7 +63,7 @@ class TestPy36SetuptoolsSieve(AdviserUnitTestCase):
         builder_context.project.runtime_environment.python_version = "3.6"
 
         assert builder_context.is_adviser_pipeline() or builder_context.is_dependency_monkey_pipeline()
-        assert Py36SetuptoolsSieve.should_include(builder_context) == {}
+        assert list(Py36SetuptoolsSieve.should_include(builder_context)) == [{}]
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type,python_version",
@@ -84,7 +84,7 @@ class TestPy36SetuptoolsSieve(AdviserUnitTestCase):
         builder_context.decision_type = decision_type
         builder_context.recommendation_type = recommendation_type
         builder_context.project.runtime_environment.python_version = python_version
-        assert Py36SetuptoolsSieve.should_include(builder_context) is None
+        assert list(Py36SetuptoolsSieve.should_include(builder_context)) == []
 
     def test_filter(self, context: Context) -> None:
         """Test filtering out setuptools that do not work with Python 3.6."""

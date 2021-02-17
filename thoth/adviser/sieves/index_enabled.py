@@ -44,11 +44,13 @@ class PackageIndexSieve(Sieve):
     _cached_records: Dict[str, Optional[bool]] = attr.ib(default=attr.Factory(dict), kw_only=True)
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Remove indexes which are not enabled in pipeline configuration."""
         if not builder_context.is_included(cls):
-            return {}
+            yield {}
+            return None
 
+        yield from ()
         return None
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:

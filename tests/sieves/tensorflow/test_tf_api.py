@@ -35,22 +35,32 @@ class TestTensorFlowAPISieve(AdviserUnitTestCase):
 
     UNIT_TESTED = TensorFlowAPISieve
 
+    _PACKAGES_AFFECTED = [
+        "tensorflow",
+        "tensorflow-gpu",
+        "intel-tensorflow",
+        "tensorflow-cpu",
+    ]
+
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
         builder_context.recommendation_type = RecommendationType.STABLE
         builder_context.library_usage = {"report": {"flask": ["flask.Flask"], "tensorflow": ["tensorflow."]}}
 
-        for package_name in self.UNIT_TESTED._PACKAGES_AFFECTED:
-            pipeline_config = self.UNIT_TESTED.should_include(builder_context)
-            assert pipeline_config is not None
-            assert pipeline_config == {"package_name": package_name}
+        pipeline_config = list(self.UNIT_TESTED.should_include(builder_context))
+        assert len(self._PACKAGES_AFFECTED) == len(pipeline_config)
 
+        for package_name in self._PACKAGES_AFFECTED:
+            assert package_name
+            assert {"package_name": package_name} in pipeline_config
+
+        for item in pipeline_config:
+            assert pipeline_config
             unit = self.UNIT_TESTED()
-            unit.update_configuration(pipeline_config)
-
+            unit.update_configuration(item)
             builder_context.add_unit(unit)
 
-        assert self.UNIT_TESTED.should_include(builder_context) is None, "The unit must not be included"
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == [], "The unit must not be included"
 
     def test_recommendation_types_considered(self) -> None:
         """Test recommendation types that were considered during implementation of this pipeline unit.
@@ -76,7 +86,7 @@ class TestTensorFlowAPISieve(AdviserUnitTestCase):
         builder_context.recommendation_type = recommendation_type
         builder_context.library_usage = {"report": {"tensorflow": ["tensorflow.v2.__version__"]}}
         assert builder_context.is_adviser_pipeline()
-        assert self.UNIT_TESTED.should_include(builder_context) is not None
+        assert list(self.UNIT_TESTED.should_include(builder_context)) != []
 
     @pytest.mark.parametrize(
         "recommendation_type,decision_type,library_usage",
@@ -100,7 +110,7 @@ class TestTensorFlowAPISieve(AdviserUnitTestCase):
         builder_context.recommendation_type = recommendation_type
         builder_context.library_usage = library_usage
         assert builder_context.is_adviser_pipeline() or builder_context.is_dependency_monkey_pipeline()
-        assert self.UNIT_TESTED.should_include(builder_context) is None
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == []
 
     def test_sieve(self, context: Context) -> None:
         """Test sieving TensorFlow based on API symbols."""

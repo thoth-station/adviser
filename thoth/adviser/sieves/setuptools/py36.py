@@ -18,7 +18,6 @@
 """A sieve to filter out old setuptools that do not work with Python 3.6."""
 
 import logging
-from typing import Optional
 from typing import Dict
 from typing import Any
 from typing import Generator
@@ -51,14 +50,13 @@ class Py36SetuptoolsSieve(Sieve):
     _message_logged = attr.ib(type=bool, default=False, init=False)
 
     @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Optional[Dict[str, Any]]:
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include for Python 3.6 and adviser/dependency monkey runs."""
-        if builder_context.is_included(cls):
+        if not builder_context.is_included(cls) and builder_context.project.runtime_environment.python_version == "3.6":
+            yield {}
             return None
 
-        if builder_context.project.runtime_environment.python_version == "3.6":
-            return {}
-
+        yield from ()
         return None
 
     def pre_run(self) -> None:
