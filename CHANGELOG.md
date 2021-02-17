@@ -6083,3 +6083,13 @@
 * Show used library usage in the resulting JSON report
 * Properly open files for writing in prepare script
 * :arrow_up: Automatic update of dependencies by Kebechet (#1681)
+
+## Release 0.25.0 (2021-02-17T13:10:51)
+### Features
+* Remove sleep part from the prepare script used for debugging (#1693)
+* Add a sieve for filtering packages based on index configured (#1692)
+* Introduce a sieve for filtering packages not coming from an index
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Rewrite method logic to bypass black issues
+* Yield configuration for each pipeline unit that should be instantiated
+* Document strict index configuration feature
