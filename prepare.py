@@ -6,7 +6,6 @@
 
 """Prepare inputs to the adviser container."""
 
-import time
 import json
 import os
 from typing import Any
@@ -18,16 +17,12 @@ _ADVISER_WORKDIR = os.getenv("THOTH_ADVISER_WORKDIR", "/opt/app-root/src")
 _ADVISER_INPUTS_DIR = os.path.join(_ADVISER_WORKDIR, "input")
 _ADVISER_SUBCOMMAND = os.getenv("THOTH_ADVISER_SUBCOMMAND")
 _ENABLE_PREPARE = bool(int(os.getenv("THOTH_ADVISER_ENABLE_PREPARE", "0")))
-_HANG = bool(int(os.getenv("THOTH_ADVISER_PREPARE_HANG", "0")))
 
 
 def main() -> None:
     """Prepare input files for adviser."""
     if not _ENABLE_PREPARE:
         return
-
-    if _HANG:
-        time.sleep(float("inf"))
 
     os.makedirs(_ADVISER_INPUTS_DIR, exist_ok=False)
 
