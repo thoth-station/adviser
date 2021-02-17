@@ -83,14 +83,15 @@ class SecurityIndicatorStep(Step):
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register only if we are explicitly recommending secure stacks."""
-        if (
-            builder_context.recommendation_type in (RecommendationType.SECURITY, RecommendationType.STABLE)
-            and not builder_context.is_included(cls)
-        ):
-            yield {}
+        if builder_context.recommendation_type not in (RecommendationType.SECURITY, RecommendationType.STABLE):
+            yield from ()
             return None
 
-        yield from ()
+        if builder_context.is_included(cls):
+            yield from ()
+            return None
+
+        yield {}
         return None
 
     @classmethod
