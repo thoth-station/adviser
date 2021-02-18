@@ -47,7 +47,6 @@ __all__ = [
     "LegacyVersionSieve",
     "CutPreReleasesSieve",
     "SelectiveCutPreReleasesSieve",
-    "FilterAssignedIndexSieve",
     "FilterConfiguredIndexSieve",
     "PackageIndexConfigurationSieve",
     "CutLockedSieve",
