@@ -6093,3 +6093,11 @@
 * Rewrite method logic to bypass black issues
 * Yield configuration for each pipeline unit that should be instantiated
 * Document strict index configuration feature
+
+## Release 0.25.1 (2021-02-18T09:00:13)
+### Features
+* Increase timeout for a test case (#1701)
+* Remove parts introduced by wrong rebase
+* Remove invalid entry from sieves
+### Bug Fixes
+* Fix issues caused when Pipfile.lock is set to null by prepare.py
