@@ -102,7 +102,10 @@ def _instantiate_project(
             requirements_locked = requirements_locked.replace("\\n", "\n")
 
     pipfile = Pipfile.from_string(requirements)
-    pipfile_lock = PipfileLock.from_string(requirements_locked, pipfile) if requirements_locked else None
+    pipfile_lock = None
+    if requirements_locked and requirements_locked != "null":
+        pipfile_lock = PipfileLock.from_string(requirements_locked, pipfile)
+
     project = Project(
         pipfile=pipfile,
         pipfile_lock=pipfile_lock,
