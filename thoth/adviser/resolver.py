@@ -1308,7 +1308,7 @@ class Resolver:
                         "link": link,
                     }
                 )
-                raise CannotProduceStack(msg + f"- see {link}", stack_info=self.context.stack_info)
+                raise CannotProduceStack(msg + f" - see {link}", stack_info=self.context.stack_info)
 
             if self.context.stack_info:
                 report.set_stack_info(self.context.stack_info)
