@@ -9,3 +9,4 @@ coverage.xml
 .vscode
 .idea
 .env
+.thoth_last_analysis_id
