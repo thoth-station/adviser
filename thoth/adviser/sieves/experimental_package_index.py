@@ -18,12 +18,15 @@
 """A sieve to filter out packages based on index configuration."""
 
 import logging
-from typing import Dict
 from typing import Any
+from typing import Dict
 from typing import Generator
+from typing import Set
+from typing import Tuple
 from typing import TYPE_CHECKING
 
 import attr
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from voluptuous import Schema
 from voluptuous import Required
@@ -42,6 +45,9 @@ class PackageIndexConfigurationSieve(Sieve):
 
     CONFIGURATION_DEFAULT = {"package_name": None, "index_url": None}
     CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str, Required("index_url"): str})
+    _JUSTIFICATION_LINK = jl("index_package")
+
+    packages_seen = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), init=False)
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
@@ -59,15 +65,32 @@ class PackageIndexConfigurationSieve(Sieve):
         yield from ()
         return None
 
+    def pre_run(self) -> None:
+        """Initialize this pipeline unit before each run."""
+        self.packages_seen.clear()
+        super().pre_run()
+
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Cut-off pre-releases if project does not explicitly allows them."""
         for package_version in package_versions:
             if package_version.index.url != self.configuration["index_url"]:
-                _LOGGER.warning(
-                    "Skipping package %r as it does not used configured index %r",
-                    package_version.to_tuple(),
-                    self.configuration["index_url"],
-                )
+                package_tuple = package_version.to_tuple()
+
+                if package_tuple not in self.packages_seen:
+                    self.packages_seen.add(package_tuple)
+                    msg = (
+                        f"Skipping package {package_tuple} as it does not used configured "
+                        f"index {self.configuration['index_url']}"
+                    )
+                    _LOGGER.warning("%s - see %s", msg, self._JUSTIFICATION_LINK)
+                    self.context.stack_info.append(
+                        {
+                            "message": msg,
+                            "type": "WARNING",
+                            "link": self._JUSTIFICATION_LINK,
+                        }
+                    )
+
                 continue
 
             yield package_version
