@@ -155,8 +155,11 @@ tensorflow = "*"
         sieve = self.UNIT_TESTED()
         sieve.update_configuration({"package_name": None, "allowed_indexes": {"https://pypi.org/simple"}})
 
+        assert not context.stack_info
         with self.UNIT_TESTED.assigned_context(context):
             assert list(sieve.run(p for p in [pv])) == [pv]
+
+        assert not context.stack_info, "No stack information should be adjusted"
 
     def test_filter(self, context: Context) -> None:
         """Test removing dependencies based on index configured."""
@@ -172,5 +175,9 @@ tensorflow = "*"
             {"package_name": None, "allowed_indexes": {"https://tensorflow.pypi.thoth-station.ninja/simple"}}
         )
 
+        assert not context.stack_info
         with self.UNIT_TESTED.assigned_context(context):
             assert list(sieve.run(p for p in [pv])) == []
+
+        assert len(context.stack_info) == 1
+        assert self.verify_justification_schema(context.stack_info)
