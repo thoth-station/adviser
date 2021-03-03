@@ -144,8 +144,12 @@ disable_index_adjustment = true
             {"package_name": "tensorflow", "index_url": context.project.pipfile.packages["tensorflow"].index.url}
         )
 
+        assert not context.stack_info
         with self.UNIT_TESTED.assigned_context(context):
             assert list(sieve.run(p for p in [pv])) == []
+
+        assert len(context.stack_info) == 1
+        assert self.verify_justification_schema(context.stack_info)
 
     def test_no_filter_index_url(self, context: Context) -> None:
         """Test no removals if pre-releases are allowed."""
@@ -163,5 +167,8 @@ disable_index_adjustment = true
         sieve = self.UNIT_TESTED()
         sieve.update_configuration({"package_name": "tensorflow", "index_url": source.url})
 
+        assert not context.stack_info
         with self.UNIT_TESTED.assigned_context(context):
             assert list(sieve.run(p for p in [pv])) == [pv]
+
+        assert not context.stack_info, "No justification should be provided"
