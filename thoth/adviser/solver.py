@@ -89,7 +89,7 @@ class PackageVersionDependencyParser(DependencyParser):  # type: ignore
     def parse(self, dependencies: List[PackageVersion]) -> Generator[Requirement, None, None]:
         """Parse the given list of PackageVersion objects."""
         for package_version in dependencies:
-            version = package_version.version if package_version.version != "*" else ""
+            version = package_version.version if package_version.version not in ("*", None) else ""
             dependency = PythonDependencyParser.parse_python(package_version.name + version)
             yield dependency
 
