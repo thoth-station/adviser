@@ -716,12 +716,15 @@ def dependency_monkey(
         parameters["library_usage"] = library_usage
 
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
+    parameters["runtime_environment"] = runtime_environment.to_dict()
+
     decision_type = DecisionType.by_name(decision_type)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
     project = _instantiate_project(requirements, runtime_environment=runtime_environment)
-    pipeline_config = None if pipeline is None else PipelineBuilder.load(pipeline)
-
+    parameters["requirements"] = project.pipfile.to_dict()
     parameters["project"] = project.to_dict()
+
+    pipeline_config = None if pipeline is None else PipelineBuilder.load(pipeline)
     if pipeline_config is not None:
         parameters["pipeline"] = pipeline_config.to_dict()
 
@@ -758,6 +761,7 @@ def dependency_monkey(
     except (FileNotFoundError, IOError):
         # IOError raised if context is too large to be handled with open.
         context_content = json.loads(context)
+    parameters["context"] = context_content
 
     dependency_monkey_runner = DependencyMonkey(
         resolver=resolver,
