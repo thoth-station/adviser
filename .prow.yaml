@@ -25,23 +25,7 @@ presubmits:
       containers:
         - image: quay.io/goern/thoth-pytest:v0.13.0-dev
           command:
-            - "/bin/run-pytest"
-          resources:
-            requests:
-              memory: "2Gi"
-              cpu: "2"
-
-  - name: thoth-mypy-py38
-    decorate: true
-    skip_report: false
-    always_run: true
-    context: aicoe-ci/prow/mypy
-    spec:
-      containers:
-        - image: quay.io/thoth-station/thoth-pytest-ubi8-py38:v0.12.5
-          command:
-            - "/usr/local/bin/mypy"
-            - "."
+             - "/bin/run-pytest"
           resources:
             requests:
               memory: "2Gi"
