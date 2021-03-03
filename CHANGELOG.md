@@ -6101,3 +6101,19 @@
 * Remove invalid entry from sieves
 ### Bug Fixes
 * Fix issues caused when Pipfile.lock is set to null by prepare.py
+
+## Release 0.26.0 (2021-03-03T21:48:47)
+### Features
+* Provide justification when filtering based on selective pre-releases (#1718)
+* Add justification for index configuration filter (#1719)
+* Fix when package version is any version
+* Add justification for filtering packages based on index configuration
+* Fixes related to thoth-common adjustments (#1717)
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Remove bits related to preparation (#1708)
+* Propagate parsed Dependency Monkey inputs to the resulting JSON report
+* :arrow_up: Automatic update of dependencies by Kebechet
+### Bug Fixes
+* Add space after error message
+### Improvements
+* :sparkles: :arrow_up: some standard updates
