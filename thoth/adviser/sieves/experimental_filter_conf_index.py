@@ -18,12 +18,15 @@
 """A sieve to filter out packages coming from other indexes than the ones configured."""
 
 import logging
-from typing import Dict
 from typing import Any
+from typing import Dict
 from typing import Generator
+from typing import Set
+from typing import Tuple
 from typing import TYPE_CHECKING
 
 import attr
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from voluptuous import Schema
 from voluptuous import Required
@@ -42,6 +45,9 @@ class FilterConfiguredIndexSieve(Sieve):
 
     CONFIGURATION_DEFAULT = {"package_name": None, "allowed_indexes": None}
     CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): None, Required("allowed_indexes"): {str}})
+    _JUSTIFICATION_LINK = jl("index_conf")
+
+    packages_seen = attr.ib(type=Set[Tuple[str, str, str]], default=attr.Factory(set), init=False)
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
@@ -60,6 +66,11 @@ class FilterConfiguredIndexSieve(Sieve):
         yield from ()
         return None
 
+    def pre_run(self) -> None:
+        """Initialize this unit before each run."""
+        self.packages_seen.clear()
+        super().pre_run()
+
     def to_dict(self) -> Dict[str, Any]:
         """Turn this pipeline step into its dictionary representation, override to have unit JSON serializable."""
         configuration = {}
@@ -73,7 +84,20 @@ class FilterConfiguredIndexSieve(Sieve):
         """Cut-off packages that are not coming from an allowed index."""
         for package_version in package_versions:
             if package_version.index.url not in self.configuration["allowed_indexes"]:
-                _LOGGER.warning("Removing package %r as it does not use enabled index", package_version.to_tuple())
+                package_tuple = package_version.to_tuple()
+
+                if package_tuple not in self.packages_seen:
+                    self.packages_seen.add(package_tuple)
+                    msg = f"Removing package {package_tuple} as it does not use enabled index"
+                    _LOGGER.warning("%s - see %s", msg, self._JUSTIFICATION_LINK)
+                    self.context.stack_info.append(
+                        {
+                            "type": "WARNING",
+                            "message": msg,
+                            "link": self._JUSTIFICATION_LINK,
+                        }
+                    )
+
                 continue
 
             yield package_version
