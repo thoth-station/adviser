@@ -209,6 +209,7 @@ python_version = "3.7"
                 "mkl_version": None,
                 "openblas_version": None,
                 "openmpi_version": None,
+                "recommendation_type": None,
             },
         }
 
@@ -369,6 +370,7 @@ python_version = "3.7"
                     "openmpi_version": None,
                     "mkl_version": None,
                     "python_version": None,
+                    "recommendation_type": None,
                     "platform": None,
                 },
             },
@@ -510,6 +512,7 @@ python_version = "3.7"
                     "openmpi_version": None,
                     "openblas_version": None,
                     "python_version": None,
+                    "recommendation_type": None,
                 },
             },
             "score": 0.0,
