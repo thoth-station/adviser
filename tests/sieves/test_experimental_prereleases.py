@@ -19,12 +19,12 @@
 
 import itertools
 
-import flexmock
 import pytest
 
-from thoth.adviser.sieves import SelectiveCutPreReleasesSieve
+from thoth.adviser.context import Context
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
+from thoth.adviser.sieves import SelectiveCutPreReleasesSieve
 from thoth.python import Source
 from thoth.python import PackageVersion
 from thoth.python import Project
@@ -151,7 +151,9 @@ flask = false
         assert list(self.UNIT_TESTED.should_include(builder_context)) == []
 
     @pytest.mark.parametrize("package_name,package_version", [("tensorflow", "2.4.0rc1"), ("flask", "1.0")])
-    def test_remove_pre_releases_disallowed_noop(self, package_name: str, package_version: str) -> None:
+    def test_remove_pre_releases_disallowed_noop(
+        self, context: Context, package_name: str, package_version: str
+    ) -> None:
         """Test NOT removing dependencies based on pre-release configuration."""
         pv = PackageVersion(
             name=package_name,
@@ -161,12 +163,15 @@ flask = false
         )
 
         project = Project.from_strings(self._CASE_GLOBAL_DISALLOWED_PIPFILE)
-        context = flexmock(project=project)
+        context.project = project
         sieve = self.UNIT_TESTED()
         sieve.update_configuration({"package_name": None, "allow_prereleases": project.pipfile.thoth.allow_prereleases})
 
+        assert not context.stack_info
         with self.UNIT_TESTED.assigned_context(context):
             assert list(sieve.run(p for p in [pv])) == [pv]
+
+        assert not context.stack_info, "No stack information should be provided"
 
     @pytest.mark.parametrize(
         "package_name,package_version",
@@ -175,7 +180,7 @@ flask = false
             ("numpy", "1.0dev0"),  # Disabled implicitly.
         ],
     )
-    def test_pre_releases_disallowed_removal(self, package_name: str, package_version: str) -> None:
+    def test_pre_releases_disallowed_removal(self, context: Context, package_name: str, package_version: str) -> None:
         """Test no removals if pre-releases are allowed."""
         pv = PackageVersion(
             name=package_name,
@@ -185,9 +190,13 @@ flask = false
         )
 
         project = Project.from_strings(self._CASE_GLOBAL_DISALLOWED_PIPFILE)
-        context = flexmock(project=project)
+        context.project = project
         sieve = self.UNIT_TESTED()
         sieve.update_configuration({"package_name": None, "allow_prereleases": project.pipfile.thoth.allow_prereleases})
 
+        assert not context.stack_info
         with self.UNIT_TESTED.assigned_context(context):
             assert list(sieve.run(p for p in [pv])) == []
+
+        assert len(context.stack_info) == 1
+        assert self.verify_justification_schema(context.stack_info)
