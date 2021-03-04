@@ -45,10 +45,8 @@ class Functools32BackportSieve(Sieve):
     """
 
     CONFIGURATION_DEFAULT = {"package_name": "functools32"}
-    _MESSAGE = (
-        f"Dependency 'functools32' removed: functools is available in Python standard "
-        f"library starting Python 3.2 - {jl('backports')}"
-    )
+    _MESSAGE = "Dependency 'functools32' removed: functools is available in Python standard library starting Python 3.2"
+    _JUSTIFICATION_LINK = jl("backports")
 
     _logged = attr.ib(default=False, type=bool, init=False)
 
@@ -73,8 +71,10 @@ class Functools32BackportSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Remove dependency functools32 for newer Python versions."""
         if not self._logged:
-            self.context.stack_info.append({"type": "WARNING", "message": self._MESSAGE})
-            _LOGGER.warning(self._MESSAGE)
+            self.context.stack_info.append(
+                {"type": "WARNING", "message": self._MESSAGE, "link": self._JUSTIFICATION_LINK}
+            )
+            _LOGGER.warning("%s - see %s", self._MESSAGE, self._JUSTIFICATION_LINK)
             self._logged = True
 
         raise SkipPackage
