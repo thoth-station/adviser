@@ -39,7 +39,8 @@ _LOGGER = logging.getLogger(__name__)
 class PipfileHashBoot(Boot):
     """A boot that checks for Pipfile hash and reports any mismatch to users.."""
 
-    _JUSTIFICATION_LINK = jl("pipfile_hash")
+    _JUSTIFICATION_PIPFILE_HASH_LINK = jl("pipfile_hash")
+    _JUSTIFICATION_RM_USER_STACK = jl("rm_user_stack")
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
@@ -59,10 +60,24 @@ class PipfileHashBoot(Boot):
         """Check for platform configured and adjust to the default one if not provided by user."""
         pipfile_hash = self.context.project.pipfile_lock.meta.hash.get("sha256")
         computed_hash = self.context.project.pipfile.hash().get("sha256")
+
         if pipfile_hash != computed_hash:
             msg = (
                 f"Pipfile hash stated in the Pipfile.lock ({pipfile_hash[:6]}) does not correspond to the "
                 f"hash computed ({computed_hash[:6]}) - was Pipfile adjusted?"
             )
-            _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_LINK)
-            self.context.stack_info.append({"type": "WARNING", "message": msg, "link": self._JUSTIFICATION_LINK})
+            _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_PIPFILE_HASH_LINK)
+            self.context.stack_info.append(
+                {"type": "WARNING", "message": msg, "link": self._JUSTIFICATION_PIPFILE_HASH_LINK}
+            )
+
+            msg = "Detected changes in the lock file invalidate using user's stack as a base"
+            self.context.stack_info.append(
+                {
+                    "type": "WARNING",
+                    "message": msg,
+                    "link": self._JUSTIFICATION_RM_USER_STACK,
+                }
+            )
+            _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_RM_USER_STACK)
+            self.context.project.pipfile_lock = None

@@ -70,9 +70,16 @@ class TestPipifleHashBoot(AdviserUnitTestCase):
         with unit.assigned_context(context):
             unit.run()
 
-        assert len(context.stack_info) == 1
+        assert len(context.stack_info) == 2
         assert set(context.stack_info[0].keys()) == {"link", "message", "type"}
         assert context.stack_info[0]["message"] == (
             "Pipfile hash stated in the Pipfile.lock (foo) does not correspond to the "
             "hash computed (001e85) - was Pipfile adjusted?"
         )
+
+        assert set(context.stack_info[1].keys()) == {"link", "message", "type"}
+        assert (
+            context.stack_info[1]["message"]
+            == "Detected changes in the lock file invalidate using user's stack as a base"
+        )
+        assert self.verify_justification_schema(context.stack_info)
