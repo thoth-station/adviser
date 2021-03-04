@@ -20,7 +20,6 @@
 import os
 import json
 import logging
-from itertools import chain
 from typing import Any
 from typing import Dict
 from typing import List
@@ -133,7 +132,6 @@ class Product:
         # Keep thoth section untouched.
         advised_project.pipfile.thoth = context.project.pipfile.thoth
 
-        justification_metadata = []
         justification_metadata: List[Dict[str, Any]] = []
         metadata = os.getenv("THOTH_ADVISER_METADATA")
         if metadata:
@@ -146,7 +144,7 @@ class Product:
         return cls(
             project=advised_project,
             score=state.score,
-            justification=list(chain(justification_metadata, state.justification)),
+            justification=justification_metadata + state.justification,
             advised_runtime_environment=state.advised_runtime_environment,
             advised_manifest_changes=state.advised_manifest_changes,
         )

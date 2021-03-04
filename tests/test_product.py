@@ -143,10 +143,19 @@ black = true
             os_version="31",
             python_version="3.7",
         ).and_return("python_version >= '3.7'").once()
-        product = Product.from_final_state(state=state, context=context)
+
+        assert "THOTH_ADVISER_METADATA" not in os.environ
+        metadata_justification = {"thoth.adviser": {"justification": [{"bar": "baz"}]}}
+        os.environ["THOTH_ADVISER_METADATA"] = json.dumps(metadata_justification)
+        try:
+            product = Product.from_final_state(state=state, context=context)
+        finally:
+            os.environ.pop("THOTH_ADVISER_METADATA")
 
         assert product.score == state.score
-        assert product.justification == state.justification
+        assert product.justification == list(
+            chain(metadata_justification["thoth.adviser"]["justification"], state.justification)
+        )
         assert product.advised_runtime_environment == state.advised_runtime_environment
         assert product.project.to_dict() == {
             "requirements": {
@@ -259,34 +268,6 @@ black = true
             "advised_runtime_environment": {"hello": "thoth"},
             "advised_manifest_changes": advised_manifest_changes,
         }
-
-    def test_to_dict_metadata(self) -> None:
-        """Test conversion of this product into a dictionary representation with metadata."""
-        project = flexmock()
-        project.should_receive("to_dict").with_args().and_return({"baz": "bar"}).once()
-
-        justification = [{"foo": "bar"}]
-
-        product = Product(
-            justification=justification,
-            project=project,
-            score=0.999,
-        )
-
-        assert "THOTH_ADVISER_METADATA" not in os.environ
-        metadata_justification = [{"bar": "baz"}]
-        os.environ["THOTH_ADVISER_METADATA"] = json.dumps(metadata_justification)
-
-        try:
-            assert product.to_dict() == {
-                "score": 0.999,
-                "project": {"baz": "bar"},
-                "justification": list(chain(metadata_justification, justification)),
-                "advised_runtime_environment": {"hello": "thoth"},
-                "advised_manifest_changes": None,
-            }
-        except Exception:
-            os.environ.pop("THOTH_ADVISER_METADATA")
 
     def test_environment_markers(self, context: Context) -> None:
         """Test handling of environment markers across multiple runs."""

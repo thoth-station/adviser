@@ -143,7 +143,7 @@ class TestReport(AdviserTestCase):
             "discarded_final_states_count": 0,
         }
 
-    def test_to_dict_metadata(self) -> None:
+    def test_to_dict_metadata(self, pipeline_config: PipelineConfig) -> None:
         """Test conversion to a dict with passed metadata."""
         report = Report(count=3, pipeline=pipeline_config)
 
@@ -183,3 +183,4 @@ class TestReport(AdviserTestCase):
             }
         except Exception:
             os.environ.pop("THOTH_ADVISER_METADATA")
+            raise
