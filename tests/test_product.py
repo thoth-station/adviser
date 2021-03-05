@@ -47,6 +47,9 @@ tensorflow = "*"
 
 [requires]
 python_version = "3.7"
+
+[thoth.allow_prereleases]
+black = true
 """
 
     def test_from_final_state(self, context: Context) -> None:
@@ -162,6 +165,11 @@ python_version = "3.7"
                         "name": "pypi-org-simple",
                     },
                 ],
+                "thoth": {
+                    "allow_prereleases": {
+                        "black": True
+                    },
+                }
             },
             "requirements_locked": {
                 "_meta": {
@@ -216,7 +224,7 @@ python_version = "3.7"
     def test_to_dict(self) -> None:
         """Test conversion of this product into a dictionary representation."""
         project = flexmock()
-        project.should_receive("to_dict").with_args().and_return({"baz": "bar"}).once()
+        project.should_receive("to_dict").with_args(keep_thoth_section=True).and_return({"baz": "bar"}).once()
 
         advised_runtime_environment = flexmock()
         advised_runtime_environment.should_receive("to_dict").with_args().and_return({"hello": "thoth"}).once()
@@ -329,6 +337,10 @@ python_version = "3.7"
                             "verify_ssl": True,
                         },
                     ],
+                    "thoth": {
+                        "allow_prereleases": {},
+                        "disable_index_adjustment": False,
+                    }
                 },
                 "requirements_locked": {
                     "_meta": {
@@ -482,6 +494,10 @@ python_version = "3.7"
                         {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True},
                         {"name": "pypi-org-simple", "url": "https://pypi.org/simple", "verify_ssl": True},
                     ],
+                    "thoth": {
+                        "allow_prereleases": {},
+                        "disable_index_adjustment": False,
+                    }
                 },
                 "requirements_locked": {
                     "_meta": {

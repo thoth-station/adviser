@@ -28,8 +28,10 @@ from typing import Set
 import attr
 
 from thoth.common import RuntimeEnvironment
-from thoth.python import Project
 from thoth.python import PackageVersion
+from thoth.python import Pipfile
+from thoth.python import PipfileLock
+from thoth.python import Project
 from thoth.storages.exceptions import NotFoundError
 
 from .context import Context
@@ -127,6 +129,9 @@ class Product:
             runtime_environment=context.project.runtime_environment,
         )
 
+        # Keep thoth section untouched.
+        advised_project.pipfile.thoth = context.project.pipfile.thoth
+
         return cls(
             project=advised_project,
             score=state.score,
@@ -142,7 +147,7 @@ class Product:
             advised_runtime_environment = self.advised_runtime_environment.to_dict()
 
         return {
-            "project": self.project.to_dict(),
+            "project": self.project.to_dict(keep_thoth_section=True),
             "score": self.score,
             "justification": self.justification,
             "advised_runtime_environment": advised_runtime_environment,
