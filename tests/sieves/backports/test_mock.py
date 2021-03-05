@@ -115,3 +115,4 @@ class TestMockBackportSieve(AdviserUnitTestCase):
                 list(unit.run(pv for pv in (package_version,)))
 
         assert len(context.stack_info) == 1
+        assert self.verify_justification_schema(context.stack_info)

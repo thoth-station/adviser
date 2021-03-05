@@ -47,8 +47,9 @@ class ImportlibMetadataBackportSieve(Sieve):
     CONFIGURATION_DEFAULT = {"package_name": "importlib-metadata"}
     _MESSAGE = (
         "Dependency 'importlib-metadata' removed: importlib.metadata is available in "
-        f"Python standard library starting Python 3.8 - see {jl('backports')}"
+        "Python standard library starting Python 3.8"
     )
+    _JUSTIFICATION_LINK = jl("backports")
 
     _logged = attr.ib(default=False, type=bool, init=False)
 
@@ -74,8 +75,10 @@ class ImportlibMetadataBackportSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Remove dependency importlib-metadata for newer Python versions."""
         if not self._logged:
-            self.context.stack_info.append({"type": "WARNING", "message": self._MESSAGE})
-            _LOGGER.warning(self._MESSAGE)
+            self.context.stack_info.append(
+                {"type": "WARNING", "message": self._MESSAGE, "link": self._JUSTIFICATION_LINK}
+            )
+            _LOGGER.warning("%s - see %s", self._MESSAGE, self._JUSTIFICATION_LINK)
             self._logged = True
 
         raise SkipPackage

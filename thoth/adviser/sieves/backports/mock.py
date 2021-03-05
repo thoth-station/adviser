@@ -45,10 +45,8 @@ class MockBackportSieve(Sieve):
     """
 
     CONFIGURATION_DEFAULT = {"package_name": "mock"}
-    _MESSAGE = (
-        f"Dependency 'mock' removed: unittest.mock is available in Python "
-        f"standard library starting Python 3.3 - see {jl('backports')}"
-    )
+    _MESSAGE = "Dependency 'mock' removed: unittest.mock is available in Python standard library starting Python 3.3"
+    _JUSTIFICATION_LINK = jl("backports")
 
     _logged = attr.ib(default=False, type=bool, init=False)
 
@@ -74,8 +72,10 @@ class MockBackportSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Remove dependency mock for newer Python versions."""
         if not self._logged:
-            self.context.stack_info.append({"type": "WARNING", "message": self._MESSAGE})
-            _LOGGER.warning(self._MESSAGE)
+            self.context.stack_info.append(
+                {"type": "WARNING", "message": self._MESSAGE, "link": self._JUSTIFICATION_LINK}
+            )
+            _LOGGER.warning("%s - see %s", self._MESSAGE, self._JUSTIFICATION_LINK)
             self._logged = True
 
         raise SkipPackage

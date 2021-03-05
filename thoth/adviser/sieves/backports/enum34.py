@@ -45,10 +45,8 @@ class Enum34BackportSieve(Sieve):
     """
 
     CONFIGURATION_DEFAULT = {"package_name": "enum34"}
-    _MESSAGE = (
-        f"Dependency 'enum34' removed: emum34 is available in Python "
-        f"standard library starting Python 3.4 - see {jl('backports')}"
-    )
+    _MESSAGE = "Dependency 'enum34' removed: emum34 is available in Python standard library starting Python 3.4"
+    _JUSTIFICATION_LINK = jl("backports")
 
     _logged = attr.ib(default=False, type=bool, init=False)
 
@@ -74,8 +72,10 @@ class Enum34BackportSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Remove dependency enum34 for newer Python versions."""
         if not self._logged:
-            self.context.stack_info.append({"type": "WARNING", "message": self._MESSAGE})
-            _LOGGER.warning(self._MESSAGE)
+            self.context.stack_info.append(
+                {"type": "WARNING", "message": self._MESSAGE, "link": self._JUSTIFICATION_LINK}
+            )
+            _LOGGER.warning("%s - see %s", self._MESSAGE, self._JUSTIFICATION_LINK)
             self._logged = True
 
         raise SkipPackage
