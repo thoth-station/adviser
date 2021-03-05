@@ -54,7 +54,7 @@ class ThothS2IInfoWrap(Wrap):
         base_image = builder_context.project.runtime_environment.base_image
         if not builder_context.is_included(cls) and base_image and base_image.startswith(cls._THOTH_S2I_PREFIX):
             thoth_s2i_name = base_image.split(":", maxsplit=1)[0]
-            thoth_s2i_name = thoth_s2i_name[len(cls._THOTH_S2I_BASE)]
+            thoth_s2i_name = thoth_s2i_name[len(cls._THOTH_S2I_BASE) :]
             yield {
                 "message": "Check more information about the runtime environment used",
                 "link": jl(thoth_s2i_name),
