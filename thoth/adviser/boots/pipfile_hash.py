@@ -81,3 +81,42 @@ class PipfileHashBoot(Boot):
             )
             _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_RM_USER_STACK)
             self.context.project.pipfile_lock = None
+
+        if (
+            self.context.cli_parameters.get("dev", False)
+            and self.context.project.pipfile.dev_packages.packages
+            and self.context.project.pipfile_lock
+            and not self.context.project.pipfile_lock.dev_packages.packages
+        ):
+            self.context.project.pipfile_lock = None
+            msg = (
+                "User's lock file submitted does not provide development dependencies, discarding the "
+                "lock file provided as the resolution will consider also development dependencies"
+            )
+            _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_RM_USER_STACK)
+            self.context.stack_info.append(
+                {
+                    "type": "WARNING",
+                    "message": msg,
+                    "link": self._JUSTIFICATION_RM_USER_STACK,
+                }
+            )
+        elif (
+            not self.context.cli_parameters.get("dev", False)
+            and self.context.project.pipfile_lock
+            and self.context.project.pipfile_lock.dev_packages.packages
+        ):
+            self.context.project.pipfile_lock = None
+            msg = (
+                "User's lock file submitted has locked development dependencies but the resolution was "
+                "triggered without requesting to resolve development dependencies, the submitted lock file will "
+                "not be considered"
+            )
+            _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_RM_USER_STACK)
+            self.context.stack_info.append(
+                {
+                    "type": "WARNING",
+                    "message": msg,
+                    "link": self._JUSTIFICATION_RM_USER_STACK,
+                }
+            )
