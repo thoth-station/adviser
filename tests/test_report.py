@@ -117,7 +117,9 @@ class TestReport(AdviserTestCase):
 
         project = flexmock()
         project_dict = {"aresto momentum": "avada kedavra"}
-        project.should_receive("to_dict").with_args().and_return(project_dict).twice()  # In test and in the report.
+        project.should_receive("to_dict").with_args(keep_thoth_section=True).and_return(
+            project_dict
+        ).twice()  # In test and in the report.
 
         product = Product(
             project=project,
