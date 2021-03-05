@@ -83,3 +83,91 @@ class TestPipifleHashBoot(AdviserUnitTestCase):
             == "Detected changes in the lock file invalidate using user's stack as a base"
         )
         assert self.verify_justification_schema(context.stack_info)
+
+    def test_run_dev(self, context: Context) -> None:
+        """Test discarding user's lock file if development dependencies are not present in lock but provided."""
+        pipfile = str(self.data_dir / "projects" / "dev" / "Pipfile")
+        pipfile_lock = str(self.data_dir / "projects" / "dev" / "Pipfile.lock")
+
+        project = Project.from_files(pipfile_path=pipfile, pipfile_lock_path=pipfile_lock)
+
+        assert project.pipfile.dev_packages.packages
+        assert project.pipfile_lock.dev_packages.packages
+
+        # Remove packages.
+        project.pipfile_lock.dev_packages.packages.clear()
+        context.cli_parameters["dev"] = True
+
+        context.project = project
+
+        unit = self.UNIT_TESTED()
+        with unit.assigned_context(context):
+            unit.run()
+
+        assert project.pipfile.dev_packages.packages
+        assert not project.pipfile_lock, "Lock file was not removed from the input"
+        assert len(context.stack_info) == 1
+        assert self.verify_justification_schema(context.stack_info)
+
+    def test_run_dev_no_dev(self, context: Context) -> None:
+        """Test discarding user's lock file if development dependencies are present but no --dev flag provided."""
+        pipfile = str(self.data_dir / "projects" / "dev" / "Pipfile")
+        pipfile_lock = str(self.data_dir / "projects" / "dev" / "Pipfile.lock")
+
+        project = Project.from_files(pipfile_path=pipfile, pipfile_lock_path=pipfile_lock)
+
+        assert project.pipfile.dev_packages.packages
+        assert project.pipfile_lock.dev_packages.packages
+
+        context.cli_parameters["dev"] = False
+        context.project = project
+        unit = self.UNIT_TESTED()
+        with unit.assigned_context(context):
+            unit.run()
+
+        assert project.pipfile.dev_packages.packages
+        assert not project.pipfile_lock, "Lock file was not removed from the input"
+        assert len(context.stack_info) == 1
+        assert self.verify_justification_schema(context.stack_info)
+
+    def test_run_dev_noop(self, context: Context) -> None:
+        """Test not discarding user's lock file if development dependencies are present in lock."""
+        pipfile = str(self.data_dir / "projects" / "dev" / "Pipfile")
+        pipfile_lock = str(self.data_dir / "projects" / "dev" / "Pipfile.lock")
+
+        project = Project.from_files(pipfile_path=pipfile, pipfile_lock_path=pipfile_lock)
+
+        assert project.pipfile.dev_packages.packages
+        assert project.pipfile_lock.dev_packages.packages
+
+        context.project = project
+        context.cli_parameters["dev"] = True
+        unit = self.UNIT_TESTED()
+        with unit.assigned_context(context):
+            unit.run()
+
+        assert project.pipfile.dev_packages.packages
+        assert project.pipfile_lock
+        assert project.pipfile_lock.dev_packages.packages
+        assert len(context.stack_info) == 0
+
+    def test_run_dev_noop_no_dev(self, context: Context) -> None:
+        """Test not discarding user's lock file if development dependencies are present in lock."""
+        pipfile = str(self.data_dir / "projects" / "dev" / "Pipfile")
+        pipfile_lock = str(self.data_dir / "projects" / "dev" / "Pipfile.lock")
+
+        project = Project.from_files(pipfile_path=pipfile, pipfile_lock_path=pipfile_lock)
+
+        assert project.pipfile.dev_packages.packages
+        assert project.pipfile_lock.dev_packages.packages
+
+        context.project = project
+        project.pipfile_lock.dev_packages.packages.clear()
+        context.cli_parameters["dev"] = False
+        unit = self.UNIT_TESTED()
+        with unit.assigned_context(context):
+            unit.run()
+
+        assert project.pipfile.dev_packages.packages
+        assert project.pipfile_lock
+        assert len(context.stack_info) == 0
