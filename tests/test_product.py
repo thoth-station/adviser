@@ -166,10 +166,8 @@ black = true
                     },
                 ],
                 "thoth": {
-                    "allow_prereleases": {
-                        "black": True
-                    },
-                }
+                    "allow_prereleases": {"black": True},
+                },
             },
             "requirements_locked": {
                 "_meta": {
@@ -340,7 +338,7 @@ black = true
                     "thoth": {
                         "allow_prereleases": {},
                         "disable_index_adjustment": False,
-                    }
+                    },
                 },
                 "requirements_locked": {
                     "_meta": {
@@ -497,7 +495,7 @@ black = true
                     "thoth": {
                         "allow_prereleases": {},
                         "disable_index_adjustment": False,
-                    }
+                    },
                 },
                 "requirements_locked": {
                     "_meta": {
