@@ -29,8 +29,6 @@ import attr
 
 from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
-from thoth.python import Pipfile
-from thoth.python import PipfileLock
 from thoth.python import Project
 from thoth.storages.exceptions import NotFoundError
 
