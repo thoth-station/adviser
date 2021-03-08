@@ -58,7 +58,7 @@ class ThothS2IInfoWrap(Wrap):
             yield {
                 "message": "Check more information about the runtime environment used",
                 "link": jl(thoth_s2i_name),
-                "type": "WARNING",
+                "type": "INFO",
             }
             return None
 
