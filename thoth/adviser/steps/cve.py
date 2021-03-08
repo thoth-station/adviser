@@ -123,6 +123,6 @@ class CvePenalizationStep(Step):
                 record["package_name"] = package_version.name
                 record["link"] = self._JUSTIFICATION_LINK
 
-            return penalization, cve_records
+            return max(penalization, -1.0), cve_records
 
         return None
