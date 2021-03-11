@@ -79,6 +79,10 @@ class PipelineUnitConfigurationSchemaError(PipelineUnitError):
     """An exception raised when pipeline unit configuration does not match schema declared."""
 
 
+class PrescriptionSchemaError(PipelineUnitError):
+    """An exception raised adviser prescription schema is not valid."""
+
+
 class BootError(PipelineUnitError):
     """An exception raised when pipeline boot unit fails unexpectedly."""
 

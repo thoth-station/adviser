@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019, 2020 Fridolin Pokorny
+# Copyright(C) 2021 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,15 +18,22 @@
 """A base class for implementing strides."""
 
 import abc
+from typing import Any
+from typing import Dict
+from typing import Generator
+from typing import TYPE_CHECKING
 
 import attr
 
-from .state import State
-from .unit import Unit
+from thoth.adviser.state import State
+from .unit import UnitPrescription
+
+if TYPE_CHECKING:
+    from ...pipeline_builder import PipelineBuilderContext
 
 
 @attr.s(slots=True)
-class Stride(Unit):
+class StridePrescription(UnitPrescription):
     """Stride base class implementation."""
 
     @staticmethod
@@ -34,6 +41,20 @@ class Stride(Unit):
         """Check if this unit is of type stride."""
         return True
 
+    @classmethod
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
+        """Check if the given pipeline unit should be included in the given pipeline configuration."""
+        if cls._should_include_base(builder_context):
+            yield {}
+            return None
+
+        yield from ()
+        return None
+
     @abc.abstractmethod
     def run(self, state: State) -> None:
         """Run main entry-point for strides."""
+        if not self._run_state(state):
+            return None
+
+        self._run_base()

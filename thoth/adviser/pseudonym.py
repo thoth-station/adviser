@@ -36,6 +36,11 @@ class Pseudonym(Unit):
     # Pseudonym is always specific to a package.
     CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str})
 
+    @staticmethod
+    def is_pseudonym_unit_type() -> bool:
+        """Check if this unit is of type pseudonym."""
+        return True
+
     @abc.abstractmethod
     def run(self, package_version: PackageVersion) -> Generator[Tuple[str, str, str], None, None]:
         """Run main entry-point for pseudonyms to map packages to their counterparts."""

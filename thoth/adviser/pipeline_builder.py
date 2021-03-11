@@ -38,6 +38,7 @@ from .exceptions import InternalError
 from .exceptions import UnknownPipelineUnitError
 from .exceptions import PipelineConfigurationError
 from .pipeline_config import PipelineConfig
+from .prescription import Prescription
 from .pseudonym import Pseudonym
 from .boot import Boot
 from .sieve import Sieve
@@ -58,6 +59,8 @@ class PipelineBuilderContext:
     library_usage = attr.ib(type=Optional[Dict[str, Any]], kw_only=True, default=None)
     decision_type = attr.ib(type=Optional[DecisionType], kw_only=True, default=None)
     recommendation_type = attr.ib(type=Optional[RecommendationType], kw_only=True, default=None)
+    cli_parameters = attr.ib(type=Dict[str, Any], kw_only=True, default=attr.Factory(dict))
+    prescription = attr.ib(type=Optional[Prescription], kw_only=True, default=None)
 
     _boots = attr.ib(type=Dict[Optional[str], List[Boot]], factory=dict, kw_only=True)
     _pseudonyms = attr.ib(type=Dict[str, List[Pseudonym]], factory=dict, kw_only=True)
@@ -140,52 +143,52 @@ class PipelineBuilderContext:
         if self.decision_type is None and self.recommendation_type is None:
             raise ValueError("Cannot instantiate builder context not specific to adviser nor dependency monkey")
 
-    def is_included(self, unit_class: type) -> bool:
+    def is_included(self, unit_class: Unit) -> bool:
         """Check if the given pipeline unit is already included in the pipeline configuration."""
-        if issubclass(unit_class, Boot):
-            return unit_class.__name__ in self._boots_included
-        elif issubclass(unit_class, Pseudonym):
-            return unit_class.__name__ in self._pseudonyms_included
-        elif issubclass(unit_class, Sieve):
-            return unit_class.__name__ in self._sieves_included
-        elif issubclass(unit_class, Step):
-            return unit_class.__name__ in self._steps_included
-        elif issubclass(unit_class, Stride):
-            return unit_class.__name__ in self._strides_included
-        elif issubclass(unit_class, Wrap):
-            return unit_class.__name__ in self._wraps_included
+        if unit_class.is_boot_unit_type():
+            return unit_class.get_unit_name() in self._boots_included
+        elif unit_class.is_pseudonym_unit_type():
+            return unit_class.get_unit_name() in self._pseudonyms_included
+        elif unit_class.is_sieve_unit_type():
+            return unit_class.get_unit_name() in self._sieves_included
+        elif unit_class.is_step_unit_type():
+            return unit_class.get_unit_name() in self._steps_included
+        elif unit_class.is_stride_unit_type():
+            return unit_class.get_unit_name() in self._strides_included
+        elif unit_class.is_wrap_unit_type():
+            return unit_class.get_unit_name() in self._wraps_included
 
-        raise InternalError(f"Unknown unit {unit_class.__name__!r}")
+        raise InternalError(f"Unknown unit {unit_class.get_unit_name()!r} of type {unit_class}")
 
-    def get_included_boots(self, boot_class: type) -> List[Boot]:
+    def get_included_boots(self, boot_class: Unit) -> List[Unit]:
         """Get included boots of the provided boot class."""
-        assert issubclass(boot_class, Boot)
-        return self._boots_included.get(boot_class.__name__, [])
+        assert boot_class.is_boot_unit_type()
+        return self._boots_included.get(boot_class.get_unit_name(), [])
 
-    def get_included_pseudonyms(self, pseudonym_class: type) -> List[Pseudonym]:
+    def get_included_pseudonyms(self, pseudonym_class: Unit) -> List[Unit]:
         """Get included sieves of the provided sieve class."""
-        assert issubclass(pseudonym_class, Pseudonym)
-        return self._pseudonyms_included.get(pseudonym_class.__name__, [])
+        assert pseudonym_class.is_pseudonym_unit_type()
+        return self._pseudonyms_included.get(pseudonym_class.get_unit_name(), [])
 
-    def get_included_sieves(self, sieve_class: type) -> List[Sieve]:
+    def get_included_sieves(self, sieve_class: Unit) -> List[Unit]:
         """Get included sieves of the provided sieve class."""
-        assert issubclass(sieve_class, Sieve)
-        return self._sieves_included.get(sieve_class.__name__, [])
+        assert sieve_class.is_sieve_unit_type()
+        return self._sieves_included.get(sieve_class.get_unit_name(), [])
 
-    def get_included_steps(self, step_class: type) -> List[Step]:
+    def get_included_steps(self, step_class: Unit) -> List[Unit]:
         """Get included steps of the provided step class."""
-        assert issubclass(step_class, Step)
-        return self._steps_included.get(step_class.__name__, [])
+        assert step_class.is_step_unit_type()
+        return self._steps_included.get(step_class.get_unit_name(), [])
 
-    def get_included_strides(self, stride_class: type) -> List[Stride]:
+    def get_included_strides(self, stride_class: Unit) -> List[Unit]:
         """Get included strides of the provided stride class."""
-        assert issubclass(stride_class, Stride)
-        return self._strides_included.get(stride_class.__name__, [])
+        assert stride_class.is_stride_unit_type()
+        return self._strides_included.get(stride_class.get_unit_name(), [])
 
-    def get_included_wraps(self, wrap_class: type) -> List[Wrap]:
+    def get_included_wraps(self, wrap_class: Unit) -> List[Unit]:
         """Get included wraps of the provided wrap class."""
-        assert issubclass(wrap_class, Wrap)
-        return self._wraps_included.get(wrap_class.__name__, [])
+        assert wrap_class.is_wrap_unit_type()
+        return self._wraps_included.get(wrap_class.get_unit_name(), [])
 
     def is_adviser_pipeline(self) -> bool:
         """Check if the pipeline built is meant for adviser."""
@@ -199,37 +202,37 @@ class PipelineBuilderContext:
         """Add the given unit to pipeline configuration."""
         package_name: Optional[str] = unit.configuration.get("package_name")
 
-        if isinstance(unit, Boot):
-            self._boots_included.setdefault(unit.__class__.__name__, []).append(unit)
+        if unit.is_boot_unit_type():
+            self._boots_included.setdefault(unit.get_unit_name(), []).append(unit)
             self._boots.setdefault(package_name, []).append(unit)
             return
-        elif isinstance(unit, Pseudonym):
+        elif unit.is_pseudonym_unit_type():
             if not package_name:
                 raise PipelineConfigurationError(
-                    f"Pipeline cannot be constructed as unit {unit.__class__.__name__!r} of type Pseudonym "
+                    f"Pipeline cannot be constructed as unit {unit.get_unit_name()!r} of type Pseudonym "
                     f"did not provide any package name configuration: {unit.configuration!r}"
                 )
-            self._pseudonyms_included.setdefault(unit.__class__.__name__, []).append(unit)
+            self._pseudonyms_included.setdefault(unit.get_unit_name(), []).append(unit)
             self._pseudonyms.setdefault(package_name, []).append(unit)
             return
-        elif isinstance(unit, Sieve):
-            self._sieves_included.setdefault(unit.__class__.__name__, []).append(unit)
+        elif unit.is_sieve_unit_type():
+            self._sieves_included.setdefault(unit.get_unit_name(), []).append(unit)
             self._sieves.setdefault(package_name, []).append(unit)
             return
-        elif isinstance(unit, Step):
-            self._steps_included.setdefault(unit.__class__.__name__, []).append(unit)
+        elif unit.is_step_unit_type():
+            self._steps_included.setdefault(unit.get_unit_name(), []).append(unit)
             self._steps.setdefault(package_name, []).append(unit)
             return
-        elif isinstance(unit, Stride):
-            self._strides_included.setdefault(unit.__class__.__name__, []).append(unit)
+        elif unit.is_stride_unit_type():
+            self._strides_included.setdefault(unit.get_unit_name(), []).append(unit)
             self._strides.setdefault(package_name, []).append(unit)
             return
-        elif isinstance(unit, Wrap):
-            self._wraps_included.setdefault(unit.__class__.__name__, []).append(unit)
+        elif unit.is_wrap_unit_type():
+            self._wraps_included.setdefault(unit.get_unit_name(), []).append(unit)
             self._wraps.setdefault(package_name, []).append(unit)
             return
 
-        raise InternalError(f"Unknown unit {unit!r} of type {unit.__class__.__name__!r}")
+        raise InternalError(f"Unknown unit {unit!r} of type {unit.get_unit_name()!r}")
 
 
 class PipelineBuilder:
@@ -242,7 +245,7 @@ class PipelineBuilder:
         raise NotImplementedError("Cannot instantiate pipeline builder")
 
     @staticmethod
-    def _iter_units() -> Generator[type, None, None]:
+    def _iter_units(ctx: PipelineBuilderContext) -> Generator[type, None, None]:
         """Iterate over pipeline units available in this implementation."""
         # Imports placed here to simplify tests.
         import thoth.adviser.boots
@@ -252,21 +255,33 @@ class PipelineBuilder:
         import thoth.adviser.strides
         import thoth.adviser.wraps
 
+        if ctx.prescription:
+            yield from ctx.prescription.iter_boot_units()
         for boot_name in thoth.adviser.boots.__all__:
             yield getattr(thoth.adviser.boots, boot_name)
 
+        if ctx.prescription:
+            yield from ctx.prescription.iter_pseudonym_units()
         for pseudonym_name in thoth.adviser.pseudonyms.__all__:
             yield getattr(thoth.adviser.pseudonyms, pseudonym_name)
 
+        if ctx.prescription:
+            yield from ctx.prescription.iter_sieve_units()
         for sieve_name in thoth.adviser.sieves.__all__:
             yield getattr(thoth.adviser.sieves, sieve_name)
 
+        if ctx.prescription:
+            yield from ctx.prescription.iter_step_units()
         for step_name in thoth.adviser.steps.__all__:
             yield getattr(thoth.adviser.steps, step_name)
 
+        if ctx.prescription:
+            yield from ctx.prescription.iter_stride_units()
         for stride_name in thoth.adviser.strides.__all__:
             yield getattr(thoth.adviser.strides, stride_name)
 
+        if ctx.prescription:
+            yield from ctx.prescription.iter_wrap_units()
         for wrap_name in thoth.adviser.wraps.__all__:
             yield getattr(thoth.adviser.wraps, wrap_name)
 
@@ -286,11 +301,12 @@ class PipelineBuilder:
         change = True
         while change:
             change = False
-            for unit_class in cls._iter_units():
-                if unit_class.__name__ in blocked_units:
+            for unit_class in cls._iter_units(ctx):
+                unit_name = unit_class.get_unit_name()
+                if unit_name in blocked_units:
                     _LOGGER.debug(
                         "Avoiding adding pipeline unit %r based on blocked units configuration",
-                        unit_class.__name__,
+                        unit_name,
                     )
                     continue
 
@@ -298,7 +314,7 @@ class PipelineBuilder:
                     if unit_configuration is None:
                         _LOGGER.debug(
                             "Pipeline unit %r will not be included in the pipeline configuration in this round",
-                            unit_class.__name__,
+                            unit_name,
                         )
                         continue
 
@@ -306,7 +322,7 @@ class PipelineBuilder:
 
                     _LOGGER.debug(
                         "Including pipeline unit %r in pipeline configuration with unit configuration %r",
-                        unit_class.__name__,
+                        unit_name,
                         unit_configuration,
                     )
                     unit_instance = unit_class()
@@ -316,7 +332,7 @@ class PipelineBuilder:
                         unit_instance.update_configuration(unit_configuration)
                     except Exception as exc:
                         raise PipelineConfigurationError(
-                            f"Filed to initialize pipeline unit configuration for {unit_class.__name__!r} "
+                            f"Filed to initialize pipeline unit configuration for {unit_name!r} "
                             f"with configuration {unit_configuration!r}: {str(exc)}"
                         ) from exc
 
@@ -357,7 +373,7 @@ class PipelineBuilder:
                 unit.update_configuration(configuration_entry["configuration"])
             except Exception as exc:
                 raise PipelineConfigurationError(
-                    f"Filed to initialize pipeline unit configuration for {unit_class.__name__!r} "
+                    f"Filed to initialize pipeline unit configuration for {unit_class.get_unit_name()!r} "
                     f"with configuration {configuration_entry['configuration']!r}: {str(exc)}"
                 ) from exc
 
@@ -387,7 +403,7 @@ class PipelineBuilder:
             package_name = unit.configuration.get("package_name")
             if not package_name:
                 raise PipelineConfigurationError(
-                    f"Pipeline cannot be constructed as unit {unit.__class__.__name__!r} of type Pseudonym "
+                    f"Pipeline cannot be constructed as unit {unit.get_unit_name()!r} of type Pseudonym "
                     f"did not provide any package name configuration: {unit.configuration!r}"
                 )
 
@@ -452,6 +468,8 @@ class PipelineBuilder:
         graph: GraphDatabase,
         project: Project,
         library_usage: Optional[Dict[str, Any]],
+        prescription: Optional[Prescription],
+        cli_parameters: Dict[str, Any],
     ) -> PipelineConfig:
         """Get adviser's pipeline configuration."""
         return cls._build_configuration(
@@ -460,6 +478,8 @@ class PipelineBuilder:
                 project=project,
                 library_usage=library_usage,
                 recommendation_type=recommendation_type,
+                prescription=prescription,
+                cli_parameters=cli_parameters,
             )
         )
 
@@ -471,6 +491,8 @@ class PipelineBuilder:
         graph: GraphDatabase,
         project: Project,
         library_usage: Optional[Dict[str, Any]],
+        prescription: Optional[Prescription],
+        cli_parameters: Dict[str, Any],
     ) -> PipelineConfig:
         """Get dependency-monkey's pipeline configuration."""
         return cls._build_configuration(
@@ -479,5 +501,7 @@ class PipelineBuilder:
                 project=project,
                 library_usage=library_usage,
                 decision_type=decision_type,
+                prescription=prescription,
+                cli_parameters=cli_parameters,
             )
         )

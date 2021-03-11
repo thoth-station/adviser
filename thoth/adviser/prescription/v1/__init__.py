@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019, 2020 Fridolin Pokorny
+# Copyright(C) 2021 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,24 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A base class for implementing boot units."""
+"""Schema v1 based prescription units."""
 
-import abc
-
-import attr
-
-from .unit import Unit
-
-
-@attr.s(slots=True)
-class Boot(Unit):
-    """Boot base class implementation."""
-
-    @staticmethod
-    def is_boot_unit_type() -> bool:
-        """Check if this unit is of type boot."""
-        return True
-
-    @abc.abstractmethod
-    def run(self) -> None:
-        """Run main entry-point for boot units."""
+from .boot import BootPrescription
+from .pseudonym import PseudonymPrescription
+from .schema import PRESCRIPTION_SCHEMA
+from .sieve import SievePrescription
+from .step import StepPrescription
+from .step import StepPrescription
+from .stride import StridePrescription
+from .wrap import WrapPrescription
