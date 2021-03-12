@@ -131,6 +131,7 @@ See :ref:`boot pipeline unit <boots>` for more information on semantics.
       text: "Some text printed to log on pipeline unit run."
       type: "WARNING"
 
+
 Pseudonyms
 ==========
 
@@ -169,6 +170,31 @@ The pseudonym is registered for the specified criteria. The unit derived out of
 this declarative prescription will make sure the package yielded is known to
 the resolver.
 
+.. note::
+
+  An example pipeline unit that suggests ``intel-tensorflow`` coming from PyPI as an alternative to ``tensorflow``:
+
+  .. code-block:: yaml
+
+    name: PseudonymUnit
+    type: pseudonym
+    should_include:
+      times: 1
+      adviser_pipeline: true
+    run:
+      match:
+        package_name: tensorflow
+
+      stack_info:
+        - message: "Considering also intel-tensorflow as an alternative to tensorflow"
+          type: "INFO"
+          link: "https://pypi.org/project/intel-tensorflow"
+
+      yield:
+        package_version:
+          name: intel-tensorflow
+          index-url: "https://pypi.org/simple"
+
 Sieves
 ======
 
@@ -195,6 +221,32 @@ semantics.
       - type: WARNING
         message: "Hello, world"
         link: https://thoth-station.ninja           # A link to justifications or a link to a web page.
+
+.. note::
+
+  An example pipeline unit that filters out ``pysaml2`` with the reported CVE.
+
+  .. code-block:: yaml
+
+    name: SieveUnit
+    type: sieve
+    should_include:
+      times: 1
+      adviser_pipeline: true
+      recommendation_types:
+        - security
+        - stable
+    run:
+      match:
+        package_version:
+          name: pysaml2
+          version: '<6.5.0'
+          index_url: 'https://pypi.org/simple'
+
+      stack_info:
+        - type: WARNING
+          message: "Not considering package pysaml2 based on vulnerability present"
+          link: "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-21238"
 
 Steps
 =====
@@ -241,6 +293,40 @@ semantics.
       - type: WARNING
         message: "Hello, world"
         link: https://thoth-station.ninja           # A link to justifications or a link to a web page.
+
+
+.. note::
+
+  An example pipeline unit that filters out ``pysaml2`` with the reported CVE.
+
+  .. code-block:: yaml
+
+    name: StepUnit
+    type: step
+    should_include:
+      times: 1
+      adviser_pipeline: true
+    run:
+      match:
+        package_version:
+          # Considering builds available also on other indexes than PyPI.
+          name: tensorflow
+          version: '~=2.4.0'
+
+        state:
+          resolved_dependencies:
+            - name: numpy
+              locked_version: "==1.19.1"
+              index_url: 'https://pypi.org/simple'
+
+      not_acceptable: "NumPy==1.19.5 is causing issues when used with TensorFlow 2.4"
+      multi_package_resolution: true
+
+      stack_info:
+        - type: WARNING
+          message: "NumPy==1.19.5 is causing issues when used with TensorFlow 2.4"
+          link: "https://thoth-station.ninja/j/tf_24_np.html"
+
 
 Strides
 =======
