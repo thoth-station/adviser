@@ -52,14 +52,12 @@ _LOGGER = logging.getLogger(__name__)
 class Unit(metaclass=abc.ABCMeta):
     """A base class for implementing pipeline units - strides and steps."""
 
-    _configuration = attr.ib(type=Dict[str, Any], kw_only=True)
-    _name = attr.ib(type=str, default=None, kw_only=True)
-
     _CONTEXT: Optional[Context] = None
     CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): SchemaAny(str, None)})
     CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None}
 
     unit_run = attr.ib(type=bool, default=False, kw_only=True)
+    _configuration = attr.ib(type=Dict[str, Any], kw_only=True)
 
     _RE_CAMEL2SNAKE = re.compile("(?!^)([A-Z]+)")
     _AICOE_PYTHON_PACKAGE_INDEX_URL = "https://tensorflow.pypi.thoth-station.ninja/index/"
@@ -67,10 +65,45 @@ class Unit(metaclass=abc.ABCMeta):
     _DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 
     @classmethod
+    def get_unit_name(cls) -> str:
+        """Get name of the unit."""
+        return cls.__name__
+
+    @staticmethod
+    def is_boot_unit_type() -> bool:
+        """Check if the unit is of type boot."""
+        return False
+
+    @staticmethod
+    def is_pseudonym_unit_type() -> bool:
+        """Check if the unit is of type pseudonym."""
+        return False
+
+    @staticmethod
+    def is_sieve_unit_type() -> bool:
+        """Check if the unit is of type sieve."""
+        return False
+
+    @staticmethod
+    def is_step_unit_type() -> bool:
+        """Check if the unit is of type step."""
+        return False
+
+    @staticmethod
+    def is_stride_unit_type() -> bool:
+        """Check if the unit is of type step."""
+        return False
+
+    @staticmethod
+    def is_wrap_unit_type() -> bool:
+        """Check if the unit is of type wrap."""
+        return False
+
+    @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         raise NotImplementedError(
-            f"Please implement method to register pipeline unit {cls.__name__!r} to pipeline configuration"
+            f"Please implement method to register pipeline unit {cls.get_unit_name()!r} to pipeline configuration"
         )
 
     @classmethod
@@ -142,7 +175,7 @@ class Unit(metaclass=abc.ABCMeta):
 
     def to_dict(self) -> Dict[str, Any]:
         """Turn this pipeline step into its dictionary representation."""
-        return {"name": self.__class__.__name__, "configuration": self.configuration, "unit_run": self.unit_run}
+        return {"name": self.get_unit_name(), "configuration": self.configuration, "unit_run": self.unit_run}
 
     @classmethod
     def is_aicoe_release(cls, package_version: PackageVersion) -> bool:

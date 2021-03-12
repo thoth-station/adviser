@@ -30,6 +30,11 @@ from .unit import Unit
 class Sieve(Unit):
     """Sieve base class implementation."""
 
+    @staticmethod
+    def is_sieve_unit_type() -> bool:
+        """Check if this unit is of type sieve."""
+        return True
+
     @abc.abstractmethod
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Run main entry-point for sieves to filter and score packages."""

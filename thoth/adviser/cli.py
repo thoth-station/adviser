@@ -21,8 +21,9 @@
 import json
 import logging
 import os
-import time
 import random
+import sys
+import time
 from functools import partial
 from typing import Any
 from typing import Callable
@@ -44,12 +45,13 @@ from thoth.python.exceptions import UnsupportedConfiguration
 
 from thoth.adviser.dependency_monkey import DependencyMonkey
 from thoth.adviser.digests_fetcher import GraphDigestsFetcher
-from thoth.adviser.pipeline_builder import PipelineBuilder
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import PythonRecommendationOutput
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.exceptions import AdviserException
 from thoth.adviser.exceptions import InternalError
+from thoth.adviser.pipeline_builder import PipelineBuilder
+from thoth.adviser.prescription import Prescription
 from thoth.adviser import Resolver
 from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser import __version__ as analyzer_version
@@ -412,7 +414,17 @@ def provenance(
     default=None,
     type=str,
     metavar="PIPELINE",
-    help="Pipeline configuration supplied in a form of JSON/YAML or a path to a file.",
+    help="Pipeline configuration supplied in a form of JSON/YAML or a path to a file, "
+    "disjoint with pipeline prescription.",
+)
+@click.option(
+    "--prescription",
+    envvar="THOTH_ADVISER_PRESCRIPTION",
+    default=None,
+    type=str,
+    metavar="PRESCRIPTION",
+    help="Pipeline prescription supplied in a form of JSON/YAML or a path to a file, "
+    "disjoint with pipeline configuration.",
 )
 @click.option(
     "--user-stack-scoring/--no-user-stack-scoring",
@@ -452,12 +464,16 @@ def advise(
     runtime_environment: Optional[str] = None,
     seed: Optional[int] = None,
     pipeline: Optional[str] = None,
+    prescription: Optional[str] = None,
     user_stack_scoring: bool = True,
     dev: bool = False,
 ):
     """Advise package and package versions in the given stack or on solely package only."""
     parameters = locals()
     parameters.pop("click_ctx")
+
+    if pipeline and prescription:
+        sys.exit("Options --pipeline/--prescription are disjoint")
 
     if library_usage:
         if os.path.isfile(library_usage):
@@ -477,11 +493,18 @@ def advise(
     recommendation_type = RecommendationType.by_name(recommendation_type)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
     project = _instantiate_project(requirements, requirements_locked, runtime_environment)
-    pipeline_config = None if pipeline is None else PipelineBuilder.load(pipeline)
+
+    pipeline_config = None
+    if pipeline:
+        pipeline_config = PipelineBuilder.load(pipeline)
 
     parameters["project"] = project.to_dict()
     if pipeline_config is not None:
         parameters["pipeline"] = pipeline_config.to_dict()
+
+    prescription_instance = None
+    if prescription:
+        prescription_instance = Prescription.load(prescription)
 
     predictor_class, predictor_kwargs = _get_adviser_predictor(predictor, recommendation_type)
     predictor_kwargs = _get_predictor_kwargs(predictor_config) or predictor_kwargs
@@ -508,8 +531,11 @@ def advise(
         beam_width=beam_width,
         limit_latest_versions=limit_latest_versions,
         pipeline_config=pipeline_config,
+        prescription=prescription_instance,
         cli_parameters=parameters,
     )
+
+    del prescription  # No longer needed, garbage collect it.
 
     print_func = _PrintFunc(
         partial(
@@ -664,7 +690,17 @@ def advise(
     default=None,
     type=str,
     metavar="PIPELINE",
-    help="Pipeline configuration supplied in a form of JSON/YAML or a path to a file.",
+    help="Pipeline configuration supplied in a form of JSON/YAML or a path to a file, "
+    "disjoint with pipeline prescription.",
+)
+@click.option(
+    "--prescription",
+    envvar="THOTH_ADVISER_PRESCRIPTION",
+    default=None,
+    type=str,
+    metavar="PRESCRIPTION",
+    help="Pipeline prescription supplied in a form of JSON/YAML or a path to a file, "
+    "disjoint with pipeline configuration.",
 )
 @click.option(
     "--dev/--no-dev",
@@ -695,11 +731,15 @@ def dependency_monkey(
     runtime_environment: str = None,
     seed: Optional[int] = None,
     pipeline: Optional[str] = None,
+    prescription: Optional[str] = None,
     dev: bool = False,
 ):
     """Generate software stacks based on all valid resolutions that conform version ranges."""
     parameters = locals()
     parameters.pop("click_ctx")
+
+    if pipeline and prescription:
+        sys.exit("Options --pipeline/--prescription are disjoint")
 
     if library_usage:
         if os.path.isfile(library_usage):
@@ -728,6 +768,10 @@ def dependency_monkey(
     if pipeline_config is not None:
         parameters["pipeline"] = pipeline_config.to_dict()
 
+    prescription_instance = None
+    if prescription:
+        prescription_instance = Prescription.load(prescription)
+
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
     seed = seed if seed is not None else int(time.time())
     predictor_class = _get_dependency_monkey_predictor(predictor, decision_type)
@@ -751,8 +795,11 @@ def dependency_monkey(
         limit_latest_versions=limit_latest_versions,
         decision_type=decision_type,
         pipeline_config=pipeline_config,
+        prescription=prescription_instance,
         cli_parameters=parameters,
     )
+
+    del prescription  # No longer needed, garbage collect it.
 
     context_content = {}
     try:
@@ -792,6 +839,11 @@ def dependency_monkey(
     )
 
     click_ctx.exit(int(exit_code != 0))
+
+
+@cli.command("validate-prescription")
+def validate_prescription() -> None:
+    """Validate the given prescription."""
 
 
 __name__ == "__main__" and cli()

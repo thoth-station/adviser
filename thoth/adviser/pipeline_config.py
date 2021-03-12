@@ -149,7 +149,7 @@ class PipelineConfig:
             except Exception as exc:
                 raise PipelineUnitError(
                     "Failed to run pre_run method on unit %r: %s",
-                    unit.__class__.__name__,
+                    unit.get_unit_name(),
                     str(exc),
                 ) from exc
 
@@ -161,7 +161,7 @@ class PipelineConfig:
             except Exception as exc:
                 raise PipelineUnitError(
                     "Failed to run post_run method on unit %r: %s",
-                    unit.__class__.__name__,
+                    unit.get_unit_name(),
                     str(exc),
                 ) from exc
 
@@ -174,6 +174,6 @@ class PipelineConfig:
             except Exception as exc:
                 raise PipelineUnitError(
                     "Failed to run pre_run_report method on unit %r: %s",
-                    unit.__class__.__name__,
+                    unit.get_unit_name(),
                     str(exc),
                 ) from exc

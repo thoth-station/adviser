@@ -39,7 +39,7 @@ from .unit import Unit
 class Step(Unit):
     """Step base class implementation.
 
-    Configuration option `mutli_package_resolution` states whether a step should be run if package
+    Configuration option `multi_package_resolution` states whether a step should be run if package
     is resolved multiple times for the same stack.
     """
 
@@ -50,6 +50,11 @@ class Step(Unit):
 
     SCORE_MAX = 1.0
     SCORE_MIN = -1.0
+
+    @staticmethod
+    def is_step_unit_type() -> bool:
+        """Check if this unit is of type step."""
+        return True
 
     @abc.abstractmethod
     def run(

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019, 2020 Fridolin Pokorny
+# Copyright(C) 2021 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,16 +17,22 @@
 
 """A base class for implementing wrap units."""
 
-import abc
-
 import attr
 
-from .state import State
-from .unit import Unit
+from typing import Any
+from typing import Dict
+from typing import Generator
+from typing import TYPE_CHECKING
+
+from thoth.adviser.state import State
+from .unit import UnitPrescription
+
+if TYPE_CHECKING:
+    from ...pipeline_builder import PipelineBuilderContext
 
 
 @attr.s(slots=True)
-class Wrap(Unit):
+class WrapPrescription(UnitPrescription):
     """Wrap base class implementation."""
 
     @staticmethod
@@ -34,6 +40,23 @@ class Wrap(Unit):
         """Check if this unit is of type wrap."""
         return True
 
-    @abc.abstractmethod
+    @classmethod
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
+        """Check if the given pipeline unit should be included in the given pipeline configuration."""
+        if cls._should_include_base(builder_context):
+            yield {}
+            return None
+
+        yield from ()
+        return None
+
     def run(self, state: State) -> None:
         """Run main entry-point for wrap units to filter and score packages."""
+        if not self._run_state(state):
+            return None
+
+        justification = self.run_prescription.get("justification")
+        if justification:
+            state.add_justification(justification)
+
+        self._run_base()
