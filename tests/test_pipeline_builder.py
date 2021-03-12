@@ -298,7 +298,7 @@ class TestPipelineBuilder(AdviserTestCase):
             project=project,
             library_usage=None,
             prescription=None,
-            cli_parameters=None
+            cli_parameters=None,
         )
 
         assert len(pipeline.boots) == 1

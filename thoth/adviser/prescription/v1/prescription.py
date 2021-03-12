@@ -24,23 +24,18 @@ from collections import OrderedDict
 from typing import Any
 from typing import Dict
 from typing import Generator
-from typing import TYPE_CHECKING
 
 import attr
 
-from ..exceptions import PrescriptionSchemaError
-from .v1.schema import PRESCRIPTION_SCHEMA
-from .v1.unit import UnitPrescription
-
-from .v1.boot import BootPrescription
-from .v1.pseudonym import PseudonymPrescription
-from .v1.sieve import SievePrescription
-from .v1.step import StepPrescription
-from .v1.stride import StridePrescription
-from .v1.wrap import WrapPrescription
-
-if TYPE_CHECKING:
-    from thoth.adviser.pipeline_builder import PipelineBuilderContext
+from ...exceptions import PrescriptionSchemaError
+from .schema import PRESCRIPTION_SCHEMA
+from .unit import UnitPrescription
+from .boot import BootPrescription
+from .pseudonym import PseudonymPrescription
+from .sieve import SievePrescription
+from .step import StepPrescription
+from .stride import StridePrescription
+from .wrap import WrapPrescription
 
 _LOGGER = logging.getLogger(__name__)
 

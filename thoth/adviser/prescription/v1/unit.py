@@ -39,18 +39,6 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-def _requires_prescription(func):
-    """Check required prescription assigned to the class."""
-
-    def wrap(cls, *args, **kwargs):
-        if cls._PRESCRIPTION is None:
-            raise ValueError("No prescription defined")
-
-        return func(cls, *args, **kwargs)
-
-    return wrap
-
-
 @attr.s(slots=True)
 class UnitPrescription(Unit, metaclass=abc.ABCMeta):
     """A base class for implementing pipeline units based on prescription supplied."""
@@ -62,20 +50,24 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
 
     @prescription.default
     def _prescription_default(self) -> Dict[str, Any]:
-        """Called after the unit is initialized to set the prescription property."""
+        """Initialize prescription property."""
         assert self._PRESCRIPTION is not None, "No assigned prescription on the class level to be set"
         return self.__class__._PRESCRIPTION
 
     @run_prescription.default
     def _run_prescription_default(self) -> Dict[str, Any]:
-        """Called after the unit is initialized to set the run prescription property."""
+        """Initialize the run prescription property."""
         assert self._PRESCRIPTION is not None, "No assigned prescription on the class level to be set"
         return self.__class__._PRESCRIPTION["run"]
 
     @classmethod
-    @_requires_prescription
     def get_unit_name(cls) -> str:
-        return cls._PRESCRIPTION["name"]
+        """Get the name of the currect prescription unit."""
+        if cls._PRESCRIPTION is None:
+            raise ValueError("No prescription defined")
+
+        name: str = cls._PRESCRIPTION["name"]
+        return name
 
     @classmethod
     def set_prescription(cls, prescription: Dict[str, Any]) -> None:
@@ -83,9 +75,11 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         cls._PRESCRIPTION = prescription
 
     @classmethod
-    @_requires_prescription
     def _should_include_base(cls, builder_context: "PipelineBuilderContext") -> bool:
         """Determine if this unit should be included."""
+        if cls._PRESCRIPTION is None:
+            raise ValueError("No prescription defined")
+
         should_include_dict = cls._PRESCRIPTION["should_include"]
         unit_name = cls.get_unit_name()
 
@@ -229,7 +223,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         return True
 
     def _run_base(self) -> None:
-        """A base method implementing common routines for run prescription."""
+        """Implement base routines for run part of the prescription."""
         self._run_log()
         self._run_stack_info()
 

@@ -22,6 +22,16 @@ from .pseudonym import PseudonymPrescription
 from .schema import PRESCRIPTION_SCHEMA
 from .sieve import SievePrescription
 from .step import StepPrescription
-from .step import StepPrescription
 from .stride import StridePrescription
 from .wrap import WrapPrescription
+
+
+__all__ = [
+    "BootPrescription",
+    "PseudonymPrescription",
+    "PRESCRIPTION_SCHEMA",
+    "SievePrescription",
+    "StepPrescription",
+    "StridePrescription",
+    "WrapPrescription",
+]

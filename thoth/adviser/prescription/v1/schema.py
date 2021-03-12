@@ -89,23 +89,26 @@ _UNIT_SCHEMA_BASE_DICT = {
 }
 
 
-def _justification_link():
-    """Validator for a justification link."""
+def _justification_link(v: str) -> None:
+    """Validate justification link."""
+    if v.startswith(("https://", "http://")):
+        try:
+            urlparse("http://www.cwi.nl:80/%7Eguido/Python.html")
+        except Exception as exc:
+            raise Invalid(f"Failed to validate URL: {str(exc)}")
+    else:
+        matched = re.match(r"[a-z0-9_-]+", v)
+        if not matched:
+            raise Invalid(f"Failed to validate base justification link {v!r}")
 
-    def validator(v: str):
-        if v.startswith(("https://", "http://")):
-            return urlparse("http://www.cwi.nl:80/%7Eguido/Python.html")
-        else:
-            return re.match(r"[a-z0-9_-]+", v)
-
-    return validator
+    return None
 
 
 STACK_INFO_SCHEMA = Schema(
     {
         Required("type"): Any("WARNING", "INFO", "ERROR"),
         Required("message"): str,
-        Required("link"): _justification_link(),
+        Required("link"): _justification_link,
     }
 )
 
@@ -124,43 +127,35 @@ _UNIT_RUN_SCHEMA_BASE_DICT = {
 }
 
 
-def _locked_version():
-    """Validator for a locked version."""
-
-    def validator(v: str):
-        if not isinstance(v, str) or not v.startswith("==") and not v.startswith("==="):
-            raise Invalid(f"Value {v!r} is not valid locked version (example: '==1.0.0')")
-
-    return validator
+def _locked_version(v: object) -> None:
+    """Validate locked version."""
+    if not isinstance(v, str) or not v.startswith("==") and not v.startswith("==="):
+        raise Invalid(f"Value {v!r} is not valid locked version (example: '==1.0.0')")
 
 
 PACKAGE_VERSION_LOCKED_SCHEMA = Schema(
     {
         Required("name"): Optional(str),
-        Required("locked_version"): _locked_version(),
+        Required("locked_version"): _locked_version,
         Required("index_url"): Optional(str),
     }
 )
 
 
-def _specifier_set():
-    """Validator for a specifier set."""
-
-    def validator(v):
-        if not isinstance(v, str):
-            raise Invalid(f"Value {v!r} is not valid version specifier (example: '<1.0>=0.5')")
-        try:
-            SpecifierSet(v)
-        except InvalidSpecifier as exc:
-            raise Invalid(str(exc))
-
-    return validator
+def _specifier_set(v: object) -> None:
+    """Validate a specifier set."""
+    if not isinstance(v, str):
+        raise Invalid(f"Value {v!r} is not valid version specifier (example: '<1.0>=0.5')")
+    try:
+        SpecifierSet(v)
+    except InvalidSpecifier as exc:
+        raise Invalid(str(exc))
 
 
 PACKAGE_VERSION_SCHEMA = Schema(
     {
         Optional("name"): Optional(str),
-        Optional("version"): _specifier_set(),
+        Optional("version"): _specifier_set,
         Optional("index_url"): Optional(str),
     }
 )
@@ -169,7 +164,7 @@ PACKAGE_VERSION_SCHEMA = Schema(
 PACKAGE_VERSION_REQUIRED_NAME_SCHEMA = Schema(
     {
         Required("name"): All(str, Length(min=1)),
-        Optional("version"): _specifier_set(),
+        Optional("version"): _specifier_set,
         Optional("index_url"): Optional(str),
     }
 )

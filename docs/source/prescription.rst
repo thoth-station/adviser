@@ -17,7 +17,7 @@ still use the programmable interface.
   cannot clash when different units of **different** type share the name. Also,
   they cannot clash with pipeline unit names provided by the Python
   implementation.
-  
+
   However, it's recommended not to use same unit names for different units.
 
 Prescription YAML v1
