@@ -246,7 +246,7 @@ class TestPipelineBuilder(AdviserTestCase):
 
         # It is not relevant if adviser/dependency monkey is called in this case.
         pipeline = getattr(PipelineBuilder, pipeline_config_method)(
-            graph=None, project=None, library_usage=None, **kwargs
+            graph=None, project=None, library_usage=None, prescription=None, cli_parameters=None, **kwargs
         )
 
         assert pipeline.to_dict() == {
@@ -297,6 +297,8 @@ class TestPipelineBuilder(AdviserTestCase):
             graph=None,
             project=project,
             library_usage=None,
+            prescription=None,
+            cli_parameters=None
         )
 
         assert len(pipeline.boots) == 1
@@ -318,6 +320,8 @@ class TestPipelineBuilder(AdviserTestCase):
                 graph=None,
                 project=None,
                 library_usage=None,
+                prescription=None,
+                cli_parameters=None,
             )
             assert len(pipeline.boots) == 0
             assert len(pipeline.steps) == 0
