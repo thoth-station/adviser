@@ -20,6 +20,19 @@ still use the programmable interface.
 
   However, it's recommended not to use same unit names for different units.
 
+One can see prescriptions as `enhanced constraints
+<https://pip.pypa.io/en/stable/user_guide/#constraints-files>`_ but on the server
+side. This way constraints can be generalized and applied also for multiple projects
+for which server-side resolution can provide guidance.
+
+.. note::
+
+  Prescription YAML specification provides unit abstractions that map to their
+  Python code implementation. If you wish to create your own unit declaration in
+  the YAML configuration suitable for your needs, just declare your YAML unit
+  and provide its Python implementation. Core pipeline units can serve as
+  a base for the implementation.
+
 Prescription YAML v1
 ====================
 
@@ -251,7 +264,7 @@ semantics.
 Steps
 =====
 
-See :ref:`step pipeline unit <step>` for more information on
+See :ref:`step pipeline unit <steps>` for more information on
 semantics.
 
 .. code-block:: yaml
@@ -332,7 +345,7 @@ semantics.
 Strides
 =======
 
-See :ref:`step pipeline unit <step>` for more information on
+See :ref:`strides pipeline unit <strides>` for more information on
 semantics.
 
 .. code-block:: yaml
@@ -365,7 +378,7 @@ semantics.
 Wraps
 =====
 
-See :ref:`wrap pipeline unit <wrap>` for more information on
+See :ref:`wrap pipeline unit <wraps>` for more information on
 semantics.
 
 .. code-block:: yaml
