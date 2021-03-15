@@ -43,8 +43,6 @@ from .exceptions import PipelineConfigurationError
 from .pipeline_config import PipelineConfig
 from .prescription import Prescription
 
-_LOGGER = logging.getLogger(__name__)
-
 if TYPE_CHECKING:
     from .unit_types import UnitType
     from .unit_types import BootType
@@ -53,6 +51,8 @@ if TYPE_CHECKING:
     from .unit_types import StepType
     from .unit_types import StrideType
     from .unit_types import WrapType
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
