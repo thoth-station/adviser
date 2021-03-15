@@ -297,7 +297,8 @@ semantics.
 
 .. note::
 
-  An example pipeline unit that filters out ``pysaml2`` with the reported CVE.
+  An example pipeline unit that filters out any ``tensorflow~=2.4.0`` when
+  ``numpy==1.19.1`` is in already resolved dependencies.
 
   .. code-block:: yaml
 
