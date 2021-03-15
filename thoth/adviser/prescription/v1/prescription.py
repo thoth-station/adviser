@@ -24,6 +24,8 @@ from collections import OrderedDict
 from typing import Any
 from typing import Dict
 from typing import Generator
+from typing import Type
+from typing import TYPE_CHECKING
 
 import attr
 
@@ -35,6 +37,16 @@ from .sieve import SievePrescription
 from .step import StepPrescription
 from .stride import StridePrescription
 from .wrap import WrapPrescription
+
+if TYPE_CHECKING:
+    from thoth.adviser.unit_types import UnitType  # noqa: F401
+    from thoth.adviser.unit_types import BootType  # noqa: F401
+    from thoth.adviser.unit_types import PseudonymType  # noqa: F401
+    from thoth.adviser.unit_types import SieveType  # noqa: F401
+    from thoth.adviser.unit_types import StepType  # noqa: F401
+    from thoth.adviser.unit_types import StrideType  # noqa: F401
+    from thoth.adviser.unit_types import WrapType  # noqa: F401
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -116,33 +128,33 @@ class Prescription:
         return cls.from_dict(yaml.safe_load(prescription))
 
     @staticmethod
-    def _iter_units(unit_class: type, units: Dict[str, Any]) -> Generator[type, None, None]:
+    def _iter_units(unit_class: Type["UnitType"], units: Dict[str, Any]) -> Generator[Type["UnitType"], None, None]:
         """Iterate over units registered."""
         for prescription in units.values():
-            unit_class.set_prescription(prescription)  # type: ignore
+            unit_class.set_prescription(prescription)
 
             yield unit_class
 
-    def iter_boot_units(self) -> Generator[type, None, None]:
+    def iter_boot_units(self) -> Generator[Type["BootType"], None, None]:
         """Iterate over prescription boot units registered in the prescription supplied."""
         return self._iter_units(BootPrescription, self.boots_dict)
 
-    def iter_pseudonym_units(self) -> Generator[type, None, None]:
+    def iter_pseudonym_units(self) -> Generator[Type["PseudonymType"], None, None]:
         """Iterate over prescription pseudonym units registered in the prescription supplied."""
         return self._iter_units(PseudonymPrescription, self.pseudonyms_dict)
 
-    def iter_sieve_units(self) -> Generator[type, None, None]:
+    def iter_sieve_units(self) -> Generator[Type["SieveType"], None, None]:
         """Iterate over prescription sieve units registered in the prescription supplied."""
         return self._iter_units(SievePrescription, self.sieves_dict)
 
-    def iter_step_units(self) -> Generator[type, None, None]:
+    def iter_step_units(self) -> Generator[Type["StepType"], None, None]:
         """Iterate over prescription step units registered in the prescription supplied."""
         return self._iter_units(StepPrescription, self.steps_dict)
 
-    def iter_stride_units(self) -> Generator[type, None, None]:
+    def iter_stride_units(self) -> Generator[Type["StrideType"], None, None]:
         """Iterate over prescription stride units registered in the prescription supplied."""
         return self._iter_units(StridePrescription, self.strides_dict)
 
-    def iter_wrap_units(self) -> Generator[type, None, None]:
+    def iter_wrap_units(self) -> Generator[Type["WrapType"], None, None]:
         """Iterate over prescription stride units registered in the prescription supplied."""
         return self._iter_units(WrapPrescription, self.wraps_dict)
