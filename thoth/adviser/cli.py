@@ -52,6 +52,7 @@ from thoth.adviser.exceptions import AdviserException
 from thoth.adviser.exceptions import InternalError
 from thoth.adviser.pipeline_builder import PipelineBuilder
 from thoth.adviser.prescription import Prescription
+from thoth.adviser.prescription import PRESCRIPTION_SCHEMA
 from thoth.adviser import Resolver
 from thoth.adviser import __title__ as analyzer_name
 from thoth.adviser import __version__ as analyzer_version
@@ -842,8 +843,14 @@ def dependency_monkey(
 
 
 @cli.command("validate-prescription")
-def validate_prescription() -> None:
+@click.argument("prescription", nargs=1, metavar="PRESCRIPTION.yaml")
+def validate_prescription(prescription: str) -> None:
     """Validate the given prescription."""
+    with open(prescription, "r") as prescription_file:
+        content = yaml.safe_load(prescription_file)
+
+    PRESCRIPTION_SCHEMA(content)
+    _LOGGER.info("Prescription %r validated successfully", prescription)
 
 
 __name__ == "__main__" and cli()
