@@ -21,6 +21,7 @@ import abc
 import logging
 from typing import Any
 from typing import Dict
+from typing import Optional
 from typing import TYPE_CHECKING
 from packaging.specifiers import SpecifierSet
 
@@ -43,7 +44,7 @@ _LOGGER = logging.getLogger(__name__)
 class UnitPrescription(Unit, metaclass=abc.ABCMeta):
     """A base class for implementing pipeline units based on prescription supplied."""
 
-    _PRESCRIPTION = None
+    _PRESCRIPTION: Optional[Dict[str, Any]] = None
 
     prescription = attr.ib(type=Dict[str, Any], kw_only=True)
     run_prescription = attr.ib(type=Dict[str, Any], kw_only=True)
@@ -51,14 +52,19 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
     @prescription.default
     def _prescription_default(self) -> Dict[str, Any]:
         """Initialize prescription property."""
-        assert self._PRESCRIPTION is not None, "No assigned prescription on the class level to be set"
-        return self.__class__._PRESCRIPTION
+        if self._PRESCRIPTION is None:
+            raise ValueError("No assigned prescription on the class level to be set")
+
+        return self._PRESCRIPTION
 
     @run_prescription.default
     def _run_prescription_default(self) -> Dict[str, Any]:
         """Initialize the run prescription property."""
-        assert self._PRESCRIPTION is not None, "No assigned prescription on the class level to be set"
-        return self.__class__._PRESCRIPTION["run"]
+        if self._PRESCRIPTION is None:
+            raise ValueError("No assigned prescription on the class level to be set")
+
+        result: Dict[str, Any] = self._PRESCRIPTION["run"]
+        return result
 
     @classmethod
     def get_unit_name(cls) -> str:

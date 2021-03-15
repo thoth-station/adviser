@@ -1399,7 +1399,7 @@ class Resolver:
                 library_usage=library_usage,
                 graph=graph,
                 prescription=prescription,
-                cli_parameters=cli_parameters,
+                cli_parameters=cli_parameters or {},
             )
         else:
             assert prescription is None, "Cannot supply prescription and pipeline config at the same time"
@@ -1453,7 +1453,7 @@ class Resolver:
                 project=project,
                 library_usage=library_usage,
                 prescription=prescription,
-                cli_parameters=cli_parameters,
+                cli_parameters=cli_parameters or {},
             )
         else:
             assert prescription is None, "Cannot supply prescription and pipeline config at the same time"

@@ -1741,7 +1741,7 @@ class TestResolver(AdviserTestCase):
             library_usage=kwargs["library_usage"],
             graph=graph_mock,
             prescription=None,
-            cli_parameters=None,
+            cli_parameters={},
         ).and_return(pipeline).once()
 
         resolver = Resolver.get_adviser_instance(**kwargs)
@@ -1784,7 +1784,7 @@ class TestResolver(AdviserTestCase):
             library_usage=kwargs["library_usage"],
             graph=graph_mock,
             prescription=None,
-            cli_parameters=None,
+            cli_parameters={},
         ).and_return(pipeline).once()
 
         resolver = Resolver.get_dependency_monkey_instance(**kwargs)

@@ -59,7 +59,8 @@ class PseudonymPrescription(UnitPrescription):
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         if cls._should_include_base(builder_context):
-            yield {"package_version": cls._PRESCRIPTION["run"]["match"]["package_version"]["name"]}
+            prescription_run: Dict[str, Any] = cls._PRESCRIPTION["run"]  # type: ignore
+            yield {"package_version": prescription_run["match"]["package_version"]["name"]}
             return None
 
         yield from ()
