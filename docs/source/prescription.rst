@@ -132,6 +132,11 @@ See :ref:`boot pipeline unit <boots>` for more information on semantics.
     match:                                          # Criteria to trigger run of this pipeline unit. Defaults to always running the boot pipeline unit if no package_name is provided.
       package_name: flask                           # Name of the package that needs to be present in the direct dependency listing to run this unit.
 
+    stack_info:                                     # Information printed to the recommended stack report.
+      - type: ERROR
+        message: "Unable to perform this operation"
+        link: https://thoth-station.ninja           # A link to stack info or a link to a web page.
+
     # Configuration of prematurely terminating the resolution process - the
     # message will be reported to the user. If this configuration option is not
     # set, the resolver will not terminate when running this unit.

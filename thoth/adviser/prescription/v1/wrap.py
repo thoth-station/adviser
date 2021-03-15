@@ -50,6 +50,11 @@ class WrapPrescription(UnitPrescription):
         yield from ()
         return None
 
+    def pre_run(self) -> None:
+        """Prepare this pipeline unit before run."""
+        self._prepare_justification_link(self.run_prescription.get("justification", []))
+        super().pre_run()
+
     def run(self, state: State) -> None:
         """Run main entry-point for wrap units to filter and score packages."""
         if not self._run_state(state):
