@@ -23,8 +23,11 @@ import json
 from typing import Any
 from typing import Dict
 from typing import Generator
+from typing import Type
 from typing import List
+from typing import Sequence
 from typing import Optional
+from typing import TYPE_CHECKING
 from itertools import chain
 
 import attr
@@ -39,15 +42,17 @@ from .exceptions import UnknownPipelineUnitError
 from .exceptions import PipelineConfigurationError
 from .pipeline_config import PipelineConfig
 from .prescription import Prescription
-from .pseudonym import Pseudonym
-from .boot import Boot
-from .sieve import Sieve
-from .step import Step
-from .stride import Stride
-from .wrap import Wrap
-from .unit import Unit
 
 _LOGGER = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from .unit_types import UnitType
+    from .unit_types import BootType
+    from .unit_types import PseudonymType
+    from .unit_types import SieveType
+    from .unit_types import StepType
+    from .unit_types import StrideType
+    from .unit_types import WrapType
 
 
 @attr.s(slots=True)
@@ -62,76 +67,76 @@ class PipelineBuilderContext:
     cli_parameters = attr.ib(type=Dict[str, Any], kw_only=True, default=attr.Factory(dict))
     prescription = attr.ib(type=Optional[Prescription], kw_only=True, default=None)
 
-    _boots = attr.ib(type=Dict[Optional[str], List[Boot]], factory=dict, kw_only=True)
-    _pseudonyms = attr.ib(type=Dict[str, List[Pseudonym]], factory=dict, kw_only=True)
-    _sieves = attr.ib(type=Dict[Optional[str], List[Sieve]], factory=dict, kw_only=True)
-    _steps = attr.ib(type=Dict[Optional[str], List[Step]], factory=dict, kw_only=True)
-    _strides = attr.ib(type=Dict[Optional[str], List[Stride]], factory=dict, kw_only=True)
-    _wraps = attr.ib(type=Dict[Optional[str], List[Wrap]], factory=dict, kw_only=True)
-    _boots_included = attr.ib(type=Dict[str, List[Boot]], factory=dict, kw_only=True)
-    _pseudonyms_included = attr.ib(type=Dict[str, List[Pseudonym]], factory=dict, kw_only=True)
-    _sieves_included = attr.ib(type=Dict[str, List[Sieve]], factory=dict, kw_only=True)
-    _steps_included = attr.ib(type=Dict[str, List[Step]], factory=dict, kw_only=True)
-    _strides_included = attr.ib(type=Dict[str, List[Stride]], factory=dict, kw_only=True)
-    _wraps_included = attr.ib(type=Dict[str, List[Wrap]], factory=dict, kw_only=True)
+    _boots = attr.ib(type=Dict[Optional[str], List["BootType"]], factory=dict, kw_only=True)
+    _pseudonyms = attr.ib(type=Dict[str, List["PseudonymType"]], factory=dict, kw_only=True)
+    _sieves = attr.ib(type=Dict[Optional[str], List["SieveType"]], factory=dict, kw_only=True)
+    _steps = attr.ib(type=Dict[Optional[str], List["StepType"]], factory=dict, kw_only=True)
+    _strides = attr.ib(type=Dict[Optional[str], List["StrideType"]], factory=dict, kw_only=True)
+    _wraps = attr.ib(type=Dict[Optional[str], List["WrapType"]], factory=dict, kw_only=True)
+    _boots_included = attr.ib(type=Dict[str, List["BootType"]], factory=dict, kw_only=True)
+    _pseudonyms_included = attr.ib(type=Dict[str, List["PseudonymType"]], factory=dict, kw_only=True)
+    _sieves_included = attr.ib(type=Dict[str, List["SieveType"]], factory=dict, kw_only=True)
+    _steps_included = attr.ib(type=Dict[str, List["StepType"]], factory=dict, kw_only=True)
+    _strides_included = attr.ib(type=Dict[str, List["StrideType"]], factory=dict, kw_only=True)
+    _wraps_included = attr.ib(type=Dict[str, List["WrapType"]], factory=dict, kw_only=True)
 
     @property
-    def boots(self) -> List[Boot]:
+    def boots(self) -> List["BootType"]:
         """Get all boots registered to this pipeline builder context."""
         return list(chain(*self._boots.values()))
 
     @property
-    def boots_dict(self) -> Dict[Optional[str], List[Boot]]:
+    def boots_dict(self) -> Dict[Optional[str], List["BootType"]]:
         """Get boots as a dictionary mapping."""
         return self._boots
 
     @property
-    def pseudonyms(self) -> List[Pseudonym]:
+    def pseudonyms(self) -> List["PseudonymType"]:
         """Get all pseudonyms registered to this pipeline builder context."""
         return list(chain(*self._pseudonyms.values()))
 
     @property
-    def pseudonyms_dict(self) -> Dict[str, List[Pseudonym]]:
+    def pseudonyms_dict(self) -> Dict[str, List["PseudonymType"]]:
         """Get pseudonyms as a dictionary mapping."""
         return self._pseudonyms
 
     @property
-    def sieves(self) -> List[Sieve]:
+    def sieves(self) -> List["SieveType"]:
         """Get all sieves registered to this pipeline builder context."""
         return list(chain(*self._sieves.values()))
 
     @property
-    def sieves_dict(self) -> Dict[Optional[str], List[Sieve]]:
+    def sieves_dict(self) -> Dict[Optional[str], List["SieveType"]]:
         """Get sieves as a dictionary mapping."""
         return self._sieves
 
     @property
-    def steps(self) -> List[Step]:
+    def steps(self) -> List["StepType"]:
         """Get all steps registered to this pipeline builder context."""
         return list(chain(*self._steps.values()))
 
     @property
-    def steps_dict(self) -> Dict[Optional[str], List[Step]]:
+    def steps_dict(self) -> Dict[Optional[str], List["StepType"]]:
         """Get steps as a dictionary mapping."""
         return self._steps
 
     @property
-    def strides(self) -> List[Stride]:
+    def strides(self) -> List["StrideType"]:
         """Get all strides registered to this pipeline builder context."""
         return list(chain(*self._strides.values()))
 
     @property
-    def strides_dict(self) -> Dict[Optional[str], List[Stride]]:
+    def strides_dict(self) -> Dict[Optional[str], List["StrideType"]]:
         """Get strides as a dictionary mapping."""
         return self._strides
 
     @property
-    def wraps(self) -> List[Wrap]:
+    def wraps(self) -> List["WrapType"]:
         """Get all wraps registered to this pipeline builder context."""
         return list(chain(*self._wraps.values()))
 
     @property
-    def wraps_dict(self) -> Dict[Optional[str], List[Wrap]]:
+    def wraps_dict(self) -> Dict[Optional[str], List["WrapType"]]:
         """Get wraps as a dictionary mapping."""
         return self._wraps
 
@@ -143,7 +148,7 @@ class PipelineBuilderContext:
         if self.decision_type is None and self.recommendation_type is None:
             raise ValueError("Cannot instantiate builder context not specific to adviser nor dependency monkey")
 
-    def is_included(self, unit_class: Unit) -> bool:
+    def is_included(self, unit_class: Type["UnitType"]) -> bool:
         """Check if the given pipeline unit is already included in the pipeline configuration."""
         if unit_class.is_boot_unit_type():
             return unit_class.get_unit_name() in self._boots_included
@@ -160,32 +165,32 @@ class PipelineBuilderContext:
 
         raise InternalError(f"Unknown unit {unit_class.get_unit_name()!r} of type {unit_class}")
 
-    def get_included_boots(self, boot_class: Unit) -> List[Unit]:
+    def get_included_boots(self, boot_class: Type["UnitType"]) -> List["BootType"]:
         """Get included boots of the provided boot class."""
         assert boot_class.is_boot_unit_type()
         return self._boots_included.get(boot_class.get_unit_name(), [])
 
-    def get_included_pseudonyms(self, pseudonym_class: Unit) -> List[Unit]:
+    def get_included_pseudonyms(self, pseudonym_class: Type["PseudonymType"]) -> Sequence["PseudonymType"]:
         """Get included sieves of the provided sieve class."""
         assert pseudonym_class.is_pseudonym_unit_type()
         return self._pseudonyms_included.get(pseudonym_class.get_unit_name(), [])
 
-    def get_included_sieves(self, sieve_class: Unit) -> List[Unit]:
+    def get_included_sieves(self, sieve_class: Type["SieveType"]) -> Sequence["SieveType"]:
         """Get included sieves of the provided sieve class."""
         assert sieve_class.is_sieve_unit_type()
         return self._sieves_included.get(sieve_class.get_unit_name(), [])
 
-    def get_included_steps(self, step_class: Unit) -> List[Unit]:
+    def get_included_steps(self, step_class: Type["StepType"]) -> Sequence["StepType"]:
         """Get included steps of the provided step class."""
         assert step_class.is_step_unit_type()
         return self._steps_included.get(step_class.get_unit_name(), [])
 
-    def get_included_strides(self, stride_class: Unit) -> List[Unit]:
+    def get_included_strides(self, stride_class: Type["StrideType"]) -> Sequence["StrideType"]:
         """Get included strides of the provided stride class."""
         assert stride_class.is_stride_unit_type()
         return self._strides_included.get(stride_class.get_unit_name(), [])
 
-    def get_included_wraps(self, wrap_class: Unit) -> List[Unit]:
+    def get_included_wraps(self, wrap_class: Type["WrapType"]) -> Sequence["WrapType"]:
         """Get included wraps of the provided wrap class."""
         assert wrap_class.is_wrap_unit_type()
         return self._wraps_included.get(wrap_class.get_unit_name(), [])
@@ -198,7 +203,7 @@ class PipelineBuilderContext:
         """Check if the pipeline built is meant for Dependency Monkey."""
         return self.decision_type is not None and self.recommendation_type is None
 
-    def add_unit(self, unit: Unit) -> None:
+    def add_unit(self, unit: "UnitType") -> None:
         """Add the given unit to pipeline configuration."""
         package_name: Optional[str] = unit.configuration.get("package_name")
 
@@ -245,7 +250,7 @@ class PipelineBuilder:
         raise NotImplementedError("Cannot instantiate pipeline builder")
 
     @staticmethod
-    def _iter_units(ctx: PipelineBuilderContext) -> Generator[type, None, None]:
+    def _iter_units(ctx: PipelineBuilderContext) -> Generator["UnitType", None, None]:
         """Iterate over pipeline units available in this implementation."""
         # Imports placed here to simplify tests.
         import thoth.adviser.boots
@@ -310,7 +315,7 @@ class PipelineBuilder:
                     )
                     continue
 
-                for unit_configuration in unit_class.should_include(ctx):  # type: ignore
+                for unit_configuration in unit_class.should_include(ctx):
                     if unit_configuration is None:
                         _LOGGER.debug(
                             "Pipeline unit %r will not be included in the pipeline configuration in this round",
@@ -325,7 +330,7 @@ class PipelineBuilder:
                         unit_name,
                         unit_configuration,
                     )
-                    unit_instance = unit_class()
+                    unit_instance = unit_class()  # type: ignore
 
                     # Always perform update, even with an empty dict. Update triggers a schema check.
                     try:
@@ -356,7 +361,7 @@ class PipelineBuilder:
         return pipeline
 
     @staticmethod
-    def _do_instantiate_from_dict(module: object, configuration_entry: Dict[str, Any]) -> Unit:
+    def _do_instantiate_from_dict(module: object, configuration_entry: Dict[str, Any]) -> "UnitType":
         """Instantiate a pipeline unit from a dict representation."""
         if "name" not in configuration_entry:
             raise ValueError(f"No pipeline unit name provided in the configuration entry: {configuration_entry!r}")
@@ -366,7 +371,7 @@ class PipelineBuilder:
         except AttributeError as exc:
             raise UnknownPipelineUnitError(f"Cannot import unit {configuration_entry['name']}: {str(exc)}") from exc
 
-        unit: Unit = unit_class()
+        unit: "UnitType" = unit_class()
 
         if configuration_entry.get("configuration"):
             try:
@@ -390,15 +395,15 @@ class PipelineBuilder:
         import thoth.adviser.strides
         import thoth.adviser.wraps
 
-        boots: Dict[Optional[str], List[Boot]] = {}
+        boots: Dict[Optional[str], List["BootType"]] = {}
         for boot_entry in dict_.pop("boots", []) or []:
-            boot_unit: Boot = cls._do_instantiate_from_dict(thoth.adviser.boots, boot_entry)  # type: ignore
+            boot_unit: "BootType" = cls._do_instantiate_from_dict(thoth.adviser.boots, boot_entry)
             package_name = boot_unit.configuration.get("package_name")
             boots.setdefault(package_name, []).append(boot_unit)
 
-        pseudonyms: Dict[str, List[Pseudonym]] = {}
+        pseudonyms: Dict[str, List["PseudonymType"]] = {}
         for pseudonym_entry in dict_.pop("pseudonyms", []) or []:
-            unit: Pseudonym = cls._do_instantiate_from_dict(thoth.adviser.pseudonyms, pseudonym_entry)  # type: ignore
+            unit: "PseudonymType" = cls._do_instantiate_from_dict(thoth.adviser.pseudonyms, pseudonym_entry)
 
             package_name = unit.configuration.get("package_name")
             if not package_name:
@@ -409,27 +414,27 @@ class PipelineBuilder:
 
             pseudonyms.setdefault(package_name, []).append(unit)
 
-        sieves: Dict[Optional[str], List[Sieve]] = {}
+        sieves: Dict[Optional[str], List["SieveType"]] = {}
         for sieve_entry in dict_.pop("sieves", []) or []:
-            sieve_unit: Sieve = cls._do_instantiate_from_dict(thoth.adviser.sieves, sieve_entry)  # type: ignore
+            sieve_unit: "SieveType" = cls._do_instantiate_from_dict(thoth.adviser.sieves, sieve_entry)
             package_name = sieve_unit.configuration.get("package_name")
             sieves.setdefault(package_name, []).append(sieve_unit)
 
-        steps: Dict[Optional[str], List[Step]] = {}
+        steps: Dict[Optional[str], List["StepType"]] = {}
         for step_entry in dict_.pop("steps", []) or []:
-            step_unit: Step = cls._do_instantiate_from_dict(thoth.adviser.steps, step_entry)  # type: ignore
+            step_unit: "StepType" = cls._do_instantiate_from_dict(thoth.adviser.steps, step_entry)
             package_name = step_unit.configuration.get("package_name")
             steps.setdefault(package_name, []).append(step_unit)
 
-        strides: Dict[Optional[str], List[Stride]] = {}
+        strides: Dict[Optional[str], List["StrideType"]] = {}
         for stride_entry in dict_.pop("strides", []) or []:
-            stride_unit: Stride = cls._do_instantiate_from_dict(thoth.adviser.strides, stride_entry)  # type: ignore
+            stride_unit: "StrideType" = cls._do_instantiate_from_dict(thoth.adviser.strides, stride_entry)
             package_name = stride_unit.configuration.get("package_name")
             strides.setdefault(package_name, []).append(stride_unit)
 
-        wraps: Dict[Optional[str], List[Wrap]] = {}
+        wraps: Dict[Optional[str], List["WrapType"]] = {}
         for wrap_entry in dict_.pop("wraps", []) or []:
-            wrap_unit: Wrap = cls._do_instantiate_from_dict(thoth.adviser.wraps, wrap_entry)  # type: ignore
+            wrap_unit: "WrapType" = cls._do_instantiate_from_dict(thoth.adviser.wraps, wrap_entry)
             package_name = wrap_unit.configuration.get("package_name")
             wraps.setdefault(package_name, []).append(wrap_unit)
 
