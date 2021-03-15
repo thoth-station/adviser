@@ -21,6 +21,7 @@ import abc
 import logging
 from typing import Any
 from typing import Dict
+from typing import List
 from typing import Optional
 from typing import TYPE_CHECKING
 from packaging.specifiers import SpecifierSet
@@ -30,6 +31,7 @@ import attr
 from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.exceptions import EagerStopPipeline
 from thoth.adviser.state import State
+from thoth.common import get_justification_link as jl
 
 from ...unit import Unit
 
@@ -202,6 +204,19 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
 
         return True
 
+    @classmethod
+    def _prepare_justification_link(cls, entries: List[Dict[str, Any]]) -> None:
+        """Prepare justification links before using them."""
+        for entry in entries:
+            link = entry.get("link")
+            if link and not link.startswith(("https://", "http://")):
+                entry["link"] = jl(link)
+
+    def pre_run(self) -> None:
+        """Prepare this pipeline unit before running it."""
+        self._prepare_justification_link(self.run_prescription.get("stack_info", []))
+        super().pre_run()
+
     def _run_log(self) -> None:
         """Log message specified in the run prescription."""
         log = self.run_prescription.get("log")
@@ -210,8 +225,9 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
 
     def _run_stack_info(self) -> None:
         """Add stack info if any prescribed."""
-        if self.run_prescription.get("stack_info"):
-            self.context.stack_info.extend(self.run_prescription["stack_info"])
+        stack_info = self.run_prescription.get("stack_info")
+        if stack_info:
+            self.context.stack_info.extend(stack_info)
 
     def _run_state(self, state: State) -> bool:
         """Check state match."""
@@ -233,8 +249,10 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         self._run_log()
         self._run_stack_info()
 
-        if self.run_prescription.get("not_acceptable"):
-            raise NotAcceptable(self.run_prescription["not_acceptable"])
+        not_acceptable = self.run_prescription.get("not_acceptable")
+        if not_acceptable:
+            raise NotAcceptable(not_acceptable)
 
-        if self.run_prescription.get("eager_stop_pipeline"):
-            raise EagerStopPipeline(self.run_prescription["eager_stop_pipeline"])
+        eager_stop_pipeline = self.run_prescription.get("eager_stop_pipeline")
+        if eager_stop_pipeline:
+            raise EagerStopPipeline(eager_stop_pipeline)

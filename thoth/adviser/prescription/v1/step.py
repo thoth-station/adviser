@@ -88,6 +88,9 @@ class StepPrescription(UnitPrescription):
 
         self._index_url = self.run_prescription["match"]["package_version"].get("index_url")
 
+        self._prepare_justification_link(self.run_prescription.get("justification", []))
+        super().pre_run()
+
     def run(
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
