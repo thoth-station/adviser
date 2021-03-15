@@ -264,7 +264,7 @@ semantics.
 Steps
 =====
 
-See :ref:`step pipeline unit <step>` for more information on
+See :ref:`step pipeline unit <steps>` for more information on
 semantics.
 
 .. code-block:: yaml
@@ -344,7 +344,7 @@ semantics.
 Strides
 =======
 
-See :ref:`step pipeline unit <step>` for more information on
+See :ref:`strides pipeline unit <strides>` for more information on
 semantics.
 
 .. code-block:: yaml
@@ -377,7 +377,7 @@ semantics.
 Wraps
 =====
 
-See :ref:`wrap pipeline unit <wrap>` for more information on
+See :ref:`wrap pipeline unit <wraps>` for more information on
 semantics.
 
 .. code-block:: yaml
