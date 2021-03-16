@@ -17,8 +17,6 @@
 
 """Test UBI to RHEL mapping boot."""
 
-import flexmock
-
 from thoth.adviser.boots import UbiBoot
 from thoth.adviser.context import Context
 from thoth.adviser.enums import RecommendationType
@@ -43,12 +41,19 @@ tensorflow = "*"
 
     UNIT_TESTED = UbiBoot
 
-    def test_verify_multiple_should_include(self) -> None:
+    def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
-        builder_context = PipelineBuilderContext(recommendation_type=RecommendationType.LATEST)
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.project.runtime_environment.operating_system.name = "ubi"
         self.verify_multiple_should_include(builder_context)
 
-    def test_rhel_assign(self, context: Context) -> None:
+    def test_no_include(self, builder_context: PipelineBuilderContext) -> None:
+        """Test not including this pipeline unit."""
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.project.runtime_environment.operating_system.name = "fedora"
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == []
+
+    def test_run(self, context: Context) -> None:
         """Test remapping UBI to RHEL."""
         context.project = Project.from_strings(self._CASE_PIPFILE)
         context.project.runtime_environment.operating_system.name = "ubi"
@@ -60,14 +65,3 @@ tensorflow = "*"
         assert context.project.runtime_environment.operating_system.name == "rhel"
         assert context.stack_info, "No stack info provided"
         assert self.verify_justification_schema(context.stack_info) is True
-
-    def test_no_rhel_assign(self) -> None:
-        """Test no change made if operating system is not UBI."""
-        context = flexmock(project=Project.from_strings(self._CASE_PIPFILE))
-        context.project.runtime_environment.operating_system.name = "fedora"
-
-        boot = UbiBoot()
-        with UbiBoot.assigned_context(context):
-            boot.run()
-
-        assert context.project.runtime_environment.operating_system.name == "fedora"
