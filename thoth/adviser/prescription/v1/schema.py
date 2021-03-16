@@ -120,7 +120,7 @@ _UNIT_RUN_SCHEMA_BASE_DICT = {
     Optional("stack_info"): [STACK_INFO_SCHEMA],
     Optional("log"): Schema(
         {
-            Required("text"): All(str, Length(min=1)),
+            Required("message"): All(str, Length(min=1)),
             Required("type"): Any("WARNING", "INFO", "ERROR"),
         }
     ),

@@ -221,9 +221,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         """Log message specified in the run prescription."""
         log = self.run_prescription.get("log")
         if log:
-            _LOGGER.log(
-                level=getattr(logging, log["type"]), msg=f"{self.get_unit_name()}: {log['text']} - see {log['url']}"
-            )
+            _LOGGER.log(level=getattr(logging, log["type"]), msg=f"{self.get_unit_name()}: {log['message']}")
 
     def _run_stack_info(self) -> None:
         """Add stack info if any prescribed."""

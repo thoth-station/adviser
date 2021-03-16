@@ -80,7 +80,7 @@ class PackageIndexConfigurationSieve(Sieve):
                     self.packages_seen.add(package_tuple)
                     msg = (
                         f"Skipping package {package_tuple} as it does not used configured "
-                        f"index {self.configuration['index_url']}"
+                        f"index {self.configuration['index_url']!r}"
                     )
                     _LOGGER.warning("%s - see %s", msg, self._JUSTIFICATION_LINK)
                     self.context.stack_info.append(
