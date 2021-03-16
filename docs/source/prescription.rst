@@ -43,6 +43,7 @@ Here is a core part of the prescription YAML document:
   apiVersion: thoth-station.ninja/v1
   kind: prescription
   spec:
+    release: 2021.03.30  # A calendar release of the prescription.
     units:
       boots: []
       pseudonyms: []
@@ -50,6 +51,7 @@ Here is a core part of the prescription YAML document:
       steps: []
       strides: []
       wraps: []
+    wisdom:  # Any YAML serialized data that can be used in units using YAML anchors and aliases.
 
 Each unit entry in the respective ``units`` section corresponding to a pipeline
 unit type declaratively describes a unit and its action that should be done
@@ -281,7 +283,7 @@ semantics.
     match:                                          # Criteria to trigger run of this pipeline unit. Defaults to always running the boot pipeline unit if no package_version is provided.
       package_version:                              # Any package matching this criteria will be filtered out from the resolution.
         name: flask                                 # Name of the package for which the unit should be registered.
-        version: '>1.0<=1.1.0'                      # Version specifier for which the sieve should be run. If not provided, defauts to any version.
+        version: '>1.0<=1.1.0'                      # Version specifier for which the sieve should be run. If not provided, defaults to any version.
         index_url: 'https://pypi.org/simple'        # Package source index for which the sieve should be run. If not provided, defaults to any index.
 
       state:                                        # Optional, resolver internal state to match for the given resolution step.

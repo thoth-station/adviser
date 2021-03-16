@@ -321,7 +321,9 @@ PRESCRIPTION_SPEC_UNITS_SCHEMA = Schema(
 
 PRESCRIPTION_SPEC_SCHEMA = Schema(
     {
+        Required("release"): str,
         Required("units"): PRESCRIPTION_SPEC_UNITS_SCHEMA,
+        Optional("wisdom"): object,
     }
 )
 
