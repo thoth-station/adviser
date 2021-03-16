@@ -98,22 +98,26 @@ in the resolution process. This section is shared for pipeline units of any type
     decision_types:                    # Decision types for which the pipeline unit should be included if dependency_monkey_pipeline=true. Defaults to all available if not provided.
       - random
       - all
-    runtime_environment:               # User's runtime environment used for which the resolution is triggered.
-      operating_system:                # Name and version of the user's operating system.
-        name: 'rhel'
-        version: '8'
+    runtime_environments:              # User's runtime environment used for which the resolution is triggered.
+      operating_systems:               # Name and version of the user's operating system.
+        - name: 'rhel'
+          version: '8'
       hardware:                        # Hardware information present on the user's machine.
-        cpu_family: 1
-        cpu_model: 2
-        gpu_model: 'Nvidia GeForce GTX 1060'
-      python_version: '3.6'            # Python interpreter version used to run the application.
-      cuda_version: '9.0'
-      platform: 'linux-x86_64'
-      openblas_version: '0.3.13'
-      openmpi_version: '4.1'
-      cudnn_version: '8.1.0'
-      mkl_version: '2021.1.1'
-      base_image: 'quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0'  # Base image used for running the application.
+        cpu_families: [1]
+        cpu_models: [2]
+        gpu_models:
+          - 'Nvidia GeForce GTX 1060'
+      python_versions:                # Python interpreter version used to run the application.
+        - '3.8'
+        - '3.9'
+      cuda_versions: ['9.0']
+      platforms: ['linux-x86_64']
+      openblas_versions: ['0.3.13']
+      openmpi_versions: ['4.1']
+      cudnn_versions: ['8.1.0']
+      mkl_versions: ['2021.1.1']
+      base_images:
+        - 'quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0'  # Base image used for running the application.
 
 The configuration options not stated do not enforce the given configuration.
 For example, not stating ``python_version`` means that the pipeline unit will

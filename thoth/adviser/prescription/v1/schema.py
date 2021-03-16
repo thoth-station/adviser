@@ -55,29 +55,24 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
         ),
         Optional("recommendation_types"): list(map(str.lower, RecommendationType.__members__.keys())),
         Optional("decision_types"): list(map(str.lower, DecisionType.__members__.keys())),
-        Optional("runtime_environment"): Schema(
+        Optional("runtime_environments"): Schema(
             {
-                Optional("operating_system"): Schema(
-                    {
-                        Optional("name"): str,
-                        Optional("version"): str,
-                    }
-                ),
+                Optional("operating_systems"): [Schema({Optional("name"): str, Optional("version"): str})],
                 Optional("hardware"): Schema(
                     {
-                        Optional("cpu_family"): int,
-                        Optional("cpu_model"): int,
-                        Optional("gpu_model"): str,
+                        Optional("cpu_families"): [int],
+                        Optional("cpu_models"): [int],
+                        Optional("gpu_models"): [str],
                     }
                 ),
-                Optional("python_version"): str,
-                Optional("cuda_version"): str,
-                Optional("platform"): str,
-                Optional("openblas_version"): str,
-                Optional("openmpi_version"): str,
-                Optional("cudnn_version"): str,
-                Optional("mkl_version"): str,
-                Optional("base_image"): str,
+                Optional("python_versions"): [str],
+                Optional("cuda_versions"): [str],
+                Optional("platforms"): [str],
+                Optional("openblas_versions"): [str],
+                Optional("openmpi_versions"): [str],
+                Optional("cudnn_versions"): [str],
+                Optional("mkl_versions"): [str],
+                Optional("base_images"): [str],
             }
         ),
     }
