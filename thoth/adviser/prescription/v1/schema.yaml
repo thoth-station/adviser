@@ -1,0 +1,163 @@
+apiVersion: enum('thoth-station.ninja/v1')
+kind: enum('prescription')
+spec:
+  units:
+    boots: list(include('boot'), required=False)
+    pseudonyms: list(include('pseudonym'), required=False)
+    sieves: list(include('sieve'), required=False)
+    steps: list(include('step'), required=False)
+    strides: list(include('stride'), required=False)
+    wraps: list(include('wrap'), required=False)
+
+---
+unit_dependencies:
+  boots: list(str(min=1), required=False)
+  pseudonyms: list(str(min=1), required=False)
+  sieves: list(str(min=1), required=False)
+  steps: list(str(min=1), required=False)
+  strides: list(str(min=1), required=False)
+  wraps: list(str(min=1), required=False)
+
+operating_system:
+  name: str(min=1, required=False)
+  version: str(min=1, required=False)
+
+hardware:
+  cpu_family: int(min=0, required=False)
+  cpu_model: int(min=0, required=False)
+  gpu_model: str(min=1, required=False)
+
+runtime_environment:
+  operating_system: include('operating_system', required=False)
+  hardware: include('hardware', required=False)
+  python_version: str(min=1, required=False)
+  cuda_version: str(min=1, required=False)
+  platform: str(min=1, required=False)
+  openblas_version: str(min=1, required=False)
+  openmpi_version: str(min=1, required=False)
+  cudnn_version: str(min=1, required=False)
+  mkl_version: str(min=1, required=False)
+  base_image: str(min=1, required=False)
+
+should_include:
+  times: int(min=0, max=1, required=False)
+  adviser_pipeline: bool(required=False)
+  dependency_monkey_pipeline: bool(required=False)
+  dependencies: include('unit_dependencies', required=False)
+  recommendation_types: list(enum('latest', 'performance', 'security', 'stable', 'testing'), required=False)
+  decision_types: list(enum('all', 'random'), required=False)
+  runtime_environment: include('runtime_environment', required=False)
+
+info_entry:
+  type: enum('ERROR', 'WARNING', 'INFO', required=True)
+  message: str(min=1, required=True)
+  link: str(min=1, required=True)
+
+package_locked_version:
+  name: str(min=1, required=True)
+  locked_version: str(min=1, required=True)
+  index_url: str(min=1, required=True)
+
+state:
+  resolved_dependencies: list('package_locked_version', min=1)
+
+stack_info: list(include('info_entry'), min=1)
+
+justification: list(include('info_entry'), min=1)
+
+log:
+  message: str(min=1, required=True)
+  type: enum('ERROR', 'WARNING', 'INFO', required=True)
+
+package_version:
+  name: str(min=1, required=False)
+  version: str(min=1, required=False)
+  index_url: str(min=1, required=False)
+
+boot_match:
+  package_name: str(min=1, required=True)
+
+boot:
+  name: str(min=1)
+  type: enum('boot')
+  should_include: include('should_include', required=True)
+  run:
+    match: include('boot_match', required=False)
+    stack_info: include('stack_info', required=False)
+    eager_stop_pipeline: str(min=1, required=False)
+    not_acceptable: str(min=1, required=False)
+    log: include('log', required=False)
+
+pseudonym_match:
+  package_version: include('package_version', required=True)
+
+pseudonym:
+  name: str(min=1)
+  type: enum('boot')
+  should_include: include('should_include', required=True)
+  run:
+    match: include('pseudonym_match', required=True)
+    yield: include('pseudonym_match', required=True)
+    stack_info: include('stack_info', required=False)
+    log: include('log', required=False)
+
+sieve_match:
+  package_version: include('package_version', required=True)
+
+sieve:
+  name: str(min=1)
+  type: enum('boot')
+  should_include: include('should_include', required=True)
+  run:
+    match: include('sieve_match', required=False)
+    stack_info: include('stack_info', required=False)
+    eager_stop_pipeline: str(min=1, required=False)
+    not_acceptable: str(min=1, required=False)
+    log: include('log', required=False)
+
+step_match:
+ state: include('state', required=False)
+ package_version: include('package_version', required=False)
+
+step:
+  name: str(min=1)
+  type: enum('boot')
+  should_include: include('should_include', required=True)
+  run:
+    match: include('step_match', required=False)
+    score: num(min=-1.0, max=1.0, required=False)
+    multi_package_resolution: bool(required=False)
+    justification: include('justification', required=False)
+    stack_info: include('stack_info', required=False)
+    eager_stop_pipeline: str(min=1, required=False)
+    not_acceptable: str(min=1, required=False)
+    log: include('log', required=False)
+
+stride_match:
+  state: include('state', required=True)
+
+stride:
+  name: str(min=1)
+  type: enum('boot')
+  should_include: include('should_include', required=True)
+  run:
+    match: include('stide_match', required=False)
+    stack_info: include('stack_info', required=False)
+    eager_stop_pipeline: str(min=1, required=False)
+    not_acceptable: str(min=1, required=False)
+    log: include('log', required=False)
+
+wrap_match:
+  state: include('state', required=True)
+
+wrap:
+  name: str(min=1)
+  type: enum('boot')
+  should_include: include('should_include', required=True)
+  run:
+    match: include('wrap_match', required=False)
+    justification: include('justification', required=False)
+    stack_info: include('stack_info', required=False)
+    eager_stop_pipeline: str(min=1, required=False)
+    not_acceptable: str(min=1, required=False)
+    log: include('log', required=False)
