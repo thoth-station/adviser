@@ -146,7 +146,7 @@ See :ref:`boot pipeline unit <boots>` for more information on semantics.
     not_acceptable: "Cannot include this package"
 
     log:
-      text: "Some text printed to log on pipeline unit run."
+      message: "Some text printed to log on pipeline unit run."
       type: "WARNING"
 
 
@@ -163,7 +163,7 @@ semantics.
   should_include:                                   # See should_include section.
   run:
     log:                                            # Optional text printed to logs when the unit gets called.
-      text: "Some text printed to log on pipeline unit run."
+      message: "Some text printed to log on pipeline unit run."
       type: "WARNING"
 
     stack_info:                                     # Information printed to the recommended stack report.
@@ -232,7 +232,7 @@ semantics.
         index_url: 'https://pypi.org/simple'        # Package source index for which the sieve should be run. If not provided, defaults to any index.
 
     log:                                            # Optional text printed to logs when the unit gets called.
-      text: "Some text printed to log on pipeline unit run."
+      message: "Some text printed to log on pipeline unit run."
       type: "WARNING"
 
     stack_info:                                     # Information printed to the recommended stack report.
@@ -304,7 +304,7 @@ semantics.
     multi_package_resolution: false                 # Run this pipeline multiple times when matched mutliple times. Defaults to false if not provided.
 
     log:                                            # Optional text printed to logs when the unit gets called.
-      text: "Some text printed to log on pipeline unit run."
+      message: "Some text printed to log on pipeline unit run."
       type: "WARNING"
 
     stack_info:                                     # Information printed to the recommended stack report.
@@ -372,7 +372,7 @@ semantics.
     eager_stop_pipeline: "Stop pipeline"
 
     log:                                            # Optional text printed to logs when the unit gets called.
-      text: "Some text printed to log on pipeline unit run."
+      message: "Some text printed to log on pipeline unit run."
       type: "WARNING"
 
     stack_info:                                     # Information printed to the recommended stack report.
@@ -405,7 +405,7 @@ semantics.
     eager_stop_pipeline: "Stop pipeline"
 
     log:                                            # Optional text printed to logs when the unit gets called.
-      text: "Some text printed to log on pipeline unit run."
+      message: "Some text printed to log on pipeline unit run."
       type: "WARNING"
 
     stack_info:                                     # Information printed to the recommended stack report.
