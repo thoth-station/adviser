@@ -47,8 +47,11 @@ class UbiBoot(Boot):
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
-        """Register self, always."""
-        if not builder_context.is_included(cls):
+        """Register self if UBI is used."""
+        if (
+            builder_context.project.runtime_environment.operating_system.name == "ubi"
+            and not builder_context.is_included(cls)
+        ):
             yield {}
             return None
 
@@ -57,9 +60,6 @@ class UbiBoot(Boot):
 
     def run(self) -> None:
         """Remap UBI to RHEL as Thoth keeps track of RHEL and UBI is ABI compatible."""
-        if self.context.project.runtime_environment.operating_system.name == "ubi":
-            _LOGGER.info("%s - see %s", self._MESSAGE, self._JUSTIFICATION_LINK)
-            self.context.stack_info.append(
-                {"type": "WARNING", "message": self._MESSAGE, "link": self._JUSTIFICATION_LINK}
-            )
-            self.context.project.runtime_environment.operating_system.name = "rhel"
+        _LOGGER.info("%s - see %s", self._MESSAGE, self._JUSTIFICATION_LINK)
+        self.context.stack_info.append({"type": "WARNING", "message": self._MESSAGE, "link": self._JUSTIFICATION_LINK})
+        self.context.project.runtime_environment.operating_system.name = "rhel"
