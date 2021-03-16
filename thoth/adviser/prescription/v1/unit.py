@@ -242,9 +242,15 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 if not resolved:
                     return False
 
-                specifier = SpecifierSet(resolved_dependency["version"])
-                if resolved[1] not in specifier or resolved[2] != resolved_dependency["index_url"]:
+                index_url = resolved_dependency.get("index_url")
+                if index_url is not None and resolved[2] != resolved_dependency["index_url"]:
                     return False
+
+                version = resolved_dependency.get("version")
+                if version is not None:
+                    specifier = SpecifierSet(version)  # XXX: this could be optimized out
+                    if resolved[1] not in specifier:
+                        return False
 
         return True
 

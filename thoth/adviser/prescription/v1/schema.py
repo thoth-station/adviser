@@ -41,8 +41,8 @@ _MIN_NAME_LENGTH = 1
 PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
     {
         Optional("times", default=1): All(int, Range(min=0, max=1)),
-        Required("adviser_pipeline"): bool,
-        Required("dependency_monkey_pipeline"): bool,
+        Optional("adviser_pipeline"): bool,
+        Optional("dependency_monkey_pipeline"): bool,
         Optional("dependencies"): Schema(
             {
                 "boots": [str],
@@ -126,14 +126,14 @@ _UNIT_RUN_SCHEMA_BASE_DICT = {
 
 def _locked_version(v: object) -> None:
     """Validate locked version."""
-    if not isinstance(v, str) or not v.startswith("==") and not v.startswith("==="):
+    if v is not None and (not isinstance(v, str) or not v.startswith("==") and not v.startswith("===")):
         raise Invalid(f"Value {v!r} is not valid locked version (example: '==1.0.0')")
 
 
 PACKAGE_VERSION_LOCKED_SCHEMA = Schema(
     {
         Required("name"): Optional(str),
-        Required("locked_version"): _locked_version,
+        Required("locked_version"): Optional(_locked_version),
         Required("index_url"): Optional(str),
     }
 )
@@ -193,8 +193,8 @@ PRESCRIPTION_BOOT_SCHEMA = Schema(
 
 PRESCRIPTION_PSEUDONYM_RUN_SCHEMA = Schema(
     {
-        Required("match"): PACKAGE_VERSION_REQUIRED_NAME_SCHEMA,
-        Required("yield"): PACKAGE_VERSION_LOCKED_SCHEMA,
+        Required("match"): Schema({"package_version": PACKAGE_VERSION_REQUIRED_NAME_SCHEMA}),
+        Required("yield"): Schema({"package_version": PACKAGE_VERSION_LOCKED_SCHEMA}),
         **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )
@@ -214,7 +214,6 @@ PRESCRIPTION_PSEUDONYM_SCHEMA = Schema(
 PRESCRIPTION_SIEVE_RUN_SCHEMA = Schema(
     {
         Required("match"): Schema({"package_version": PACKAGE_VERSION_SCHEMA}),
-        Required("sieve_matched"): bool,
         **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )
@@ -266,7 +265,9 @@ PRESCRIPTION_STRIDE_RUN_SCHEMA = Schema(
     {
         Optional("not_acceptable"): All(str, Length(min=1)),
         Optional("eager_stop_pipeline"): All(str, Length(min=1)),
-        Optional("state"): Schema({Optional("resolved_dependencies"): [PACKAGE_VERSION_SCHEMA]}),
+        Required("match"): Schema(
+            {Required("state"): Schema({Required("resolved_dependencies"): [PACKAGE_VERSION_SCHEMA]})}
+        ),
         **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )
@@ -288,7 +289,9 @@ PRESCRIPTION_WRAP_RUN_SCHEMA = Schema(
         Optional("not_acceptable"): All(str, Length(min=1)),
         Optional("eager_stop_pipeline"): All(str, Length(min=1)),
         Optional("justification"): [JUSTIFICATION_SCHEMA],
-        Optional("state"): Schema({Optional("resolved_dependencies"): PACKAGE_VERSION_SCHEMA}),
+        Required("match"): Schema(
+            {Required("state"): Schema({Required("resolved_dependencies"): [PACKAGE_VERSION_SCHEMA]})}
+        ),
         **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )

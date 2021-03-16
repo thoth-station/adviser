@@ -15,25 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Schema v1 based prescription units."""
-
-from .boot import BootPrescription
-from .pseudonym import PseudonymPrescription
-from .schema import PRESCRIPTION_SCHEMA
-from .sieve import SievePrescription
-from .step import StepPrescription
-from .stride import StridePrescription
-from .unit import UnitPrescription
-from .wrap import WrapPrescription
-
-
-__all__ = [
-    "BootPrescription",
-    "PseudonymPrescription",
-    "PRESCRIPTION_SCHEMA",
-    "SievePrescription",
-    "StepPrescription",
-    "StridePrescription",
-    "UnitPrescription",
-    "WrapPrescription",
-]
+"""Tests for prescription v1 units implementation."""

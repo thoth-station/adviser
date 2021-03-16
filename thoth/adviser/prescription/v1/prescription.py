@@ -78,6 +78,8 @@ class Prescription:
                 )
                 raise PrescriptionSchemaError(str(exc))
 
+        _LOGGER.info("Using v1 prescription release %r", prescription["spec"]["release"])
+
         boots_dict = OrderedDict()
         for boot_spec in prescription["spec"]["units"].get("boots") or []:
             boot_spec["name"] = f"prescription.{boot_spec['name']}"

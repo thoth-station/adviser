@@ -15,25 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Schema v1 based prescription units."""
+"""Test implementation of generic v1 prescription unit handling."""
 
-from .boot import BootPrescription
-from .pseudonym import PseudonymPrescription
-from .schema import PRESCRIPTION_SCHEMA
-from .sieve import SievePrescription
-from .step import StepPrescription
-from .stride import StridePrescription
-from .unit import UnitPrescription
-from .wrap import WrapPrescription
+from thoth.adviser.prescription.v1 import UnitPrescription
+
+from ...base import AdviserTestCase
 
 
-__all__ = [
-    "BootPrescription",
-    "PseudonymPrescription",
-    "PRESCRIPTION_SCHEMA",
-    "SievePrescription",
-    "StepPrescription",
-    "StridePrescription",
-    "UnitPrescription",
-    "WrapPrescription",
-]
+class TestUnitPrescription(AdviserTestCase):
+    """Test implementation of generic v1 prescription unit handling."""
