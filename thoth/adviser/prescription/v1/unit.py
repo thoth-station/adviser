@@ -127,79 +127,83 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 )
                 return False
 
-        runtime_environment_dict = should_include_dict.get("runtime_environment_dict", {})
+        runtime_environment_dict = should_include_dict.get("runtime_environment", {})
 
         # Operating system.
-        operating_system_dict = should_include_dict.get("operating_system", {})
-        os_name = operating_system_dict.get("name")
-        os_version = operating_system_dict.get("version")
-        if os_name is not None and os_name != builder_context.project.runtime_environment.operating_system.name:
-            _LOGGER.debug("%s: Not matching operating system name used", unit_name)
-            return False
+        operating_systems = should_include_dict.get("operating_systems", [])
+        os_used = builder_context.project.runtime_environment.operating_system
+        for item in operating_systems:
+            os_name = item.get("name")
+            os_version = item.get("version")
+            if os_name is not None and os_name != os_used.name:
+                _LOGGER.debug("%s: Not matching operating system name used (using %r)", unit_name, os_used.name)
+                return False
 
-        if (
-            os_version is not None
-            and os_version != builder_context.project.runtime_environment.operating_system.version
-        ):
-            _LOGGER.debug("%s: Not matching operating system version used", unit_name)
-            return False
+            if os_version is not None and os_version != os_used.version:
+                _LOGGER.debug("%s: Not matching operating system version used (using %r)", unit_name, os_used.version)
+                return False
 
         # Hardware.
         hardware_dict = runtime_environment_dict.get("hardware", {})
-        cpu_family = hardware_dict.get("cpu_family")
-        cpu_model = hardware_dict.get("cpu_model")
-        gpu_model = hardware_dict.get("gpu_model")
-        if cpu_family is not None and cpu_family != builder_context.project.runtime_environment.hardware.cpu_family:
-            _LOGGER.debug("%s: Not matching CPU family used", unit_name)
+        hw_used = builder_context.project.runtime_environment.hardware
+
+        # CPU/GPU
+        cpu_families = hardware_dict.get("cpu_families")
+        cpu_models = hardware_dict.get("cpu_models")
+        gpu_models = hardware_dict.get("gpu_models")
+        if cpu_families is not None and hw_used.cpu_family not in cpu_families:
+            _LOGGER.debug("%s: Not matching CPU family used (using %r)", unit_name, hw_used.cpu_family)
             return False
 
-        if cpu_model is not None and cpu_model != builder_context.project.runtime_environment.hardware.cpu_model:
-            _LOGGER.debug("%s: Not matching CPU model used", unit_name)
+        if cpu_models is not None and hw_used.cpu_model not in cpu_models:
+            _LOGGER.debug("%s: Not matching CPU model used (using %r)", unit_name, hw_used.cpu_model)
             return False
 
-        if gpu_model is not None and gpu_model != builder_context.project.runtime_environment.hardware.gpu_model:
-            _LOGGER.debug("%s: Not matching GPU model used", unit_name)
+        if gpu_models is not None and hw_used.gpu_model not in gpu_models:
+            _LOGGER.debug("%s: Not matching GPU model used (using %r)", unit_name, hw_used.gpu_model)
             return False
 
         # Software present.
-        python_version = runtime_environment_dict.get("python_version")
-        if python_version is not None and python_version != runtime_environment_dict.get("python_version"):
-            _LOGGER.debug("%s: Not matching Python version used", unit_name)
+        runtime_used = builder_context.project.runtime_environment
+
+        python_versions = runtime_environment_dict.get("python_versions")
+        if python_versions is not None and runtime_used.python_version not in python_versions:
+            _LOGGER.debug("%s: Not matching Python version used (using %r)", unit_name, runtime_used.python_version)
             return False
 
-        cuda_version = runtime_environment_dict.get("cuda_version")
-        if cuda_version is not None and cuda_version != runtime_environment_dict.get("cuda_version"):
-            _LOGGER.debug("%s: Not matching CUDA version used", unit_name)
+        cuda_versions = runtime_environment_dict.get("cuda_versions")
+        if cuda_versions is not None and runtime_used.cuda_version not in cuda_versions:
+            _LOGGER.debug("%s: Not matching CUDA version used (using %r)", unit_name, runtime_used.cuda_version)
             return False
 
-        platform = runtime_environment_dict.get("platform")
-        if platform is not None and platform != runtime_environment_dict.get("platfrom"):
-            _LOGGER.debug("%s: Not matching platform used", unit_name)
+        platforms = runtime_environment_dict.get("platforms")
+        if platforms is not None and runtime_used.platform not in platforms:
+            _LOGGER.debug("%s: Not matching platform used (using %r)", unit_name, runtime_used.platform)
             return False
 
-        openblas_version = runtime_environment_dict.get("openblas_version")
-        if openblas_version is not None and openblas_version != runtime_environment_dict.get("openblas_version"):
-            _LOGGER.debug("%s: Not matching openblas version used", unit_name)
+        openblas_versions = runtime_environment_dict.get("openblas_versions")
+        if openblas_versions is not None and runtime_used.openblas_version not in openblas_versions:
+            _LOGGER.debug("%s: Not matching openblas version used (using %r)", unit_name, runtime_used.openblas_version)
             return False
 
-        openmpi_version = runtime_environment_dict.get("openmpi_version")
-        if openmpi_version is not None and openmpi_version != runtime_environment_dict.get("openmpi_version"):
-            _LOGGER.debug("%s: Not matching openmpi version used", unit_name)
+        openmpi_versions = runtime_environment_dict.get("openmpi_versions")
+        if openmpi_versions is not None and runtime_used.openmpi_version not in openmpi_versions:
+            _LOGGER.debug("%s: Not matching openmpi version used (using %r)", unit_name, runtime_used.openmpi_version)
             return False
 
-        cudnn_version = runtime_environment_dict.get("cudnn_version")
-        if cudnn_version is not None and cudnn_version != runtime_environment_dict.get("cudnn_version"):
-            _LOGGER.debug("%s: Not matching cudnn version used", unit_name)
+        cudnn_versions = runtime_environment_dict.get("cudnn_versions")
+        if cudnn_versions is not None and runtime_used.cudnn_version not in cudnn_versions:
+            _LOGGER.debug("%s: Not matching cudnn version used (using %r)", unit_name, runtime_used.cudnn_version)
             return False
 
-        mkl_version = runtime_environment_dict.get("mkl_version")
-        if mkl_version is not None and mkl_version != runtime_environment_dict.get("mkl_version"):
-            _LOGGER.debug("%s: Not matching mkl version used", unit_name)
+        mkl_versions = runtime_environment_dict.get("mkl_versions")
+        if mkl_versions is not None and runtime_used.mkl_version not in mkl_versions:
+            _LOGGER.debug("%s: Not matching mkl version used (using %r)", unit_name, runtime_used.mkl_version)
             return False
 
-        base_image = runtime_environment_dict.get("base_image")
-        if base_image is not None and base_image != runtime_environment_dict.get("base_image"):
-            _LOGGER.debug("%s: Not matching base image used", unit_name)
+        base_images = runtime_environment_dict.get("base_images")
+        if base_images is not None and runtime_used.base_image not in base_images:
+            _LOGGER.debug("%s: Not matching base image used (using %r)", unit_name, runtime_used.base_image)
             return False
 
         return True

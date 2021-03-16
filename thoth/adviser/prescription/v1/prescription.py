@@ -123,7 +123,7 @@ class Prescription:
         if os.path.isfile(prescription):
             _LOGGER.debug("Loading prescription from file %r", prescription)
             with open(prescription, "r") as config_file:
-                prescription = config_file.read()
+                return cls.from_dict(yaml.safe_load(config_file))
 
         return cls.from_dict(yaml.safe_load(prescription))
 
