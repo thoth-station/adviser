@@ -58,13 +58,15 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
         Optional("runtime_environments"): Schema(
             {
                 Optional("operating_systems"): [Schema({Optional("name"): str, Optional("version"): str})],
-                Optional("hardware"): Schema(
-                    {
-                        Optional("cpu_families"): [int],
-                        Optional("cpu_models"): [int],
-                        Optional("gpu_models"): [str],
-                    }
-                ),
+                Optional("hardware"): [
+                    Schema(
+                        {
+                            Optional("cpu_families"): [int],
+                            Optional("cpu_models"): [int],
+                            Optional("gpu_models"): [str],
+                        }
+                    )
+                ],
                 Optional("python_versions"): [str],
                 Optional("cuda_versions"): [str],
                 Optional("platforms"): [str],

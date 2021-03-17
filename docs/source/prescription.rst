@@ -103,10 +103,11 @@ in the resolution process. This section is shared for pipeline units of any type
         - name: 'rhel'
           version: '8'
       hardware:                        # Hardware information present on the user's machine.
-        cpu_families: [1]
-        cpu_models: [2]
-        gpu_models:
-          - 'Nvidia GeForce GTX 1060'
+        # Included if any combination matches hardware configuration used.
+        - cpu_families: [1]
+          cpu_models: [2]
+          gpu_models:
+            - 'Nvidia GeForce GTX 1060'
       python_versions:                # Python interpreter version used to run the application.
         - '3.8'
         - '3.9'

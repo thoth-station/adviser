@@ -144,24 +144,24 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 return False
 
         # Hardware.
-        hardware_dict = runtime_environment_dict.get("hardware", {})
         hw_used = builder_context.project.runtime_environment.hardware
 
-        # CPU/GPU
-        cpu_families = hardware_dict.get("cpu_families")
-        cpu_models = hardware_dict.get("cpu_models")
-        gpu_models = hardware_dict.get("gpu_models")
-        if cpu_families is not None and hw_used.cpu_family not in cpu_families:
-            _LOGGER.debug("%s: Not matching CPU family used (using %r)", unit_name, hw_used.cpu_family)
-            return False
+        for hardware_dict in runtime_environment_dict.get("hardware", []):
+            # CPU/GPU
+            cpu_families = hardware_dict.get("cpu_families")
+            cpu_models = hardware_dict.get("cpu_models")
+            gpu_models = hardware_dict.get("gpu_models")
+            if cpu_families is not None and hw_used.cpu_family not in cpu_families:
+                _LOGGER.debug("%s: Not matching CPU family used (using %r)", unit_name, hw_used.cpu_family)
+                return False
 
-        if cpu_models is not None and hw_used.cpu_model not in cpu_models:
-            _LOGGER.debug("%s: Not matching CPU model used (using %r)", unit_name, hw_used.cpu_model)
-            return False
+            if cpu_models is not None and hw_used.cpu_model not in cpu_models:
+                _LOGGER.debug("%s: Not matching CPU model used (using %r)", unit_name, hw_used.cpu_model)
+                return False
 
-        if gpu_models is not None and hw_used.gpu_model not in gpu_models:
-            _LOGGER.debug("%s: Not matching GPU model used (using %r)", unit_name, hw_used.gpu_model)
-            return False
+            if gpu_models is not None and hw_used.gpu_model not in gpu_models:
+                _LOGGER.debug("%s: Not matching GPU model used (using %r)", unit_name, hw_used.gpu_model)
+                return False
 
         # Software present.
         runtime_used = builder_context.project.runtime_environment
