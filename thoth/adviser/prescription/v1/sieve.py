@@ -17,7 +17,6 @@
 
 """A base class for implementing steps."""
 
-import abc
 from typing import Any
 from typing import Dict
 from typing import Generator
@@ -41,6 +40,7 @@ _LOGGER = logging.getLogger(__name__)
 class SievePrescription(UnitPrescription):
     """Sieve base class implementation."""
 
+    _logged = attr.ib(type=bool, kw_only=True, init=False, default=False)
     _specifier = attr.ib(type=Optional[SpecifierSet], kw_only=True, init=False, default=None)
     _index_url = attr.ib(type=Optional[str], kw_only=True, init=False, default=None)
 
@@ -54,7 +54,7 @@ class SievePrescription(UnitPrescription):
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         if cls._should_include_base(builder_context):
             run_prescription: Dict[str, Any] = cls._PRESCRIPTION["run"]  # type: ignore
-            yield {"package_version": run_prescription["package_version"].get("name")}
+            yield {"package_name": run_prescription["match"]["package_version"].get("name")}
             return None
 
         yield from ()
@@ -65,18 +65,23 @@ class SievePrescription(UnitPrescription):
         version_specifier = self.run_prescription["match"]["package_version"].get("version")
         if version_specifier:
             self._specifier = SpecifierSet(version_specifier)
+            self._specifier.prereleases = True
 
         self._index_url = self.run_prescription["match"]["package_version"].get("index_url")
+        self._logged = False
+        super().pre_run()
 
-    @abc.abstractmethod
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Run main entry-point for sieves to filter and score packages."""
         for package_version in package_versions:
             if (not self._specifier or package_version.locked_version in self._specifier) and (
-                not self._index_url and package_version.index.url == self._index_url
+                not self._index_url or package_version.index.url == self._index_url
             ):
-                self._run_log()
-                self._run_stack_info()
+                if not self._logged:
+                    self._logged = True
+                    self._run_log()
+                    self._run_stack_info()
+
                 continue
 
             yield package_version

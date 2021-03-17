@@ -181,7 +181,7 @@ semantics.
     match:                                          # Criteria to trigger run of this pipeline unit. Defaults to always running the pseudonym pipeline unit if no package_version is provided.
       package_version:
         name: flask                                 # Mandatory, name of the package for which pseudonym should be registered.
-        version: '>1.0<=1.1.0'                      # Version specifier for which the pseudonym should be run. If not provided, defauts to any version.
+        version: '>1.0,<=1.1.0'                      # Version specifier for which the pseudonym should be run. If not provided, defauts to any version.
         index_url: 'https://pypi.org/simple'        # Package source index for which the pseudonym should be run. If not provided, defaults to any index.
 
     yield:
@@ -235,7 +235,7 @@ semantics.
     match:                                          # Criteria to trigger run of this pipeline unit. Defaults to always running the sieve pipeline unit if no package_version is provided.
       package_version:                              # Any package matching this criteria will be filtered out from the resolution.
         name: flask                                 # Name of the package for which the unit should be registered.
-        version: '>1.0<=1.1.0'                      # Version specifier for which the sieve should be run. If not provided, defauts to any version.
+        version: '>1.0,<=1.1.0'                      # Version specifier for which the sieve should be run. If not provided, defauts to any version.
         index_url: 'https://pypi.org/simple'        # Package source index for which the sieve should be run. If not provided, defaults to any index.
 
     log:                                            # Optional text printed to logs when the unit gets called.
@@ -288,7 +288,7 @@ semantics.
     match:                                          # Criteria to trigger run of this pipeline unit. Defaults to always running the boot pipeline unit if no package_version is provided.
       package_version:                              # Any package matching this criteria will be filtered out from the resolution.
         name: flask                                 # Name of the package for which the unit should be registered.
-        version: '>1.0<=1.1.0'                      # Version specifier for which the sieve should be run. If not provided, defaults to any version.
+        version: '>1.0,<=1.1.0'                      # Version specifier for which the sieve should be run. If not provided, defaults to any version.
         index_url: 'https://pypi.org/simple'        # Package source index for which the sieve should be run. If not provided, defaults to any index.
 
       state:                                        # Optional, resolver internal state to match for the given resolution step.
@@ -370,7 +370,7 @@ semantics.
       state:                                        # Optional, resolver internal state to match for the given stride.
         resolved_dependencies:
           - name: werkzeug                          # Dependencies that have to be present in the resolved state.
-            locked_version: "1.0.0"
+            version: "~=1.0.0"
             index_url: 'https://pypi.org/simple'
 
     not_acceptable: "Bad package inclusion"         # Block resolving the given stack.
@@ -403,7 +403,7 @@ semantics.
       state:                                        # Optional, resolver internal state to match for the given stride.
         resolved_dependencies:
           - name: werkzeug                          # Dependencies that have to be present in the resolved state.
-            locked_version: "1.0.0"
+            version: ">=1.0.0,<2.5.0"
             index_url: 'https://pypi.org/simple'
 
     not_acceptable: "Bad package inclusion"         # Block resolving the given stack.

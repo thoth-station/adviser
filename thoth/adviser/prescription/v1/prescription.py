@@ -78,6 +78,8 @@ class Prescription:
                 )
                 raise PrescriptionSchemaError(str(exc))
 
+        _LOGGER.info("Using v1 prescription release %r", prescription["spec"]["release"])
+
         boots_dict = OrderedDict()
         for boot_spec in prescription["spec"]["units"].get("boots") or []:
             boot_spec["name"] = f"prescription.{boot_spec['name']}"
@@ -121,7 +123,7 @@ class Prescription:
     def load(cls, prescription: str) -> "Prescription":
         """Load prescription from a string or file."""
         if os.path.isfile(prescription):
-            _LOGGER.debug("Loading prescription from file %r", prescription)
+            _LOGGER.info("Loading prescription %r", prescription)
             with open(prescription, "r") as config_file:
                 return cls.from_dict(yaml.safe_load(config_file))
 

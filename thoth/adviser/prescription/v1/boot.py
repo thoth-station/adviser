@@ -45,7 +45,7 @@ class BootPrescription(UnitPrescription):
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         if cls._should_include_base(builder_context):
             prescription: Dict[str, Any] = cls._PRESCRIPTION  # type: ignore
-            package_name = prescription.get("match", {}).get("package_name")
+            package_name = prescription["run"].get("match", {}).get("package_name")
             yield {"package_name": package_name}
             return None
 

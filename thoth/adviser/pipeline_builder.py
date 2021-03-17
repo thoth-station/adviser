@@ -25,7 +25,6 @@ from typing import Dict
 from typing import Generator
 from typing import Type
 from typing import List
-from typing import Sequence
 from typing import Optional
 from typing import TYPE_CHECKING
 from itertools import chain
@@ -165,35 +164,59 @@ class PipelineBuilderContext:
 
         raise InternalError(f"Unknown unit {unit_class.get_unit_name()!r} of type {unit_class}")
 
-    def get_included_boots(self, boot_class: Type["UnitType"]) -> List["BootType"]:
+    def get_included_boots(self, boot_class: Type["UnitType"]) -> Generator["BootType", None, None]:
         """Get included boots of the provided boot class."""
         assert boot_class.is_boot_unit_type()
-        return self._boots_included.get(boot_class.get_unit_name(), [])
+        yield from self._boots_included.get(boot_class.get_unit_name(), [])
 
-    def get_included_pseudonyms(self, pseudonym_class: Type["PseudonymType"]) -> Sequence["PseudonymType"]:
+    def get_included_boot_names(self) -> Generator[str, None, None]:
+        """Get names of included boots."""
+        yield from self._boots_included.keys()
+
+    def get_included_pseudonyms(self, pseudonym_class: Type["PseudonymType"]) -> Generator["PseudonymType", None, None]:
         """Get included sieves of the provided sieve class."""
         assert pseudonym_class.is_pseudonym_unit_type()
-        return self._pseudonyms_included.get(pseudonym_class.get_unit_name(), [])
+        yield from self._pseudonyms_included.get(pseudonym_class.get_unit_name(), [])
 
-    def get_included_sieves(self, sieve_class: Type["SieveType"]) -> Sequence["SieveType"]:
+    def get_included_pseudonym_names(self) -> Generator[str, None, None]:
+        """Get names of included pseudonyms."""
+        yield from self._pseudonyms_included.keys()
+
+    def get_included_sieves(self, sieve_class: Type["SieveType"]) -> Generator["SieveType", None, None]:
         """Get included sieves of the provided sieve class."""
         assert sieve_class.is_sieve_unit_type()
-        return self._sieves_included.get(sieve_class.get_unit_name(), [])
+        yield from self._sieves_included.get(sieve_class.get_unit_name(), [])
 
-    def get_included_steps(self, step_class: Type["StepType"]) -> Sequence["StepType"]:
+    def get_included_sieve_names(self) -> Generator[str, None, None]:
+        """Get names of included sieves."""
+        yield from self._sieves_included.keys()
+
+    def get_included_steps(self, step_class: Type["StepType"]) -> Generator["StepType", None, None]:
         """Get included steps of the provided step class."""
         assert step_class.is_step_unit_type()
-        return self._steps_included.get(step_class.get_unit_name(), [])
+        yield from self._steps_included.get(step_class.get_unit_name(), [])
 
-    def get_included_strides(self, stride_class: Type["StrideType"]) -> Sequence["StrideType"]:
+    def get_included_step_names(self) -> Generator[str, None, None]:
+        """Get names of included steps."""
+        yield from self._steps_included.keys()
+
+    def get_included_strides(self, stride_class: Type["StrideType"]) -> Generator["StrideType", None, None]:
         """Get included strides of the provided stride class."""
         assert stride_class.is_stride_unit_type()
-        return self._strides_included.get(stride_class.get_unit_name(), [])
+        yield from self._strides_included.get(stride_class.get_unit_name(), [])
 
-    def get_included_wraps(self, wrap_class: Type["WrapType"]) -> Sequence["WrapType"]:
+    def get_included_stride_names(self) -> Generator[str, None, None]:
+        """Get names of included strides."""
+        yield from self._strides_included.keys()
+
+    def get_included_wraps(self, wrap_class: Type["WrapType"]) -> Generator["WrapType", None, None]:
         """Get included wraps of the provided wrap class."""
         assert wrap_class.is_wrap_unit_type()
-        return self._wraps_included.get(wrap_class.get_unit_name(), [])
+        yield from self._wraps_included.get(wrap_class.get_unit_name(), [])
+
+    def get_included_wrap_names(self) -> Generator[str, None, None]:
+        """Get names of included wraps."""
+        yield from self._wraps_included.keys()
 
     def is_adviser_pipeline(self) -> bool:
         """Check if the pipeline built is meant for adviser."""

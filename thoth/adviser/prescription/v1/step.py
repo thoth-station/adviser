@@ -72,7 +72,7 @@ class StepPrescription(UnitPrescription):
         if cls._should_include_base(builder_context):
             run_prescription: Dict[str, Any] = cls._PRESCRIPTION["run"]  # type: ignore
             yield {
-                "package_version": run_prescription["match"]["package_version"].get("name"),
+                "package_name": run_prescription["match"]["package_version"].get("name"),
                 "multi_package_resolution": run_prescription.get("multi_package_resolution", False),
             }
             return None
@@ -87,7 +87,6 @@ class StepPrescription(UnitPrescription):
             self._specifier = SpecifierSet(version_specifier)
 
         self._index_url = self.run_prescription["match"]["package_version"].get("index_url")
-
         self._prepare_justification_link(self.run_prescription.get("justification", []))
         super().pre_run()
 
@@ -96,7 +95,6 @@ class StepPrescription(UnitPrescription):
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Run main entry-point for steps to filter and score packages."""
         if self._index_url and package_version.index.url != self._index_url:
-            _LOGGER.debug("%s: ", self.get_unit_name())
             return None
 
         if self._specifier and package_version.locked_version not in self._specifier:

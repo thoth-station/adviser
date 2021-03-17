@@ -17,7 +17,6 @@
 
 """A base class for implementing strides."""
 
-import abc
 from typing import Any
 from typing import Dict
 from typing import Generator
@@ -51,7 +50,6 @@ class StridePrescription(UnitPrescription):
         yield from ()
         return None
 
-    @abc.abstractmethod
     def run(self, state: State) -> None:
         """Run main entry-point for strides."""
         if not self._run_state(state):
