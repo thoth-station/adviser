@@ -123,7 +123,7 @@ class Prescription:
     def load(cls, prescription: str) -> "Prescription":
         """Load prescription from a string or file."""
         if os.path.isfile(prescription):
-            _LOGGER.debug("Loading prescription from file %r", prescription)
+            _LOGGER.info("Loading prescription %r", prescription)
             with open(prescription, "r") as config_file:
                 return cls.from_dict(yaml.safe_load(config_file))
 
