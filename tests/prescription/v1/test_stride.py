@@ -17,6 +17,7 @@
 
 """Test implementation of stride prescription v1."""
 
+import flexmock
 import pytest
 import yaml
 
@@ -178,3 +179,61 @@ run:
             assert unit.run(state) is None
 
         assert not context.stack_info
+
+    def test_should_include(self) -> None:
+        """Test including this pipeline unit."""
+        prescription_str = """
+name: StrideUnit
+type: stride
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    state:
+      resolved_dependencies:
+        - name: flask
+          version: "<=1.0.0,>=0.12"
+          index_url: "https://pypi.org/simple"
+
+  stack_info:
+    - type: ERROR
+      message: This message will not be shown
+      link: https://pypi.org/project/connexion
+"""
+        flexmock(StridePrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STRIDE_SCHEMA(prescription)
+        StridePrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(StridePrescription.should_include(builder_context)) == [{}]
+
+    def test_no_should_include(self) -> None:
+        """Test not including this pipeline unit."""
+        prescription_str = """
+name: StrideUnit
+type: stride
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    state:
+      resolved_dependencies:
+        - name: flask
+          version: "<=1.0.0,>=0.12"
+          index_url: "https://pypi.org/simple"
+
+  stack_info:
+    - type: ERROR
+      message: This message will not be shown
+      link: https://pypi.org/project/connexion
+"""
+        flexmock(StridePrescription).should_receive("_should_include_base").replace_with(lambda _: False).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STRIDE_SCHEMA(prescription)
+        StridePrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(StridePrescription.should_include(builder_context)) == []

@@ -19,8 +19,9 @@
 
 from typing import Optional
 
-import yaml
+import flexmock
 import pytest
+import yaml
 
 from thoth.adviser.context import Context
 from thoth.adviser.prescription.v1 import PseudonymPrescription
@@ -188,3 +189,59 @@ run:
             result = list(unit.run(package_version=package_version))
 
         assert result == expected_result
+
+    def test_should_include_package_name(self) -> None:
+        """Test including this pipeline unit."""
+        prescription_str = """
+name: PseudonymUnit
+type: pseudonym
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    package_version:
+      name: tensorflow-cpu
+      index_url: 'https://pypi.org/simple'
+
+  yield:
+    package_version:
+      name: intel-tensorflow
+      locked_version: null
+      index_url: 'https://pypi.org/simple'
+"""
+        flexmock(PseudonymPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_PSEUDONYM_SCHEMA(prescription)
+        PseudonymPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(PseudonymPrescription.should_include(builder_context)) == [{"package_name": "tensorflow-cpu"}]
+
+    def test_no_should_include(self) -> None:
+        """Test including this pipeline unit without package name."""
+        prescription_str = """
+name: PseudonymUnit
+type: pseudonym
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    package_version:
+      name: tensorflow-cpu
+      index_url: 'https://pypi.org/simple'
+
+  yield:
+    package_version:
+      name: intel-tensorflow
+      locked_version: null
+      index_url: 'https://pypi.org/simple'
+"""
+        flexmock(PseudonymPrescription).should_receive("_should_include_base").replace_with(lambda _: False).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_PSEUDONYM_SCHEMA(prescription)
+        PseudonymPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(PseudonymPrescription.should_include(builder_context)) == []

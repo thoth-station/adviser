@@ -17,6 +17,7 @@
 
 """Test implementation of step prescription v1."""
 
+import flexmock
 import pytest
 import yaml
 
@@ -274,7 +275,78 @@ run:
 
         assert result is None
 
-    @pytest.mark.parametrize("multi_package_resolution", [True, False])
-    def test_run_multi_package_resolution(self, context: Context, state: State, multi_package_resolution: bool) -> None:
-        """Check multi package resolution configuration application."""
-        # TODO: implement
+    def test_should_include_package_name(self) -> None:
+        """Test including this pipeline unit."""
+        prescription_str = """
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    package_version:
+      name: numpy
+      version: '==1.19.1'
+      index_url: 'https://pypi.org/simple'
+
+  multi_package_resolution: true
+  score: 0.1
+"""
+        flexmock(StepPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(StepPrescription.should_include(builder_context)) == [
+            {"package_name": "numpy", "multi_package_resolution": True}
+        ]
+
+    def test_should_include_no_package_name(self) -> None:
+        """Test including this pipeline unit."""
+        prescription_str = """
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    package_version:
+      index_url: 'https://thoth-station.ninja'
+
+  score: 0.1
+"""
+        flexmock(StepPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(StepPrescription.should_include(builder_context)) == [
+            {"package_name": None, "multi_package_resolution": False}
+        ]
+
+    def test_no_should_include(self) -> None:
+        """Test not including this pipeline."""
+        prescription_str = """
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    package_version:
+      index_url: 'https://thoth-station.ninja'
+
+  score: 0.1
+"""
+        flexmock(StepPrescription).should_receive("_should_include_base").replace_with(lambda _: False).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(StepPrescription.should_include(builder_context)) == []

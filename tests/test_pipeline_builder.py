@@ -157,50 +157,50 @@ class TestPipelineBuilderContext(AdviserTestCase):
     def test_get_included_boots(self) -> None:
         """Test get included boots of the provided boot class."""
         builder_context = PipelineBuilderContext(decision_type=DecisionType.RANDOM)
-        assert builder_context.get_included_boots(units.boots.Boot1) == []
+        assert list(builder_context.get_included_boots(units.boots.Boot1)) == []
         unit = units.boots.Boot1()
         builder_context.add_unit(unit)
-        assert builder_context.get_included_boots(units.boots.Boot1) == [unit]
+        assert list(builder_context.get_included_boots(units.boots.Boot1)) == [unit]
 
     def test_get_included_pseudonyms(self) -> None:
         """Test get included pseudonyms of the provided pseudonym class."""
         builder_context = PipelineBuilderContext(decision_type=DecisionType.RANDOM)
-        assert builder_context.get_included_pseudonyms(units.pseudonyms.Pseudonym1) == []
+        assert list(builder_context.get_included_pseudonyms(units.pseudonyms.Pseudonym1)) == []
         unit = units.pseudonyms.Pseudonym1()
         builder_context.add_unit(unit)
-        assert builder_context.get_included_pseudonyms(units.pseudonyms.Pseudonym1) == [unit]
+        assert list(builder_context.get_included_pseudonyms(units.pseudonyms.Pseudonym1)) == [unit]
 
     def test_get_included_sieves(self) -> None:
         """Get included sieves of the provided sieve class."""
         builder_context = PipelineBuilderContext(decision_type=DecisionType.RANDOM)
-        assert builder_context.get_included_sieves(units.sieves.Sieve1) == []
+        assert list(builder_context.get_included_sieves(units.sieves.Sieve1)) == []
         unit = units.sieves.Sieve1()
         builder_context.add_unit(unit)
-        assert builder_context.get_included_sieves(units.sieves.Sieve1) == [unit]
+        assert list(builder_context.get_included_sieves(units.sieves.Sieve1)) == [unit]
 
     def test_get_included_steps(self) -> None:
         """Get included steps of the provided step class."""
         builder_context = PipelineBuilderContext(decision_type=DecisionType.RANDOM)
-        assert builder_context.get_included_steps(units.steps.Step1) == []
+        assert list(builder_context.get_included_steps(units.steps.Step1)) == []
         unit = units.steps.Step1()
         builder_context.add_unit(unit)
-        assert builder_context.get_included_steps(units.steps.Step1) == [unit]
+        assert list(builder_context.get_included_steps(units.steps.Step1)) == [unit]
 
     def test_get_included_strides(self) -> None:
         """Get included strides of the provided stride class."""
         builder_context = PipelineBuilderContext(decision_type=DecisionType.RANDOM)
-        assert builder_context.get_included_strides(units.strides.Stride1) == []
+        assert list(builder_context.get_included_strides(units.strides.Stride1)) == []
         unit = units.strides.Stride1()
         builder_context.add_unit(unit)
-        assert builder_context.get_included_strides(units.strides.Stride1) == [unit]
+        assert list(builder_context.get_included_strides(units.strides.Stride1)) == [unit]
 
     def test_get_included_wraps(self) -> None:
         """Get included wraps of the provided wrap class."""
         builder_context = PipelineBuilderContext(decision_type=DecisionType.RANDOM)
-        assert builder_context.get_included_wraps(units.wraps.Wrap1) == []
+        assert list(builder_context.get_included_wraps(units.wraps.Wrap1)) == []
         unit = units.wraps.Wrap1()
         builder_context.add_unit(unit)
-        assert builder_context.get_included_wraps(units.wraps.Wrap1) == [unit]
+        assert list(builder_context.get_included_wraps(units.wraps.Wrap1)) == [unit]
 
 
 class TestPipelineBuilder(AdviserTestCase):

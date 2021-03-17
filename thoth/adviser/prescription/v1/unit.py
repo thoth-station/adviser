@@ -91,20 +91,25 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         should_include_dict = cls._PRESCRIPTION["should_include"]
         unit_name = cls.get_unit_name()
 
-        times = should_include_dict.get("times")  # XXX: We allow values 0 or 1 in the schema described.
-        if times is not None and builder_context.is_included(cls):
+        times = should_include_dict.get("times", 1)  # XXX: We allow values 0 or 1 in the schema described.
+        if times == 0 or builder_context.is_included(cls):
             return False
 
-        if not should_include_dict.get("adviser_pipeline", False) and builder_context.is_adviser_pipeline():
+        adviser_pipeline = should_include_dict.get("adviser_pipeline", False)
+        if not adviser_pipeline and builder_context.is_adviser_pipeline():
             _LOGGER.debug("%s: Not registering for adviser pipeline", unit_name)
             return False
-        elif should_include_dict.get("adviser_pipeline", False) and builder_context.is_adviser_pipeline():
+        elif adviser_pipeline and builder_context.is_adviser_pipeline():
             allowed_recommendation_types = should_include_dict.get("recommendation_types")
-            if allowed_recommendation_types and builder_context.recommendation_type not in allowed_recommendation_types:
+            if (
+                allowed_recommendation_types is not None
+                and builder_context.recommendation_type is not None
+                and builder_context.recommendation_type.name.lower() not in allowed_recommendation_types
+            ):
                 _LOGGER.debug(
                     "%s: Not registering for adviser pipeline with recommendation type %s",
                     unit_name,
-                    builder_context.recommendation_type,
+                    builder_context.recommendation_type.name,
                 )
                 return False
 
@@ -119,28 +124,78 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             and builder_context.is_dependency_monkey_pipeline()
         ):
             allowed_decision_types = should_include_dict.get("decision_types")
-            if allowed_decision_types and builder_context.decision_type not in allowed_decision_types:
+            if (
+                allowed_decision_types is not None
+                and builder_context.decision_type is not None
+                and builder_context.decision_type.name.lower() not in allowed_decision_types
+            ):
                 _LOGGER.debug(
                     "%s: Not registering for dependency monkey pipeline with decision type %s",
                     unit_name,
-                    builder_context.decision_type,
+                    builder_context.decision_type.name,
                 )
                 return False
 
-        runtime_environment_dict = should_include_dict.get("runtime_environment", {})
-
-        # Operating system.
-        operating_systems = should_include_dict.get("operating_systems", [])
-        os_used = builder_context.project.runtime_environment.operating_system
-        for item in operating_systems:
-            os_name = item.get("name")
-            os_version = item.get("version")
-            if os_name is not None and os_name != os_used.name:
-                _LOGGER.debug("%s: Not matching operating system name used (using %r)", unit_name, os_used.name)
+        # Dependencies.
+        dependencies = should_include_dict.get("dependencies", {})
+        for boot_name in dependencies.get("boots", []):
+            if boot_name not in builder_context.get_included_boot_names():
+                _LOGGER.debug("%s: Not registering as dependency on boot %r is not satisfied", unit_name, boot_name)
                 return False
 
-            if os_version is not None and os_version != os_used.version:
-                _LOGGER.debug("%s: Not matching operating system version used (using %r)", unit_name, os_used.version)
+        for pseudonym_name in dependencies.get("pseudonyms", []):
+            if pseudonym_name not in builder_context.get_included_pseudonym_names():
+                _LOGGER.debug(
+                    "%s: Not registering as dependency on pseudonym %r is not satisfied", unit_name, pseudonym_name
+                )
+                return False
+
+        for sieve_name in dependencies.get("sieves", []):
+            if sieve_name not in builder_context.get_included_sieve_names():
+                _LOGGER.debug("%s: Not registering as dependency on sieve %r is not satisfied", unit_name, sieve_name)
+                return False
+
+        for step_name in dependencies.get("steps", []):
+            if step_name not in builder_context.get_included_step_names():
+                _LOGGER.debug("%s: Not registering as dependency on step %r is not satisfied", unit_name, step_name)
+                return False
+
+        for stride_name in dependencies.get("strides", []):
+            if stride_name not in builder_context.get_included_stride_names():
+                _LOGGER.debug("%s: Not registering as dependency on stride %r is not satisfied", unit_name, stride_name)
+                return False
+
+        for wrap_name in dependencies.get("wraps", []):
+            if wrap_name not in builder_context.get_included_wrap_names():
+                _LOGGER.debug("%s: Not registering as dependency on stride %r is not satisfied", unit_name, wrap_name)
+                return False
+
+        runtime_environment_dict = should_include_dict.get("runtime_environments", {})
+
+        # Operating system.
+        operating_systems = runtime_environment_dict.get("operating_systems")
+        os_used = builder_context.project.runtime_environment.operating_system
+        os_used_name = os_used.name if os_used is not None else None
+        os_used_version = os_used.version if os_used is not None else None
+
+        if operating_systems is None and (os_used_name is not None or os_used_version is not None):
+            _LOGGER.debug("%s: Unit is specific to operating system configuration that was not supplied", unit_name)
+            return False
+
+        if operating_systems:
+            for item in operating_systems:
+                os_name = item.get("name")
+                os_version = item.get("version")
+                if os_name == os_used_name and os_version == os_used_version:
+                    _LOGGER.error("%s: Matching operating system %r in version %r", unit_name, os_name, os_version)
+                    break
+            else:
+                _LOGGER.debug(
+                    "%s: Not matching operating system (using %r in version %r)",
+                    unit_name,
+                    os_used_name,
+                    os_used_version,
+                )
                 return False
 
         # Hardware.

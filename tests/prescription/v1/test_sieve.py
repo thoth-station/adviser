@@ -17,8 +17,9 @@
 
 """Test implementation of sieve prescription v1."""
 
-import yaml
+import flexmock
 import pytest
+import yaml
 
 from thoth.adviser.context import Context
 from thoth.adviser.prescription.v1 import SievePrescription
@@ -99,7 +100,7 @@ run:
 
     def test_sieve(self, context: Context) -> None:
         """Test sieving packages."""
-        prescription_str = f"""
+        prescription_str = """
 name: SieveUnit
 type: sieve
 should_include:
@@ -142,3 +143,68 @@ run:
 
         assert len(result) == 1
         assert result[0] == package_versions[1]  # ==1.1.2 stays in the result
+
+    def test_should_include_package_name(self) -> None:
+        """Test including this pipeline unit."""
+        prescription_str = """
+name: SieveUnit
+type: sieve
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    package_version:
+      name: flask
+      version: '<=1.1.0'
+"""
+        flexmock(SievePrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_SIEVE_SCHEMA(prescription)
+        SievePrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(SievePrescription.should_include(builder_context)) == [{"package_name": "flask"}]
+
+    def test_should_include_no_package_name(self) -> None:
+        """Test including this pipeline unit."""
+        prescription_str = """
+name: SieveUnit
+type: sieve
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    package_version:
+      index_url: https://pypi.org/simple
+"""
+        flexmock(SievePrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_SIEVE_SCHEMA(prescription)
+        SievePrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(SievePrescription.should_include(builder_context)) == [{"package_name": None}]
+
+    def test_no_should_include(self) -> None:
+        """Test not including this pipeline."""
+        prescription_str = """
+name: SieveUnit
+type: sieve
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    package_version:
+      name: flask
+      version: '<=1.1.0'
+"""
+        flexmock(SievePrescription).should_receive("_should_include_base").replace_with(lambda _: False).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_SIEVE_SCHEMA(prescription)
+        SievePrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(SievePrescription.should_include(builder_context)) == []

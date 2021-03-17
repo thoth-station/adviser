@@ -17,6 +17,7 @@
 
 """Test implementation of wrap prescription v1."""
 
+import flexmock
 import pytest
 import yaml
 
@@ -217,3 +218,61 @@ run:
             assert unit.run(state) is None
 
         assert state.justification == unit.run_prescription["justification"]
+
+    def test_should_include(self) -> None:
+        """Test including this pipeline unit."""
+        prescription_str = """
+name: WrapUnit
+type: wrap
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    state:
+      resolved_dependencies:
+        - name: flask
+          version: "<=1.0.0,>=0.12"
+          index_url: "https://pypi.org/simple"
+
+  justification:
+    - type: ERROR
+      message: This message will not be shown
+      link: https://pypi.org/project/connexion
+"""
+        flexmock(WrapPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_WRAP_SCHEMA(prescription)
+        WrapPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(WrapPrescription.should_include(builder_context)) == [{}]
+
+    def test_no_should_include(self) -> None:
+        """Test not including this pipeline unit."""
+        prescription_str = """
+name: WrapUnit
+type: wrap
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    state:
+      resolved_dependencies:
+        - name: flask
+          version: "<=1.0.0,>=0.12"
+          index_url: "https://pypi.org/simple"
+
+  justification:
+    - type: ERROR
+      message: This message will not be shown
+      link: https://pypi.org/project/connexion
+"""
+        flexmock(WrapPrescription).should_receive("_should_include_base").replace_with(lambda _: False).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_WRAP_SCHEMA(prescription)
+        WrapPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(WrapPrescription.should_include(builder_context)) == []

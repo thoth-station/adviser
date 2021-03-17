@@ -19,8 +19,9 @@
 
 from typing import Optional
 
-import yaml
+import flexmock
 import pytest
+import yaml
 
 from thoth.adviser.context import Context
 from thoth.adviser.prescription.v1 import BootPrescription
@@ -134,3 +135,72 @@ run:
         unit = BootPrescription()
         unit.update_configuration({"package_name": package_name})
         assert unit.configuration["package_name"] == package_name
+
+    def test_should_include_package_name(self) -> None:
+        """Test including this pipeline unit."""
+        prescription_str = """
+name: BootUnit
+type: boot
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    package_name: flask
+
+  stack_info:
+    - type: ERROR
+      message: "Unable to perform this operation"
+      link: https://thoth-station.ninja
+"""
+        flexmock(BootPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_BOOT_SCHEMA(prescription)
+        BootPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(BootPrescription.should_include(builder_context)) == [{"package_name": "flask"}]
+
+    def test_should_include_no_package_name(self) -> None:
+        """Test including this pipeline unit without package name."""
+        prescription_str = """
+name: BootUnit
+type: boot
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  stack_info:
+    - type: INFO
+      message: Yet another text printed.
+      link: https://thoth-station.ninja
+"""
+        flexmock(BootPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_BOOT_SCHEMA(prescription)
+        BootPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(BootPrescription.should_include(builder_context)) == [{"package_name": None}]
+
+    def test_no_should_include(self) -> None:
+        """Test including this pipeline unit without package name."""
+        prescription_str = """
+name: BootUnit
+type: boot
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  stack_info:
+    - type: INFO
+      message: Yet another text printed.
+      link: https://thoth-station.ninja
+"""
+        flexmock(BootPrescription).should_receive("_should_include_base").replace_with(lambda _: False).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_BOOT_SCHEMA(prescription)
+        BootPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(BootPrescription.should_include(builder_context)) == []

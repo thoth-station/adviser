@@ -36,7 +36,44 @@ from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import RecommendationType
 
 
-_MIN_NAME_LENGTH = 1
+_NONEMPTY_STRING = All(str, Length(min=1))
+_NONEMPTY_LIST_OF_NONEMPTY_STRINGS = All([_NONEMPTY_STRING], Length(min=1))
+_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE = All([_NONEMPTY_STRING, None], Length(min=1))
+_NONEMPTY_LIST_OF_INTEGERS_WITH_NONE = All([int, None], Length(min=1))
+
+
+PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA = Schema(
+    {
+        Optional("operating_systems"): [
+            Schema(
+                {
+                    Optional("name"): _NONEMPTY_STRING,
+                    Optional("version"): _NONEMPTY_STRING,
+                }
+            )
+        ],
+        Optional("hardware"): All(
+            [
+                Schema(
+                    {
+                        Optional("cpu_families"): _NONEMPTY_LIST_OF_INTEGERS_WITH_NONE,
+                        Optional("cpu_models"): _NONEMPTY_LIST_OF_INTEGERS_WITH_NONE,
+                        Optional("gpu_models"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
+                    }
+                )
+            ],
+            Length(min=1),
+        ),
+        Optional("python_versions"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
+        Optional("cuda_versions"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
+        Optional("platforms"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
+        Optional("openblas_versions"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
+        Optional("openmpi_versions"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
+        Optional("cudnn_versions"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
+        Optional("mkl_versions"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
+        Optional("base_images"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
+    }
+)
 
 PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
     {
@@ -45,43 +82,24 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
         Optional("dependency_monkey_pipeline"): bool,
         Optional("dependencies"): Schema(
             {
-                "boots": [str],
-                "pseudonyms": [str],
-                "sieves": [str],
-                "steps": [str],
-                "strides": [str],
-                "wraps": [str],
+                Optional("boots"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS,
+                Optional("pseudonyms"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS,
+                Optional("sieves"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS,
+                Optional("steps"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS,
+                Optional("strides"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS,
+                Optional("wraps"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS,
             }
         ),
-        Optional("recommendation_types"): list(map(str.lower, RecommendationType.__members__.keys())),
-        Optional("decision_types"): list(map(str.lower, DecisionType.__members__.keys())),
-        Optional("runtime_environments"): Schema(
-            {
-                Optional("operating_systems"): [Schema({Optional("name"): str, Optional("version"): str})],
-                Optional("hardware"): [
-                    Schema(
-                        {
-                            Optional("cpu_families"): [int],
-                            Optional("cpu_models"): [int],
-                            Optional("gpu_models"): [str],
-                        }
-                    )
-                ],
-                Optional("python_versions"): [str],
-                Optional("cuda_versions"): [str],
-                Optional("platforms"): [str],
-                Optional("openblas_versions"): [str],
-                Optional("openmpi_versions"): [str],
-                Optional("cudnn_versions"): [str],
-                Optional("mkl_versions"): [str],
-                Optional("base_images"): [str],
-            }
+        Optional("recommendation_types"): All(
+            list(map(str.lower, RecommendationType.__members__.keys())), Length(min=1)
         ),
+        Optional("decision_types"): All(list(map(str.lower, DecisionType.__members__.keys())), Length(min=1)),
+        Optional("runtime_environments"): PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA,
     }
 )
 
 _UNIT_SCHEMA_BASE_DICT = {
-    Required("name"): All(str, Length(min=_MIN_NAME_LENGTH)),
+    Required("name"): _NONEMPTY_STRING,
     Required("should_include"): PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA,
 }
 
@@ -104,7 +122,7 @@ def _justification_link(v: str) -> None:
 STACK_INFO_SCHEMA = Schema(
     {
         Required("type"): Any("WARNING", "INFO", "ERROR"),
-        Required("message"): str,
+        Required("message"): _NONEMPTY_STRING,
         Required("link"): _justification_link,
     }
 )
@@ -117,7 +135,7 @@ _UNIT_RUN_SCHEMA_BASE_DICT = {
     Optional("stack_info"): [STACK_INFO_SCHEMA],
     Optional("log"): Schema(
         {
-            Required("message"): All(str, Length(min=1)),
+            Required("message"): _NONEMPTY_STRING,
             Required("type"): Any("WARNING", "INFO", "ERROR"),
         }
     ),
@@ -132,9 +150,9 @@ def _locked_version(v: object) -> None:
 
 PACKAGE_VERSION_LOCKED_SCHEMA = Schema(
     {
-        Required("name"): Optional(str),
+        Required("name"): Optional(_NONEMPTY_STRING),
         Required("locked_version"): Optional(_locked_version),
-        Required("index_url"): Optional(str),
+        Required("index_url"): Optional(_NONEMPTY_STRING),
     }
 )
 
@@ -151,18 +169,18 @@ def _specifier_set(v: object) -> None:
 
 PACKAGE_VERSION_SCHEMA = Schema(
     {
-        Optional("name"): Optional(str),
+        Optional("name"): Optional(_NONEMPTY_STRING),
         Optional("version"): _specifier_set,
-        Optional("index_url"): Optional(str),
+        Optional("index_url"): Optional(_NONEMPTY_STRING),
     }
 )
 
 
 PACKAGE_VERSION_REQUIRED_NAME_SCHEMA = Schema(
     {
-        Required("name"): All(str, Length(min=1)),
+        Required("name"): _NONEMPTY_STRING,
         Optional("version"): _specifier_set,
-        Optional("index_url"): Optional(str),
+        Optional("index_url"): Optional(_NONEMPTY_STRING),
     }
 )
 
@@ -172,9 +190,9 @@ PACKAGE_VERSION_REQUIRED_NAME_SCHEMA = Schema(
 
 PRESCRIPTION_BOOT_RUN_SCHEMA = Schema(
     {
-        Optional("match"): Schema({"package_name": Optional(All(str, Length(min=1)))}),
-        Optional("not_acceptable"): All(str, Length(min=1)),
-        Optional("eager_stop_pipeline"): All(str, Length(min=1)),
+        Optional("match"): Schema({"package_name": Optional(_NONEMPTY_STRING)}),
+        Optional("not_acceptable"): _NONEMPTY_STRING,
+        Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
         **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )
@@ -241,8 +259,8 @@ PRESCRIPTION_STEP_RUN_SCHEMA = Schema(
         ),
         Optional("score"): Optional(float),
         Optional("justification"): [JUSTIFICATION_SCHEMA],
-        Optional("not_acceptable"): All(str, Length(min=1)),
-        Optional("eager_stop_pipeline"): All(str, Length(min=1)),
+        Optional("not_acceptable"): _NONEMPTY_STRING,
+        Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
         Optional("multi_package_resolution"): bool,
         **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
@@ -263,8 +281,8 @@ PRESCRIPTION_STEP_SCHEMA = Schema(
 
 PRESCRIPTION_STRIDE_RUN_SCHEMA = Schema(
     {
-        Optional("not_acceptable"): All(str, Length(min=1)),
-        Optional("eager_stop_pipeline"): All(str, Length(min=1)),
+        Optional("not_acceptable"): _NONEMPTY_STRING,
+        Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
         Required("match"): Schema(
             {Required("state"): Schema({Required("resolved_dependencies"): [PACKAGE_VERSION_SCHEMA]})}
         ),
@@ -286,8 +304,8 @@ PRESCRIPTION_STRIDE_SCHEMA = Schema(
 
 PRESCRIPTION_WRAP_RUN_SCHEMA = Schema(
     {
-        Optional("not_acceptable"): All(str, Length(min=1)),
-        Optional("eager_stop_pipeline"): All(str, Length(min=1)),
+        Optional("not_acceptable"): _NONEMPTY_STRING,
+        Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
         Optional("justification"): [JUSTIFICATION_SCHEMA],
         Required("match"): Schema(
             {Required("state"): Schema({Required("resolved_dependencies"): [PACKAGE_VERSION_SCHEMA]})}

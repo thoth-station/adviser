@@ -72,7 +72,7 @@ class StepPrescription(UnitPrescription):
         if cls._should_include_base(builder_context):
             run_prescription: Dict[str, Any] = cls._PRESCRIPTION["run"]  # type: ignore
             yield {
-                "package_version": run_prescription["match"]["package_version"].get("name"),
+                "package_name": run_prescription["match"]["package_version"].get("name"),
                 "multi_package_resolution": run_prescription.get("multi_package_resolution", False),
             }
             return None

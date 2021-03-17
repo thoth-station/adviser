@@ -54,7 +54,7 @@ class SievePrescription(UnitPrescription):
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         if cls._should_include_base(builder_context):
             run_prescription: Dict[str, Any] = cls._PRESCRIPTION["run"]  # type: ignore
-            yield {"package_version": run_prescription["package_version"].get("name")}
+            yield {"package_name": run_prescription["match"]["package_version"].get("name")}
             return None
 
         yield from ()
