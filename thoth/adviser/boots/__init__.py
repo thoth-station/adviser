@@ -21,6 +21,7 @@ from .fully_specified_environment import FullySpecifiedEnvironment
 from .gpu import GPUBoot
 from .pipfile_hash import PipfileHashBoot
 from .platform import PlatformBoot
+from .prescription_release import PrescriptionReleaseBoot
 from .python_version import PythonVersionBoot
 from .rhel_version import RHELVersionBoot
 from .solved_software_environment import SolvedSoftwareEnvironmentBoot
@@ -41,6 +42,7 @@ __all__ = [
     "SolvedSoftwareEnvironmentBoot",
     "RHELVersionBoot",
     "PlatformBoot",
+    "PrescriptionReleaseBoot",
     "FullySpecifiedEnvironment",
     "SolvedSoftwareEnvironmentBoot",
 ]

@@ -23,6 +23,7 @@ from typing import List
 from typing import Optional
 from typing import Generator
 from typing import Tuple
+from typing import TYPE_CHECKING
 from typing import Set
 import operator
 import heapq
@@ -39,6 +40,9 @@ from .exceptions import NotFound
 from .enums import RecommendationType
 from .enums import DecisionType
 from .state import State
+
+if TYPE_CHECKING:
+    from .prescription import Prescription  # noqa: F401
 
 
 @attr.s(slots=True)
@@ -87,6 +91,7 @@ class Context:
     )
     sources = attr.ib(type=Dict[str, Source], kw_only=True, default=attr.Factory(dict))
     iteration = attr.ib(type=int, default=0, kw_only=True)
+    prescription = attr.ib(type=Optional["Prescription"], default=None, kw_only=True)
     cli_parameters = attr.ib(type=Dict[str, Any], kw_only=True, default=attr.Factory(dict))
     stack_info = attr.ib(type=List[Dict[str, Any]], kw_only=True, default=attr.Factory(list))
     accepted_final_states_count = attr.ib(type=int, kw_only=True, default=0)

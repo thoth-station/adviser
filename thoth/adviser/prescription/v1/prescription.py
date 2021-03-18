@@ -22,6 +22,7 @@ import os
 import yaml
 from collections import OrderedDict
 from typing import Any
+from typing import List
 from typing import Dict
 from typing import Generator
 from typing import Optional
@@ -59,6 +60,8 @@ class Prescription:
     """Dynamically create pipeline units based on inscription."""
 
     _VALIDATE_PRESCRIPTION_SCHEMA = bool(int(os.getenv("THOTH_VALIDATE_PRESCRIPTION_SCHEMA", 1)))
+
+    releases = attr.ib(type=List[str], kw_only=True, default=attr.Factory(list))
 
     boots_dict = attr.ib(type=Dict[str, Dict[str, Any]], kw_only=True, default=attr.Factory(OrderedDict))
     pseudonyms_dict = attr.ib(type=Dict[str, Dict[str, Any]], kw_only=True, default=attr.Factory(OrderedDict))
@@ -137,6 +140,8 @@ class Prescription:
             wraps_dict[wrap_spec["name"]] = wrap_spec
 
         if prescription_instance:
+            # Adjust release info at the end once successful.
+            prescription_instance.releases.append(prescription["spec"]["release"])
             return prescription_instance
 
         return cls(
@@ -146,6 +151,7 @@ class Prescription:
             steps_dict=steps_dict,
             strides_dict=strides_dict,
             wraps_dict=wraps_dict,
+            releases=[prescription["spec"]["release"]],
         )
 
     @classmethod

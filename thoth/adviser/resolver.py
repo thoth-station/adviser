@@ -29,16 +29,17 @@ from typing import List
 from typing import Union
 from typing import Set
 from typing import Iterator
+from typing import TYPE_CHECKING
 import logging
 from itertools import chain
 import contextlib
 import signal
 import weakref
 
+import attr
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
-from thoth.adviser.prescription import Prescription
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.python import Project
@@ -72,7 +73,9 @@ from .state import State
 from .unit import Unit
 from .utils import log_once
 
-import attr
+if TYPE_CHECKING:
+    from .prescription import Prescription  # noqa: F401
+
 
 _LOGGER = logging.getLogger(__name__)
 _NO_EXTRAS = frozenset([None])
@@ -173,6 +176,7 @@ class Resolver:
         converter=_limit_latest_versions,  # type: ignore
     )
 
+    prescription = attr.ib(type=Optional["Prescription"], default=None, kw_only=True)
     cli_parameters = attr.ib(type=Dict[str, Any], default=attr.Factory(dict), kw_only=True)
     stop_resolving = attr.ib(type=bool, default=False, kw_only=True)
     log_iteration = attr.ib(type=int, kw_only=True, default=int(os.getenv("THOTH_ADVISER_LOG_ITERATION", 7500)))
@@ -245,6 +249,7 @@ class Resolver:
             beam=self.beam,
             recommendation_type=self.recommendation_type,
             decision_type=self.decision_type,
+            prescription=self.prescription,
             cli_parameters=self.cli_parameters,
         )
 
@@ -1384,7 +1389,7 @@ class Resolver:
         project: Project,
         recommendation_type: RecommendationType,
         pipeline_config: Optional[Union[PipelineConfig, Dict[str, Any]]] = None,
-        prescription: Optional[Prescription] = None,
+        prescription: Optional["Prescription"] = None,
         cli_parameters: Optional[Dict[str, Any]] = None,
     ) -> "Resolver":
         """Get instance of resolver based on the project given to recommend software stacks."""
@@ -1422,6 +1427,7 @@ class Resolver:
             predictor=predictor,
             project=project,
             recommendation_type=recommendation_type,
+            prescription=prescription,
             cli_parameters=cli_parameters or {},
         )
 
@@ -1438,7 +1444,7 @@ class Resolver:
         project: Project,
         decision_type: DecisionType,
         pipeline_config: Optional[Union[PipelineConfig, Dict[str, Any]]] = None,
-        prescription: Optional[Prescription] = None,
+        prescription: Optional["Prescription"] = None,
         cli_parameters: Optional[Dict[str, Any]] = None,
     ) -> "Resolver":
         """Get instance of resolver based on the project given to run dependency monkey."""
@@ -1476,5 +1482,6 @@ class Resolver:
             predictor=predictor,
             project=project,
             decision_type=decision_type,
+            prescription=prescription,
             cli_parameters=cli_parameters or {},
         )
