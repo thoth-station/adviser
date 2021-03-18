@@ -290,7 +290,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
 
     def _run_state(self, state: State) -> bool:
         """Check state match."""
-        state_prescription = self.run_prescription["match"].get("state")
+        state_prescription = self.run_prescription.get("match", {}).get("state")
         if state_prescription:
             for resolved_dependency in state_prescription.get("resolved_dependencies", []):
                 resolved = state.resolved_dependencies.get(resolved_dependency["name"])
