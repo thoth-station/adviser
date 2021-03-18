@@ -85,11 +85,20 @@ class PseudonymPrescription(UnitPrescription):
             yield from ()
             return None
 
+        to_yield = self.run_prescription["yield"]
+        to_yield_package_version = to_yield.get("package_version") or {}
+        if to_yield.get("yield_matched_version"):
+            pseudonym_package_version = package_version.locked_version
+        else:
+            pseudonym_package_version = to_yield_package_version.get("locked_version")
+            if pseudonym_package_version:
+                pseudonym_package_version = pseudonym_package_version[2:]
+
         runtime_environment = self.context.project.runtime_environment
         pseudonyms = self.context.graph.get_solved_python_package_versions_all(
-            package_name=self.run_prescription["yield"].get("package_version", {}).get("name"),
-            package_version=self.run_prescription["yield"].get("package_version", {}).get("locked_version"),
-            index_url=self.run_prescription["yield"].get("package_version", {}).get("index_url"),
+            package_name=to_yield_package_version.get("name"),
+            package_version=pseudonym_package_version,
+            index_url=to_yield_package_version.get("index_url"),
             count=None,
             os_name=runtime_environment.operating_system.name,
             os_version=runtime_environment.operating_system.version,

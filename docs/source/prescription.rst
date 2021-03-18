@@ -181,11 +181,12 @@ semantics.
     match:                                          # Criteria to trigger run of this pipeline unit. Defaults to always running the pseudonym pipeline unit if no package_version is provided.
       package_version:
         name: flask                                 # Mandatory, name of the package for which pseudonym should be registered.
-        version: '>1.0,<=1.1.0'                      # Version specifier for which the pseudonym should be run. If not provided, defauts to any version.
+        version: '>1.0,<=1.1.0'                     # Version specifier for which the pseudonym should be run. If not provided, defaults to any version.
         index_url: 'https://pypi.org/simple'        # Package source index for which the pseudonym should be run. If not provided, defaults to any index.
 
     yield:
       # Pseudonym that should be registered.
+      yield_matched_version: true                   # If set to true, use version that was matched instead of the one provided in the locked_version part.
       package_version:
         name: flask                                 # Mandatory, name of the pseudonym package.
         version: '==1.2.0'                          # Version of the pseudonym in a locked form.
