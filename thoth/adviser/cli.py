@@ -423,9 +423,10 @@ def provenance(
     envvar="THOTH_ADVISER_PRESCRIPTION",
     default=None,
     type=str,
+    multiple=True,
     metavar="PRESCRIPTION",
     help="Pipeline prescription supplied in a form of JSON/YAML or a path to a file, "
-    "disjoint with pipeline configuration.",
+    "disjoint with pipeline configuration. Multiple files can be supplied by using `,' as a delimiter.",
 )
 @click.option(
     "--user-stack-scoring/--no-user-stack-scoring",
@@ -505,7 +506,11 @@ def advise(
 
     prescription_instance = None
     if prescription:
-        prescription_instance = Prescription.load(prescription)
+        if len(prescription) == 1:
+            # Click does not support multiple parameters when supplied via env vars. Perform split on delimiter.
+            prescription_instance = Prescription.load(*prescription[0].split(","))
+        else:
+            prescription_instance = Prescription.load(*prescription)
 
     predictor_class, predictor_kwargs = _get_adviser_predictor(predictor, recommendation_type)
     predictor_kwargs = _get_predictor_kwargs(predictor_config) or predictor_kwargs
@@ -692,7 +697,7 @@ def advise(
     type=str,
     metavar="PIPELINE",
     help="Pipeline configuration supplied in a form of JSON/YAML or a path to a file, "
-    "disjoint with pipeline prescription.",
+    "disjoint with pipeline prescription. Multiple files can be supplied by using `,' as a delimiter.",
 )
 @click.option(
     "--prescription",
@@ -771,7 +776,11 @@ def dependency_monkey(
 
     prescription_instance = None
     if prescription:
-        prescription_instance = Prescription.load(prescription)
+        if len(prescription) == 1:
+            # Click does not support multiple parameters when supplied via env vars. Perform split on delimiter.
+            prescription_instance = Prescription.load(*prescription[0].split(","))
+        else:
+            prescription_instance = Prescription.load(*prescription)
 
     # Use current time to make sure we have possibly reproducible runs - the seed is reported.
     seed = seed if seed is not None else int(time.time())
