@@ -116,6 +116,8 @@ class Prescription:
         for step_spec in prescription["spec"]["units"].get("steps") or []:
             name = f"prescription.{step_spec['name']}"
             step_spec["name"] = name
+            if name in steps_dict:
+                raise PrescriptionDuplicateUnitNameError(f"Step with name {name!r} is already present")
             steps_dict[step_spec["name"]] = step_spec
 
         strides_dict = prescription_instance.strides_dict if prescription_instance else OrderedDict()
@@ -127,7 +129,7 @@ class Prescription:
             strides_dict[stride_spec["name"]] = stride_spec
 
         wraps_dict = prescription_instance.wraps_dict if prescription_instance else OrderedDict()
-        for wrap_spec in prescription["spec"]["units"].get("strides") or []:
+        for wrap_spec in prescription["spec"]["units"].get("wraps") or []:
             name = f"prescription.{wrap_spec['name']}"
             wrap_spec["name"] = name
             if name in wraps_dict:
