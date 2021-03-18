@@ -28,7 +28,6 @@ from thoth.python import PackageVersion
 
 from ...enums import RecommendationType
 from ...sieve import Sieve
-from ...steps.tensorflow.tf_avx2 import TensorFlowAVX2Step
 
 
 if TYPE_CHECKING:
@@ -55,6 +54,21 @@ class TensorFlow240AVX2IllegalInstructionSieve(Sieve):
         "link": jl("tf_240_avx2"),
     }
 
+    # A tuple (CPU_FAMILY, CPU_MODEL) of Intel processors supporting AVX2:
+    #   https://en.wikipedia.org/wiki/Advanced_Vector_Extensions#CPUs_with_AVX2
+    #   https://en.wikichip.org/wiki/intel/cpuid
+    AVX2_CPUS = frozenset(
+        {
+            (0x6, 0x5),  # Cascade Lake
+            (0x6, 0x6),  # Broadwell, Cannon Lake
+            (0x6, 0xA),  # Ice Lake
+            (0x6, 0xC),  # Ice Lake, Tiger Lake
+            (0x6, 0xD),  # Ice Lake
+            (0x6, 0xE),  # Skylake, Kaby Lake, Coffee Lake, Ice Lake, Comet Lake, Whiskey Lake
+            (0x6, 0xF),  # Haswell
+        }
+    )
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Register this pipeline unit for adviser and stable/testing recommendation types."""
@@ -68,7 +82,7 @@ class TensorFlow240AVX2IllegalInstructionSieve(Sieve):
             and not builder_context.is_included(cls)
             and builder_context.recommendation_type != RecommendationType.LATEST
             and all(i is not None for i in cpu_tuple)
-            and cpu_tuple not in TensorFlowAVX2Step.AVX2_CPUS
+            and cpu_tuple not in cls.AVX2_CPUS
         ):
             yield {}
             return None

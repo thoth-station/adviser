@@ -17,18 +17,10 @@
 
 """Implementation of steps used during resolution."""
 
-from .aicoe import AICoEReleasesStep
 from .cve import CvePenalizationStep
 from .dropout import DropoutStep
 from .security_indicators import SecurityIndicatorStep
-from .tensorflow import TensorFlow21Urllib3Step
-from .tensorflow import TensorFlow22ProbabilityStep
-from .tensorflow import TensorFlowAVX2Step
-from .tensorflow import TensorFlow113NumPyStep
-from .tensorflow import TensorFlow114GastStep
-from .tensorflow import TensorFlow22NumPyStep
 from .tensorflow import TensorFlowRemoveSciPyStep
-from .tensorflow import TensorFlow21H5pyStep
 
 from ._debug import GenerateScoreStep
 from ._debug import MockScoreStep
@@ -39,19 +31,11 @@ from ._debug import SetScoreStep
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
 __all__ = [
-    "AICoEReleasesStep",
     "CvePenalizationStep",
     "DropoutStep",
     "SecurityIndicatorStep",
     "MockScoreStep",
     "SetScoreStep",
     "GenerateScoreStep",
-    "TensorFlow21Urllib3Step",
-    "TensorFlow21H5pyStep",
-    "TensorFlow22ProbabilityStep",
-    "TensorFlowAVX2Step",
-    "TensorFlow113NumPyStep",
-    "TensorFlow114GastStep",
-    "TensorFlow22NumPyStep",
     "TensorFlowRemoveSciPyStep",
 ]
