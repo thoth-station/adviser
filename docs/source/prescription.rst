@@ -294,7 +294,7 @@ semantics.
       state:                                        # Optional, resolver internal state to match for the given resolution step.
         resolved_dependencies:
           - name: werkzeug                          # Dependencies that have to be present in the resolved state.
-            locked_version: "1.0.0"
+            version: "==1.0.0"
             index_url: 'https://pypi.org/simple'
 
     score: 0.42                                     # Score assigned to the step performed in the resolution.

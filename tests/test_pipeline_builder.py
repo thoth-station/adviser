@@ -158,49 +158,61 @@ class TestPipelineBuilderContext(AdviserTestCase):
         """Test get included boots of the provided boot class."""
         builder_context = PipelineBuilderContext(decision_type=DecisionType.RANDOM)
         assert list(builder_context.get_included_boots(units.boots.Boot1)) == []
+        assert list(builder_context.get_included_boot_names()) == []
         unit = units.boots.Boot1()
         builder_context.add_unit(unit)
         assert list(builder_context.get_included_boots(units.boots.Boot1)) == [unit]
+        assert list(builder_context.get_included_boot_names()) == ["Boot1"]
 
     def test_get_included_pseudonyms(self) -> None:
         """Test get included pseudonyms of the provided pseudonym class."""
         builder_context = PipelineBuilderContext(decision_type=DecisionType.RANDOM)
         assert list(builder_context.get_included_pseudonyms(units.pseudonyms.Pseudonym1)) == []
+        assert list(builder_context.get_included_pseudonym_names()) == []
         unit = units.pseudonyms.Pseudonym1()
         builder_context.add_unit(unit)
         assert list(builder_context.get_included_pseudonyms(units.pseudonyms.Pseudonym1)) == [unit]
+        assert list(builder_context.get_included_pseudonym_names()) == ["Pseudonym1"]
 
     def test_get_included_sieves(self) -> None:
         """Get included sieves of the provided sieve class."""
         builder_context = PipelineBuilderContext(decision_type=DecisionType.RANDOM)
         assert list(builder_context.get_included_sieves(units.sieves.Sieve1)) == []
+        assert list(builder_context.get_included_sieve_names()) == []
         unit = units.sieves.Sieve1()
         builder_context.add_unit(unit)
         assert list(builder_context.get_included_sieves(units.sieves.Sieve1)) == [unit]
+        assert list(builder_context.get_included_sieve_names()) == ["Sieve1"]
 
     def test_get_included_steps(self) -> None:
         """Get included steps of the provided step class."""
         builder_context = PipelineBuilderContext(decision_type=DecisionType.RANDOM)
         assert list(builder_context.get_included_steps(units.steps.Step1)) == []
+        assert list(builder_context.get_included_step_names()) == []
         unit = units.steps.Step1()
         builder_context.add_unit(unit)
         assert list(builder_context.get_included_steps(units.steps.Step1)) == [unit]
+        assert list(builder_context.get_included_step_names()) == ["Step1"]
 
     def test_get_included_strides(self) -> None:
         """Get included strides of the provided stride class."""
         builder_context = PipelineBuilderContext(decision_type=DecisionType.RANDOM)
         assert list(builder_context.get_included_strides(units.strides.Stride1)) == []
+        assert list(builder_context.get_included_stride_names()) == []
         unit = units.strides.Stride1()
         builder_context.add_unit(unit)
         assert list(builder_context.get_included_strides(units.strides.Stride1)) == [unit]
+        assert list(builder_context.get_included_stride_names()) == ["Stride1"]
 
     def test_get_included_wraps(self) -> None:
         """Get included wraps of the provided wrap class."""
         builder_context = PipelineBuilderContext(decision_type=DecisionType.RANDOM)
         assert list(builder_context.get_included_wraps(units.wraps.Wrap1)) == []
+        assert list(builder_context.get_included_wrap_names()) == []
         unit = units.wraps.Wrap1()
         builder_context.add_unit(unit)
         assert list(builder_context.get_included_wraps(units.wraps.Wrap1)) == [unit]
+        assert list(builder_context.get_included_wrap_names()) == ["Wrap1"]
 
 
 class TestPipelineBuilder(AdviserTestCase):
@@ -414,7 +426,7 @@ class TestPipelineBuilder(AdviserTestCase):
         }
 
         yaml_path = tmp_path / "config.yaml"
-        with open(yaml_path, "w") as f:
+        with open(str(yaml_path), "w") as f:
             yaml.safe_dump(dict_, f)
 
         pipeline = PipelineBuilder.load(yaml_path)
@@ -429,7 +441,7 @@ class TestPipelineBuilder(AdviserTestCase):
         assert pipeline_dict == expected_dict_
 
         json_path = tmp_path / "config.json"
-        with open(json_path, "w") as f:
+        with open(str(json_path), "w") as f:
             json.dump(dict_, f)
 
         pipeline = PipelineBuilder.load(json_path)
