@@ -72,9 +72,9 @@ run:
         )
 
         context.graph.should_receive("get_solved_python_package_versions_all").with_args(
-            package_name=prescription["run"]["yield"].get("package_version", {}).get("name"),
-            package_version=prescription["run"]["yield"].get("package_version", {}).get("locked_version"),
-            index_url=prescription["run"]["yield"].get("package_version", {}).get("index_url"),
+            package_name="flask",
+            package_version="1.2.0",
+            index_url="https://pypi.org/simple",
             count=None,
             os_name=context.project.runtime_environment.operating_system.name,
             os_version=context.project.runtime_environment.operating_system.version,
@@ -121,9 +121,9 @@ run:
         )
 
         context.graph.should_receive("get_solved_python_package_versions_all").with_args(
-            package_name=prescription["run"]["yield"].get("package_version", {}).get("name"),
-            package_version=prescription["run"]["yield"].get("package_version", {}).get("locked_version"),
-            index_url=prescription["run"]["yield"].get("package_version", {}).get("index_url"),
+            package_name="intel-tensorflow",
+            package_version="2.4.0",
+            index_url="https://pypi.org/simple",
             count=None,
             os_name=context.project.runtime_environment.operating_system.name,
             os_version=context.project.runtime_environment.operating_system.version,
@@ -172,9 +172,9 @@ run:
         ]
 
         context.graph.should_receive("get_solved_python_package_versions_all").with_args(
-            package_name=prescription["run"]["yield"].get("package_version", {}).get("name"),
-            package_version=prescription["run"]["yield"].get("package_version", {}).get("locked_version"),
-            index_url=prescription["run"]["yield"].get("package_version", {}).get("index_url"),
+            package_name="intel-tensorflow",
+            package_version=None,
+            index_url="https://pypi.org/simple",
             count=None,
             os_name=context.project.runtime_environment.operating_system.name,
             os_version=context.project.runtime_environment.operating_system.version,
@@ -245,3 +245,53 @@ run:
 
         builder_context = flexmock()
         assert list(PseudonymPrescription.should_include(builder_context)) == []
+
+    def test_run_yield_matched_version(self, context: Context) -> None:
+        """Check yielding correct version when yield_matched_version is supplied."""
+        prescription_str = """
+name: PseudonymUnit
+type: pseudonym
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    package_version:
+      name: flask
+      version: '>1.0,<=1.1.0'
+      index_url: 'https://pypi.org/simple'
+
+  yield:
+    yield_matched_version: true
+    package_version:
+      name: flask
+      index_url: 'https://pypi.org/simple'
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_PSEUDONYM_SCHEMA(prescription)
+        PseudonymPrescription.set_prescription(prescription)
+        package_version = PackageVersion(
+            name="flask",
+            version="==1.1.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
+
+        context.graph.should_receive("get_solved_python_package_versions_all").with_args(
+            package_name=prescription["run"]["yield"].get("package_version", {}).get("name"),
+            package_version="1.1.0",
+            index_url=prescription["run"]["yield"].get("package_version", {}).get("index_url"),
+            count=None,
+            os_name=context.project.runtime_environment.operating_system.name,
+            os_version=context.project.runtime_environment.operating_system.version,
+            python_version=context.project.runtime_environment.python_version,
+            distinct=True,
+            is_missing=False,
+        ).and_return([("flask", "1.1.0", "https://pypi.org/simple")]).once()
+
+        unit = PseudonymPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            result = list(unit.run(package_version))
+
+        assert result == [("flask", "1.1.0", "https://pypi.org/simple")]

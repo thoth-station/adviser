@@ -151,8 +151,8 @@ def _locked_version(v: object) -> None:
 PACKAGE_VERSION_LOCKED_SCHEMA = Schema(
     {
         Required("name"): Optional(_NONEMPTY_STRING),
-        Required("locked_version"): Optional(_locked_version),
-        Required("index_url"): Optional(_NONEMPTY_STRING),
+        Optional("locked_version"): Optional(_locked_version),
+        Optional("index_url"): Optional(_NONEMPTY_STRING),
     }
 )
 
@@ -212,7 +212,12 @@ PRESCRIPTION_BOOT_SCHEMA = Schema(
 PRESCRIPTION_PSEUDONYM_RUN_SCHEMA = Schema(
     {
         Required("match"): Schema({"package_version": PACKAGE_VERSION_REQUIRED_NAME_SCHEMA}),
-        Required("yield"): Schema({"package_version": PACKAGE_VERSION_LOCKED_SCHEMA}),
+        Required("yield"): Schema(
+            {
+                Optional("yield_matched_version"): bool,
+                "package_version": PACKAGE_VERSION_LOCKED_SCHEMA,
+            }
+        ),
         **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )
