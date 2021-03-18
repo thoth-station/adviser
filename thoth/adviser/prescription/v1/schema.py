@@ -108,11 +108,11 @@ def _justification_link(v: str) -> None:
     """Validate justification link."""
     if v.startswith(("https://", "http://")):
         try:
-            urlparse("http://www.cwi.nl:80/%7Eguido/Python.html")
+            urlparse(v)
         except Exception as exc:
             raise Invalid(f"Failed to validate URL: {str(exc)}")
     else:
-        matched = re.match(r"[a-z0-9_-]+", v)
+        matched = re.fullmatch(r"[a-z0-9_-]+", v)
         if not matched:
             raise Invalid(f"Failed to validate base justification link {v!r}")
 
