@@ -328,12 +328,12 @@ PRESCRIPTION_WRAP_SCHEMA = Schema(
 
 PRESCRIPTION_SPEC_UNITS_SCHEMA = Schema(
     {
-        Required("boots"): [PRESCRIPTION_BOOT_SCHEMA],
-        Required("sieves"): [PRESCRIPTION_SIEVE_SCHEMA],
-        Required("steps"): [PRESCRIPTION_STEP_SCHEMA],
-        Required("pseudonyms"): [PRESCRIPTION_PSEUDONYM_SCHEMA],
-        Required("strides"): [PRESCRIPTION_STRIDE_SCHEMA],
-        Required("wraps"): [PRESCRIPTION_WRAP_SCHEMA],
+        Optional("boots"): [PRESCRIPTION_BOOT_SCHEMA],
+        Optional("sieves"): [PRESCRIPTION_SIEVE_SCHEMA],
+        Optional("steps"): [PRESCRIPTION_STEP_SCHEMA],
+        Optional("pseudonyms"): [PRESCRIPTION_PSEUDONYM_SCHEMA],
+        Optional("strides"): [PRESCRIPTION_STRIDE_SCHEMA],
+        Optional("wraps"): [PRESCRIPTION_WRAP_SCHEMA],
     }
 )
 

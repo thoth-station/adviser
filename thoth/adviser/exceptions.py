@@ -80,7 +80,11 @@ class PipelineUnitConfigurationSchemaError(PipelineUnitError):
 
 
 class PrescriptionSchemaError(PipelineUnitError):
-    """An exception raised adviser prescription schema is not valid."""
+    """An exception raised when prescription schema is not valid."""
+
+
+class PrescriptionDuplicateUnitNameError(PipelineUnitError):
+    """An exception raised when multiple prescription units share name."""
 
 
 class BootError(PipelineUnitError):

@@ -24,11 +24,14 @@ from collections import OrderedDict
 from typing import Any
 from typing import Dict
 from typing import Generator
+from typing import Optional
 from typing import Type
 from typing import TYPE_CHECKING
 
 import attr
 
+from ...exceptions import InternalError
+from ...exceptions import PrescriptionDuplicateUnitNameError
 from ...exceptions import PrescriptionSchemaError
 from .schema import PRESCRIPTION_SCHEMA
 from .boot import BootPrescription
@@ -65,8 +68,13 @@ class Prescription:
     wraps_dict = attr.ib(type=Dict[str, Dict[str, Any]], kw_only=True, default=attr.Factory(OrderedDict))
 
     @classmethod
-    def from_dict(cls, prescription: Dict[str, Any]) -> "Prescription":
-        """Instantiate prescription from a dictionary representation."""
+    def from_dict(
+        cls, prescription: Dict[str, Any], *, prescription_instance: Optional["Prescription"] = None
+    ) -> "Prescription":
+        """Instantiate prescription from a dictionary representation.
+
+        If an instance is provided, a safe merge will be performed.
+        """
         if cls._VALIDATE_PRESCRIPTION_SCHEMA:
             _LOGGER.debug("Validating prescription schema")
             try:
@@ -80,35 +88,54 @@ class Prescription:
 
         _LOGGER.info("Using v1 prescription release %r", prescription["spec"]["release"])
 
-        boots_dict = OrderedDict()
+        boots_dict = prescription_instance.boots_dict if prescription_instance is not None else OrderedDict()
         for boot_spec in prescription["spec"]["units"].get("boots") or []:
-            boot_spec["name"] = f"prescription.{boot_spec['name']}"
+            name = f"prescription.{boot_spec['name']}"
+            boot_spec["name"] = name
+            if name in boots_dict:
+                raise PrescriptionDuplicateUnitNameError(f"Boot with name {name!r} is already present")
             boots_dict[boot_spec["name"]] = boot_spec
 
-        pseudonyms_dict = OrderedDict()
+        pseudonyms_dict = prescription_instance.pseudonyms_dict if prescription_instance else OrderedDict()
         for pseudonym_spec in prescription["spec"]["units"].get("pseudonyms") or []:
-            pseudonym_spec["name"] = f"prescription.{pseudonym_spec['name']}"
+            name = f"prescription.{pseudonym_spec['name']}"
+            pseudonym_spec["name"] = name
+            if name in pseudonyms_dict:
+                raise PrescriptionDuplicateUnitNameError(f"Pseudonym with name {name!r} is already present")
             pseudonyms_dict[pseudonym_spec["name"]] = pseudonym_spec
 
-        sieves_dict = OrderedDict()
+        sieves_dict = prescription_instance.sieves_dict if prescription_instance else OrderedDict()
         for sieve_spec in prescription["spec"]["units"].get("sieves") or []:
-            sieve_spec["name"] = f"prescription.{sieve_spec['name']}"
+            name = f"prescription.{sieve_spec['name']}"
+            sieve_spec["name"] = name
+            if name in sieves_dict:
+                raise PrescriptionDuplicateUnitNameError(f"Sieve with name {name!r} is already present")
             sieves_dict[sieve_spec["name"]] = sieve_spec
 
-        steps_dict = OrderedDict()
+        steps_dict = prescription_instance.steps_dict if prescription_instance else OrderedDict()
         for step_spec in prescription["spec"]["units"].get("steps") or []:
-            step_spec["name"] = f"prescription.{step_spec['name']}"
+            name = f"prescription.{step_spec['name']}"
+            step_spec["name"] = name
             steps_dict[step_spec["name"]] = step_spec
 
-        strides_dict = OrderedDict()
+        strides_dict = prescription_instance.strides_dict if prescription_instance else OrderedDict()
         for stride_spec in prescription["spec"]["units"].get("strides") or []:
-            stride_spec["name"] = f"prescription.{stride_spec['name']}"
+            name = f"prescription.{stride_spec['name']}"
+            stride_spec["name"] = name
+            if name in strides_dict:
+                raise PrescriptionDuplicateUnitNameError(f"Stride with name {name!r} is already present")
             strides_dict[stride_spec["name"]] = stride_spec
 
-        wraps_dict = OrderedDict()
+        wraps_dict = prescription_instance.wraps_dict if prescription_instance else OrderedDict()
         for wrap_spec in prescription["spec"]["units"].get("strides") or []:
-            wrap_spec["name"] = f"prescription.{wrap_spec['name']}"
+            name = f"prescription.{wrap_spec['name']}"
+            wrap_spec["name"] = name
+            if name in wraps_dict:
+                raise PrescriptionDuplicateUnitNameError(f"Wrap with name {name!r} is already present")
             wraps_dict[wrap_spec["name"]] = wrap_spec
+
+        if prescription_instance:
+            return prescription_instance
 
         return cls(
             boots_dict=boots_dict,
@@ -120,14 +147,23 @@ class Prescription:
         )
 
     @classmethod
-    def load(cls, prescription: str) -> "Prescription":
-        """Load prescription from a string or file."""
-        if os.path.isfile(prescription):
-            _LOGGER.info("Loading prescription %r", prescription)
-            with open(prescription, "r") as config_file:
-                return cls.from_dict(yaml.safe_load(config_file))
+    def load(cls, *prescriptions: str) -> "Prescription":
+        """Load prescription from files or from their YAML representation."""
+        instance = None
 
-        return cls.from_dict(yaml.safe_load(prescription))
+        for prescription in prescriptions:
+            if os.path.isfile(prescription):
+                _LOGGER.info("Loading prescription %r", prescription)
+                with open(prescription, "r") as config_file:
+                    instance = cls.from_dict(yaml.safe_load(config_file), prescription_instance=instance)
+            else:
+                # Passed using string.
+                instance = cls.from_dict(yaml.safe_load(prescription), prescription_instance=instance)
+
+        if instance is None:
+            raise InternalError("No prescription loaded")
+
+        return instance
 
     @staticmethod
     def _iter_units(unit_class: Type["UnitType"], units: Dict[str, Any]) -> Generator[Type["UnitType"], None, None]:
