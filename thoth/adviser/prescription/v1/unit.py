@@ -178,10 +178,6 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         os_used_name = os_used.name if os_used is not None else None
         os_used_version = os_used.version if os_used is not None else None
 
-        if operating_systems is None and (os_used_name is not None or os_used_version is not None):
-            _LOGGER.debug("%s: Unit is specific to operating system configuration that was not supplied", unit_name)
-            return False
-
         if operating_systems:
             for item in operating_systems:
                 os_name = item.get("name")
