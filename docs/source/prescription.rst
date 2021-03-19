@@ -210,6 +210,7 @@ the resolver.
     run:
       match:
         package_name: tensorflow
+        index_url: "https://pypi.org/simple"
 
       stack_info:
         - message: "Considering also intel-tensorflow as an alternative to tensorflow"
@@ -219,7 +220,8 @@ the resolver.
       yield:
         package_version:
           name: intel-tensorflow
-          index-url: "https://pypi.org/simple"
+          yield_matched_version: true
+          index_url: "https://pypi.org/simple"
 
 Sieves
 ======
