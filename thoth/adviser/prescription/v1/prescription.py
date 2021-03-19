@@ -23,6 +23,7 @@ import yaml
 from collections import OrderedDict
 from typing import Any
 from typing import List
+from typing import Tuple
 from typing import Dict
 from typing import Generator
 from typing import Optional
@@ -61,7 +62,7 @@ class Prescription:
 
     _VALIDATE_PRESCRIPTION_SCHEMA = bool(int(os.getenv("THOTH_VALIDATE_PRESCRIPTION_SCHEMA", 1)))
 
-    releases = attr.ib(type=List[str], kw_only=True, default=attr.Factory(list))
+    prescriptions = attr.ib(type=List[Tuple[str, str]], kw_only=True, default=attr.Factory(list))
 
     boots_dict = attr.ib(type=Dict[str, Dict[str, Any]], kw_only=True, default=attr.Factory(OrderedDict))
     pseudonyms_dict = attr.ib(type=Dict[str, Dict[str, Any]], kw_only=True, default=attr.Factory(OrderedDict))
@@ -89,11 +90,13 @@ class Prescription:
                 )
                 raise PrescriptionSchemaError(str(exc))
 
-        _LOGGER.info("Using v1 prescription release %r", prescription["spec"]["release"])
+        prescription_name = prescription["spec"]["name"]
+        prescription_release = prescription["spec"]["release"]
+        _LOGGER.info("Using v1 prescription %r release %r", prescription_name, prescription_release)
 
         boots_dict = prescription_instance.boots_dict if prescription_instance is not None else OrderedDict()
         for boot_spec in prescription["spec"]["units"].get("boots") or []:
-            name = f"prescription.{boot_spec['name']}"
+            name = f"{prescription_name}.{boot_spec['name']}"
             boot_spec["name"] = name
             if name in boots_dict:
                 raise PrescriptionDuplicateUnitNameError(f"Boot with name {name!r} is already present")
@@ -101,7 +104,7 @@ class Prescription:
 
         pseudonyms_dict = prescription_instance.pseudonyms_dict if prescription_instance else OrderedDict()
         for pseudonym_spec in prescription["spec"]["units"].get("pseudonyms") or []:
-            name = f"prescription.{pseudonym_spec['name']}"
+            name = f"{prescription_name}.{pseudonym_spec['name']}"
             pseudonym_spec["name"] = name
             if name in pseudonyms_dict:
                 raise PrescriptionDuplicateUnitNameError(f"Pseudonym with name {name!r} is already present")
@@ -109,7 +112,7 @@ class Prescription:
 
         sieves_dict = prescription_instance.sieves_dict if prescription_instance else OrderedDict()
         for sieve_spec in prescription["spec"]["units"].get("sieves") or []:
-            name = f"prescription.{sieve_spec['name']}"
+            name = f"{prescription_name}.{sieve_spec['name']}"
             sieve_spec["name"] = name
             if name in sieves_dict:
                 raise PrescriptionDuplicateUnitNameError(f"Sieve with name {name!r} is already present")
@@ -117,7 +120,7 @@ class Prescription:
 
         steps_dict = prescription_instance.steps_dict if prescription_instance else OrderedDict()
         for step_spec in prescription["spec"]["units"].get("steps") or []:
-            name = f"prescription.{step_spec['name']}"
+            name = f"{prescription_name}.{step_spec['name']}"
             step_spec["name"] = name
             if name in steps_dict:
                 raise PrescriptionDuplicateUnitNameError(f"Step with name {name!r} is already present")
@@ -125,7 +128,7 @@ class Prescription:
 
         strides_dict = prescription_instance.strides_dict if prescription_instance else OrderedDict()
         for stride_spec in prescription["spec"]["units"].get("strides") or []:
-            name = f"prescription.{stride_spec['name']}"
+            name = f"{prescription_name}.{stride_spec['name']}"
             stride_spec["name"] = name
             if name in strides_dict:
                 raise PrescriptionDuplicateUnitNameError(f"Stride with name {name!r} is already present")
@@ -133,7 +136,7 @@ class Prescription:
 
         wraps_dict = prescription_instance.wraps_dict if prescription_instance else OrderedDict()
         for wrap_spec in prescription["spec"]["units"].get("wraps") or []:
-            name = f"prescription.{wrap_spec['name']}"
+            name = f"{prescription_name}.{wrap_spec['name']}"
             wrap_spec["name"] = name
             if name in wraps_dict:
                 raise PrescriptionDuplicateUnitNameError(f"Wrap with name {name!r} is already present")
@@ -141,7 +144,7 @@ class Prescription:
 
         if prescription_instance:
             # Adjust release info at the end once successful.
-            prescription_instance.releases.append(prescription["spec"]["release"])
+            prescription_instance.prescriptions.append((prescription_name, prescription_release))
             return prescription_instance
 
         return cls(
@@ -151,7 +154,7 @@ class Prescription:
             steps_dict=steps_dict,
             strides_dict=strides_dict,
             wraps_dict=wraps_dict,
-            releases=[prescription["spec"]["release"]],
+            prescriptions=[(prescription_name, prescription_release)],
         )
 
     @classmethod

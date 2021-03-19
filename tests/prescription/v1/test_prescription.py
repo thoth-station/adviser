@@ -34,19 +34,19 @@ class TestPrescription(AdviserTestCase):
         prescription_path = str(self.data_dir / "prescriptions" / "basic.yaml")
         instance = Prescription.load(prescription_path)
         assert instance is not None
-        assert list(instance.boots_dict) == ["prescription.BootUnit"]
-        assert list(instance.pseudonyms_dict) == ["prescription.PseudonymUnit"]
-        assert list(instance.sieves_dict) == ["prescription.SieveUnit"]
-        assert list(instance.steps_dict) == ["prescription.StepUnit"]
-        assert list(instance.strides_dict) == ["prescription.StrideUnit"]
-        assert list(instance.wraps_dict) == ["prescription.WrapUnit"]
+        assert list(instance.boots_dict) == ["thoth.BootUnit"]
+        assert list(instance.pseudonyms_dict) == ["thoth.PseudonymUnit"]
+        assert list(instance.sieves_dict) == ["thoth.SieveUnit"]
+        assert list(instance.steps_dict) == ["thoth.StepUnit"]
+        assert list(instance.strides_dict) == ["thoth.StrideUnit"]
+        assert list(instance.wraps_dict) == ["thoth.WrapUnit"]
 
-        assert [u.get_unit_name() for u in instance.iter_boot_units()] == ["prescription.BootUnit"]
-        assert [u.get_unit_name() for u in instance.iter_pseudonym_units()] == ["prescription.PseudonymUnit"]
-        assert [u.get_unit_name() for u in instance.iter_sieve_units()] == ["prescription.SieveUnit"]
-        assert [u.get_unit_name() for u in instance.iter_step_units()] == ["prescription.StepUnit"]
-        assert [u.get_unit_name() for u in instance.iter_stride_units()] == ["prescription.StrideUnit"]
-        assert [u.get_unit_name() for u in instance.iter_wrap_units()] == ["prescription.WrapUnit"]
+        assert [u.get_unit_name() for u in instance.iter_boot_units()] == ["thoth.BootUnit"]
+        assert [u.get_unit_name() for u in instance.iter_pseudonym_units()] == ["thoth.PseudonymUnit"]
+        assert [u.get_unit_name() for u in instance.iter_sieve_units()] == ["thoth.SieveUnit"]
+        assert [u.get_unit_name() for u in instance.iter_step_units()] == ["thoth.StepUnit"]
+        assert [u.get_unit_name() for u in instance.iter_stride_units()] == ["thoth.StrideUnit"]
+        assert [u.get_unit_name() for u in instance.iter_wrap_units()] == ["thoth.WrapUnit"]
 
     def test_from_dict_validate_error(self) -> None:
         """Test raising an error if schema validation fails."""
@@ -66,6 +66,7 @@ class TestPrescription(AdviserTestCase):
             "apiVersion": "thoth-station.ninja/v1",
             "kind": "prescription",
             "spec": {
+                "name": "thoth",
                 "release": "2021.03.30",
                 "units": {
                     "boots": [unit, dict(unit)],

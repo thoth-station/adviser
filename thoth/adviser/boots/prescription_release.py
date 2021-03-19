@@ -56,7 +56,7 @@ class PrescriptionReleaseBoot(Boot):
         if self.context.prescription is None:
             return
 
-        for prescription_release in self.context.prescription.releases:
-            message = f"Using prescription release {prescription_release!r}"
+        for prescription in self.context.prescription.prescriptions:
+            message = f"Using prescription {prescription[0]!r} release {prescription[1]!r}"
             _LOGGER.info("%s - see %s", message, self._JUSTIFICATION_LINK)
             self.context.stack_info.append({"type": "INFO", "message": message, "link": self._JUSTIFICATION_LINK})
