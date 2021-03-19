@@ -20,6 +20,8 @@
 import logging
 import os
 import yaml
+from itertools import chain
+
 from collections import OrderedDict
 from typing import Any
 from typing import List
@@ -71,6 +73,99 @@ class Prescription:
     strides_dict = attr.ib(type=Dict[str, Dict[str, Any]], kw_only=True, default=attr.Factory(OrderedDict))
     wraps_dict = attr.ib(type=Dict[str, Dict[str, Any]], kw_only=True, default=attr.Factory(OrderedDict))
 
+    @staticmethod
+    def _validate_run_base(unit: Dict[str, Any]) -> bool:
+        """Validate run for a pipeline unit."""
+        if unit.get("run", {}).get("eager_stop_pipeline") and unit.get("run", {}).get("not_acceptable"):
+            _LOGGER.error(
+                "Error in unit %s (%s): Using 'eager_stop_pipeline' and 'not_acceptable' at the same "
+                "time has undefined behavior",
+                unit["name"],
+                unit["type"],
+            )
+
+        return False
+
+    @classmethod
+    def validate(cls, prescription: Dict[str, Any]) -> None:
+        """Validate the given prescription."""
+        _LOGGER.debug("Validating prescription schema")
+        try:
+            PRESCRIPTION_SCHEMA(prescription)
+        except Exception as exc:
+            _LOGGER.exception(
+                "Failed to validate schema for prescription: %s",
+                str(exc),
+            )
+            raise PrescriptionSchemaError(str(exc))
+
+        # Verify semantics of prescription.
+        any_error = False
+
+        units = prescription["spec"]["units"]
+        for unit in chain(
+            units.get("boots", []),
+            units.get("pseudonyms", []),
+            units.get("sieves", []),
+            units.get("steps", []),
+            units.get("strides", []),
+            units.get("wraps", []),
+        ):
+            any_error = any_error or cls._validate_run_base(unit)
+
+        for pseudonym in units.get("pseudonyms", []):
+            if pseudonym["run"]["yield"].get("yield_matched_version") and pseudonym["run"]["yield"][
+                "package_version"
+            ].get("locked_version"):
+                _LOGGER.error(
+                    "Error in unit %s (%s): Using 'yield_matched_version' together "
+                    "with 'locked_version' leads to undefined behavior",
+                    pseudonym["name"],
+                    pseudonym["type"],
+                )
+                any_error = True
+
+        for step in units.get("steps", []):
+            step_run = step["run"]
+            msg = f"Error in unit {step['name']} ({step['type']})"
+
+            if step_run.get("eager_stop_pipeline") and step_run.get("justification"):
+                _LOGGER.error(
+                    "%s: Using 'eager_stop_pipeline' together with 'justification' leads to undefined behavior", msg
+                )
+                any_error = True
+
+            if step_run.get("not_acceptable") and step_run.get("justification"):
+                _LOGGER.error(
+                    "%s: Using 'not_acceptable' together with 'justification' leads to undefined behavior", msg
+                )
+
+            if step_run.get("eager_stop_pipeline") and step_run.get("score") is not None:
+                _LOGGER.error("%s: Using 'eager_stop_pipeline' together with 'score' leads to undefined behavior", msg)
+                any_error = True
+
+            if step_run.get("not_acceptable") and step_run.get("score") is not None:
+                _LOGGER.error("%s: Using 'not_acceptable' together with 'score' leads to undefined behavior", msg)
+                any_error = True
+
+        for wrap in units.get("wrap", []):
+            wrap_run = wrap["run"]
+            msg = f"Error in unit {wrap['name']} ({wrap['type']})"
+
+            if wrap_run.get("eager_stop_pipeline") and wrap_run.get("justification"):
+                _LOGGER.error(
+                    "%s: Using 'eager_stop_pipeline' together with 'justification' leads to undefined behavior", msg
+                )
+                any_error = True
+
+            if wrap_run.get("not_acceptable") and wrap_run.get("justification"):
+                _LOGGER.error(
+                    "%s: Using 'not_acceptable' together with 'justification' leads to undefined behavior", msg
+                )
+
+        if any_error:
+            raise PrescriptionSchemaError("Failed to validate prescription units, see logs reported for more info")
+
     @classmethod
     def from_dict(
         cls, prescription: Dict[str, Any], *, prescription_instance: Optional["Prescription"] = None
@@ -80,15 +175,7 @@ class Prescription:
         If an instance is provided, a safe merge will be performed.
         """
         if cls._VALIDATE_PRESCRIPTION_SCHEMA:
-            _LOGGER.debug("Validating prescription schema")
-            try:
-                PRESCRIPTION_SCHEMA(prescription)
-            except Exception as exc:
-                _LOGGER.exception(
-                    "Failed to validate schema for prescription: %s",
-                    str(exc),
-                )
-                raise PrescriptionSchemaError(str(exc))
+            cls.validate(prescription)
 
         prescription_name = prescription["spec"]["name"]
         prescription_release = prescription["spec"]["release"]

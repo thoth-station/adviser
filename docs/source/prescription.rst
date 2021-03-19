@@ -189,7 +189,7 @@ semantics.
       yield_matched_version: true                   # If set to true, use version that was matched instead of the one provided in the locked_version part.
       package_version:
         name: flask                                 # Mandatory, name of the pseudonym package.
-        version: '==1.2.0'                          # Version of the pseudonym in a locked form.
+        locked_version: '==1.2.0'                          # Version of the pseudonym in a locked form.
         index_url: 'https://pypi.org/simple'        # Package source index where the pseudonym is hosted.
 
 The pseudonym is registered for the specified criteria. The unit derived out of
@@ -218,9 +218,9 @@ the resolver.
           link: "https://pypi.org/project/intel-tensorflow"
 
       yield:
+        yield_matched_version: true
         package_version:
           name: intel-tensorflow
-          yield_matched_version: true
           index_url: "https://pypi.org/simple"
 
 Sieves
