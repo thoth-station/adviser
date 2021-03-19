@@ -60,7 +60,7 @@ _LOGGER = logging.getLogger(__name__)
 class Prescription:
     """Dynamically create pipeline units based on inscription."""
 
-    _VALIDATE_PRESCRIPTION_SCHEMA = bool(int(os.getenv("THOTH_VALIDATE_PRESCRIPTION_SCHEMA", 1)))
+    _VALIDATE_PRESCRIPTION_SCHEMA = bool(int(os.getenv("THOTH_ADVISER_VALIDATE_PRESCRIPTION_SCHEMA", 1)))
 
     prescriptions = attr.ib(type=List[Tuple[str, str]], kw_only=True, default=attr.Factory(list))
 
