@@ -115,7 +115,7 @@ class SecurityIndicatorStep(Step):
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Score package based on security indicators gathered, do not include if not analyzed."""
         package_version_tuple = package_version.to_tuple_locked()
-
+        justification = []
         try:
             s_info = self.context.graph.get_si_aggregated_python_package_version(
                 package_name=package_version.name,
@@ -126,7 +126,7 @@ class SecurityIndicatorStep(Step):
                 f"Thoth has security info for {package_version.name}==={package_version.locked_version} "
                 f"on {package_version.index_url}"
             )
-            self.context.stack_info.append({"type": "info", "message": msg})
+            justification.append({"type": "info", "message": msg, "link": self._JUSTIFICATION_LINK_SECURITY})
         except NotFoundError:
             if self.context.recommendation_type == RecommendationType.SECURITY:
                 if package_version_tuple not in self._logged_packages:
@@ -164,7 +164,7 @@ class SecurityIndicatorStep(Step):
             raise NotAcceptable
         else:
             msg = f"bandit found no high severity, high confidence issues for {package_version_tuple}"
-            self.context.stack_info.append({"type": "INFO", "message": msg})
+            justification.append({"type": "INFO", "message": msg, "link": self._JUSTIFICATION_LINK_BANDIT})
 
         s_score = (
             (
@@ -193,4 +193,4 @@ class SecurityIndicatorStep(Step):
             * -1
         )
         s_score = max(s_score, -1) * self.configuration["si_score_weight"]
-        return s_score, None
+        return s_score, justification or None
