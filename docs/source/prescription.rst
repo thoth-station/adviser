@@ -14,7 +14,7 @@ still use the programmable interface.
 .. note::
 
   All the units created based on prescription live in their own namespace. Names
-  cannot clash when different units of **different** type share the name. Also,
+  cannot clash when different units of *different* type share the name. Also,
   they cannot clash with pipeline unit names provided by the Python
   implementation.
 
@@ -43,6 +43,7 @@ Here is a core part of the prescription YAML document:
   apiVersion: thoth-station.ninja/v1
   kind: prescription
   spec:
+    name: thoth          # Name of the prescription to create namespace for unit names.
     release: 2021.03.30  # A calendar release of the prescription.
     units:
       boots: []
@@ -51,7 +52,6 @@ Here is a core part of the prescription YAML document:
       steps: []
       strides: []
       wraps: []
-    wisdom:  # Any YAML serialized data that can be used in units using YAML anchors and aliases.
 
 Each unit entry in the respective ``units`` section corresponding to a pipeline
 unit type declaratively describes a unit and its action that should be done
