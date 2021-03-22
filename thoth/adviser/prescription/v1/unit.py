@@ -48,6 +48,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
 
     _PRESCRIPTION: Optional[Dict[str, Any]] = None
 
+    _stack_info_run = attr.ib(type=bool, kw_only=True, default=False)
     prescription = attr.ib(type=Dict[str, Any], kw_only=True)
     run_prescription = attr.ib(type=Dict[str, Any], kw_only=True)
 
@@ -270,6 +271,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
     def pre_run(self) -> None:
         """Prepare this pipeline unit before running it."""
         self._prepare_justification_link(self.run_prescription.get("stack_info", []))
+        self._stack_info_run = False
         super().pre_run()
 
     def _run_log(self) -> None:
@@ -280,6 +282,11 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
 
     def _run_stack_info(self) -> None:
         """Add stack info if any prescribed."""
+        if self._stack_info_run:
+            # Stack info already reported.
+            return None
+
+        self._stack_info_run = True
         stack_info = self.run_prescription.get("stack_info")
         if stack_info:
             self.context.stack_info.extend(stack_info)
