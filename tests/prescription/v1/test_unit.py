@@ -417,3 +417,42 @@ class TestUnitPrescription(AdviserTestCase):
 
         assert builder_context.is_adviser_pipeline()
         assert UnitPrescription._should_include_base(builder_context) == include
+
+    @pytest.mark.parametrize(
+        "library_usage_expected,library_usage_supplied,include",
+        [
+            ({"tensorflow": ["tensorflow.keras.layers.Embedding"]}, None, False),
+            (None, {"tensorflow": ["tensorflow.keras.layers.Embedding"]}, True),
+            ({"tensorflow": ["tensorflow.keras.layers.Embedding"]}, {"flask": ["flask.Flask"]}, False),
+            (
+                {"tensorflow": ["tensorflow.keras.layers.Embedding", "tensorflow.Graph"]},
+                {"tensorflow": ["tensorflow.Assert"]},
+                False,
+            ),
+            ({"flask": ["flask.Flask"]}, {"tensorflow": ["tensorflow.keras.layers.Embedding"]}, False),
+        ],
+    )
+    def test_should_include_library_usage(
+        self,
+        builder_context: PipelineBuilderContext,
+        library_usage_expected: Optional[Dict[str, Any]],
+        library_usage_supplied: Optional[Dict[str, Any]],
+        include: bool,
+    ) -> None:
+        """Test checking library usage."""
+        should_include = {"adviser_pipeline": True}
+        if library_usage_expected is not None:
+            should_include["library_usage"] = library_usage_expected
+
+        PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include)
+
+        UnitPrescription._PRESCRIPTION = {
+            "name": "LibraryUsageUnit",
+            "should_include": should_include,
+        }
+
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.decision_type = None
+        assert builder_context.is_adviser_pipeline()
+        builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
+        assert UnitPrescription._should_include_base(builder_context) == include

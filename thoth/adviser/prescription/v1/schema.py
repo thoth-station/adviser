@@ -75,6 +75,25 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA = Schema(
     }
 )
 
+
+def _library_usage(v: object) -> None:
+    if not isinstance(v, dict):
+        raise Invalid(f"Expected a dictionary describing library usage, got: {v}")
+
+    if not v:
+        raise Invalid(f"Got empty library usage: {v}")
+
+    for k, v in v.items():
+        if not isinstance(k, str):
+            raise Invalid(f"Unknown key representing package name in library usage: {k}")
+
+        if not k:
+            raise Invalid("Empty key representing package name in library usage")
+
+        # A list of library calls.
+        _NONEMPTY_LIST_OF_NONEMPTY_STRINGS(v)
+
+
 PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
     {
         Optional("times", default=1): All(int, Range(min=0, max=1)),
@@ -95,6 +114,7 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
         ),
         Optional("decision_types"): All(list(map(str.lower, DecisionType.__members__.keys())), Length(min=1)),
         Optional("runtime_environments"): PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA,
+        Optional("library_usage"): _library_usage,
     }
 )
 
