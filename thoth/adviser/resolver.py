@@ -1296,10 +1296,11 @@ class Resolver:
         self._init_context()
         with Unit.assigned_context(self.context), self.predictor.assigned_context(self.context):
             for state in self._do_resolve_states(with_devel=with_devel, user_stack_scoring=user_stack_scoring):
-                product = Product.from_final_state(context=self.context, state=state)
-                if report.add_product(product):
+                if report.will_add_product_from_state(state.score):
                     # An optimization - we do not need to run wraps if the product is not part of the final result.
                     self._run_wraps(state)
+                    product = Product.from_final_state(context=self.context, state=state)
+                    report.add_product(product)
 
             if report.product_count() == 0:
                 msg = (
