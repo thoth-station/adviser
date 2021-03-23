@@ -18,9 +18,7 @@
 """Implementation of wraps used, specific for TensorFlow."""
 
 from .tf_42475 import TensorFlowSlowKerasEmbedding
-from .tf_mkl_threads import MKLThreadsWrap
 
 __all__ = [
-    "MKLThreadsWrap",
     "TensorFlowSlowKerasEmbedding",
 ]
