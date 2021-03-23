@@ -64,6 +64,15 @@ class Report:
         """Set stack information."""
         self._stack_info = stack_info
 
+    def will_add_product_from_state(self, score: float) -> bool:
+        """Check if a product with the given score would be added."""
+        if not self._heapq:
+            # Empty heap, always add without any check on count.
+            return True
+
+        key = score, self._heapq_counter
+        return key > self._heapq[-1][0]
+
     def add_product(self, product: Product) -> bool:
         """Add adviser pipeline product to report."""
         item = ((product.score, self._heapq_counter), product)
