@@ -62,7 +62,8 @@ class SecurityIndicatorStep(Step):
         "medium_severity_weight": 10.0,
         "multi_package_resolution": False,
         "package_name": None,
-        "si_reward_weight": 0.5,
+        "si_score_weight": 0.5,
+        "function_scaling": 1 / 1000,
     }
     CONFIGURATION_SCHEMA: Schema = Schema(
         {
@@ -114,13 +115,18 @@ class SecurityIndicatorStep(Step):
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Score package based on security indicators gathered, do not include if not analyzed."""
         package_version_tuple = package_version.to_tuple_locked()
-
+        justification = []
         try:
             s_info = self.context.graph.get_si_aggregated_python_package_version(
                 package_name=package_version.name,
                 package_version=package_version.locked_version,
                 index_url=package_version.index.url,
             )
+            msg = (
+                f"Thoth has security info for {package_version.name}==={package_version.locked_version} "
+                f"on {package_version.index_url}"
+            )
+            justification.append({"type": "info", "message": msg, "link": self._JUSTIFICATION_LINK_SECURITY})
         except NotFoundError:
             if self.context.recommendation_type == RecommendationType.SECURITY:
                 if package_version_tuple not in self._logged_packages:
@@ -149,13 +155,16 @@ class SecurityIndicatorStep(Step):
                 self._logged_packages.add(package_version_tuple)
                 msg = (
                     f"Skipping including package {package_version_tuple} because bandit found "
-                    f"high security high confidence issue(s)."
+                    f"high severity high confidence issue(s)."
                 )
                 _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_LINK_BANDIT)
                 self.context.stack_info.append(
                     {"type": "WARNING", "message": msg, "link": self._JUSTIFICATION_LINK_BANDIT}
                 )
             raise NotAcceptable
+        else:
+            msg = f"bandit found no high severity, high confidence issues for {package_version_tuple}"
+            justification.append({"type": "INFO", "message": msg, "link": self._JUSTIFICATION_LINK_BANDIT})
 
         s_score = (
             (
@@ -178,7 +187,10 @@ class SecurityIndicatorStep(Step):
             * self.configuration["low_severity_weight"]
         )
 
-        s_score = s_score / s_info["number_of_lines_with_code_in_python_files"]
-        if s_score < 1:
-            return self.configuration["si_reward_weight"], None
-        return self.configuration["si_reward_weight"] / s_score, None
+        s_score = (
+            (s_score / (s_info["number_of_lines_with_code_in_python_files"] or 1)) ** 2
+            * self.configuration["function_scaling"]
+            * -1
+        )
+        s_score = max(s_score, -1) * self.configuration["si_score_weight"]
+        return s_score, justification or None
