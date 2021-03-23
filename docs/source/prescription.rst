@@ -1300,6 +1300,17 @@ semantically):
         message: "Hello, Thoth!"
         link: https://thoth-station.ninja
 
+    advised_manifest_changes:
+      - apiVersion: "apps.openshift.io/v1"
+        kind: DeploymentConfig
+        patch:
+          op: add
+          path: "/spec/template/spec/containers/0/env/0"
+          value:
+            name: "WORKDIR"
+            value: "/home/workdir"
+
+
 Wrap ``run.match``
 ##################
 
@@ -1382,3 +1393,43 @@ similar to the one :ref:`as provided by step <step_run_justification>`. It is
 added to the resolved stack if the match criteria are met. The unit cannot
 provide ``eager_stop_pipeline`` or ``not_acceptable`` to have justification
 available.
+
+Wrap ``run.advised_manifest_changes``
+#####################################
+
+Suggested changes to the manifest files used for deployment.
+
+.. note::
+
+  *Example:*
+
+  A pipeline unit that adjusts environment variables if ``intel-tensorflow`` is resolved.
+
+  .. code-block:: yaml
+
+    name: WrapUnit
+    type: wrap
+    should_include:
+    run:
+      match:
+        state:
+          resolved_dependencies:
+            - name: intel-tensorflow
+
+      advised_manifest_changes:
+        - apiVersion: "apps.openshift.io/v1"
+          kind: DeploymentConfig
+          patch:
+            op: add
+            path: "/spec/template/spec/containers/0/env/0"
+            value:
+              name: "OMP_NUM_THREADS"
+              value": "1"
+
+      stack_info:
+        - type: INFO
+          message: Adjst OMP_NUM_THREADS environment variable to make sure application behaves correctly in containerized environments
+          link: "https://www.openmp.org/spec-html/5.0/openmpse50.html"
+
+
+See :ref:`manifest_changes` section for more info and semantics.

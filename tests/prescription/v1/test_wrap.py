@@ -276,3 +276,52 @@ run:
 
         builder_context = flexmock()
         assert list(WrapPrescription.should_include(builder_context)) == []
+
+    def test_advised_manifest_changes(self, state: State, context: Context) -> None:
+        """Test advising changes in the manifest files."""
+        prescription_str = """
+name: WrapUnit
+type: wrap
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    state:
+      resolved_dependencies:
+        - name: intel-tensorflow
+
+  advised_manifest_changes:
+    apiVersion: apps.openshift.io/v1
+    kind: DeploymentConfig
+    patch:
+      op: add
+      path: /spec/template/spec/containers/0/env/0
+      value:
+        name: OMP_NUM_THREADS
+        value: "1"
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_WRAP_SCHEMA(prescription)
+        WrapPrescription.set_prescription(prescription)
+        state.add_resolved_dependency(("intel-tensorflow", "2.2.0", "https://pypi.org/simple"))
+
+        state.justification.clear()
+        assert state.advised_manifest_changes == []
+
+        unit = WrapPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            assert unit.run(state) is None
+
+        assert state.advised_manifest_changes == [
+            {
+                "apiVersion": "apps.openshift.io/v1",
+                "kind": "DeploymentConfig",
+                "patch": {
+                    "op": "add",
+                    "path": "/spec/template/spec/containers/0/env/0",
+                    "value": {"name": "OMP_NUM_THREADS", "value": "1"},
+                },
+            }
+        ]
