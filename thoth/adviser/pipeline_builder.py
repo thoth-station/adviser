@@ -283,35 +283,35 @@ class PipelineBuilder:
         import thoth.adviser.strides
         import thoth.adviser.wraps
 
-        if ctx.prescription:
-            yield from ctx.prescription.iter_boot_units()
         for boot_name in thoth.adviser.boots.__all__:
             yield getattr(thoth.adviser.boots, boot_name)
-
         if ctx.prescription:
-            yield from ctx.prescription.iter_pseudonym_units()
+            yield from ctx.prescription.iter_boot_units()
+
         for pseudonym_name in thoth.adviser.pseudonyms.__all__:
             yield getattr(thoth.adviser.pseudonyms, pseudonym_name)
-
         if ctx.prescription:
-            yield from ctx.prescription.iter_sieve_units()
+            yield from ctx.prescription.iter_pseudonym_units()
+
         for sieve_name in thoth.adviser.sieves.__all__:
             yield getattr(thoth.adviser.sieves, sieve_name)
-
         if ctx.prescription:
-            yield from ctx.prescription.iter_step_units()
+            yield from ctx.prescription.iter_sieve_units()
+
         for step_name in thoth.adviser.steps.__all__:
             yield getattr(thoth.adviser.steps, step_name)
-
         if ctx.prescription:
-            yield from ctx.prescription.iter_stride_units()
+            yield from ctx.prescription.iter_step_units()
+
         for stride_name in thoth.adviser.strides.__all__:
             yield getattr(thoth.adviser.strides, stride_name)
-
         if ctx.prescription:
-            yield from ctx.prescription.iter_wrap_units()
+            yield from ctx.prescription.iter_stride_units()
+
         for wrap_name in thoth.adviser.wraps.__all__:
             yield getattr(thoth.adviser.wraps, wrap_name)
+        if ctx.prescription:
+            yield from ctx.prescription.iter_wrap_units()
 
     @classmethod
     def _build_configuration(cls, ctx: PipelineBuilderContext) -> PipelineConfig:
