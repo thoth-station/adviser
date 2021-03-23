@@ -64,4 +64,8 @@ class WrapPrescription(UnitPrescription):
         if justification:
             state.add_justification(justification)
 
+        advised_manifest_changes = self.run_prescription.get("advised_manifest_changes")
+        if advised_manifest_changes:
+            state.advised_manifest_changes.append(advised_manifest_changes)
+
         self._run_base()

@@ -312,6 +312,7 @@ PRESCRIPTION_WRAP_RUN_SCHEMA = Schema(
         Optional("not_acceptable"): _NONEMPTY_STRING,
         Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
         Optional("justification"): [JUSTIFICATION_SCHEMA],
+        Optional("advised_manifest_changes"): object,
         Optional("match"): Schema(
             {Required("state"): Schema({Required("resolved_dependencies"): [PACKAGE_VERSION_SCHEMA]})}
         ),
