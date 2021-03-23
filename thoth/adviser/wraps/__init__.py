@@ -18,7 +18,6 @@
 """Wrap units implemented in adviser."""
 
 from .no_onservation import NoObservationWrap
-from .tensorflow import TensorFlowSlowKerasEmbedding
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -26,5 +25,4 @@ from .tensorflow import TensorFlowSlowKerasEmbedding
 # can be mentioned here.
 __all__ = [
     "NoObservationWrap",
-    "TensorFlowSlowKerasEmbedding",
 ]
