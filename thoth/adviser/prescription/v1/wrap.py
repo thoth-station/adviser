@@ -44,7 +44,15 @@ class WrapPrescription(UnitPrescription):
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         if cls._should_include_base(builder_context):
-            yield {}
+            match_resolved = (
+                cls._PRESCRIPTION["run"].get("match", {}).get("state", {}).get("resolved_dependencies")  # type: ignore
+            )
+            if match_resolved:
+                # Return the first package name that should be matched to keep optimization for wrap calls.
+                yield {"package_name": match_resolved[0].get("name")}
+            else:
+                yield {}
+
             return None
 
         yield from ()

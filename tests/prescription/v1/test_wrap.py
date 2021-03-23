@@ -246,6 +246,28 @@ run:
         WrapPrescription.set_prescription(prescription)
 
         builder_context = flexmock()
+        assert list(WrapPrescription.should_include(builder_context)) == [{"package_name": "flask"}]
+
+    def test_should_include_no_package_name(self) -> None:
+        """Test including this pipeline unit without any specific resolved package."""
+        prescription_str = """
+name: WrapUnit
+type: wrap
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  justification:
+    - type: ERROR
+      message: This message will not be shown
+      link: https://pypi.org/project/connexion
+"""
+        flexmock(WrapPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_WRAP_SCHEMA(prescription)
+        WrapPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
         assert list(WrapPrescription.should_include(builder_context)) == [{}]
 
     def test_no_should_include(self) -> None:
