@@ -67,13 +67,7 @@ class TensorFlowSlowKerasEmbedding(Wrap):
 
     def run(self, state: State) -> None:
         """Notify about a bug in summary output spotted on TensorFlow 2.3."""
-        tensorflow_any = (
-            state.resolved_dependencies.get("tensorflow")
-            or state.resolved_dependencies.get("tensorflow-cpu")
-            or state.resolved_dependencies.get("tensorflow-gpu")
-            or state.resolved_dependencies.get("intel-tensorflow")
-        )
-
+        tensorflow_any = state.resolved_dependencies.get(self.configuration["package_name"])
         if tensorflow_any is None:
             return None
 
