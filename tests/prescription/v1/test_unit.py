@@ -251,8 +251,10 @@ class TestUnitPrescription(AdviserTestCase):
             # Python version.
             ({"python_versions": ["3.6", "3.9"]}, {"python_version": "3.6"}, True),
             ({"python_versions": ["3.6", "3.9"]}, {}, False),
+            ({"python_versions": {"not": ["3.6", "3.9"]}}, {}, True),
             ({"python_versions": ["3.6"]}, {"python_version": "3.9"}, False),
             ({"python_versions": ["3.6", None]}, {}, True),
+            ({"python_versions": {"not": [None]}}, {}, False),
             # Operating system.
             ({"operating_systems": [{"name": "rhel", "version": "8"}]}, {}, False),
             (
@@ -277,6 +279,21 @@ class TestUnitPrescription(AdviserTestCase):
                 True,
             ),
             (
+                {"hardware": [{"cpu_families": {"not": [1]}}]},
+                {"hardware": {"cpu_family": 1}},
+                False,
+            ),
+            (
+                {"hardware": [{"cpu_models": {"not": [None]}}]},
+                {"hardware": {"cpu_model": 1}},
+                True,
+            ),
+            (
+                {"hardware": [{"gpu_models": {"not": ["Bar"]}}]},
+                {"hardware": {"gpu_model": "Foo"}},
+                True,
+            ),
+            (
                 {"hardware": [{"cpu_families": [1, 2, 3], "cpu_models": [9, 8, 7]}]},
                 {"hardware": {"cpu_family": 2, "cpu_model": 6}},
                 False,
@@ -293,6 +310,7 @@ class TestUnitPrescription(AdviserTestCase):
             ),
             # CUDA versions.
             ({"cuda_versions": ["9.0", "8.1"]}, {"cuda_version": "9.0"}, True),
+            ({"cuda_versions": {"not": ["9.0", "8.1"]}}, {"cuda_version": "9.0"}, False),
             ({"cuda_versions": ["9.0", "8.1"]}, {}, False),
             ({"cuda_versions": ["8.1"]}, {"cuda_version": "9.0"}, False),
             ({"cuda_versions": ["8.1", None]}, {}, True),
@@ -301,26 +319,31 @@ class TestUnitPrescription(AdviserTestCase):
             ({"platforms": ["linux-x86_64", "linux-i586"]}, {}, False),
             ({"platforms": ["linux-i586"]}, {"platform": "linux-x86_64"}, False),
             ({"platforms": ["linux-i586", None]}, {}, True),
+            ({"platforms": {"not": ["linux-i586", None]}}, {}, False),
             # openblas_versions.
             ({"openblas_versions": ["0.3.1", "0.2.0"]}, {"openblas_version": "0.3.1"}, True),
             ({"openblas_versions": ["0.3.1", "0.2.0"]}, {}, False),
             ({"openblas_versions": ["0.2.0"]}, {"openblas_version": "0.3.1"}, False),
             ({"openblas_versions": ["0.2.0", None]}, {}, True),
+            ({"openblas_versions": {"not": ["0.2.0"]}}, {}, True),
             # openmpi_versions.
-            ({"cudnn_versions": ["3.1", "2.0"]}, {"cudnn_version": "3.1"}, True),
-            ({"cudnn_versions": ["3.1", "2.0"]}, {}, False),
-            ({"cudnn_versions": ["2.0"]}, {"cudnn_version": "3.1"}, False),
-            ({"cudnn_versions": ["2.0", None]}, {}, True),
+            ({"openmpi_versions": ["3.1", "2.0"]}, {"openmpi_version": "3.1"}, True),
+            ({"openmpi_versions": ["3.1", "2.0"]}, {}, False),
+            ({"openmpi_versions": ["2.0"]}, {"openmpi_version": "3.1"}, False),
+            ({"openmpi_versions": ["2.0", None]}, {}, True),
+            ({"openmpi_versions": {"not": [None]}}, {}, False),
             # cudnn_versions.
             ({"cudnn_versions": ["8.1", "8.0"]}, {"cudnn_version": "8.1"}, True),
             ({"cudnn_versions": ["8.1", "8.0"]}, {}, False),
             ({"cudnn_versions": ["8.0"]}, {"cudnn_version": "8.1"}, False),
             ({"cudnn_versions": ["8.0", None]}, {}, True),
+            ({"cudnn_versions": {"not": ["8.0"]}}, {}, True),
             # mkl_versions.
             ({"mkl_versions": ["2021.1.1", "2019.0"]}, {"mkl_version": "2021.1.1"}, True),
             ({"mkl_versions": ["2021.1.1", "2019.0"]}, {}, False),
             ({"mkl_versions": ["2019.0"]}, {"mkl_version": "2021.1.1"}, False),
             ({"mkl_versions": ["2019.0", None]}, {}, True),
+            ({"mkl_versions": {"not": ["2019.0"]}}, {"mkl_version": "2021.1.1"}, True),
             # base images.
             (
                 {
@@ -348,6 +371,23 @@ class TestUnitPrescription(AdviserTestCase):
                 False,
             ),
             ({"base_images": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0", None]}, {}, True),
+            (
+                {"base_images": {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0"]}},
+                {"base_image": "quay.io/thoth-station/s2i-thoth-ubi8-py38:v1.0.0"},
+                True,
+            ),
+            (
+                {
+                    "base_images": {
+                        "not": [
+                            "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                            "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                        ]
+                    }
+                },
+                {},
+                True,
+            ),
             # Configuration combination.
             (
                 {

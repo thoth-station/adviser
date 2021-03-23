@@ -42,6 +42,11 @@ _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE = All([_NONEMPTY_STRING, None], Len
 _NONEMPTY_LIST_OF_INTEGERS_WITH_NONE = All([int, None], Length(min=1))
 
 
+def _with_not(entity: object) -> Schema:
+    """Add possibility to provide 'not' in the given configuration entity."""
+    return Schema(Any(entity, Schema({"not": entity})))
+
+
 PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA = Schema(
     {
         Optional("operating_systems"): [
@@ -56,22 +61,22 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA = Schema(
             [
                 Schema(
                     {
-                        Optional("cpu_families"): _NONEMPTY_LIST_OF_INTEGERS_WITH_NONE,
-                        Optional("cpu_models"): _NONEMPTY_LIST_OF_INTEGERS_WITH_NONE,
-                        Optional("gpu_models"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
+                        Optional("cpu_families"): _with_not(_NONEMPTY_LIST_OF_INTEGERS_WITH_NONE),
+                        Optional("cpu_models"): _with_not(_NONEMPTY_LIST_OF_INTEGERS_WITH_NONE),
+                        Optional("gpu_models"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
                     }
                 )
             ],
             Length(min=1),
         ),
-        Optional("python_versions"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
-        Optional("cuda_versions"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
-        Optional("platforms"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
-        Optional("openblas_versions"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
-        Optional("openmpi_versions"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
-        Optional("cudnn_versions"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
-        Optional("mkl_versions"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
-        Optional("base_images"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE,
+        Optional("python_versions"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
+        Optional("cuda_versions"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
+        Optional("platforms"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
+        Optional("openblas_versions"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
+        Optional("openmpi_versions"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
+        Optional("cudnn_versions"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
+        Optional("mkl_versions"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
+        Optional("base_images"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
     }
 )
 
@@ -109,10 +114,12 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
                 Optional("wraps"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS,
             }
         ),
-        Optional("recommendation_types"): All(
-            list(map(str.lower, RecommendationType.__members__.keys())), Length(min=1)
+        Optional("recommendation_types"): _with_not(
+            All(list(map(str.lower, RecommendationType.__members__.keys())), Length(min=1))
         ),
-        Optional("decision_types"): All(list(map(str.lower, DecisionType.__members__.keys())), Length(min=1)),
+        Optional("decision_types"): _with_not(
+            All(list(map(str.lower, DecisionType.__members__.keys())), Length(min=1))
+        ),
         Optional("runtime_environments"): PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA,
         Optional("library_usage"): _library_usage,
     }
