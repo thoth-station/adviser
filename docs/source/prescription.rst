@@ -1133,14 +1133,14 @@ Make the given step not acceptable in the resolution process.
     run:
       match:
         package_version:
-          # Considering builds available also on other indexes than PyPI.
-          name: tensorflow
-          version: '~=2.4.0'
+          name: numpy
+          version: "==1.19.1"
+          index_url: 'https://pypi.org/simple'
         state:
           resolved_dependencies:
-            - name: numpy
-              locked_version: "==1.19.1"
-              index_url: 'https://pypi.org/simple'
+            # Considering builds available also on other indexes than PyPI.
+            - name: tensorflow
+              version: '~=2.4.0'
 
       multi_package_resolution: true
 
