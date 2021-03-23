@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A wrap that adds information about Thoth s2i used."""
+"""A boot that adds information about Thoth s2i used."""
 
 from typing import Any
 from typing import Dict
@@ -26,15 +26,14 @@ from voluptuous import Schema
 
 from thoth.common import get_justification_link as jl
 
-from ..state import State
-from ..wrap import Wrap
+from ..boot import Boot
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
 
 
-class ThothS2IInfoWrap(Wrap):
-    """A wrap that adds information about Thoth s2i used."""
+class ThothS2IInfoBoot(Boot):
+    """A boot that adds information about Thoth s2i used."""
 
     _THOTH_S2I_PREFIX = "quay.io/thoth-station/s2i-thoth-"
     _THOTH_S2I_BASE = "quay.io/thoth-station/"
@@ -50,7 +49,7 @@ class ThothS2IInfoWrap(Wrap):
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[Any, Any], None, None]:
-        """Include this wrap in adviser if Thoth s2i is used.."""
+        """Include this boot in adviser if Thoth s2i is used.."""
         base_image = builder_context.project.runtime_environment.base_image
         if not builder_context.is_included(cls) and base_image and base_image.startswith(cls._THOTH_S2I_PREFIX):
             thoth_s2i_name = base_image.split(":", maxsplit=1)[0]
@@ -65,6 +64,6 @@ class ThothS2IInfoWrap(Wrap):
         yield from ()
         return None
 
-    def run(self, state: State) -> None:
+    def run(self) -> None:
         """Add information about the base image used to justification."""
         self.context.stack_info.append(self.configuration)
