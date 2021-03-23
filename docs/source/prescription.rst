@@ -194,6 +194,24 @@ the :ref:`Dependency Monkey <dependency_monkey>` resolution pipeline used for
 If ``dependency_monkey_pipeline`` is set to ``false``, this configuration
 option has no effect.
 
+``should_include.library_usage``
+================================
+
+Library calls that should be present to include the pipeline unit. This
+creates an ability to include a pipeline unit only if some parts of a
+library are used that affect the application.
+
+.. note::
+
+  *Example:*
+
+  .. code-block:: yaml
+
+    library_usage:
+      # from flask import Flask
+      flask:
+        Flask
+
 ``should_include.dependencies``
 ###############################
 
@@ -1313,6 +1331,36 @@ See :ref:`stack info <boot_stack_info>` which semantics is shared with this unit
 
 Note stack info is added only once even if the pipeline unit is
 run multiple times during the resolution process.
+
+.. note::
+
+  *Example:*
+
+  .. code-block:: yaml
+
+    name: WrapUnit
+    type: wrap
+    should_include:
+      adviser_pipeline: true
+      recommendation_types:
+        # Only warn here, in case of performance the corresponding resolution step can be penalized.
+        - latest
+        - testing
+      library_usage:
+        tensorflow:
+          - tensorflow.keras.layers.Embedding
+    run:
+      match:
+        state:
+          resolved_dependencies:
+            - name: tensorflow
+              version: "<=2.4.0"
+
+      stack_info:
+        - type: WARNING
+          message: "TensorFlow in version <=2.4 is slow when tf.keras.layers.Embedding is used"
+          # Can be replaced with just "tf_42475".
+          link: "https://thoth-station.ninja/j/tf_42475.html"
 
 Wrap ``run.not_acceptable``
 ###########################

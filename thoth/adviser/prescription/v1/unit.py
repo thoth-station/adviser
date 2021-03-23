@@ -137,6 +137,24 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 )
                 return False
 
+        # Library usage.
+        library_usage_expected = should_include_dict.get("library_usage", {})
+        if library_usage_expected:
+            if not builder_context.library_usage:
+                _LOGGER.debug("%s: Not registering as no library usage supplied", unit_name)
+                return False
+
+            for library, symbols in library_usage_expected.items():
+                if library not in builder_context.library_usage:
+                    _LOGGER.debug("%s: Not registering as library %r is not used", unit_name, library)
+                    return False
+
+                if not set(symbols).issubset(builder_context.library_usage[library]):
+                    _LOGGER.debug("%s: Not registering as not all required symbols for %r used", unit_name, library)
+                    return False
+            else:
+                _LOGGER.debug("%s: All library symbols required present in the library usage supplied", unit_name)
+
         # Dependencies.
         dependencies = should_include_dict.get("dependencies", {})
         for boot_name in dependencies.get("boots", []):
