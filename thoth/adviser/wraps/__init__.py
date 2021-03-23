@@ -18,7 +18,6 @@
 """Wrap units implemented in adviser."""
 
 from .no_onservation import NoObservationWrap
-from .tensorflow import MKLThreadsWrap
 from .tensorflow import TensorFlowSlowKerasEmbedding
 
 
@@ -27,6 +26,5 @@ from .tensorflow import TensorFlowSlowKerasEmbedding
 # can be mentioned here.
 __all__ = [
     "NoObservationWrap",
-    "MKLThreadsWrap",
     "TensorFlowSlowKerasEmbedding",
 ]
