@@ -129,13 +129,15 @@ class SecurityIndicatorStep(Step):
                 f"Thoth has security info for {package_version.name}==={package_version.locked_version} "
                 f"on {package_version.index.url}"
             )
-            justification.append({
-                "type": "INFO",
-                "message": msg,
-                "link": self._JUSTIFICATION_LINK_SECURITY,
-                "package_name": package_version.name,
-                "version_range": f"==={package_version.locked_version}"
-            })
+            justification.append(
+                {
+                    "type": "INFO",
+                    "message": msg,
+                    "link": self._JUSTIFICATION_LINK_SECURITY,
+                    "package_name": package_version.name,
+                    "version_range": f"==={package_version.locked_version}",
+                }
+            )
         except NotFoundError:
             if self.context.recommendation_type == RecommendationType.SECURITY:
                 if package_version_tuple not in self._logged_packages:
@@ -144,13 +146,15 @@ class SecurityIndicatorStep(Step):
                         f"No security info for {package_version.name}==={package_version.locked_version} "
                         f"on {package_version.index.url}"
                     )
-                    self.context.stack_info.append({
-                        "type": "WARNING",
-                        "message": msg,
-                        "link": self._JUSTIFICATION_LINK_SECURITY,
-                        "package_name": package_version.name,
-                        "version_range": f"==={package_version.locked_version}",
-                    })
+                    self.context.stack_info.append(
+                        {
+                            "type": "WARNING",
+                            "message": msg,
+                            "link": self._JUSTIFICATION_LINK_SECURITY,
+                            "package_name": package_version.name,
+                            "version_range": f"==={package_version.locked_version}",
+                        }
+                    )
                     _LOGGER.warning("%s - see %s", msg, self._JUSTIFICATION_LINK_SECURITY)
                 raise NotAcceptable
             return (
