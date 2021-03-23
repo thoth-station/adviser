@@ -18,7 +18,6 @@
 """Pseudonym units implemented in adviser."""
 
 from ._debug import AliasPseudonym
-from .intel_tensorflow import IntelTensorFlowPseudonym
 from .tensorflow_gpu import TensorFlowGPUPseudonym
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -26,6 +25,5 @@ from .tensorflow_gpu import TensorFlowGPUPseudonym
 # can be mentioned here.
 __all__ = [
     "AliasPseudonym",
-    "IntelTensorFlowPseudonym",
     "TensorFlowGPUPseudonym",
 ]

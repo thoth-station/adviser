@@ -20,12 +20,10 @@
 from .tf_240_avx2 import TensorFlow240AVX2IllegalInstructionSieve
 from .tf_api import TensorFlowAPISieve
 from .tf_cuda import TensorFlowCUDASieve
-from .tf_py39 import TensorFlowPython39Sieve
 
 
 __all__ = [
     "TensorFlow240AVX2IllegalInstructionSieve",
     "TensorFlowAPISieve",
     "TensorFlowCUDASieve",
-    "TensorFlowPython39Sieve",
 ]

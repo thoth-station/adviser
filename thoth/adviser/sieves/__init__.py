@@ -17,26 +17,18 @@
 
 """Implementation of sieves used in adviser pipeline."""
 
-from .backports import Enum34BackportSieve
-from .backports import Functools32BackportSieve
-from .backports import ImportlibMetadataBackportSieve
-from .backports import ImportlibResourcesBackportSieve
-from .backports import MockBackportSieve
 from .filter_index import FilterIndexSieve
 from .index_enabled import PackageIndexSieve
 from .legacy_version import LegacyVersionSieve
 from .locked import CutLockedSieve
-from .pandas import PandasPy36Sieve
 from .prereleases import CutPreReleasesSieve
 from .experimental_filter_conf_index import FilterConfiguredIndexSieve
 from .experimental_package_index import PackageIndexConfigurationSieve
 from .experimental_prereleases import SelectiveCutPreReleasesSieve
-from .setuptools import Py36SetuptoolsSieve
 from .solved import SolvedSieve
 from .tensorflow import TensorFlow240AVX2IllegalInstructionSieve
 from .tensorflow import TensorFlowAPISieve
 from .tensorflow import TensorFlowCUDASieve
-from .tensorflow import TensorFlowPython39Sieve
 from .thoth_s2i_abi_compat import ThothS2IAbiCompatibilitySieve
 from .version_constraint import VersionConstraintSieve
 
@@ -55,15 +47,7 @@ __all__ = [
     "VersionConstraintSieve",
     "ThothS2IAbiCompatibilitySieve",
     "FilterIndexSieve",
-    "Enum34BackportSieve",
-    "Functools32BackportSieve",
-    "ImportlibMetadataBackportSieve",
-    "ImportlibResourcesBackportSieve",
-    "MockBackportSieve",
-    "Py36SetuptoolsSieve",
     "TensorFlow240AVX2IllegalInstructionSieve",
     "TensorFlowAPISieve",
     "TensorFlowCUDASieve",
-    "TensorFlowPython39Sieve",
-    "PandasPy36Sieve",
 ]
