@@ -27,6 +27,8 @@ and fill in missing parts.
 Name the file name in a SEO friendly way and keep it short so that the URL
 generated is as short as possible.
 
+.. _jl:
+
 Linking justification documents from adviser
 ============================================
 
@@ -47,6 +49,9 @@ the ``.md`` suffix). The linked justification will be named
 The justification document is automatically built on push to master and the
 justification is automatically available in the justification listing.
 
+
+.. _justification:
+
 Adding justifications to the recommended software
 =================================================
 
@@ -54,6 +59,8 @@ There are two possibilities how to provide justifications to the users. In both
 cases, justifications should follow pre-defined schema already defined in
 Thoth's adviser test-suite (see ``AdviserTestCase._JUSTIFICATION_SCHEMA`` in
 ``tests/base.py``).
+
+.. _stack_info:
 
 Justifications for recommended software stack
 #############################################
