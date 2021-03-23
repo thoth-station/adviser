@@ -89,7 +89,14 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
 
     @classmethod
     def get_unit_name(cls) -> str:
-        """Get the name of the currect prescription unit."""
+        """Get the name of the current prescription unit.
+
+        This method is a class method and *MUST NOT* be used when obtaining unit name on an
+        instance. As part of the memory optimization we use class to get the current name of
+        a prescription unit with assigned prescription. This means that the prescription unit
+        instance would have different names reported with this method based on the current
+        class context.
+        """
         if cls._PRESCRIPTION is None:
             raise ValueError("No prescription defined")
 
@@ -304,6 +311,12 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             if link and not link.startswith(("https://", "http://")):
                 entry["link"] = jl(link)
 
+    @property
+    def name(self) -> str:
+        """Get name of the prescription instance."""
+        name: str = self.prescription["name"]
+        return name
+
     def pre_run(self) -> None:
         """Prepare this pipeline unit before running it."""
         self._prepare_justification_link(self.run_prescription.get("stack_info", []))
@@ -314,7 +327,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         """Log message specified in the run prescription."""
         log = self.run_prescription.get("log")
         if log:
-            _LOGGER.log(level=getattr(logging, log["type"]), msg=f"{self.get_unit_name()}: {log['message']}")
+            _LOGGER.log(level=getattr(logging, log["type"]), msg=f"{self.name}: {log['message']}")
 
     def _run_stack_info(self) -> None:
         """Add stack info if any prescribed."""

@@ -174,8 +174,8 @@ class Unit(metaclass=abc.ABCMeta):
                 raise PipelineUnitConfigurationSchemaError(str(exc))
 
     def to_dict(self) -> Dict[str, Any]:
-        """Turn this pipeline step into its dictionary representation."""
-        return {"name": self.get_unit_name(), "configuration": self.configuration, "unit_run": self.unit_run}
+        """Turn this pipeline unit into its dictionary representation."""
+        return {"name": self.name, "configuration": self.configuration, "unit_run": self.unit_run}
 
     @classmethod
     def is_aicoe_release(cls, package_version: PackageVersion) -> bool:

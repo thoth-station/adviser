@@ -231,36 +231,36 @@ class PipelineBuilderContext:
         package_name: Optional[str] = unit.configuration.get("package_name")
 
         if unit.is_boot_unit_type():
-            self._boots_included.setdefault(unit.get_unit_name(), []).append(unit)
+            self._boots_included.setdefault(unit.name, []).append(unit)
             self._boots.setdefault(package_name, []).append(unit)
             return
         elif unit.is_pseudonym_unit_type():
             if not package_name:
                 raise PipelineConfigurationError(
-                    f"Pipeline cannot be constructed as unit {unit.get_unit_name()!r} of type Pseudonym "
+                    f"Pipeline cannot be constructed as unit {unit.name!r} of type Pseudonym "
                     f"did not provide any package name configuration: {unit.configuration!r}"
                 )
-            self._pseudonyms_included.setdefault(unit.get_unit_name(), []).append(unit)
+            self._pseudonyms_included.setdefault(unit.name, []).append(unit)
             self._pseudonyms.setdefault(package_name, []).append(unit)
             return
         elif unit.is_sieve_unit_type():
-            self._sieves_included.setdefault(unit.get_unit_name(), []).append(unit)
+            self._sieves_included.setdefault(unit.name, []).append(unit)
             self._sieves.setdefault(package_name, []).append(unit)
             return
         elif unit.is_step_unit_type():
-            self._steps_included.setdefault(unit.get_unit_name(), []).append(unit)
+            self._steps_included.setdefault(unit.name, []).append(unit)
             self._steps.setdefault(package_name, []).append(unit)
             return
         elif unit.is_stride_unit_type():
-            self._strides_included.setdefault(unit.get_unit_name(), []).append(unit)
+            self._strides_included.setdefault(unit.name, []).append(unit)
             self._strides.setdefault(package_name, []).append(unit)
             return
         elif unit.is_wrap_unit_type():
-            self._wraps_included.setdefault(unit.get_unit_name(), []).append(unit)
+            self._wraps_included.setdefault(unit.name, []).append(unit)
             self._wraps.setdefault(package_name, []).append(unit)
             return
 
-        raise InternalError(f"Unknown unit {unit!r} of type {unit.get_unit_name()!r}")
+        raise InternalError(f"Unknown unit {unit!r} of type {unit.name!r}")
 
 
 class PipelineBuilder:
@@ -401,7 +401,7 @@ class PipelineBuilder:
                 unit.update_configuration(configuration_entry["configuration"])
             except Exception as exc:
                 raise PipelineConfigurationError(
-                    f"Filed to initialize pipeline unit configuration for {unit_class.get_unit_name()!r} "
+                    f"Filed to initialize pipeline unit configuration for {unit.name!r} "
                     f"with configuration {configuration_entry['configuration']!r}: {str(exc)}"
                 ) from exc
 
@@ -431,7 +431,7 @@ class PipelineBuilder:
             package_name = unit.configuration.get("package_name")
             if not package_name:
                 raise PipelineConfigurationError(
-                    f"Pipeline cannot be constructed as unit {unit.get_unit_name()!r} of type Pseudonym "
+                    f"Pipeline cannot be constructed as unit {unit.name!r} of type Pseudonym "
                     f"did not provide any package name configuration: {unit.configuration!r}"
                 )
 
