@@ -137,7 +137,7 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
                 step.run(None, package_version)
 
         assert len(context.stack_info) == 1
-        assert set(context.stack_info[0].keys()) == {"message", "type", "link"}
+        assert self.verify_justification_schema(context.stack_info)
 
     @pytest.mark.parametrize("recommendation_type", [RecommendationType.STABLE])
     def test_security_indicator_scoring_missing_stable(self, recommendation_type) -> None:
@@ -192,4 +192,4 @@ class TestSecurityIndicatorStep(AdviserUnitTestCase):
                 step = SecurityIndicatorStep()
                 step.run(None, package_version)
         assert len(context.stack_info) == 1
-        assert set(context.stack_info[0].keys()) == {"message", "type", "link"}
+        assert self.verify_justification_schema(context.stack_info)

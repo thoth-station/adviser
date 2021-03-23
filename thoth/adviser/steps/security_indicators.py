@@ -75,7 +75,8 @@ class SecurityIndicatorStep(Step):
             Required("medium_severity_weight"): float,
             Required("multi_package_resolution"): bool,
             Required("package_name"): None,
-            Required("si_reward_weight"): float,
+            Required("si_score_weight"): float,
+            Required("function_scaling"): float,
         }
     )
     _JUSTIFICATION_LINK_SECURITY = jl("security")
@@ -124,7 +125,7 @@ class SecurityIndicatorStep(Step):
             )
             msg = (
                 f"Thoth has security info for {package_version.name}==={package_version.locked_version} "
-                f"on {package_version.index_url}"
+                f"on {package_version.index.url}"
             )
             justification.append({"type": "info", "message": msg, "link": self._JUSTIFICATION_LINK_SECURITY})
         except NotFoundError:
