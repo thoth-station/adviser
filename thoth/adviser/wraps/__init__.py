@@ -25,8 +25,6 @@ from .tensorflow import IntelTensorFlowWrap
 from .tensorflow import MKLThreadsWrap
 from .tensorflow import TensorFlowMultipleProcessesGPUBug
 from .tensorflow import TensorFlowSlowKerasEmbedding
-from .thoth_s2i import ThothS2IWrap
-from .thoth_s2i_info import ThothS2IInfoWrap
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -41,6 +39,4 @@ __all__ = [
     "MKLThreadsWrap",
     "TensorFlowMultipleProcessesGPUBug",
     "TensorFlowSlowKerasEmbedding",
-    "ThothS2IWrap",
-    "ThothS2IInfoWrap",
 ]

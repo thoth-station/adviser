@@ -25,6 +25,8 @@ from .prescription_release import PrescriptionReleaseBoot
 from .python_version import PythonVersionBoot
 from .rhel_version import RHELVersionBoot
 from .solved_software_environment import SolvedSoftwareEnvironmentBoot
+from .thoth_s2i import ThothS2IBoot
+from .thoth_s2i_info import ThothS2IInfoBoot
 from .ubi import UbiBoot
 
 # from ._debug import MemTraceBoot
@@ -37,6 +39,8 @@ __all__ = [
     # "MemTraceBoot",
     "PipfileHashBoot",  # Should be placed before any changes to the input.
     "GPUBoot",  # Should be placed before any GPU specific pipeline unit.
+    "ThothS2IBoot",
+    "ThothS2IInfoBoot",
     "UbiBoot",
     "PythonVersionBoot",
     "SolvedSoftwareEnvironmentBoot",

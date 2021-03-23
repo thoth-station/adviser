@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A wrap that recommends to use Thoth's s2i if users do not use it."""
+"""A boot that recommends to use Thoth's s2i if users do not use it."""
 
 from typing import TYPE_CHECKING
 from typing import Generator
@@ -24,15 +24,14 @@ from typing import Any
 
 from thoth.common import get_justification_link as jl
 
-from ..state import State
-from ..wrap import Wrap
+from ..boot import Boot
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
 
 
-class ThothS2IWrap(Wrap):
-    """A wrap that notifies about missing observations."""
+class ThothS2IBoot(Boot):
+    """A boot that notifies about missing observations."""
 
     _THOTH_S2I_PREFIX = "quay.io/thoth-station/s2i-thoth-"
     _JUSTIFICATION = [
@@ -45,7 +44,7 @@ class ThothS2IWrap(Wrap):
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[Any, Any], None, None]:
-        """Include this wrap in adviser if Thoth s2i is not used.."""
+        """Include this boot in adviser if Thoth s2i is not used.."""
         base_image = builder_context.project.runtime_environment.base_image
         if not builder_context.is_included(cls) and (
             base_image is None or (base_image and not base_image.startswith(cls._THOTH_S2I_PREFIX))
@@ -56,6 +55,6 @@ class ThothS2IWrap(Wrap):
         yield from ()
         return None
 
-    def run(self, state: State) -> None:
+    def run(self) -> None:
         """Check for no observations made on the given state."""
         self.context.stack_info.extend(self._JUSTIFICATION)

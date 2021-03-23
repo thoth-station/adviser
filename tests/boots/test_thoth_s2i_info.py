@@ -15,23 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Test wrap adding information about Thoth s2i."""
+"""Test boot adding information about Thoth s2i."""
 
 import pytest
-from flexmock import flexmock
 from typing import Optional
 
 from thoth.adviser.context import Context
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
-from thoth.adviser.wraps import ThothS2IInfoWrap
+from thoth.adviser.boots import ThothS2IInfoBoot
 
 from ..base import AdviserUnitTestCase
 
 
-class TestThothS2IWrap(AdviserUnitTestCase):
+class TestThothS2IBoot(AdviserUnitTestCase):
     """Test adding information about Thoth s2i."""
 
-    UNIT_TESTED = ThothS2IInfoWrap
+    UNIT_TESTED = ThothS2IInfoBoot
 
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
@@ -56,9 +55,8 @@ class TestThothS2IWrap(AdviserUnitTestCase):
         }
         unit.update_configuration(justification)
 
-        state = flexmock()
         with self.UNIT_TESTED.assigned_context(context):
-            assert unit.run(state) is None
+            assert unit.run() is None
 
         assert len(context.stack_info) == 1
         self.verify_justification_schema(context.stack_info)
