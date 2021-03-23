@@ -17,8 +17,6 @@
 
 """Implementation of wraps used, specific for TensorFlow."""
 
-from .tf_42475 import TensorFlowSlowKerasEmbedding
+from typing import List
 
-__all__ = [
-    "TensorFlowSlowKerasEmbedding",
-]
+__all__: List[str] = []
