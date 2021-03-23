@@ -37,7 +37,7 @@ class NoObservationWrap(Wrap):
     _JUSTIFICATION = [
         {
             "type": "INFO",
-            "message": "No observations spotted for this stack in Thoth's database",
+            "message": "No issues spotted for this stack based on Thoth's database",
             "link": jl("no_observations"),
         }
     ]
