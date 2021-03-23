@@ -22,6 +22,7 @@ import logging
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Union
 from typing import Optional
 from typing import TYPE_CHECKING
 from packaging.specifiers import SpecifierSet
@@ -40,6 +41,23 @@ if TYPE_CHECKING:
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class _ValueList:
+    """A class that overrides `in` to transparently handle included and excluded values."""
+
+    __slots__ = ["_list"]
+
+    def __init__(self, obj: Union[List[object], Dict[str, List[object]]]) -> None:
+        """Initialize self."""
+        self._list = obj
+
+    def __contains__(self, item: str) -> bool:
+        """Override default in behavior based on the YAML definition."""
+        if isinstance(self._list, list):
+            return self._list.__contains__(item)
+
+        return not self._list["not"].__contains__(item)
 
 
 @attr.s(slots=True)
@@ -105,7 +123,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             if (
                 allowed_recommendation_types is not None
                 and builder_context.recommendation_type is not None
-                and builder_context.recommendation_type.name.lower() not in allowed_recommendation_types
+                and builder_context.recommendation_type.name.lower() not in _ValueList(allowed_recommendation_types)
             ):
                 _LOGGER.debug(
                     "%s: Not registering for adviser pipeline with recommendation type %s",
@@ -128,7 +146,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             if (
                 allowed_decision_types is not None
                 and builder_context.decision_type is not None
-                and builder_context.decision_type.name.lower() not in allowed_decision_types
+                and builder_context.decision_type.name.lower() not in _ValueList(allowed_decision_types)
             ):
                 _LOGGER.debug(
                     "%s: Not registering for dependency monkey pipeline with decision type %s",
@@ -221,15 +239,15 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             cpu_families = hardware_dict.get("cpu_families")
             cpu_models = hardware_dict.get("cpu_models")
             gpu_models = hardware_dict.get("gpu_models")
-            if cpu_families is not None and hw_used.cpu_family not in cpu_families:
+            if cpu_families is not None and hw_used.cpu_family not in _ValueList(cpu_families):
                 _LOGGER.debug("%s: Not matching CPU family used (using %r)", unit_name, hw_used.cpu_family)
                 return False
 
-            if cpu_models is not None and hw_used.cpu_model not in cpu_models:
+            if cpu_models is not None and hw_used.cpu_model not in _ValueList(cpu_models):
                 _LOGGER.debug("%s: Not matching CPU model used (using %r)", unit_name, hw_used.cpu_model)
                 return False
 
-            if gpu_models is not None and hw_used.gpu_model not in gpu_models:
+            if gpu_models is not None and hw_used.gpu_model not in _ValueList(gpu_models):
                 _LOGGER.debug("%s: Not matching GPU model used (using %r)", unit_name, hw_used.gpu_model)
                 return False
 
@@ -237,42 +255,42 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         runtime_used = builder_context.project.runtime_environment
 
         python_versions = runtime_environment_dict.get("python_versions")
-        if python_versions is not None and runtime_used.python_version not in python_versions:
+        if python_versions is not None and runtime_used.python_version not in _ValueList(python_versions):
             _LOGGER.debug("%s: Not matching Python version used (using %r)", unit_name, runtime_used.python_version)
             return False
 
         cuda_versions = runtime_environment_dict.get("cuda_versions")
-        if cuda_versions is not None and runtime_used.cuda_version not in cuda_versions:
+        if cuda_versions is not None and runtime_used.cuda_version not in _ValueList(cuda_versions):
             _LOGGER.debug("%s: Not matching CUDA version used (using %r)", unit_name, runtime_used.cuda_version)
             return False
 
         platforms = runtime_environment_dict.get("platforms")
-        if platforms is not None and runtime_used.platform not in platforms:
+        if platforms is not None and runtime_used.platform not in _ValueList(platforms):
             _LOGGER.debug("%s: Not matching platform used (using %r)", unit_name, runtime_used.platform)
             return False
 
         openblas_versions = runtime_environment_dict.get("openblas_versions")
-        if openblas_versions is not None and runtime_used.openblas_version not in openblas_versions:
+        if openblas_versions is not None and runtime_used.openblas_version not in _ValueList(openblas_versions):
             _LOGGER.debug("%s: Not matching openblas version used (using %r)", unit_name, runtime_used.openblas_version)
             return False
 
         openmpi_versions = runtime_environment_dict.get("openmpi_versions")
-        if openmpi_versions is not None and runtime_used.openmpi_version not in openmpi_versions:
+        if openmpi_versions is not None and runtime_used.openmpi_version not in _ValueList(openmpi_versions):
             _LOGGER.debug("%s: Not matching openmpi version used (using %r)", unit_name, runtime_used.openmpi_version)
             return False
 
         cudnn_versions = runtime_environment_dict.get("cudnn_versions")
-        if cudnn_versions is not None and runtime_used.cudnn_version not in cudnn_versions:
+        if cudnn_versions is not None and runtime_used.cudnn_version not in _ValueList(cudnn_versions):
             _LOGGER.debug("%s: Not matching cudnn version used (using %r)", unit_name, runtime_used.cudnn_version)
             return False
 
         mkl_versions = runtime_environment_dict.get("mkl_versions")
-        if mkl_versions is not None and runtime_used.mkl_version not in mkl_versions:
+        if mkl_versions is not None and runtime_used.mkl_version not in _ValueList(mkl_versions):
             _LOGGER.debug("%s: Not matching mkl version used (using %r)", unit_name, runtime_used.mkl_version)
             return False
 
         base_images = runtime_environment_dict.get("base_images")
-        if base_images is not None and runtime_used.base_image not in base_images:
+        if base_images is not None and runtime_used.base_image not in _ValueList(base_images):
             _LOGGER.debug("%s: Not matching base image used (using %r)", unit_name, runtime_used.base_image)
             return False
 

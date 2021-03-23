@@ -162,6 +162,9 @@ Possible values:
 A list of recommendation types that should be matched if the unit is registered
 for the adviser resolution pipeline.
 
+Alternatively, the list can be wrapped to a "not" statement which inverts
+the logic.
+
 If ``adviser_pipeline`` is set to ``false``, this configuration option has no
 effect.
 
@@ -190,6 +193,9 @@ Possible values:
 A list of decision types that should be matched if the unit is registered for
 the :ref:`Dependency Monkey <dependency_monkey>` resolution pipeline used for
 `data acquisition on Amun <https://github.com/thoth-station/amun-api/>`__.
+
+Alternatively, the list can be wrapped with a "not" statement which inverts
+the logic.
 
 If ``dependency_monkey_pipeline`` is set to ``false``, this configuration
 option has no effect.
@@ -324,6 +330,9 @@ configuration basically creates a matrix of hardware that should be
 available on user's side to register the given pipeline unit in the
 resolution process.
 
+Alternatively, the list can be wrapped with a "not" statement which inverts
+the logic.
+
 .. note::
 
   *Example:*
@@ -343,11 +352,18 @@ resolution process.
           - Foo
           - Bar
 
+      # Matching any CPU family except for 1.
+      - cpu_families:
+          not: [1]
+
 ``should_include.runtime_environments.python_versions``
 #######################################################
 
 A list of Python versions that need to be matched for including the
 given pipeline unit.
+
+Alternatively, the list can be wrapped with a "not" statement which inverts
+the logic.
 
 .. note::
 
@@ -359,6 +375,10 @@ given pipeline unit.
       # Match when running 3.8 or 3.9:
       - '3.8'
       - '3.9'
+
+    python_versions:
+      # Match all except for 3.8
+      not: ['3.8']
 
 If this configuration option is not provided, it defaults to any
 Python version.
@@ -372,6 +392,9 @@ are not considered.
 A list of Nvidia CUDA versions that need to be matched for including the given
 pipeline unit.
 
+Alternatively the list can be wrapped with a "not" statement which inverts
+the logic.
+
 .. note::
 
   *Example:*
@@ -382,6 +405,10 @@ pipeline unit.
       # Match when running CUDA 9.0 or 9.2.
       - '9.0'
       - '9.2'
+
+    cuda_versions:
+      # Match all except for 9.0 and 9.2.
+      not: ['9.0', '9.2]
 
   If this configuration option is not provided, it defaults to any
   CUDA version - even if none available.
@@ -399,10 +426,17 @@ A special value of ``null`` means no CUDA version available.
       - '9.1'
       - null
 
+    cuda_versions:
+      # Match if any CUDA is available.
+      not: [null]
+
 ``should_include.runtime_environments.platforms``
 #################################################
 
 A list of platforms for which the given pipeline unit should be registered.
+
+Alternatively, the list can be wrapped with a "not" statement which inverts
+the logic.
 
 .. note::
 
@@ -413,6 +447,10 @@ A list of platforms for which the given pipeline unit should be registered.
     platforms:
       - linux-x86_64
 
+    platforms:
+      # Any except for linux-x86_64
+      not: [linux-x86_64]
+
 If this configuration option is not supplied, it defaults to *any* platform.
 
 ``should_include.runtime_environments.openblas_versions``
@@ -420,6 +458,9 @@ If this configuration option is not supplied, it defaults to *any* platform.
 
 A list of `OpenBLAS <https://www.openblas.net/>`__ versions that need to be
 matched for including the given pipeline unit.
+
+Alternatively, the list can be wrapped with a "not" statement which inverts
+the logic.
 
 .. note::
 
@@ -448,11 +489,18 @@ A special value of ``null`` means no OpenBLAS version available.
       - '0.3.13'
       - null
 
+    openblas_versions:
+      # Match when any version of OpenBLAS is available.
+      not: [null]
+
 ``should_include.runtime_environments.openmpi_versions``
 ########################################################
 
 A list of `OpenMPI <https://www.open-mpi.org/>`__ versions that need to be
 matched for including the given pipeline unit.
+
+Alternatively, the list can be wrapped with a "not" statement which inverts
+the logic.
 
 .. note::
 
@@ -480,11 +528,18 @@ A special value of ``null`` means no OpenMPI version available.
       # Match when no OpenMPI is available.
       - null
 
+    openblas_versions:
+      # Match when any version of OpenMPI is available.
+      not: [null]
+
 ``should_include.runtime_environments.cudnn_versions``
 ######################################################
 
 A list of Nvidia cuDNN versions that need to be matched for including the given
 pipeline unit.
+
+Alternatively, the list can be wrapped with a "not" statement which inverts
+the logic.
 
 .. note::
 
@@ -512,12 +567,19 @@ A special value of ``null`` means no cuDNN version available.
       # Match when no cuDNN is available.
       - null
 
+    cudnn_versions:
+      # Match when cuDNN is available.
+      not: [null]
+
 ``should_include.runtime_environments.mkl_versions``
 ####################################################
 
 A list of `Intel MKL
 <https://software.intel.com/content/www/us/en/develop/articles/oneapi-math-kernel-library-release-notes.html>`__
 versions that need to be matched for including the given pipeline unit.
+
+Alternatively, the list can be wrapped with a "not" statement which inverts
+the logic.
 
 .. note::
 
@@ -544,6 +606,10 @@ A special value of ``null`` means no MKL version available.
       # Match when no Intel MKL is available.
       - null
 
+    mkl_versions:
+      # Match when any Intel MKL is available.
+      not: [null]
+
 ``should_include.runtime_environments.base_images``
 ###################################################
 
@@ -551,6 +617,9 @@ A list of base images that are used as a runtime environment when running the
 application. These base images map to `Thoth's S2I container images
 <https://github.com/thoth-station/s2i-thoth>`__ or container images produced by
 the `AICoE-CI pipeline <https://github.com/AICoE/aicoe-ci>`__.
+
+Alternatively, the list can be wrapped with a "not" statement which inverts
+the logic.
 
 .. note::
 
@@ -563,6 +632,13 @@ the `AICoE-CI pipeline <https://github.com/AICoE/aicoe-ci>`__.
       # environment in specific versions.
       - quay.io/thoth-station/s2i-thoth-ubi8-py38:v1.0.0
       - quay.io/thoth-station/s2i-thoth-ubi8-py36:v0.8.1
+
+    base_images:
+      # Do not match UBI8 Python 3.8 container environment and UBI8 Python 3.6
+      # container environment in specific versions.
+      not:
+        - quay.io/thoth-station/s2i-thoth-ubi8-py38:v1.0.0
+        - quay.io/thoth-station/s2i-thoth-ubi8-py36:v0.8.1
 
 Boots
 =====
