@@ -6117,3 +6117,84 @@
 * Add space after error message
 ### Improvements
 * :sparkles: :arrow_up: some standard updates
+
+## Release 0.27.0 (2021-03-24T09:23:18)
+### Features
+* Keep optimization for prescription wraps with resolved dependencies (#1800)
+* Fix handling optimized wrap call based on product score (#1798)
+* Fix handling prescription unit names (#1797)
+* Add "not" operator to the prescription declaration (#1795)
+* Move MKL specific wrap to prescriptions
+* Add ability to declare advised manifest changes in wrap prescriptions (#1794)
+* Allow supplying expected library usage in prescriptions (#1793)
+* Register core units first before any prescriptions (#1792)
+* Fix step example in prescriptions
+* Reformat using black
+* Provide more information in justification
+* Rewrite s2i wraps to boots to match semantics
+* Be more positive with justification message reported
+* Use package name from configuration to reduce some hashing
+* Update prescription documentation so users can start using it
+* Report stack info just once in prescription units (#1785)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1784)
+* Add Thoth's landing page (#1626)
+* Remove units rewritten to prescription YAML file
+* Implement prescription validation with semantics (#1781)
+* Remove wisdom from the prescription yaml (#1780)
+* Introduce namespace for prescriptions
+* Do not enforce operating system to be set for matching (#1777)
+* Adjust pseudonym example with yield matched version (#1778)
+* Add ability to yield matched package version in pseudonyms
+* Relax strict match for prescription wrap pipeline units
+* Add a pipeline unit that notifies about prescription release used
+* :arrow_up: Automatic update of dependencies by Kebechet (#1759)
+* Test loading prescriptions
+* Fix checking justification link
+* Allow multiple prescription files being supplied to the resolver
+* Be more verbose about loaded prescription
+* Test prescription units
+* Allow multiple hardware configurations per pipeline unit
+* Allow multiple configurations for which the unit should be registered
+* Add release and data infor to the prescription chema
+* Register UBI boot only if UBI is used
+* Add URL to logged message automatically
+* Add extend justification links if links do not point to any hosted site
+* Improve type handling in the prescription module
+* Fix docs for step prescription
+* Provide a sub-command to validate prescription YAML
+* Fix links to docs for pipeline units
+* Add a note to prescription docs
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Add few examples to prescription docs
+* Fix some pre-commit complains
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Introduce prescription
+* :arrow_up: Automatic update of dependencies by Kebechet
+* change si scoring and add info justification
+* Normalize score returned from CVE step score
+* Fix tests related to metadata propagation
+* Add type annotations
+* Add tests related to metadata propagation
+* Fix link to Thoth s2i info
+* Reformat using black
+* Fix missing thoth section in the recommended stack
+* Remove user's stack if development dependencies are not present
+* Manual dependency update
+* Remove user's stack if any changes in requirements were detected (#1726)
+* Fix justification messages reported by backport sieves
+* :arrow_up: Automatic update of dependencies by Kebechet (#1725)
+### Bug Fixes
+* Remove TF Keras embedding wrap that was moved to prescriptions (#1799)
+* Minor fix in the testsuite
+### Improvements
+* Fix referencing index URL
+* return justification rather than adding it to stack_info
+* Add tests related to prescription units registration
+* Remove unused debug statement
+* State logged message rather than logged text
+* Fix typing for prescription units and core units (#1748)
+* Adjust tests for passing prescription and cli_parameters
+* Adjust type of the message for S2I info (#1736)
+* Propagate metadata to justification and stack info
+* Remove unused imports
+* Add dev projects used for testing to MANIFEST.in
