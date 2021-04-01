@@ -40,19 +40,32 @@ class WrapPrescription(UnitPrescription):
         """Check if this unit is of type wrap."""
         return True
 
-    @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
-        """Check if the given pipeline unit should be included in the given pipeline configuration."""
-        if cls._should_include_base(builder_context):
-            match_resolved = (
-                cls._PRESCRIPTION["run"].get("match", {}).get("state", {}).get("resolved_dependencies")  # type: ignore
-            )
+    @staticmethod
+    def _yield_should_include(unit_prescription: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
+        """Yield for every entry stated in the match field."""
+        match = unit_prescription["run"].get("match", {})
+        if isinstance(match, list):
+            for item in match:
+                match_resolved = item.get("state", {}).get("resolved_dependencies")
+                if match_resolved:
+                    # Return the first package name that should be matched to keep optimization for wrap calls.
+                    yield {"package_name": match_resolved[0].get("name")}
+                else:
+                    yield {}
+        else:
+            match_resolved = match.get("state", {}).get("resolved_dependencies")
             if match_resolved:
                 # Return the first package name that should be matched to keep optimization for wrap calls.
                 yield {"package_name": match_resolved[0].get("name")}
             else:
                 yield {}
 
+    @classmethod
+    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
+        """Check if the given pipeline unit should be included in the given pipeline configuration."""
+        if cls._should_include_base(builder_context):
+            prescription: Dict[str, Any] = cls._PRESCRIPTION  # type: ignore
+            yield from cls._yield_should_include(prescription)
             return None
 
         yield from ()

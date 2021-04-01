@@ -40,13 +40,22 @@ class BootPrescription(UnitPrescription):
         """Check if this unit is of type boot."""
         return True
 
+    @staticmethod
+    def _yield_should_include(unit_prescription) -> Generator[Dict[str, Any], None, None]:
+        """Yield for every entry stated in the match field."""
+        match = unit_prescription["run"].get("match", {})
+        if isinstance(match, list):
+            for item in match:
+                yield {"package_name": item.get("package_name")}
+        else:
+            yield {"package_name": match.get("package_name")}
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         if cls._should_include_base(builder_context):
             prescription: Dict[str, Any] = cls._PRESCRIPTION  # type: ignore
-            package_name = prescription["run"].get("match", {}).get("package_name")
-            yield {"package_name": package_name}
+            yield from cls._yield_should_include(prescription)
             return None
 
         yield from ()

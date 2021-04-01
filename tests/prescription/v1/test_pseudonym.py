@@ -218,6 +218,44 @@ run:
         builder_context = flexmock()
         assert list(PseudonymPrescription.should_include(builder_context)) == [{"package_name": "tensorflow-cpu"}]
 
+    def test_should_include_multi(self) -> None:
+        """Test including this pipeline unit multiple times."""
+        prescription_str = """
+name: PseudonymUnit
+type: pseudonym
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    - package_version:
+        name: tensorflow-cpu
+    - package_version:
+        name: tensorflow-gpu
+    - package_version:
+        name: intel-tensorflow
+    - package_version:
+        name: tensorflow
+
+  yield:
+    package_version:
+      name: intel-tensorflow
+      locked_version: null
+      index_url: 'https://pypi.org/simple'
+"""
+        flexmock(PseudonymPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_PSEUDONYM_SCHEMA(prescription)
+        PseudonymPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(PseudonymPrescription.should_include(builder_context)) == [
+            {"package_name": "tensorflow-cpu"},
+            {"package_name": "tensorflow-gpu"},
+            {"package_name": "intel-tensorflow"},
+            {"package_name": "tensorflow"},
+        ]
+
     def test_no_should_include(self) -> None:
         """Test including this pipeline unit without package name."""
         prescription_str = """

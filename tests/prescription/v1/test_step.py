@@ -328,6 +328,34 @@ run:
             {"package_name": None, "multi_package_resolution": False}
         ]
 
+    def test_should_include_multi(self) -> None:
+        """Test including this pipeline unit multiple times."""
+        prescription_str = """
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    - package_version:
+        index_url: 'https://thoth-station.ninja'
+    - package_version:
+        name: flask
+
+  score: 0.1
+"""
+        flexmock(StepPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(StepPrescription.should_include(builder_context)) == [
+            {"package_name": None, "multi_package_resolution": False},
+            {"package_name": "flask", "multi_package_resolution": False},
+        ]
+
     def test_no_should_include(self) -> None:
         """Test not including this pipeline."""
         prescription_str = """

@@ -161,6 +161,35 @@ run:
         builder_context = flexmock()
         assert list(BootPrescription.should_include(builder_context)) == [{"package_name": "flask"}]
 
+    def test_should_include_mutli(self) -> None:
+        """Test including this pipeline unit multiple times."""
+        prescription_str = """
+name: BootUnit
+type: boot
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    - package_name: flask
+    - package_name: pandas
+
+  stack_info:
+    - type: ERROR
+      message: "Unable to perform this operation"
+      link: https://thoth-station.ninja
+"""
+        flexmock(BootPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_BOOT_SCHEMA(prescription)
+        BootPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(BootPrescription.should_include(builder_context)) == [
+            {"package_name": "flask"},
+            {"package_name": "pandas"},
+        ]
+
     def test_should_include_no_package_name(self) -> None:
         """Test including this pipeline unit without package name."""
         prescription_str = """

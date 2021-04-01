@@ -248,6 +248,43 @@ run:
         builder_context = flexmock()
         assert list(WrapPrescription.should_include(builder_context)) == [{"package_name": "flask"}]
 
+    def test_should_include_multi(self) -> None:
+        """Test including this pipeline unit multiple times."""
+        prescription_str = """
+name: WrapUnit
+type: wrap
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    - state:
+        resolved_dependencies:
+          - name: tensorflow-cpu
+    - state:
+        resolved_dependencies:
+          - name: tensorflow
+    - state:
+        resolved_dependencies:
+          - name: intel-tensorflow
+
+  justification:
+    - type: ERROR
+      message: This message will be shown
+      link: https://pypi.org/project/tensorflow
+"""
+        flexmock(WrapPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_WRAP_SCHEMA(prescription)
+        WrapPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(WrapPrescription.should_include(builder_context)) == [
+            {"package_name": "tensorflow-cpu"},
+            {"package_name": "tensorflow"},
+            {"package_name": "intel-tensorflow"},
+        ]
+
     def test_should_include_no_package_name(self) -> None:
         """Test including this pipeline unit without any specific resolved package."""
         prescription_str = """

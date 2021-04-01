@@ -166,6 +166,33 @@ run:
         builder_context = flexmock()
         assert list(SievePrescription.should_include(builder_context)) == [{"package_name": "flask"}]
 
+    def test_should_include_multi(self) -> None:
+        """Test including this pipeline unit multiple times."""
+        prescription_str = """
+name: SieveUnit
+type: sieve
+should_include:
+  times: 1
+  adviser_pipeline: true
+run:
+  match:
+    - package_version:
+        name: flask
+        version: '<=1.1.0'
+    - package_version:
+        name: numpy
+"""
+        flexmock(SievePrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_SIEVE_SCHEMA(prescription)
+        SievePrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(SievePrescription.should_include(builder_context)) == [
+            {"package_name": "flask"},
+            {"package_name": "numpy"},
+        ]
+
     def test_should_include_no_package_name(self) -> None:
         """Test including this pipeline unit."""
         prescription_str = """
