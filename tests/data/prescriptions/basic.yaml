@@ -18,13 +18,12 @@ spec:
         type: pseudonym
         should_include:
           adviser_pipeline: true
+        match:
+          package_version:
+            name: flask
+            version: '>1.0,<=1.1.0'
+            index_url: 'https://pypi.org/simple'
         run:
-          match:
-            package_version:
-              name: flask
-              version: '>1.0,<=1.1.0'
-              index_url: 'https://pypi.org/simple'
-
           yield:
             package_version:
               name: flask
@@ -35,49 +34,48 @@ spec:
         type: sieve
         should_include:
           adviser_pipeline: true
-        run:
-          match:
-            package_version:
-              name: flask
-              version: '>1.0,<=1.1.0'
-              index_url: 'https://pypi.org/simple'
+        match:
+          package_version:
+            name: flask
+            version: '>1.0,<=1.1.0'
+            index_url: 'https://pypi.org/simple'
     steps:
       - name: StepUnit
         type: step
         should_include:
           adviser_pipeline: true
+        match:
+          package_version:
+            name: flask
+            version: '>1.0<=1.1.0'
+            index_url: 'https://pypi.org/simple'
         run:
-          match:
-            package_version:
-              name: flask
-              version: '>1.0<=1.1.0'
-              index_url: 'https://pypi.org/simple'
           score: 0.42
     strides:
       - name: StrideUnit
         type: stride
         should_include:
           adviser_pipeline: true
+        match:
+          state:
+            resolved_dependencies:
+              - name: werkzeug
+                version: "==1.0.0"
+                index_url: 'https://pypi.org/simple'
         run:
-          match:
-            state:
-              resolved_dependencies:
-                - name: werkzeug
-                  version: "==1.0.0"
-                  index_url: 'https://pypi.org/simple'
           eager_stop_pipeline: "Stopping the pipeline"
     wraps:
       - name: WrapUnit
         type: wrap
         should_include:
           adviser_pipeline: true
+        match:
+          state:
+            resolved_dependencies:
+              - name: werkzeug
+                version: "==1.0.0"
+                index_url: 'https://pypi.org/simple'
         run:
-          match:
-            state:
-              resolved_dependencies:
-                - name: werkzeug
-                  version: "==1.0.0"
-                  index_url: 'https://pypi.org/simple'
           justification:
             - message: "Some justification printed"
               type: "WARNING"

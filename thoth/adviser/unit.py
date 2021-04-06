@@ -116,16 +116,6 @@ class Unit(metaclass=abc.ABCMeta):
         finally:
             cls._CONTEXT = None
 
-    @classmethod
-    def compute_expanded_configuration(cls, configuration_dict: Optional[Dict[str, Any]]) -> Dict[str, Any]:
-        """Compute configuration as they would be computed based on unit configuration."""
-        result = dict(cls.CONFIGURATION_DEFAULT)
-
-        if configuration_dict:
-            result.update(configuration_dict)
-
-        return result
-
     def __attrs_post_init__(self) -> None:
         """Initialize post-init attributes."""
         # Initialize unit_run always to False so the pipeline unit JSON report can be reused across

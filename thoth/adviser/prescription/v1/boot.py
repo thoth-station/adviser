@@ -23,8 +23,13 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import TYPE_CHECKING
+from voluptuous import Schema
+from voluptuous import Any as SchemaAny
+from voluptuous import Required
 
 from .unit import UnitPrescription
+from .schema import PRESCRIPTION_BOOT_RUN_SCHEMA
+from .schema import PRESCRIPTION_BOOT_MATCH_ENTRY_SCHEMA
 
 
 if TYPE_CHECKING:
@@ -35,20 +40,29 @@ if TYPE_CHECKING:
 class BootPrescription(UnitPrescription):
     """Boot prescription implementation."""
 
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {
+            Required("package_name"): SchemaAny(str, None),
+            Required("match"): SchemaAny(PRESCRIPTION_BOOT_MATCH_ENTRY_SCHEMA, None),
+            Required("run"): PRESCRIPTION_BOOT_RUN_SCHEMA,
+        }
+    )
+
     @staticmethod
     def is_boot_unit_type() -> bool:
         """Check if this unit is of type boot."""
         return True
 
     @staticmethod
-    def _yield_should_include(unit_prescription) -> Generator[Dict[str, Any], None, None]:
+    def _yield_should_include(unit_prescription: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
         """Yield for every entry stated in the match field."""
-        match = unit_prescription["run"].get("match", {})
+        match = unit_prescription.get("match", {})
+        run = unit_prescription.get("run", {})
         if isinstance(match, list):
             for item in match:
-                yield {"package_name": item.get("package_name")}
+                yield {"package_name": item.get("package_name"), "match": item, "run": run}
         else:
-            yield {"package_name": match.get("package_name")}
+            yield {"package_name": match.get("package_name") if match else None, "match": match, "run": run}
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:

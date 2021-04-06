@@ -25,7 +25,13 @@ from typing import Generator
 from typing import TYPE_CHECKING
 
 from thoth.adviser.state import State
+from voluptuous import Any as SchemaAny
+from voluptuous import Schema
+from voluptuous import Required
+
 from .unit import UnitPrescription
+from .schema import PRESCRIPTION_WRAP_MATCH_ENTRY_SCHEMA
+from .schema import PRESCRIPTION_WRAP_RUN_SCHEMA
 
 if TYPE_CHECKING:
     from ...pipeline_builder import PipelineBuilderContext
@@ -35,37 +41,25 @@ if TYPE_CHECKING:
 class WrapPrescription(UnitPrescription):
     """Wrap base class implementation."""
 
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {
+            Required("package_name"): SchemaAny(str, None),
+            Required("match"): PRESCRIPTION_WRAP_MATCH_ENTRY_SCHEMA,
+            Required("run"): PRESCRIPTION_WRAP_RUN_SCHEMA,
+        }
+    )
+
     @staticmethod
     def is_wrap_unit_type() -> bool:
         """Check if this unit is of type wrap."""
         return True
-
-    @staticmethod
-    def _yield_should_include(unit_prescription: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
-        """Yield for every entry stated in the match field."""
-        match = unit_prescription["run"].get("match", {})
-        if isinstance(match, list):
-            for item in match:
-                match_resolved = item.get("state", {}).get("resolved_dependencies")
-                if match_resolved:
-                    # Return the first package name that should be matched to keep optimization for wrap calls.
-                    yield {"package_name": match_resolved[0].get("name")}
-                else:
-                    yield {}
-        else:
-            match_resolved = match.get("state", {}).get("resolved_dependencies")
-            if match_resolved:
-                # Return the first package name that should be matched to keep optimization for wrap calls.
-                yield {"package_name": match_resolved[0].get("name")}
-            else:
-                yield {}
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         if cls._should_include_base(builder_context):
             prescription: Dict[str, Any] = cls._PRESCRIPTION  # type: ignore
-            yield from cls._yield_should_include(prescription)
+            yield from cls._yield_should_include_with_state(prescription)
             return None
 
         yield from ()

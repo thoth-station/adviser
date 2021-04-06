@@ -26,9 +26,14 @@ import logging
 
 import attr
 from thoth.python import PackageVersion
+from voluptuous import Any as SchemaAny
+from voluptuous import Schema
+from voluptuous import Required
 
 from packaging.specifiers import SpecifierSet
 from .unit import UnitPrescription
+from .schema import PRESCRIPTION_SIEVE_MATCH_ENTRY_SCHEMA
+from .schema import PRESCRIPTION_SIEVE_RUN_SCHEMA
 
 if TYPE_CHECKING:
     from ...pipeline_builder import PipelineBuilderContext
@@ -40,6 +45,14 @@ _LOGGER = logging.getLogger(__name__)
 class SievePrescription(UnitPrescription):
     """Sieve base class implementation."""
 
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {
+            Required("package_name"): SchemaAny(str, None),
+            Required("match"): PRESCRIPTION_SIEVE_MATCH_ENTRY_SCHEMA,
+            Required("run"): SchemaAny(PRESCRIPTION_SIEVE_RUN_SCHEMA, None),
+        }
+    )
+
     _logged = attr.ib(type=bool, kw_only=True, init=False, default=False)
     _specifier = attr.ib(type=Optional[SpecifierSet], kw_only=True, init=False, default=None)
     _index_url = attr.ib(type=Optional[str], kw_only=True, init=False, default=None)
@@ -48,16 +61,6 @@ class SievePrescription(UnitPrescription):
     def is_sieve_unit_type() -> bool:
         """Check if this unit is of type sieve."""
         return True
-
-    @staticmethod
-    def _yield_should_include(unit_prescription: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
-        """Yield for every entry stated in the match field."""
-        match = unit_prescription["run"]["match"]
-        if isinstance(match, list):
-            for item in match:
-                yield {"package_name": item["package_version"].get("name")}
-        else:
-            yield {"package_name": match["package_version"].get("name")}
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
@@ -72,12 +75,13 @@ class SievePrescription(UnitPrescription):
 
     def pre_run(self) -> None:
         """Prepare before running this pipeline unit."""
-        version_specifier = self.run_prescription["match"]["package_version"].get("version")
+        package_version = self.match_prescription.get("package_version", {})
+        version_specifier = package_version.get("version")
         if version_specifier:
             self._specifier = SpecifierSet(version_specifier)
             self._specifier.prereleases = True
 
-        self._index_url = self.run_prescription["match"]["package_version"].get("index_url")
+        self._index_url = package_version.get("index_url")
         self._logged = False
         super().pre_run()
 

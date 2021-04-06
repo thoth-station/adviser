@@ -23,9 +23,14 @@ from typing import Generator
 from typing import TYPE_CHECKING
 
 import attr
+from voluptuous import Any as SchemaAny
+from voluptuous import Schema
+from voluptuous import Required
 
 from thoth.adviser.state import State
 from .unit import UnitPrescription
+from .schema import PRESCRIPTION_STRIDE_RUN_SCHEMA
+from .schema import PRESCRIPTION_STRIDE_MATCH_ENTRY_SCHEMA
 
 if TYPE_CHECKING:
     from ...pipeline_builder import PipelineBuilderContext
@@ -34,6 +39,14 @@ if TYPE_CHECKING:
 @attr.s(slots=True)
 class StridePrescription(UnitPrescription):
     """Stride base class implementation."""
+
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {
+            Required("package_name"): SchemaAny(str, None),
+            Required("match"): PRESCRIPTION_STRIDE_MATCH_ENTRY_SCHEMA,
+            Required("run"): PRESCRIPTION_STRIDE_RUN_SCHEMA,
+        }
+    )
 
     @staticmethod
     def is_stride_unit_type() -> bool:
@@ -44,7 +57,8 @@ class StridePrescription(UnitPrescription):
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         if cls._should_include_base(builder_context):
-            yield {}
+            prescription: Dict[str, Any] = cls._PRESCRIPTION  # type: ignore
+            yield from cls._yield_should_include_with_state(prescription)
             return None
 
         yield from ()

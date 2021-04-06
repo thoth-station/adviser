@@ -21,11 +21,14 @@ import abc
 import logging
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import List
 from typing import Union
 from typing import Optional
 from typing import TYPE_CHECKING
 from packaging.specifiers import SpecifierSet
+from voluptuous import Schema
+from voluptuous import Required
 
 import attr
 
@@ -64,11 +67,20 @@ class _ValueList:
 class UnitPrescription(Unit, metaclass=abc.ABCMeta):
     """A base class for implementing pipeline units based on prescription supplied."""
 
+    # Each prescription unit defines these specifically.
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {
+            Required("package_name"): str,
+            Required("match"): object,
+            Required("run"): object,
+        }
+    )
+
     _PRESCRIPTION: Optional[Dict[str, Any]] = None
 
     _stack_info_run = attr.ib(type=bool, kw_only=True, default=False)
+    _configuration = attr.ib(type=Dict[str, Any], kw_only=True)
     prescription = attr.ib(type=Dict[str, Any], kw_only=True)
-    run_prescription = attr.ib(type=Dict[str, Any], kw_only=True)
 
     @prescription.default
     def _prescription_default(self) -> Dict[str, Any]:
@@ -78,15 +90,29 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
 
         return self._PRESCRIPTION
 
-    @run_prescription.default
-    def _run_prescription_default(self) -> Dict[str, Any]:
-        """Initialize the run prescription property."""
+    @property
+    def run_prescription(self) -> Dict[str, Any]:
+        """Get run part of the prescription assigned."""
+        return self._configuration.get("run", {})
+
+    @property
+    def match_prescription(self) -> Dict[str, Any]:
+        """Get match part of the prescription assigned."""
+        return self._configuration.get("match", {})
+
+    @_configuration.default
+    def _initialize_default_configuration(self) -> Dict[str, Any]:
+        """Initialize default unit configuration based on declared class' default configuration."""
         if self._PRESCRIPTION is None:
             raise ValueError("No assigned prescription on the class level to be set")
 
-        result: Dict[str, Any] = self._PRESCRIPTION["run"]
-        return result
+        return {
+            "package_name": None,
+            "match": self._PRESCRIPTION.get("match", {}),
+            "run": self._PRESCRIPTION.get("run", {}),
+        }
 
+    # TODO: compute expanded configuration
     @classmethod
     def get_unit_name(cls) -> str:
         """Get the name of the current prescription unit.
@@ -323,6 +349,42 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         self._stack_info_run = False
         super().pre_run()
 
+    @staticmethod
+    def _yield_should_include(unit_prescription: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
+        """Yield for every entry stated in the match field."""
+        match = unit_prescription.get("match", {})
+        run = unit_prescription.get("run", {})
+        if isinstance(match, list):
+            for item in match:
+                yield {
+                    "package_name": item["package_version"].get("name") if item else None,
+                    "match": item,
+                    "run": run,
+                }
+        else:
+            yield {"package_name": match["package_version"].get("name") if match else None, "match": match, "run": run}
+
+    @staticmethod
+    def _yield_should_include_with_state(unit_prescription: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
+        """Yield for every entry stated in the match field."""
+        match = unit_prescription.get("match", {})
+        if isinstance(match, list):
+            for item in match:
+                match_resolved = item.get("state", {}).get("resolved_dependencies")
+                yield {
+                    # Return the first package name that should be matched to keep optimization for wrap calls.
+                    "package_name": match_resolved[0].get("name") if match_resolved else None,
+                    "match": item,
+                    "run": unit_prescription["run"],
+                }
+        else:
+            match_resolved = match.get("state", {}).get("resolved_dependencies") if match else None
+            yield {
+                "package_name": match_resolved[0].get("name") if match_resolved else None,
+                "match": match,
+                "run": unit_prescription["run"],
+            }
+
     def _run_log(self) -> None:
         """Log message specified in the run prescription."""
         log = self.run_prescription.get("log")
@@ -342,7 +404,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
 
     def _run_state(self, state: State) -> bool:
         """Check state match."""
-        state_prescription = self.run_prescription.get("match", {}).get("state")
+        state_prescription = self.match_prescription.get("state")
         if state_prescription:
             for resolved_dependency in state_prescription.get("resolved_dependencies", []):
                 resolved = state.resolved_dependencies.get(resolved_dependency["name"])

@@ -40,14 +40,13 @@ type: stride
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+ state:
+    resolved_dependencies:
+      - name: werkzeug
+        version: "<=1.0.0"
+        index_url: 'https://pypi.org/simple'
 run:
-  match:
-   state:
-      resolved_dependencies:
-        - name: werkzeug
-          version: "<=1.0.0"
-          index_url: 'https://pypi.org/simple'
-
   stack_info:
     - type: WARNING
       message: Some message
@@ -68,12 +67,11 @@ type: stride
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+ state:
+    resolved_dependencies:
+      - name: flask
 run:
-  match:
-   state:
-      resolved_dependencies:
-        - name: flask
-
   log:
     message: Seen flask in one of the resolved stacks
     type: {log_level}
@@ -92,17 +90,16 @@ type: stride
 should_include:
   times: 1
   dependency_monkey_pipeline: true
+match:
+ state:
+   resolved_dependencies:
+    - name: flask
+      version: ==0.12
+    - name: werkzeug
+      version: ==1.0.1
+    - name: itsdangerous
+      version: <1.0
 run:
-  match:
-   state:
-     resolved_dependencies:
-      - name: flask
-        version: ==0.12
-      - name: werkzeug
-        version: ==1.0.1
-      - name: itsdangerous
-        version: <1.0
-
   eager_stop_pipeline: These three cannot occur together
 """
         prescription = yaml.safe_load(prescription_str)
@@ -121,17 +118,16 @@ type: stride
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        version: "<=1.0.0,>=0.12"
+        index_url: "https://pypi.org/simple"
+      - name: connexion
+        version: "==2.7.0"
+        index_url: "https://pypi.org/simple"
 run:
-  match:
-    state:
-      resolved_dependencies:
-        - name: flask
-          version: "<=1.0.0,>=0.12"
-          index_url: "https://pypi.org/simple"
-        - name: connexion
-          version: "==2.7.0"
-          index_url: "https://pypi.org/simple"
-
   not_acceptable: This is exception message reported
 """
         prescription = yaml.safe_load(prescription_str)
@@ -149,17 +145,16 @@ type: stride
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        version: "<=1.0.0,>=0.12"
+        index_url: "https://pypi.org/simple"
+      - name: connexion
+        version: "==2.7.0"
+        index_url: "https://pypi.org/simple"
 run:
-  match:
-    state:
-      resolved_dependencies:
-        - name: flask
-          version: "<=1.0.0,>=0.12"
-          index_url: "https://pypi.org/simple"
-        - name: connexion
-          version: "==2.7.0"
-          index_url: "https://pypi.org/simple"
-
   stack_info:
     - type: ERROR
       message: This message will not be shown
@@ -188,14 +183,13 @@ type: stride
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        version: "<=1.0.0,>=0.12"
+        index_url: "https://pypi.org/simple"
 run:
-  match:
-    state:
-      resolved_dependencies:
-        - name: flask
-          version: "<=1.0.0,>=0.12"
-          index_url: "https://pypi.org/simple"
-
   stack_info:
     - type: ERROR
       message: This message will not be shown
@@ -207,7 +201,103 @@ run:
         StridePrescription.set_prescription(prescription)
 
         builder_context = flexmock()
-        assert list(StridePrescription.should_include(builder_context)) == [{}]
+        assert list(StridePrescription.should_include(builder_context)) == [
+            {
+                "package_name": "flask",
+                "match": {
+                    "state": {
+                        "resolved_dependencies": [
+                            {
+                                "name": "flask",
+                                "version": "<=1.0.0,>=0.12",
+                                "index_url": "https://pypi.org/simple",
+                            }
+                        ]
+                    },
+                },
+                "run": {
+                    "stack_info": [
+                        {
+                            "type": "ERROR",
+                            "message": "This message will not be shown",
+                            "link": "https://pypi.org/project/connexion",
+                        }
+                    ]
+                },
+            }
+        ]
+
+    def test_should_include_multi(self) -> None:
+        """Test including this pipeline unit multiple times."""
+        prescription_str = """
+name: StrideUnit
+type: stride
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  - state:
+      resolved_dependencies:
+        - name: flask
+  - state:
+      resolved_dependencies:
+        - name: werkzeug
+run:
+  stack_info:
+    - type: INFO
+      message: This message will be shown probably multiple times
+      link: https://pypi.org/project/flask
+"""
+        flexmock(StridePrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STRIDE_SCHEMA(prescription)
+        StridePrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(StridePrescription.should_include(builder_context)) == [
+            {
+                "package_name": "flask",
+                "match": {
+                    "state": {
+                        "resolved_dependencies": [
+                            {
+                                "name": "flask",
+                            }
+                        ]
+                    },
+                },
+                "run": {
+                    "stack_info": [
+                        {
+                            "type": "INFO",
+                            "message": "This message will be shown probably multiple times",
+                            "link": "https://pypi.org/project/flask",
+                        }
+                    ]
+                },
+            },
+            {
+                "package_name": "werkzeug",
+                "match": {
+                    "state": {
+                        "resolved_dependencies": [
+                            {
+                                "name": "werkzeug",
+                            }
+                        ]
+                    },
+                },
+                "run": {
+                    "stack_info": [
+                        {
+                            "type": "INFO",
+                            "message": "This message will be shown probably multiple times",
+                            "link": "https://pypi.org/project/flask",
+                        }
+                    ]
+                },
+            },
+        ]
 
     def test_no_should_include(self) -> None:
         """Test not including this pipeline unit."""
@@ -217,14 +307,13 @@ type: stride
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        version: "<=1.0.0,>=0.12"
+        index_url: "https://pypi.org/simple"
 run:
-  match:
-    state:
-      resolved_dependencies:
-        - name: flask
-          version: "<=1.0.0,>=0.12"
-          index_url: "https://pypi.org/simple"
-
   stack_info:
     - type: ERROR
       message: This message will not be shown

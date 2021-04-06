@@ -42,11 +42,10 @@ type: step
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    index_url: 'https://thoth-station.ninja/simple'
 run:
-  match:
-    package_version:
-      index_url: 'https://thoth-station.ninja/simple'
-
   stack_info:
     - type: WARNING
       message: Some message
@@ -73,11 +72,10 @@ type: step
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: flask
 run:
-  match:
-    package_version:
-      name: flask
-
   log:
     message: Seen flask during resolution
     type: {log_level}
@@ -101,12 +99,11 @@ type: step
 should_include:
   times: 1
   dependency_monkey_pipeline: true
+match:
+  package_version:
+    name: flask
+    version: "<1.0.0"
 run:
-  match:
-    package_version:
-      name: flask
-      version: "<1.0.0"
-
   eager_stop_pipeline: This is exception message reported
 """
         prescription = yaml.safe_load(prescription_str)
@@ -129,13 +126,12 @@ should_include:
   times: 1
   adviser_pipeline: true
   dependency_monkey_pipeline: true
+match:
+  package_version:
+      name: flask
+      version: "~=0.0"
+      index_url: "https://pypi.org/simple"
 run:
-  match:
-    package_version:
-        name: flask
-        version: "~=0.0"
-        index_url: "https://pypi.org/simple"
-
   not_acceptable: This is exception message reported
 """
         prescription = yaml.safe_load(prescription_str)
@@ -157,13 +153,12 @@ type: step
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: pysaml2
+    version: '<6.5.0'
+    index_url: 'https://pypi.org/simple'
 run:
-  match:
-    package_version:
-      name: pysaml2
-      version: '<6.5.0'
-      index_url: 'https://pypi.org/simple'
-
   score: -0.1
   justification:
     - type: WARNING
@@ -201,17 +196,16 @@ type: step
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+    version: '==1.19.1'
+    index_url: 'https://pypi.org/simple'
+  state:
+    resolved_dependencies:
+      - name: tensorflow
+        version: '~=2.4.0'
 run:
-  match:
-    package_version:
-      name: numpy
-      version: '==1.19.1'
-      index_url: 'https://pypi.org/simple'
-    state:
-      resolved_dependencies:
-        - name: tensorflow
-          version: '~=2.4.0'
-
   score: 0.5
 """
         prescription = yaml.safe_load(prescription_str)
@@ -243,17 +237,16 @@ type: step
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+    version: '==1.19.1'
+    index_url: 'https://pypi.org/simple'
+  state:
+    resolved_dependencies:
+      - name: tensorflow
+        version: '~=2.4.0'
 run:
-  match:
-    package_version:
-      name: numpy
-      version: '==1.19.1'
-      index_url: 'https://pypi.org/simple'
-    state:
-      resolved_dependencies:
-        - name: tensorflow
-          version: '~=2.4.0'
-
   score: 0.5
 """
         prescription = yaml.safe_load(prescription_str)
@@ -283,13 +276,12 @@ type: step
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+    version: '==1.19.1'
+    index_url: 'https://pypi.org/simple'
 run:
-  match:
-    package_version:
-      name: numpy
-      version: '==1.19.1'
-      index_url: 'https://pypi.org/simple'
-
   multi_package_resolution: true
   score: 0.1
 """
@@ -300,7 +292,21 @@ run:
 
         builder_context = flexmock()
         assert list(StepPrescription.should_include(builder_context)) == [
-            {"package_name": "numpy", "multi_package_resolution": True}
+            {
+                "package_name": "numpy",
+                "multi_package_resolution": True,
+                "match": {
+                    "package_version": {
+                        "name": "numpy",
+                        "version": "==1.19.1",
+                        "index_url": "https://pypi.org/simple",
+                    },
+                },
+                "run": {
+                    "score": 0.1,
+                    "multi_package_resolution": True,
+                },
+            }
         ]
 
     def test_should_include_no_package_name(self) -> None:
@@ -311,11 +317,10 @@ type: step
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    index_url: 'https://thoth-station.ninja'
 run:
-  match:
-    package_version:
-      index_url: 'https://thoth-station.ninja'
-
   score: 0.1
 """
         flexmock(StepPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
@@ -325,7 +330,18 @@ run:
 
         builder_context = flexmock()
         assert list(StepPrescription.should_include(builder_context)) == [
-            {"package_name": None, "multi_package_resolution": False}
+            {
+                "package_name": None,
+                "match": {
+                    "package_version": {
+                        "index_url": "https://thoth-station.ninja",
+                    },
+                },
+                "multi_package_resolution": False,
+                "run": {
+                    "score": 0.1,
+                },
+            }
         ]
 
     def test_should_include_multi(self) -> None:
@@ -336,13 +352,12 @@ type: step
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  - package_version:
+      index_url: 'https://thoth-station.ninja'
+  - package_version:
+      name: flask
 run:
-  match:
-    - package_version:
-        index_url: 'https://thoth-station.ninja'
-    - package_version:
-        name: flask
-
   score: 0.1
 """
         flexmock(StepPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
@@ -352,8 +367,30 @@ run:
 
         builder_context = flexmock()
         assert list(StepPrescription.should_include(builder_context)) == [
-            {"package_name": None, "multi_package_resolution": False},
-            {"package_name": "flask", "multi_package_resolution": False},
+            {
+                "package_name": None,
+                "multi_package_resolution": False,
+                "match": {
+                    "package_version": {
+                        "index_url": "https://thoth-station.ninja",
+                    }
+                },
+                "run": {
+                    "score": 0.1,
+                },
+            },
+            {
+                "package_name": "flask",
+                "multi_package_resolution": False,
+                "match": {
+                    "package_version": {
+                        "name": "flask",
+                    }
+                },
+                "run": {
+                    "score": 0.1,
+                },
+            },
         ]
 
     def test_no_should_include(self) -> None:
@@ -364,11 +401,10 @@ type: step
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    index_url: 'https://thoth-station.ninja'
 run:
-  match:
-    package_version:
-      index_url: 'https://thoth-station.ninja'
-
   score: 0.1
 """
         flexmock(StepPrescription).should_receive("_should_include_base").replace_with(lambda _: False).once()
