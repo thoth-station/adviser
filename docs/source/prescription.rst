@@ -105,6 +105,8 @@ Each unit, regardless of its type, has the following schema:
   type: '<unit_type>'
   should_include:
     <should_include_section>
+  match:
+    <match_section>
   run:
     <run_section>
 
@@ -657,10 +659,9 @@ semantically):
   type: boot
   should_include:
     # See should_include section for more info.
+  match:                                            # Criteria to trigger run of this pipeline unit. Defaults to always running the boot pipeline unit if no package_name is provided.
+    package_name: flask                             # Name of the package that needs to be present in the direct dependency listing to run this unit.
   run:
-    match:                                          # Criteria to trigger run of this pipeline unit. Defaults to always running the boot pipeline unit if no package_name is provided.
-      package_name: flask                           # Name of the package that needs to be present in the direct dependency listing to run this unit.
-
     stack_info:                                     # Information printed to the recommended stack report.
       - type: ERROR
         message: "Unable to perform this operation"
@@ -678,26 +679,49 @@ semantically):
       message: "Some text printed to log on pipeline unit run."
       type: "WARNING"
 
-Boot ``run.match.package_name``
-###############################
+Boot ``match``
+##############
 
-Optional name of the package that should be present in direct dependencies to
-trigger run of the pipeline unit.
+The match section allows to define optional name of the package that should
+be present in direct dependencies to trigger run of the pipeline unit.
 
-*Example:*
+.. note::
 
-.. code-block:: yaml
+  *Example:*
 
-  name: BootUnit
-  type: boot
-  should_include:
-    adviser_pipeline: true
-  run:
+  .. code-block:: yaml
+
+    name: BootUnit
+    type: boot
+    should_include:
+      adviser_pipeline: true
     match:
       package_name: flask
-    log:
-      type: WARNING
-      message: Found package 'flask' in the direct dependency listing
+    run:
+      log:
+        type: WARNING
+        message: Found package 'flask' in the direct dependency listing
+
+It is also possibly to match the given pipeline unit for multiple package
+names by providing a match listing:
+
+.. note::
+
+  *Example:*
+
+  .. code-block:: yaml
+
+    name: BootUnit
+    type: boot
+    should_include:
+      adviser_pipeline: true
+    match:
+      - package_name: flask
+      - package_name: numpy
+    run:
+      log:
+        type: WARNING
+        message: Found package 'flask' or 'numpy' in the direct dependency listing
 
 .. _boot_stack_info:
 
@@ -804,13 +828,12 @@ semantically):
   name: PseudonymUnit
   type: pseudonym
   should_include:                                   # See should_include section.
+  match:                                            # Criteria to trigger run of this pipeline unit. Defaults to always running the pseudonym pipeline unit if no package_version is provided.
+    package_version:
+      name: flask                                   # Mandatory, name of the package for which pseudonym should be registered.
+      version: '>1.0,<=1.1.0'                       # Version specifier for which the pseudonym should be run. If not provided, defaults to any version.
+      index_url: 'https://pypi.org/simple'          # Package source index for which the pseudonym should be run. If not provided, defaults to any index.
   run:
-    match:                                          # Criteria to trigger run of this pipeline unit. Defaults to always running the pseudonym pipeline unit if no package_version is provided.
-      package_version:
-        name: flask                                 # Mandatory, name of the package for which pseudonym should be registered.
-        version: '>1.0,<=1.1.0'                     # Version specifier for which the pseudonym should be run. If not provided, defaults to any version.
-        index_url: 'https://pypi.org/simple'        # Package source index for which the pseudonym should be run. If not provided, defaults to any index.
-
     log:                                            # Optional text printed to logs when the unit gets called.
       message: "Some text printed to log on pipeline unit run."
       type: "WARNING"
@@ -847,7 +870,7 @@ See :ref:`stack info <boot_stack_info>` which semantics is shared with this unit
 Note stack info is added only once even if the pipeline unit is
 run multiple times during the resolution process.
 
-Pseudonym ``run.match``
+Pseudonym ``match``
 #######################
 
 Package described in ``package_version`` field that should be matched by three
@@ -861,6 +884,40 @@ entries:
   should be provided
 
 See examples below for more info.
+
+It is also possibly to match the given pseudonym pipeline unit for multiple packages
+by providing a match listing.
+
+.. note::
+
+  *Example:*
+
+    .. code-block:: yaml
+
+      name: PseudonymUnit
+      type: pseudonym
+      should_include:
+        times: 1
+        adviser_pipeline: true
+      match:
+        - package_version:
+            name: tensorflow
+            index_url: "https://pypi.org/simple"
+        - package_version:
+            name: tensorflow-gpu
+            index_url: "https://pypi.org/simple"
+      run:
+        stack_info:
+          - message: "Considering also intel-tensorflow and tensorflow-gpu as an alternative to tensorflow"
+            type: "INFO"
+            link: "https://pypi.org/project/intel-tensorflow"
+
+        yield:
+          yield_matched_version: true
+          package_version:
+            name: intel-tensorflow
+            index_url: "https://pypi.org/simple"
+
 
 Pseudonym ``run.yield``
 #######################
@@ -892,12 +949,11 @@ If no version provided or no index explicitly set, all found in the database
     should_include:
       times: 1
       adviser_pipeline: true
+    match:
+      package_version:
+        name: tensorflow
+        index_url: "https://pypi.org/simple"
     run:
-      match:
-        package_version:
-          name: tensorflow
-          index_url: "https://pypi.org/simple"
-
       stack_info:
         - message: "Considering also intel-tensorflow as an alternative to tensorflow"
           type: "INFO"
@@ -925,13 +981,12 @@ semantically):
   name: SieveUnit
   type: sieve
   should_include:                                   # See should_include section.
+  match:                                            # Criteria to trigger run of this pipeline unit. Defaults to always running the sieve pipeline unit if no package_version is provided.
+    package_version:                                # Any package matching this criteria will be filtered out from the resolution.
+      name: flask                                   # Name of the package for which the unit should be registered.
+      version: '>1.0,<=1.1.0'                       # Version specifier for which the sieve should be run. If not provided, defauts to any version.
+      index_url: 'https://pypi.org/simple'          # Package source index for which the sieve should be run. If not provided, defaults to any index.
   run:
-    match:                                          # Criteria to trigger run of this pipeline unit. Defaults to always running the sieve pipeline unit if no package_version is provided.
-      package_version:                              # Any package matching this criteria will be filtered out from the resolution.
-        name: flask                                 # Name of the package for which the unit should be registered.
-        version: '>1.0,<=1.1.0'                      # Version specifier for which the sieve should be run. If not provided, defauts to any version.
-        index_url: 'https://pypi.org/simple'        # Package source index for which the sieve should be run. If not provided, defaults to any index.
-
     log:                                            # Optional text printed to logs when the unit gets called.
       message: "Some text printed to log on pipeline unit run."
       type: "WARNING"
@@ -941,7 +996,7 @@ semantically):
         message: "Hello, world"
         link: https://thoth-station.ninja           # A link to justifications or a link to a web page.
 
-Sieve ``run.match``
+Sieve ``match``
 ###################
 
 Specifies a package version that should be matched to execute the given unit during
@@ -968,14 +1023,41 @@ The package is described by:
       adviser_pipeline: true
       recommendation_types:
         - security
+    match:
+      package_version:
+        index_url: 'https://pypi.org/simple'
     run:
-      match:
-        package_version:
-          index_url: 'https://pypi.org/simple'
-
       stack_info:
         - type: WARNING
           message: "Filtering out all the packages from PyPI for security reasons"
+          link: "https://pypi.org/simple"
+
+It is also possible to match the same pipeline unit for multiple match criteria
+provided by providing match listing.
+
+.. note::
+
+  *Example:*
+
+  .. code-block:: yaml
+
+    name: SieveUnit
+    type: sieve
+    should_include:
+      adviser_pipeline: true
+    match:
+      - package_version:
+          name: gnumpy
+      - package_version:
+          name: dumpy
+      - package_version:
+          name: bumpy
+      - package_version:
+          name: pansas
+    run:
+      stack_info:
+        - type: WARNING
+          message: "Filtering out known typo-squatted packages"
           link: "https://pypi.org/simple"
 
 Sieve ``run.log``
@@ -997,14 +1079,13 @@ Print the given message to logs if the pipeline unit is included and run.
       adviser_pipeline: true
       runtime_environments:
         python_versions: ['3.5', '3.6', '3.7', '3.8', '3.9']
+    match:
+      package_version:
+        name: enum34
     run:
-      match:
-        package_version:
-          name: enum34
       log:
         type: WARNING
         message: All releases of package 'enum34' were filtered out
-
       stack_info:
         - type: WARNING
           message: All releases of package 'enum34' were filtered out
@@ -1034,13 +1115,12 @@ run multiple times during the resolution process.
       recommendation_types:
         - security
         - stable
+    match:
+      package_version:
+        name: pysaml2
+        version: '<6.5.0'
+        index_url: 'https://pypi.org/simple'
     run:
-      match:
-        package_version:
-          name: pysaml2
-          version: '<6.5.0'
-          index_url: 'https://pypi.org/simple'
-
       stack_info:
         - type: WARNING
           message: "Not considering package pysaml2 based on vulnerability present"
@@ -1062,19 +1142,17 @@ semantically):
   name: StepUnit
   type: step
   should_include:                                   # See should_include section.
+  match:                                            # Criteria to trigger run of this pipeline unit. Defaults to always running the boot pipeline unit if no package_version is provided.
+    package_version:                                # Any package matching this criteria will be filtered out from the resolution.
+      name: flask                                   # Name of the package for which the unit should be registered.
+      version: '>1.0,<=1.1.0'                       # Version specifier for which the sieve should be run. If not provided, defaults to any version.
+      index_url: 'https://pypi.org/simple'          # Package source index for which the sieve should be run. If not provided, defaults to any index.
+    state:                                          # Optional, resolver internal state to match for the given resolution step.
+      resolved_dependencies:
+        - name: werkzeug                            # Dependencies that have to be present in the resolved state.
+          version: "==1.0.0"
+          index_url: 'https://pypi.org/simple'
   run:
-    match:                                          # Criteria to trigger run of this pipeline unit. Defaults to always running the boot pipeline unit if no package_version is provided.
-      package_version:                              # Any package matching this criteria will be filtered out from the resolution.
-        name: flask                                 # Name of the package for which the unit should be registered.
-        version: '>1.0,<=1.1.0'                      # Version specifier for which the sieve should be run. If not provided, defaults to any version.
-        index_url: 'https://pypi.org/simple'        # Package source index for which the sieve should be run. If not provided, defaults to any index.
-
-      state:                                        # Optional, resolver internal state to match for the given resolution step.
-        resolved_dependencies:
-          - name: werkzeug                          # Dependencies that have to be present in the resolved state.
-            version: "==1.0.0"
-            index_url: 'https://pypi.org/simple'
-
     score: 0.42                                     # Score assigned to the step performed in the resolution.
     justification:
       - type: INFO
@@ -1097,7 +1175,7 @@ semantically):
         message: "Hello, world"
         link: https://thoth-station.ninja           # A link to justifications or a link to a web page.
 
-Step ``run.match``
+Step ``match``
 ##################
 
 Match the given step performed in the resolution process. A step is described
@@ -1125,10 +1203,11 @@ listing is described as:
   consumed
 
 To run the given step, all the packages in the resolved dependency listing
-need to be present in the resolved software stack.
+need to be present in the resolved software stack. Also both ``state`` and
+``package_version`` need to be matched.
 
-To run the given step, both ``state`` and ``package_version`` need to be
-matched.
+It is possible to provide a listing of matching criteria to run the given
+pipeline unit multiple times.
 
 Step ``run.log``
 ################
@@ -1185,13 +1264,11 @@ The link can be in a form of a valid HTTP or HTTPS URL or a string which
     should_include:
       times: 1
       adviser_pipeline: true
+    match:
+      package_version:
+        index_url: 'https://thoth-station.ninja/simple'
     run:
-      match:
-        package_version:
-          index_url: 'https://thoth-station.ninja/simple'
-
       score: +0.1
-
       justification:
         - type: INFO
           message: "Builds available on index thoth-station.ninja/simple take precedence"
@@ -1224,22 +1301,19 @@ Make the given step not acceptable in the resolution process.
     should_include:
       times: 1
       adviser_pipeline: true
+    match:
+      package_version:
+        name: numpy
+        version: "==1.19.1"
+        index_url: 'https://pypi.org/simple'
+      state:
+        resolved_dependencies:
+          # Considering builds available also on other indexes than PyPI.
+          - name: tensorflow
+            version: '~=2.4.0'
     run:
-      match:
-        package_version:
-          name: numpy
-          version: "==1.19.1"
-          index_url: 'https://pypi.org/simple'
-        state:
-          resolved_dependencies:
-            # Considering builds available also on other indexes than PyPI.
-            - name: tensorflow
-              version: '~=2.4.0'
-
       multi_package_resolution: true
-
       not_acceptable: "NumPy==1.19.5 is causing issues when used with TensorFlow 2.4"
-
       stack_info:
         - type: WARNING
           message: "NumPy==1.19.5 is causing issues when used with TensorFlow 2.4"
@@ -1267,14 +1341,13 @@ semantically):
   name: StrideUnit
   type: stride
   should_include:                                   # See should_include section.
+  match:                                            # Criteria to trigger run of this pipeline unit. Defaults to always running the boot pipeline unit if no package_version is provided.
+    state:                                          # Optional, resolver internal state to match for the given stride.
+      resolved_dependencies:
+        - name: werkzeug                            # Dependencies that have to be present in the resolved state.
+          version: "~=1.0.0"
+          index_url: 'https://pypi.org/simple'
   run:
-    match:                                          # Criteria to trigger run of this pipeline unit. Defaults to always running the boot pipeline unit if no package_version is provided.
-      state:                                        # Optional, resolver internal state to match for the given stride.
-        resolved_dependencies:
-          - name: werkzeug                          # Dependencies that have to be present in the resolved state.
-            version: "~=1.0.0"
-            index_url: 'https://pypi.org/simple'
-
     log:                                            # Optional text printed to logs when the unit gets called.
       message: "Some text printed to log on pipeline unit run."
       type: "WARNING"
@@ -1289,7 +1362,7 @@ semantically):
     # Configuration of prematurely terminating the resolution process.
     eager_stop_pipeline: "Stop pipeline"
 
-Stride ``run.match``
+Stride ``match``
 ####################
 
 A state that needs to be met to trigger the given stride pipeline. The state
@@ -1305,6 +1378,9 @@ listing is described as:
 
 To run the given stride, all the packages in the resolved dependency listing
 need to be present in the resolved software stack.
+
+It is possible to provide a listing of match criteria when the given stride pipeline
+unit run logic can be applied for multiple matched criteria.
 
 Stride ``run.log``
 ##################
@@ -1349,14 +1425,14 @@ semantically):
   name: WrapUnit
   type: wrap
   should_include:                                   # See should_include section.
-  run:
-    match:                                          # Criteria to trigger run of this pipeline unit. Defaults to always running the boot pipeline unit if no package_version is provided.
-      state:                                        # Optional, resolver internal state to match for the given stride.
-        resolved_dependencies:
-          - name: werkzeug                          # Dependencies that have to be present in the resolved state.
-            version: ">=1.0.0,<2.5.0"
-            index_url: 'https://pypi.org/simple'
+  match:                                            # Criteria to trigger run of this pipeline unit. Defaults to always running the boot pipeline unit if no package_version is provided.
+    state:                                          # Optional, resolver internal state to match for the given stride.
+      resolved_dependencies:
+        - name: werkzeug                            # Dependencies that have to be present in the resolved state.
+          version: ">=1.0.0,<2.5.0"
+          index_url: 'https://pypi.org/simple'
 
+  run:
     not_acceptable: "Bad package inclusion"         # Block resolving the given stack.
 
     # Configuration of prematurely terminating the resolution process.
@@ -1387,7 +1463,7 @@ semantically):
             value: "/home/workdir"
 
 
-Wrap ``run.match``
+Wrap ``match``
 ##################
 
 A state that needs to be met to trigger the given wrap pipeline unit. The state
@@ -1401,8 +1477,11 @@ listing is described as:
 * ``index_url`` - optional package index from which the given package is
   consumed
 
-To run the given wrip unit, all the packages in the resolved dependency
-listing need to be present in the resolved software stack.
+To run the given wrap pipeline unit, all the packages in the resolved
+dependency listing need to be present in the resolved software stack.
+
+It is possible to provide a listing of match criteria when the given wrap
+pipeline unit run logic can be applied for multiple matched criteria.
 
 Wrap ``run.log``
 ################
@@ -1436,13 +1515,21 @@ run multiple times during the resolution process.
       library_usage:
         tensorflow:
           - tensorflow.keras.layers.Embedding
-    run:
-      match:
-        state:
+    match:
+      # Matching multiple criteria.
+      - state:
           resolved_dependencies:
             - name: tensorflow
               version: "<=2.4.0"
-
+      - state:
+          resolved_dependencies:
+            - name: tensorflow-cpu
+              version: "<=2.4.0"
+      - state:
+          resolved_dependencies:
+            - name: tensorflow-gpu
+              version: "<=2.4.0"
+    run:
       stack_info:
         - type: WARNING
           message: "TensorFlow in version <=2.4 is slow when tf.keras.layers.Embedding is used"
@@ -1486,12 +1573,11 @@ Suggested changes to the manifest files used for deployment.
     name: WrapUnit
     type: wrap
     should_include:
+    match:
+      state:
+        resolved_dependencies:
+          - name: intel-tensorflow
     run:
-      match:
-        state:
-          resolved_dependencies:
-            - name: intel-tensorflow
-
       advised_manifest_changes:
         - apiVersion: "apps.openshift.io/v1"
           kind: DeploymentConfig
