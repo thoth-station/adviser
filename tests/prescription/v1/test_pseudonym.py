@@ -43,13 +43,12 @@ type: pseudonym
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: flask
+    version: '>1.0,<=1.1.0'
+    index_url: 'https://pypi.org/simple'
 run:
-  match:
-    package_version:
-      name: flask
-      version: '>1.0,<=1.1.0'
-      index_url: 'https://pypi.org/simple'
-
   yield:
     package_version:
       name: flask
@@ -93,13 +92,12 @@ type: pseudonym
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: tensorflow
+    version: '~=2.4.0'
+    index_url: 'https://pypi.org/simple'
 run:
-  match:
-    package_version:
-      name: tensorflow
-      version: '~=2.4.0'
-      index_url: 'https://pypi.org/simple'
-
   yield:
     package_version:
       name: intel-tensorflow
@@ -143,12 +141,11 @@ type: pseudonym
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: tensorflow-cpu
+    index_url: 'https://pypi.org/simple'
 run:
-  match:
-    package_version:
-      name: tensorflow-cpu
-      index_url: 'https://pypi.org/simple'
-
   yield:
     package_version:
       name: intel-tensorflow
@@ -198,12 +195,11 @@ type: pseudonym
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: tensorflow-cpu
+    index_url: 'https://pypi.org/simple'
 run:
-  match:
-    package_version:
-      name: tensorflow-cpu
-      index_url: 'https://pypi.org/simple'
-
   yield:
     package_version:
       name: intel-tensorflow
@@ -216,7 +212,127 @@ run:
         PseudonymPrescription.set_prescription(prescription)
 
         builder_context = flexmock()
-        assert list(PseudonymPrescription.should_include(builder_context)) == [{"package_name": "tensorflow-cpu"}]
+        assert list(PseudonymPrescription.should_include(builder_context)) == [
+            {
+                "package_name": "tensorflow-cpu",
+                "match": {
+                    "package_version": {
+                        "name": "tensorflow-cpu",
+                        "index_url": "https://pypi.org/simple",
+                    },
+                },
+                "run": {
+                    "yield": {
+                        "package_version": {
+                            "name": "intel-tensorflow",
+                            "locked_version": None,
+                            "index_url": "https://pypi.org/simple",
+                        }
+                    }
+                },
+            }
+        ]
+
+    def test_should_include_multi(self) -> None:
+        """Test including this pipeline unit multiple times."""
+        prescription_str = """
+name: PseudonymUnit
+type: pseudonym
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  - package_version:
+      name: tensorflow-cpu
+  - package_version:
+      name: tensorflow-gpu
+  - package_version:
+      name: intel-tensorflow
+  - package_version:
+      name: tensorflow
+run:
+  yield:
+    package_version:
+      name: intel-tensorflow
+      locked_version: null
+      index_url: 'https://pypi.org/simple'
+"""
+        flexmock(PseudonymPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_PSEUDONYM_SCHEMA(prescription)
+        PseudonymPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(PseudonymPrescription.should_include(builder_context)) == [
+            {
+                "package_name": "tensorflow-cpu",
+                "match": {
+                    "package_version": {
+                        "name": "tensorflow-cpu",
+                    }
+                },
+                "run": {
+                    "yield": {
+                        "package_version": {
+                            "name": "intel-tensorflow",
+                            "locked_version": None,
+                            "index_url": "https://pypi.org/simple",
+                        },
+                    },
+                },
+            },
+            {
+                "package_name": "tensorflow-gpu",
+                "match": {
+                    "package_version": {
+                        "name": "tensorflow-gpu",
+                    }
+                },
+                "run": {
+                    "yield": {
+                        "package_version": {
+                            "name": "intel-tensorflow",
+                            "locked_version": None,
+                            "index_url": "https://pypi.org/simple",
+                        },
+                    },
+                },
+            },
+            {
+                "package_name": "intel-tensorflow",
+                "match": {
+                    "package_version": {
+                        "name": "intel-tensorflow",
+                    }
+                },
+                "run": {
+                    "yield": {
+                        "package_version": {
+                            "name": "intel-tensorflow",
+                            "locked_version": None,
+                            "index_url": "https://pypi.org/simple",
+                        },
+                    },
+                },
+            },
+            {
+                "package_name": "tensorflow",
+                "match": {
+                    "package_version": {
+                        "name": "tensorflow",
+                    }
+                },
+                "run": {
+                    "yield": {
+                        "package_version": {
+                            "name": "intel-tensorflow",
+                            "locked_version": None,
+                            "index_url": "https://pypi.org/simple",
+                        },
+                    },
+                },
+            },
+        ]
 
     def test_no_should_include(self) -> None:
         """Test including this pipeline unit without package name."""
@@ -226,12 +342,11 @@ type: pseudonym
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: tensorflow-cpu
+    index_url: 'https://pypi.org/simple'
 run:
-  match:
-    package_version:
-      name: tensorflow-cpu
-      index_url: 'https://pypi.org/simple'
-
   yield:
     package_version:
       name: intel-tensorflow
@@ -254,13 +369,12 @@ type: pseudonym
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: flask
+    version: '>1.0,<=1.1.0'
+    index_url: 'https://pypi.org/simple'
 run:
-  match:
-    package_version:
-      name: flask
-      version: '>1.0,<=1.1.0'
-      index_url: 'https://pypi.org/simple'
-
   yield:
     yield_matched_version: true
     package_version:

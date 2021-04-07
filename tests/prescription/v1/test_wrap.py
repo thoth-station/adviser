@@ -40,14 +40,13 @@ type: wrap
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+ state:
+    resolved_dependencies:
+      - name: werkzeug
+        version: "<=1.0.0"
+        index_url: 'https://pypi.org/simple'
 run:
-  match:
-   state:
-      resolved_dependencies:
-        - name: werkzeug
-          version: "<=1.0.0"
-          index_url: 'https://pypi.org/simple'
-
   stack_info:
     - type: WARNING
       message: Some message
@@ -68,12 +67,11 @@ type: wrap
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+ state:
+    resolved_dependencies:
+      - name: flask
 run:
-  match:
-   state:
-      resolved_dependencies:
-        - name: flask
-
   log:
     message: Seen flask in one of the resolved stacks
     type: {log_level}
@@ -92,17 +90,16 @@ type: wrap
 should_include:
   times: 1
   dependency_monkey_pipeline: true
+match:
+ state:
+   resolved_dependencies:
+    - name: flask
+      version: ==0.12
+    - name: werkzeug
+      version: ==1.0.1
+    - name: itsdangerous
+      version: <1.0
 run:
-  match:
-   state:
-     resolved_dependencies:
-      - name: flask
-        version: ==0.12
-      - name: werkzeug
-        version: ==1.0.1
-      - name: itsdangerous
-        version: <1.0
-
   eager_stop_pipeline: These three cannot occur together
 """
         prescription = yaml.safe_load(prescription_str)
@@ -121,17 +118,16 @@ type: wrap
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        version: "<=1.0.0,>=0.12"
+        index_url: "https://pypi.org/simple"
+      - name: connexion
+        version: "==2.7.0"
+        index_url: "https://pypi.org/simple"
 run:
-  match:
-    state:
-      resolved_dependencies:
-        - name: flask
-          version: "<=1.0.0,>=0.12"
-          index_url: "https://pypi.org/simple"
-        - name: connexion
-          version: "==2.7.0"
-          index_url: "https://pypi.org/simple"
-
   not_acceptable: This is exception message reported
 """
         prescription = yaml.safe_load(prescription_str)
@@ -149,17 +145,16 @@ type: wrap
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        version: "<=1.0.0,>=0.12"
+        index_url: "https://pypi.org/simple"
+      - name: connexion
+        version: "==2.7.0"
+        index_url: "https://pypi.org/simple"
 run:
-  match:
-    state:
-      resolved_dependencies:
-        - name: flask
-          version: "<=1.0.0,>=0.12"
-          index_url: "https://pypi.org/simple"
-        - name: connexion
-          version: "==2.7.0"
-          index_url: "https://pypi.org/simple"
-
   stack_info:
     - type: ERROR
       message: This message will not be shown
@@ -188,17 +183,16 @@ type: wrap
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        version: "<=1.0.0,>=0.12"
+        index_url: "https://pypi.org/simple"
+      - name: connexion
+        version: "==2.7.0"
+        index_url: "https://pypi.org/simple"
 run:
-  match:
-    state:
-      resolved_dependencies:
-        - name: flask
-          version: "<=1.0.0,>=0.12"
-          index_url: "https://pypi.org/simple"
-        - name: connexion
-          version: "==2.7.0"
-          index_url: "https://pypi.org/simple"
-
   justification:
     - type: ERROR
       message: This message will not be shown
@@ -227,14 +221,13 @@ type: wrap
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        version: "<=1.0.0,>=0.12"
+        index_url: "https://pypi.org/simple"
 run:
-  match:
-    state:
-      resolved_dependencies:
-        - name: flask
-          version: "<=1.0.0,>=0.12"
-          index_url: "https://pypi.org/simple"
-
   justification:
     - type: ERROR
       message: This message will not be shown
@@ -246,7 +239,127 @@ run:
         WrapPrescription.set_prescription(prescription)
 
         builder_context = flexmock()
-        assert list(WrapPrescription.should_include(builder_context)) == [{"package_name": "flask"}]
+        assert list(WrapPrescription.should_include(builder_context)) == [
+            {
+                "package_name": "flask",
+                "match": {
+                    "state": {
+                        "resolved_dependencies": [
+                            {
+                                "name": "flask",
+                                "version": "<=1.0.0,>=0.12",
+                                "index_url": "https://pypi.org/simple",
+                            }
+                        ],
+                    },
+                },
+                "run": {
+                    "justification": [
+                        {
+                            "type": "ERROR",
+                            "message": "This message will not be shown",
+                            "link": "https://pypi.org/project/connexion",
+                        }
+                    ]
+                },
+            }
+        ]
+
+    def test_should_include_multi(self) -> None:
+        """Test including this pipeline unit multiple times."""
+        prescription_str = """
+name: WrapUnit
+type: wrap
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  - state:
+      resolved_dependencies:
+        - name: tensorflow-cpu
+  - state:
+      resolved_dependencies:
+        - name: tensorflow
+  - state:
+      resolved_dependencies:
+        - name: intel-tensorflow
+run:
+  justification:
+    - type: ERROR
+      message: This message will be shown
+      link: https://pypi.org/project/tensorflow
+"""
+        flexmock(WrapPrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_WRAP_SCHEMA(prescription)
+        WrapPrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(WrapPrescription.should_include(builder_context)) == [
+            {
+                "package_name": "tensorflow-cpu",
+                "match": {
+                    "state": {
+                        "resolved_dependencies": [
+                            {
+                                "name": "tensorflow-cpu",
+                            }
+                        ],
+                    },
+                },
+                "run": {
+                    "justification": [
+                        {
+                            "type": "ERROR",
+                            "message": "This message will be shown",
+                            "link": "https://pypi.org/project/tensorflow",
+                        }
+                    ]
+                },
+            },
+            {
+                "package_name": "tensorflow",
+                "match": {
+                    "state": {
+                        "resolved_dependencies": [
+                            {
+                                "name": "tensorflow",
+                            }
+                        ],
+                    },
+                },
+                "run": {
+                    "justification": [
+                        {
+                            "type": "ERROR",
+                            "message": "This message will be shown",
+                            "link": "https://pypi.org/project/tensorflow",
+                        }
+                    ]
+                },
+            },
+            {
+                "package_name": "intel-tensorflow",
+                "match": {
+                    "state": {
+                        "resolved_dependencies": [
+                            {
+                                "name": "intel-tensorflow",
+                            }
+                        ],
+                    },
+                },
+                "run": {
+                    "justification": [
+                        {
+                            "type": "ERROR",
+                            "message": "This message will be shown",
+                            "link": "https://pypi.org/project/tensorflow",
+                        }
+                    ]
+                },
+            },
+        ]
 
     def test_should_include_no_package_name(self) -> None:
         """Test including this pipeline unit without any specific resolved package."""
@@ -268,7 +381,21 @@ run:
         WrapPrescription.set_prescription(prescription)
 
         builder_context = flexmock()
-        assert list(WrapPrescription.should_include(builder_context)) == [{}]
+        assert list(WrapPrescription.should_include(builder_context)) == [
+            {
+                "package_name": None,
+                "match": {},
+                "run": {
+                    "justification": [
+                        {
+                            "type": "ERROR",
+                            "message": "This message will not be shown",
+                            "link": "https://pypi.org/project/connexion",
+                        }
+                    ]
+                },
+            },
+        ]
 
     def test_no_should_include(self) -> None:
         """Test not including this pipeline unit."""
@@ -278,14 +405,13 @@ type: wrap
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        version: "<=1.0.0,>=0.12"
+        index_url: "https://pypi.org/simple"
 run:
-  match:
-    state:
-      resolved_dependencies:
-        - name: flask
-          version: "<=1.0.0,>=0.12"
-          index_url: "https://pypi.org/simple"
-
   justification:
     - type: ERROR
       message: This message will not be shown
@@ -307,12 +433,11 @@ type: wrap
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: intel-tensorflow
 run:
-  match:
-    state:
-      resolved_dependencies:
-        - name: intel-tensorflow
-
   advised_manifest_changes:
     apiVersion: apps.openshift.io/v1
     kind: DeploymentConfig

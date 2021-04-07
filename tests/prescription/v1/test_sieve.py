@@ -41,13 +41,12 @@ type: sieve
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: flask
+    version: '>1.0,<=1.1.0'
+    index_url: 'https://pypi.org/simple'
 run:
-  match:
-    package_version:
-      name: flask
-      version: '>1.0,<=1.1.0'
-      index_url: 'https://pypi.org/simple'
-
   stack_info:
     - type: WARNING
       message: Some stack warning message printed by a sieve
@@ -74,13 +73,12 @@ type: sieve
 should_include:
   times: 1
   adviser_pipeline: true
+match:
+  package_version:
+    name: flask
+    version: '>1.0,<=1.1.0'
+    index_url: 'https://pypi.org/simple'
 run:
-  match:
-    package_version:
-      name: flask
-      version: '>1.0,<=1.1.0'
-      index_url: 'https://pypi.org/simple'
-
   log:
     message: Some stack warning message printed by a sieve
     type: {log_level}
@@ -106,11 +104,10 @@ type: sieve
 should_include:
   times: 1
   adviser_pipeline: true
-run:
-  match:
-    package_version:
-      name: flask
-      version: '<=1.1.0'
+match:
+  package_version:
+    name: flask
+    version: '<=1.1.0'
 """
         prescription = yaml.safe_load(prescription_str)
         PRESCRIPTION_SIEVE_SCHEMA(prescription)
@@ -152,11 +149,10 @@ type: sieve
 should_include:
   times: 1
   adviser_pipeline: true
-run:
-  match:
-    package_version:
-      name: flask
-      version: '<=1.1.0'
+match:
+  package_version:
+    name: flask
+    version: '<=1.1.0'
 """
         flexmock(SievePrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
         prescription = yaml.safe_load(prescription_str)
@@ -164,7 +160,61 @@ run:
         SievePrescription.set_prescription(prescription)
 
         builder_context = flexmock()
-        assert list(SievePrescription.should_include(builder_context)) == [{"package_name": "flask"}]
+        assert list(SievePrescription.should_include(builder_context)) == [
+            {
+                "package_name": "flask",
+                "match": {
+                    "package_version": {
+                        "name": "flask",
+                        "version": "<=1.1.0",
+                    },
+                },
+                "run": {},
+            },
+        ]
+
+    def test_should_include_multi(self) -> None:
+        """Test including this pipeline unit multiple times."""
+        prescription_str = """
+name: SieveUnit
+type: sieve
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  - package_version:
+      name: flask
+      version: '<=1.1.0'
+  - package_version:
+      name: numpy
+"""
+        flexmock(SievePrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_SIEVE_SCHEMA(prescription)
+        SievePrescription.set_prescription(prescription)
+
+        builder_context = flexmock()
+        assert list(SievePrescription.should_include(builder_context)) == [
+            {
+                "package_name": "flask",
+                "match": {
+                    "package_version": {
+                        "name": "flask",
+                        "version": "<=1.1.0",
+                    },
+                },
+                "run": {},
+            },
+            {
+                "package_name": "numpy",
+                "match": {
+                    "package_version": {
+                        "name": "numpy",
+                    },
+                },
+                "run": {},
+            },
+        ]
 
     def test_should_include_no_package_name(self) -> None:
         """Test including this pipeline unit."""
@@ -174,10 +224,9 @@ type: sieve
 should_include:
   times: 1
   adviser_pipeline: true
-run:
-  match:
-    package_version:
-      index_url: https://pypi.org/simple
+match:
+  package_version:
+    index_url: https://pypi.org/simple
 """
         flexmock(SievePrescription).should_receive("_should_include_base").replace_with(lambda _: True).once()
         prescription = yaml.safe_load(prescription_str)
@@ -185,7 +234,17 @@ run:
         SievePrescription.set_prescription(prescription)
 
         builder_context = flexmock()
-        assert list(SievePrescription.should_include(builder_context)) == [{"package_name": None}]
+        assert list(SievePrescription.should_include(builder_context)) == [
+            {
+                "package_name": None,
+                "match": {
+                    "package_version": {
+                        "index_url": "https://pypi.org/simple",
+                    }
+                },
+                "run": {},
+            }
+        ]
 
     def test_no_should_include(self) -> None:
         """Test not including this pipeline."""
@@ -195,11 +254,10 @@ type: sieve
 should_include:
   times: 1
   adviser_pipeline: true
-run:
-  match:
-    package_version:
-      name: flask
-      version: '<=1.1.0'
+match:
+  package_version:
+    name: flask
+    version: '<=1.1.0'
 """
         flexmock(SievePrescription).should_receive("_should_include_base").replace_with(lambda _: False).once()
         prescription = yaml.safe_load(prescription_str)

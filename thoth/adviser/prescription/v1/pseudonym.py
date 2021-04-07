@@ -32,6 +32,8 @@ import attr
 
 from packaging.specifiers import SpecifierSet
 from .unit import UnitPrescription
+from .schema import PRESCRIPTION_PSEUDONYM_MATCH_ENTRY_SCHEMA
+from .schema import PRESCRIPTION_PSEUDONYM_RUN_SCHEMA
 
 if TYPE_CHECKING:
     from ...pipeline_builder import PipelineBuilderContext
@@ -44,7 +46,13 @@ class PseudonymPrescription(UnitPrescription):
     """Pseudonym base class implementation."""
 
     # Pseudonym is always specific to a package.
-    CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): str})
+    CONFIGURATION_SCHEMA: Schema = Schema(
+        {
+            Required("package_name"): str,
+            Required("match"): PRESCRIPTION_PSEUDONYM_MATCH_ENTRY_SCHEMA,
+            Required("run"): PRESCRIPTION_PSEUDONYM_RUN_SCHEMA,
+        }
+    )
 
     _logged = attr.ib(type=bool, kw_only=True, init=False, default=False)
     _specifier = attr.ib(type=Optional[SpecifierSet], kw_only=True, init=False, default=None)
@@ -59,8 +67,8 @@ class PseudonymPrescription(UnitPrescription):
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         if cls._should_include_base(builder_context):
-            prescription_run: Dict[str, Any] = cls._PRESCRIPTION["run"]  # type: ignore
-            yield {"package_name": prescription_run["match"]["package_version"]["name"]}
+            prescription: Dict[str, Any] = cls._PRESCRIPTION  # type: ignore
+            yield from cls._yield_should_include(prescription)
             return None
 
         yield from ()
@@ -68,12 +76,13 @@ class PseudonymPrescription(UnitPrescription):
 
     def pre_run(self) -> None:
         """Prepare before running this pipeline unit."""
-        version_specifier = self.run_prescription["match"]["package_version"].get("version")
+        package_version = self.match_prescription.get("package_version", {})
+        version_specifier = package_version.get("version")
         if version_specifier:
             self._specifier = SpecifierSet(version_specifier)
             self._specifier.prereleases = True
 
-        self._index_url = self.run_prescription["match"]["package_version"].get("index_url")
+        self._index_url = package_version.get("index_url")
         self._logged = False
         super().pre_run()
 

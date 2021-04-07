@@ -27,14 +27,16 @@ from typing import Tuple
 from typing import TYPE_CHECKING
 import logging
 
+from voluptuous import Any as SchemaAny
 from voluptuous import Schema
 from voluptuous import Required
-from voluptuous import Any as SchemaAny
 from thoth.python import PackageVersion
 
 from thoth.adviser.state import State
 from packaging.specifiers import SpecifierSet
 from .unit import UnitPrescription
+from .schema import PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA
+from .schema import PRESCRIPTION_STEP_RUN_SCHEMA
 
 if TYPE_CHECKING:
     from ...pipeline_builder import PipelineBuilderContext
@@ -51,9 +53,13 @@ class StepPrescription(UnitPrescription):
     """
 
     CONFIGURATION_SCHEMA: Schema = Schema(
-        {Required("package_name"): SchemaAny(str, None), Required("multi_package_resolution"): bool}
+        {
+            Required("package_name"): SchemaAny(str, None),
+            Required("match"): PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA,
+            Required("multi_package_resolution"): bool,
+            Required("run"): PRESCRIPTION_STEP_RUN_SCHEMA,
+        }
     )
-    CONFIGURATION_DEFAULT: Dict[str, Any] = {"package_name": None, "multi_package_resolution": False}
 
     SCORE_MAX = 1.0
     SCORE_MIN = -1.0
@@ -66,15 +72,33 @@ class StepPrescription(UnitPrescription):
         """Check if this unit is of type step."""
         return True
 
+    @staticmethod
+    def _yield_should_include(unit_prescription: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
+        """Yield for every entry stated in the match field."""
+        match = unit_prescription["match"]
+        run = unit_prescription["run"]
+        if isinstance(match, list):
+            for item in match:
+                yield {
+                    "package_name": item["package_version"].get("name"),
+                    "multi_package_resolution": run.get("multi_package_resolution", False),
+                    "match": item,
+                    "run": run,
+                }
+        else:
+            yield {
+                "package_name": match["package_version"].get("name"),
+                "multi_package_resolution": run.get("multi_package_resolution", False),
+                "match": match,
+                "run": run,
+            }
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         if cls._should_include_base(builder_context):
-            run_prescription: Dict[str, Any] = cls._PRESCRIPTION["run"]  # type: ignore
-            yield {
-                "package_name": run_prescription["match"]["package_version"].get("name"),
-                "multi_package_resolution": run_prescription.get("multi_package_resolution", False),
-            }
+            prescription: Dict[str, Any] = cls._PRESCRIPTION  # type: ignore
+            yield from cls._yield_should_include(prescription)
             return None
 
         yield from ()
@@ -82,11 +106,12 @@ class StepPrescription(UnitPrescription):
 
     def pre_run(self) -> None:
         """Prepare before running this pipeline unit."""
-        version_specifier = self.run_prescription["match"]["package_version"].get("version")
+        package_version = self.match_prescription.get("package_version", {})
+        version_specifier = package_version.get("version")
         if version_specifier:
             self._specifier = SpecifierSet(version_specifier)
 
-        self._index_url = self.run_prescription["match"]["package_version"].get("index_url")
+        self._index_url = package_version.get("index_url")
         self._prepare_justification_link(self.run_prescription.get("justification", []))
         super().pre_run()
 
