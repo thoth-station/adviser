@@ -76,10 +76,15 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         }
     )
 
+    CONFIGURATION_DEFAULT = {
+        "package_name": None,
+        "match": None,
+        "run": None,
+    }
+
     _PRESCRIPTION: Optional[Dict[str, Any]] = None
 
     _stack_info_run = attr.ib(type=bool, kw_only=True, default=False)
-    _configuration = attr.ib(type=Dict[str, Any], kw_only=True)
     prescription = attr.ib(type=Dict[str, Any], kw_only=True)
 
     @prescription.default
@@ -100,19 +105,6 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         """Get match part of the prescription assigned."""
         return self._configuration.get("match", {})
 
-    @_configuration.default
-    def _initialize_default_configuration(self) -> Dict[str, Any]:
-        """Initialize default unit configuration based on declared class' default configuration."""
-        if self._PRESCRIPTION is None:
-            raise ValueError("No assigned prescription on the class level to be set")
-
-        return {
-            "package_name": None,
-            "match": self._PRESCRIPTION.get("match", {}),
-            "run": self._PRESCRIPTION.get("run", {}),
-        }
-
-    # TODO: compute expanded configuration
     @classmethod
     def get_unit_name(cls) -> str:
         """Get the name of the current prescription unit.
