@@ -112,7 +112,6 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             "run": self._PRESCRIPTION.get("run", {}),
         }
 
-    # TODO: compute expanded configuration
     @classmethod
     def get_unit_name(cls) -> str:
         """Get the name of the current prescription unit.
