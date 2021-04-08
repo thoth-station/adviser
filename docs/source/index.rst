@@ -1,11 +1,28 @@
-Welcome to Thoth's adviser documentation
-----------------------------------------
+Thoth-Station
+-------------
 
-Thoth's adviser is a recommendation engine for Python applications.
+.. raw:: html
+
+  <p style="text-align:right;"><i>Resurrected ancient deities helping humans with software development.</i></p>
+
+.. image:: https://thoth-station.ninja/images/thoth-station.png
+   :alt: Thoth Station logo
+   :align: center
+   :width: 70%
 
 .. note::
 
-  See ":ref:`Thoth's landing page <landing_page>`" to see generic info if you are new to Thoth.
+  🧭 **Quick navigation**
+
+  *I want to …*
+
+  🐍 :ref:`start using Thoth <integration>`
+
+  🦉 :ref:`add wisdom to the recommendation engine using prescriptions <prescription>`
+
+  🤝 :ref:`get in touch <landing_page>`
+
+  📊 `experiment with datasets available <https://github.com/thoth-station/datasets/>`__
 
 Introductory sections
 =====================
@@ -17,6 +34,7 @@ Introductory sections
    integration
    compatibility
    experimental_features
+   landing_page
    developers_guide
    architecture
    deployment

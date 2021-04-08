@@ -3,12 +3,12 @@
 A pipeline unit
 ---------------
 
-All units are derived from :class:`Unit <thoth.adviser.unit.Unit>` and
-:class:`Unit <thoth.adviser.unit.UnitPackage>` that provide a common base for
-implemented units of any type. The base class also provides access to the input
-pipeline vectors and other properties that are accessible by :class:`context
-abstraction <thoth.adviser.context.Context>`. See :ref:`pipeline section
-<pipeline>` as a prerequisite for pipeline unit documentation.
+All units are derived from :class:`Unit <thoth.adviser.unit.Unit>` that
+provides a common base for implemented units of any type. The base class also
+provides access to the input pipeline vectors and other properties that are
+accessible by :class:`context abstraction <thoth.adviser.context.Context>`. See
+:ref:`pipeline section <pipeline>` as a prerequisite for pipeline unit
+documentation.
 
 Note the instantiation of units is done once during pipeline creation - units
 are kept instantiated during stack generation pipeline run.

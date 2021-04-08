@@ -28,15 +28,22 @@ The version requirement for CPython interpreter enforces the built-in type
 language feature onwards, but the code of adviser relies on this feature
 (especially its core resolver algorithm).
 
-The code was tested also on CPython 3.7 and CPython 3.8.
+The adviser code was tested also on CPython 3.7 and CPython 3.8.
 
 Allocating CPU time
 ===================
 
-Adviser responds to ``SIGINT`` signal that is handled during the main
-resolution and pipeline run. If a ``SIGINT`` is captured, adviser gracefully
-stops the current pipeline run with resolution and gathers results obtained
-until that point.
+As resolver resolves multiple software stacks per run depending on the
+recommendation type, it requires a stop condition. The implementation has two
+main stop conditions:
+
+1. `No more paths to be explored during the resolution <https://thoth-station.ninja/j/no_paths.html>`__
+2. `Allocated CPU time for resolution was exceeded <https://thoth-station.ninja/j/cpu_time_exceeded.html>`__
+
+Resolver responds to ``SIGINT`` signal that is handled during the main
+resolution and pipeline run to implement the second scenario. If a ``SIGINT``
+is captured, adviser gracefully stops the current pipeline run with resolution
+and gathers results obtained until that point.
 
 This behavior can be naturally used with Kubernetes/OpenShift liveness probes.
 See `liveness.py file used in deployments
@@ -51,11 +58,11 @@ in mind.
 Adviser can do a fork from its main process and perform memory expensive
 operations in a sub-process configured and triggered from the main process.
 This behavior is turned off by default to simplify development and debugging
-when running adviser locally. To enable
-forking set ``THOTH_ADVISER_FORK=1``. When running adviser in the cluster, the
-OOM killer will kill the memory expensive sub-process leaving the main process
-untouched. The main process has a capability of detecting the OOM kill of the
-sub-process and construct corresponding report.
+when running adviser locally. To enable forking set ``THOTH_ADVISER_FORK=1``.
+When running adviser in the cluster, the OOM killer will kill the memory
+expensive sub-process leaving the main process untouched. The main process has
+a capability of `detecting the OOM kill of the sub-process and construct
+corresponding report <https://thoth-station.ninja/j/oom.html>`__.
 
 Tweaking limit
 ##############
@@ -82,13 +89,13 @@ Setting seed
 
 To make sure multiple adviser runs result in the same stack, it is a good idea
 to set adviser's seed to the same value across mutliple adviser runs in a
-deployment.  Note the resolution is stochastic in some sense (this also depends
-on predictor used).
+deployment.  Note the resolution is stochastic (this also depends on predictor
+used).
 
-Also note the adviser runs depend on results obtianed from Thoth's knowledge
-graph. If some relevant parts of the knowledge graph change, different results
-might be produced by adviser even if the seed is set to a constant value across
-multiple adviser runs.
+Also note the adviser runs depend on results obtained from Thoth's knowledge
+graph. If some relevant parts of the knowledge used during resolution change,
+different results might be produced by adviser even if the seed is set to a
+constant value across multiple adviser runs.
 
 .. _beam_width:
 
@@ -96,9 +103,9 @@ Beam and it's width
 ###################
 
 One of the core data structures keeping resolver's internal states is beam (see
-:ref:`pipeline <pipeline>` and :ref:`predictor <predictor>` docs for more info).
-Beam width is the maximum number of partially resolved states stored at the
-same time and can be configured using a hyperparameter during deployment.
+:ref:`pipeline <pipeline>` and :ref:`predictor <predictor>` docs for more
+info).  Beam width is the maximum number of partially resolved states stored at
+the same time and can be configured using a hyperparameter during deployment.
 There are few pros and cons for large and small *width* numbers. The optimal
 beam width depends on the stack size, CPU time allocated and memory available
 per adviser run in a deployment.
@@ -139,9 +146,11 @@ Development dependencies (dev flag)
 
 In some cases, Thoth is recommending a software stack for application
 deployments. Development dependencies are usually not installed in such cases
-(if so, you should rething how the application is structured). By eliminating
-developement dependencies the dependency graph explored on Thoth's side can be
-smaller which can narrow down the exploration to dependencies that go to the
-deployment. Naturally, this can have positive impact on the resulting software
-stack recommended (a better one can be found given the smaller state space
-explored).
+(if so, you should rething how the application is structured). By `eliminating
+development dependencies <https://thoth-station.ninja/j/no_dev.html>`__ the
+dependency graph explored on Thoth's side can be smaller which can narrow down
+the exploration to dependencies that go to the deployment. Naturally, this can
+have positive impact on the resulting software stack recommended (a better one
+can be found given the smaller state space explored). You can always force
+resolving also development dependencies by providing ``--dev`` flag to `Thamos
+CLI <https://github.com/thoth-station/thamos>`__.

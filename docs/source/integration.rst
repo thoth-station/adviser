@@ -3,7 +3,7 @@
 Integrating with Thoth
 ----------------------
 
-Project Thoth can guide you on your software stacks. To consume Thoth's
+Project Thoth can give advises to your software stacks. To consume Thoth's
 recommendations, there are multiple ways on how to integrate:
 
 * Command line interface - Thamos CLI
@@ -40,7 +40,7 @@ you will need to adjust ``requirements_format`` configuration option in your
 
 .. note::
 
-  It's recommended to use Pipenv if possible. Pipenv introduces more consistent
+  It's recommended to use Pipenv files if possible. Pipenv introduces more consistent
   files that track Python package indexes used as well as artifact hashes in the
   lock file explicitly.
 
@@ -99,12 +99,12 @@ dependencies using:
 
 .. code-block:: console
 
-  pipenv install --deploy --dev
+  thamos install --deploy --dev
 
 Please follow `Thamos documentation for more info
 <https://thoth-station.ninja/docs/developers/thamos>`__. Also check
 `thoth-station/cli-examples repository <https://github.com/thoth-station/cli-examples>`__
-that demonstrates an example application that using Thamos CLI.
+that demonstrates example applications that use Thamos CLI.
 
 OpenShift Python s2i build process
 ==================================
@@ -141,37 +141,23 @@ images are hosted at `quay.io/organization/thoth-station
     </div>
 
 Thoth's s2i container images can be configured using environment variables
-supplied to the build config:
+supplied to the build config. Follow `thoth-station/s2i-thoth
+<https://github.com/thoth-station/s2i-thoth>`__ repository with all the
+required instructions to setup OpenShift S2I. See also configuration options
+for Thoth's client present in `Thamos documentation
+<https://thoth-station.ninja/docs/developers/thamos/>`__ that apply in the
+build process as it uses Thamos under the hood.
 
-* ``THOTH_ADVISE`` - always use the recommended stack by Thoth (even if the
-  lock file is present in the repo)
+To see available S2I runtime environments for which backend can give you
+advises, issue:
 
-* ``THOTH_CONFIG_CHECK`` - verify values stated in the configuration file match
-  the build environment
+.. code-block:: console
 
-* ``THOTH_PROVENANCE_CHECK`` - verify stack provenance - the provenance check
-  is triggered only if the lock file is not comming from Thoth's recommendation
-  engine (otherwise the stack has already verified provenance)
+  thamos s2i
 
-* ``THOTH_ASSEMBLE_DEBUG`` - run s2i's assemble script in verbose mode
-
-* ``THOTH_DRY_RUN`` - submit stack to Thoth's recommendation engine but do not
-  use the recommended lock file, use the lock file present in the repo instead
-
-* ``THOTH_FROM_MASTER`` - Use Thamos from git instead of a PyPI release - handy
-  if the released Thamos has a bug which was fixed in the master branch
-
-* ``THOTH_HOST`` - Thoth's host to reach out to for recommendations (defaults
-  to prod deployment at khemenu.thoth-station.ninja)
-
-* ``THOTH_ERROR_FALLBACK`` - fallback to the lock file present in the
-  repository if the submitted Thoth analysis fails
-
-See also configuration options for Thoth's client present in `Thamos
-documentation <https://thoth-station.ninja/docs/developers/thamos/>`__.
-
-An example of such application can be found on `GitHub  - s2i TensorFlow
-example <https://github.com/thoth-station/s2i-example>`__.
+An example of an S2I application powered by Thoth S2I can be found in
+`thoth-station/s2i-example <https://github.com/thoth-station/s2i-example>`__
+repository.
 
 .. raw:: html
 
@@ -203,9 +189,13 @@ project:
 
      thamos config
 
-That’s it - thamos would create a "``.thoth.yaml``" file for you. Now you can
-change the managers you want to run. Here, for example, we want ``version`` and
-``update`` manager to run on the demo repo so the configuration is:
+That’s it - thamos would create a "``.thoth.yaml``" file for you. This file can
+be added to your Git repository and GitHub application can take care of your
+project.
+
+Next, you can adjust managers you want to have enabled on your repository.
+Here, for example, we want ``version`` and ``update`` manager to run on the
+demo repo so the configuration is:
 
 .. code-block:: yaml
 
@@ -218,37 +208,50 @@ change the managers you want to run. Here, for example, we want ``version`` and
             labels: [bot, kebechet]
             changelog_file: true
 
-In case thamos config doesn’t work for you, add the ``.thoth.yaml`` file in
-your project root directory manually.  An example can be found `here
-<https://github.com/thoth-station/common/blob/master/.thoth.yaml>`__.
-
 Kebechet cares about the managers you add under the manager section. You will
 find how to define the manager config under each of the manager readme -
 `kebechet/managers
 <https://github.com/thoth-station/kebechet/tree/master/kebechet/managers>`__.
 
-To see available runtime environment configurations, check Thoth endpoints. For
-available configurations issue:
-
-.. code-block:: console
-
-  curl -X GET "https://khemenu.thoth-station.ninja/api/v1/runtime-environment" -H  "accept: application/json"
-
 Now that you are done with the setup of which managers you want to be run on
 your project, you are done with the major part.  We would next install the
 GitHub app to ensure we receive webhooks from the repository, please install
-`Khebhut <https://github.com/marketplace/khebhut>`__, which is an alias for Kebechet.
-That's it, Kebechet is now ready to maintain your Python project.
+`Khebhut <https://github.com/marketplace/khebhut>`__, which is an alias for
+Kebechet.  That's it, Kebechet is now ready to maintain your Python project.
 
-build-watcher
-=============
+Container image build analyses
+==============================
 
-To help us improving recommendations, you can use build-watcher which will send
-us relevant information so that we can improve Thoth's recommendation engine.
-Follow instructions that can be found in `thoth-station/build-watcher
+To help us improving recommendations, you can use integrations with container
+image build systems that can report information about builds to Thoth to
+improve recommendations. Simply, we aggregate information about build failures,
+learn from them and improve the recommendation engine so that it will provide
+you a Python stack that can be assembled.
+
+If you use OpenShift builds, you can install a component called build-watcher
+which will send us relevant information so that we can improve Thoth's
+recommendation engine. Follow instructions that can be found in
+`thoth-station/build-watcher
 <https://github.com/thoth-station/build-watcher/>`__ repository for more info.
+
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="https://www.youtube.com/embed/bSkjSU0S5vs" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
+
+When using `AICoE-CI <https://github.com/AICoE/aicoe-ci>`__, build information
+are automatically sent to Thoth backend.
+
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="https://www.youtube.com/embed/4ENk4pf5CpY" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
 
 Jupyter Notebooks
 =================
 
-TODO: write a summary
+Follow documentation in `thoth-station/jupyterlab-requirements
+<https://github.com/thoth-station/jupyterlab-requirements>`__ repository for
+more info.
