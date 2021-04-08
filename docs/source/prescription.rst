@@ -3,13 +3,22 @@
 Declarative prescription for resolver
 -------------------------------------
 
-The implementation allows to declaratively specify pipeline units that should
-be included in the resolver pipeline without actually implementing any Python
-classes. The document below describes core mechanics behind creating such
-prescription for the resolver. Note the declarative prescription allows to
-quickly provide pipeline units that assist the resolution process but have
-limited expressive capabilities. For more sophisticated pipeline units one can
-still use the programmable interface.
+The implementation of the recommendation engine allows to declaratively specify
+:ref:`pipeline units <unit>` that should be included in the :ref:`resolver
+pipeline <pipeline>` without actually implementing any code.  The document
+below describes core mechanics behind creating such "prescription" for the
+resolver.
+
+.. note::
+
+  Check `thoth-station/prescriptions <https://github.com/thoth-station/prescriptions>`__
+  repository that provides prescriptions for open-source Python packages.
+
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="https://www.youtube.com/embed/dg6_WhUK5Ew" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
 
 One can see prescriptions as `enhanced constraints
 <https://pip.pypa.io/en/stable/user_guide/#constraints-files>`_ but on the
@@ -18,23 +27,24 @@ multiple projects for which server-side resolution can provide guidance.
 
 .. note::
 
+  The declarative prescription interface allows to quickly provide pipeline units
+  that assist the resolution process but have limited expressive capabilities.
+  For more sophisticated pipeline units one can still use the programmable
+  interface.
+
+Prescription YAML v1
+====================
+
+Each prescription YAML v1 document states the following core parts that will be
+discussed in detail in the upcoming sections.
+
+.. note::
+
   Prescription YAML specification provides unit abstractions that map to their
   Python code implementation. If you wish to create your own unit declaration
   in the YAML configuration suitable for your needs, just declare your YAML
   unit and provide its Python implementation. Core pipeline units can serve as
   a base for the implementation.
-
-Prescription YAML v1
-====================
-
-.. note::
-
-  Check `thoth-station/adviser repository
-  <https://github.com/thoth-station/adviser/blob/master/thoth/adviser/prescription/v1/schema.py>`__
-  to see the precise definition of the schema.
-
-Each prescription YAML v1 document states the following core parts that will be
-discussed in detail in the upcoming sections.
 
 .. code-block:: yaml
 
@@ -50,6 +60,10 @@ discussed in detail in the upcoming sections.
       steps: []
       strides: []
       wraps: []
+
+You can check `thoth-station/adviser repository
+<https://github.com/thoth-station/adviser/blob/master/thoth/adviser/prescription/v1/schema.py>`__
+to see the precise definition of the schema.
 
 The semantics behind entries stated:
 

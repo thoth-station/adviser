@@ -68,6 +68,12 @@ To instantiate a resolver, one can use two main functions:
   resolver that produces software stacks for :ref:`Dependency Monkey
   <dependency_monkey>`
 
+.. note::
+
+  `Check the linked Jupyter Notebook
+  <https://github.com/thoth-station/notebooks/blob/master/notebooks/development/Gradient-free%20reinforcement%20learning%20predictors.ipynb>`__
+  if you wish to dive into sources.
+
 To resolve raw pipeline products, one can use :func:`Resolver.resolve_products
 <thoth.adviser.resolver.Resolver.resolve_products>` method that yields raw
 products during a pipeline run. Another method, :func:`Resolver.resolve

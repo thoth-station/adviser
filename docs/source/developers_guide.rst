@@ -56,7 +56,7 @@ file. The ``Pipfile`` file states direct dependencies for a project and
 ones) pinned to a specific version.
 
 If you have cloned the repositories via the provided Ansible script, the
-Ansible scripts prepares the environment for you. It runs the following command
+Ansible script prepares the environment for you. It runs the following command
 to prepare a separate virtual environment with all the dependencies (including
 the transitive ones):
 
@@ -150,11 +150,11 @@ using a colon:
 Debugging application and logging
 =================================
 
-All Thoth components use logging that is implemented in the ``thoth-common``
-package and is initialized in ``init_logging()`` function (defined in
-``thoth-common`` library). This library setups all the routines needed for
-logging (also sending logs to external monitoring systems such as `Sentry
-<https://sentry.io>`_).
+All Thoth components use logging that is implemented in the `thoth-common
+<https://thoth-station.ninja/docs/developers/common/>`__ package and is
+initialized in ``init_logging()`` function (defined in ``thoth-common``
+library). This library setups all the routines needed for logging (also sending
+logs to external monitoring systems such as `Sentry <https://sentry.io>`_).
 
 Besides the functionality stated above, the logging configuration can be
 adjusted based on environment variables. If you are debugging some parts of the
@@ -260,11 +260,9 @@ To run an application from sources present in the local directory (for example
 with changes you have made), you can open a pull request and issue ``/deploy``
 command as a comment to the pull request opened.
 
-  $ oc get builds
-
 If you would like to test application with unreleased packages inside OpenShift
 cluster, you can do so by installing package from a Git repo and running the
-``oc build`` command above:
+``/deploy`` command on the opened pull request:
 
 .. code-block:: console
 
@@ -285,9 +283,11 @@ practice to use such deps in prod-like deployments):
     "error": "Invalid application stack supplied: Package thoth-storages uses a version control system instead of package index: {'git': 'https://github.com/thoth-station/storages' }",
   }
 
-To temporary bypass this error you need to temporary turn off these
-recommendations by setting ``THOTH_ADVISE`` to ``0`` in the corresponding
-buildconfig:
+.. note::
+
+  If you use an S2I build process with advises turned on, you can bypass the
+  error by turning off recommendations, just set``THOTH_ADVISE`` to ``0`` in
+  the corresponding buildconfig.
 
 **Disclaimer:** Please, do **NOT** commit such changes into repositories. We
 always rely on versioned packages with proper release management.

@@ -4,12 +4,12 @@ Boot pipeline unit type
 -----------------------
 
 A very first :ref:`pipeline unit <unit>` is called ":class:`boot
-<thoth.adviser.boot.Boot>`" as it is started as a first pipeline unit. It's
-main purpose is to check input, adjust input parameters, halt adviser in case
-of any undesired conditions or to print any messages to logger (that will show
-up in user logs).  As in case of all units, it has access to adviser context to
-check any input values to the adviser (user input, parameters or
-hyperparameters).
+<thoth.adviser.boot.Boot>`". As the name suggests it is started as a first
+pipeline unit in the resolution pipeline. It's main purpose is to check input,
+adjust input parameters, halt resolver in case of any undesired conditions or
+to print any messages to logger (that will show up in user logs).  As in case
+of all units, it has access to resolver context to check any input values to
+the resolver (user input, parameters or hyperparameters).
 
 .. note::
 
@@ -19,9 +19,9 @@ hyperparameters).
 Main usage
 ==========
 
-* Adjust input parameters to the resolution process.
+* Adjust input parameters to the resolution process
 
-* Halt adviser before any stack resolution is done based on input values
+* Halt resolver before any stack resolution is done based on input values
 
   * Any exception raised will halt adviser with an error message (created out
     of exception message) populated to the adviser JSON result except for
@@ -53,6 +53,8 @@ Real world examples
     base, a boot unit can adjust this information (remove it completelly or,
     for example, find a similar GPU model for recommendations) and print an
     informative log message
+
+* Adding messages to stack info (e.g. prescription version used)
 
 * Gate an application build in the cluster based on configured Python package
   indexes

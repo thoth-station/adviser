@@ -65,8 +65,8 @@ function used.
 Thoth's :ref:`resolver <resolver>` approach of resolving software stacks is
 to expand dependency graphs (lazily), instead of directly implementing
 `3SAT problem <https://en.wikipedia.org/wiki/Boolean_satisfiability_problem>`_
-as in case of other resolvers. See :ref:`resolver <resolver>` documentation
-for more info.
+or backtracking as in case of other resolvers. See :ref:`resolver <resolver>`
+documentation for more info.
 
 .. _introduction_rl:
 

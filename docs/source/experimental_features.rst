@@ -29,11 +29,16 @@ comparision to using other resolvers (such as Pipenv, pip-tools, ...).
 Selectively enabling pre-releases
 =================================
 
-This is implementation of `PEEP-0007 Pipenv draft
-<https://github.com/pypa/pipenv/pull/4607>`__. As Pipenv allows only turning
-on/off pre-releases for all the packages in the dependency graph, this option
-enables users to selectively turn on/off pre-releases for any package in the
-dependency graph - transitive as well as direct packages.
+As Pipenv allows only turning on/off pre-releases for all the packages in the
+dependency graph, this option enables users to selectively turn on/off
+pre-releases for any package in the dependency graph - transitive as well
+as direct packages.
+
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="https://www.youtube.com/embed/w78ycZubmjw" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
 
 This can be useful if some packages should be present as pre-releases or they
 do not have any release yet, except for pre-releases. See the `upstream
@@ -123,7 +128,13 @@ feature as follows:
   [thoth]
   disable_index_adjustment = true
 
-Using the Pipfile shown above will enforce resolver to look for packages only
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="https://www.youtube.com/embed/p6fjVQ0aUPE" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
+
+The configuration flag shown above will enforce resolver to look for packages only
 on explicitly configured Python indexes, that is ``aicoe-tensorflow`` index in
 the example above. Note that all the packages, direct as well as transitive
 packages need to be hosted on the specified index in order to resolve the whole

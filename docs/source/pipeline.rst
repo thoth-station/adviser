@@ -109,11 +109,17 @@ initialization here as pipeline units are instantiated once per resolver. If
 there are run multiple resolutions for the same resolver instance, the pipeline
 unit instances will be shared.
 
+.. note::
+
+  `Check the linked Jupyter Notebook
+  <https://github.com/thoth-station/notebooks/blob/master/notebooks/development/Gradient-free%20reinforcement%20learning%20predictors.ipynb>`__
+  if you wish to dive into sources.
+
 All pipeline units are grouped based on their type in the
 :class:`PipelineConfig <thoth.adviser.pipeline_config.PipelineConfig>` and
 resolver runs respect they relative ordering when pipeline units are executed.
 Pipeline units specific for a certein packages are prioritized in oposite to
-the generic ones - see ref:`the units section for more info <units>`.
+the generic ones - see :ref:`the units section for more info <units>`.
 
 The very first pipeline units triggered are pipeline units of type :class:`Boot
 <thoth.adviser.boot.Boot>`. They are triggered prior to any resolution done -
@@ -346,6 +352,13 @@ configuration - see :ref:`unit documentation section for more info <unit>`.
 This configuration can be supplied to adviser as well as to Dependency Monkey
 via CLI or in the resolver constructor when resolver is created
 programmatically.
+
+Prescription pipeline units
+===========================
+
+The resolver implementation has an interface to supply pipeline units specified
+using a YAML file (declarative syntax). Check :ref:`prescription section
+<prescription>` for more info.
 
 Static source code analysis - library usage
 ===========================================

@@ -1,4 +1,4 @@
-. _compatibility:
+.. _compatibility:
 
 Thoth's adviser recommendation format
 =====================================
@@ -38,6 +38,11 @@ directly use Pipenv on the recommended software stack. See :ref:`integration`
 section for more info on how to integrate with Thoth and benefit from its
 recommendations.
 
+.. note::
+
+  Check `micropipenv <https://github.com/thoth-station/micropipenv>`__. It is
+  a lightweight complement to Pipenv that can be handy for you in some situations.
+
 Compatibility with pip/Pipenv resolver
 ======================================
 
@@ -74,7 +79,7 @@ stored in Thoth's knowledge base.
 
 Environment markers applied on direct dependencies are not evaluated during
 the resolution done on server but are taken into account once packages are
-installed by Pipenv.
+installed.
 
 Thoth's resolver considers also ``python_requires`` as provided by package
 maintainers, see `PEP-440 <https://www.python.org/dev/peps/pep-0440/>`__ or
@@ -105,16 +110,16 @@ package (e.g. optimized builds of TensorFlow) and provide it on your own index,
 ``pip`` has no direct configuration option to explicitly specify index that
 should be used when installing the package. There are options like
 ``--extra-index-url`` that can add additional Python package indexes, however
-they are treated as fallbacks or mirrors. You can also supply digests of
-installed artifacts, but...
+they are treated as fallbacks or mirrors.
 
 On the other hand, Pipenv provides a configuration option for `specifying
 custom package indexes
 <https://pipenv.kennethreitz.org/en/latest/advanced/#specifying-package-indexes>`_.
 Thoth respects this configuration and software stacks produced that use
 ``Pipfile.lock`` format always specify from which index the given package came
-from. To prevent installation undesired artifacts, artifacts digests are
-provided.
+from. To prevent installing undesired artifacts, artifacts digests are
+provided. Note Pipenv still does not implement proper package source management
+even though the configuration could suggest so - this is fixed when using Thoth.
 
 An example of a ``Pipfile`` that configures two Python package indexes - `PyPI
 <https://pypi.org/simple>`_ and `AICoE Python package index
@@ -141,6 +146,11 @@ An example of a ``Pipfile`` that configures two Python package indexes - `PyPI
   [pipenv]
   allow_prereleases = true
 
+The configuration above will use two Python package sources for all the
+packages in the application stack. Moreover, it will force to use
+``redhat-aicoe-experiments`` index for installing tensorflow package that will
+*always* come from this index if a software stack is resolved (unlike
+in case of Pipenv).
 
 .. _shared_deps:
 
