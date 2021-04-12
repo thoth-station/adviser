@@ -6,39 +6,44 @@ Thoth's landing page
 Here you can find all the relevant information if you want to get in touch with
 us or get involved.
 
-.. note::
-
-  If you do not find required information, feel free to contact us in
-  `Google Chat room <https://chat.google.com/room/AAAAVjnVXFk>`__.
-
 Generic Information
 ===================
 
+* `Main page <https://thoth-station.ninja>`__
 * `YouTube channel <https://www.youtube.com/channel/UClUIDuq_hQ6vlzmqM59B2Lw>`__
+* `Project board <https://github.com/orgs/thoth-station/projects/>`__
 * `Twitter <https://twitter.com/ThothStation>`__
 * `Conference talks and articles published <https://github.com/thoth-station/talks>`__
+* `Datasets <https://github.com/thoth-station/datasets>`__
 
+Contact us
+==========
 
-Contact information
-===================
+If you do not find required information or get in touch, feel free to contact
+us in `Google Chat room <https://chat.google.com/room/AAAAVjnVXFk>`__. If you
+are an external contributor, feel free to request access in `thoth-station/core
+repository <https://github.com/thoth-station/core>`__ by `opening an issue
+<https://github.com/thoth-station/core/issues/new/choose>`__.
 
-You can be added to our Google Chat room where we can interact instantly. To do
-so, follow instructions in the `thoth-station/core repository
-<https://github.com/thoth-station/core/blob/master/README.rst>`__.
-
-Event Calendar
-==============
+Community meetings & Event Calendar
+===================================
 
 Follow instructions in the `thoth-station/core repository
 <https://github.com/thoth-station/core/blob/master/README.rst>`__ to find
 interesting sessions we do.
 
-SIG
-===
+Special Interest Groups
+=======================
 
 The whole team is formed into "Special Interest Groups" (SIG). More info can be
 found in the `thoth-station/core repository
-<https://github.com/thoth-station/core/blob/master/README.rst>`__.
+<https://github.com/thoth-station/core/blob/master/community/sig-list.md>`__.
+
+Red Hat mailing list
+====================
+
+You can subscribe to ``aicoe`` and ``aicoe-thoth`` Red Hat internal mailing
+lists for project updates and discussion.
 
 Cooperation with Thoth
 ======================
