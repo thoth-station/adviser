@@ -86,6 +86,9 @@ itself for more info. You can also find more info in the :ref:`integration
   `PyPI.org <https://pypi.org>`_, see also
   `AICoE index <https://tensorflow.pypi.thoth-station.ninja/>`_)
 
+* `package-update-job <https://github.com/thoth-station/package-update-job>`__ - a periodic job
+   responsible for checking the availability of packages along with their hashes from Python's package index.
+
 * `cve-update-job <https://github.com/thoth-station/cve-update-job>`__ - a periodic job
   responsible for gathering CVE information about packages
 
