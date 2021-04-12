@@ -6198,3 +6198,18 @@
 * Propagate metadata to justification and stack info
 * Remove unused imports
 * Add dev projects used for testing to MANIFEST.in
+
+## Release 0.28.0 (2021-04-12T21:14:56)
+### Features
+* Update Thoth landing page
+* :arrow_up: Automatic update of dependencies by Kebechet (#1815)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1814)
+* Update database of symbols available for TensorFlow 2.5.0 (#1807)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1812)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1805)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1803)
+### Improvements
+* Minor improvements in docs
+* Minor improvements in docs (#1813)
+* Remove not relevant to do comment (#1810)
+* Allow including one pipeline unit multiple times per matched entry (#1806)
