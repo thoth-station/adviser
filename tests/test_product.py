@@ -158,6 +158,7 @@ black = true
         )
         assert product.advised_runtime_environment == state.advised_runtime_environment
         assert product.project.to_dict() == {
+            "constraints": [],
             "requirements": {
                 "packages": {
                     "daiquiri": {"index": "pypi-org-simple", "version": "*"},
@@ -331,6 +332,7 @@ black = true
             "advised_runtime_environment": None,
             "justification": [],
             "project": {
+                "constraints": [],
                 "requirements": {
                     "dev-packages": {},
                     "packages": {"flask": "*", "tensorflow": "==1.9.0"},
@@ -496,6 +498,7 @@ black = true
             "advised_runtime_environment": None,
             "justification": [],
             "project": {
+                "constraints": [],
                 "requirements": {
                     "dev-packages": {},
                     "packages": {"flask": "*", "tensorflow": "==1.9.0"},

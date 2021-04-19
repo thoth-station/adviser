@@ -12,6 +12,7 @@ include OWNERS
 include Pipfile
 include Pipfile.lock
 include requirements.txt
+include tests/data/constraints/*.txt
 include tests/data/projects/dev/Pipfile
 include tests/data/projects/dev/Pipfile.lock
 include tests/data/projects/requirements.in

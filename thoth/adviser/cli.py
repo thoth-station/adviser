@@ -38,6 +38,7 @@ import termial_random
 from thoth.analyzer import print_command_result
 from thoth.common import init_logging
 from thoth.common import RuntimeEnvironment
+from thoth.python import Constraints
 from thoth.python import Pipfile
 from thoth.python import PipfileLock
 from thoth.python import Project
@@ -85,7 +86,9 @@ def _print_version(ctx: click.Context, _, value: str):
 def _instantiate_project(
     requirements: str,
     requirements_locked: Optional[str] = None,
+    *,
     runtime_environment: RuntimeEnvironment = None,
+    constraints: Optional[str] = None,
 ):
     """Create Project instance based on arguments passed to CLI."""
     try:
@@ -108,10 +111,25 @@ def _instantiate_project(
     if requirements_locked and requirements_locked != "null":
         pipfile_lock = PipfileLock.from_string(requirements_locked, pipfile)
 
+    constraints_instance = None
+    if constraints:
+        try:
+            with open(constraints, "r") as constraints_file:
+                constraints_content = constraints_file.read()
+        except (OSError, FileNotFoundError):
+            # We we gather values from env vars, un-escape new lines.
+            constraints_content = constraints.replace("\\n", "\n")
+
+        try:
+            constraints_instance = Constraints.from_dict(json.loads(constraints_content))
+        except json.decoder.JSONDecodeError:
+            constraints_instance = Constraints.from_string(constraints_content)
+
     project = Project(
         pipfile=pipfile,
         pipfile_lock=pipfile_lock,
         runtime_environment=runtime_environment or RuntimeEnvironment.from_dict({}),
+        constraints=constraints_instance or Constraints(),
     )
 
     return project
@@ -428,6 +446,14 @@ def provenance(
     "disjoint with pipeline configuration. Multiple files can be supplied by using `,' as a delimiter.",
 )
 @click.option(
+    "--constraints",
+    envvar="THOTH_ADVISER_CONSTRAINTS",
+    default=None,
+    type=str,
+    metavar="CONSTRAINTS.txt",
+    help="Constraints to be used during the resolution.",
+)
+@click.option(
     "--user-stack-scoring/--no-user-stack-scoring",
     envvar="THOTH_ADVISER_USER_STACK_SCORING",
     is_flag=True,
@@ -466,6 +492,7 @@ def advise(
     seed: Optional[int] = None,
     pipeline: Optional[str] = None,
     prescription: Optional[str] = None,
+    constraints: Optional[str] = None,
     user_stack_scoring: bool = True,
     dev: bool = False,
 ):
@@ -493,7 +520,9 @@ def advise(
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
     recommendation_type = RecommendationType.by_name(recommendation_type)
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
-    project = _instantiate_project(requirements, requirements_locked, runtime_environment)
+    project = _instantiate_project(
+        requirements, requirements_locked, runtime_environment=runtime_environment, constraints=constraints
+    )
 
     pipeline_config = None
     if pipeline:

@@ -40,15 +40,15 @@ from .exceptions import InternalError
 from .exceptions import UnknownPipelineUnitError
 from .exceptions import PipelineConfigurationError
 from .pipeline_config import PipelineConfig
-from .prescription import Prescription
 
 if TYPE_CHECKING:
-    from .unit_types import UnitType
+    from .prescription import Prescription  # noqa: F401
     from .unit_types import BootType
     from .unit_types import PseudonymType
     from .unit_types import SieveType
     from .unit_types import StepType
     from .unit_types import StrideType
+    from .unit_types import UnitType
     from .unit_types import WrapType
 
 _LOGGER = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ class PipelineBuilderContext:
     decision_type = attr.ib(type=Optional[DecisionType], kw_only=True, default=None)
     recommendation_type = attr.ib(type=Optional[RecommendationType], kw_only=True, default=None)
     cli_parameters = attr.ib(type=Dict[str, Any], kw_only=True, default=attr.Factory(dict))
-    prescription = attr.ib(type=Optional[Prescription], kw_only=True, default=None)
+    prescription = attr.ib(type=Optional["Prescription"], kw_only=True, default=None)
 
     _boots = attr.ib(type=Dict[Optional[str], List["BootType"]], factory=dict, kw_only=True)
     _pseudonyms = attr.ib(type=Dict[str, List["PseudonymType"]], factory=dict, kw_only=True)
@@ -496,7 +496,7 @@ class PipelineBuilder:
         graph: GraphDatabase,
         project: Project,
         library_usage: Optional[Dict[str, Any]],
-        prescription: Optional[Prescription],
+        prescription: Optional["Prescription"],
         cli_parameters: Dict[str, Any],
     ) -> PipelineConfig:
         """Get adviser's pipeline configuration."""
@@ -519,7 +519,7 @@ class PipelineBuilder:
         graph: GraphDatabase,
         project: Project,
         library_usage: Optional[Dict[str, Any]],
-        prescription: Optional[Prescription],
+        prescription: Optional["Prescription"],
         cli_parameters: Dict[str, Any],
     ) -> PipelineConfig:
         """Get dependency-monkey's pipeline configuration."""
