@@ -18,6 +18,7 @@
 """Schema v1 based prescription units."""
 
 from .boot import BootPrescription
+from .github_release_notes import GitHubReleaseNotesWrapPrescription
 from .pseudonym import PseudonymPrescription
 from .schema import PRESCRIPTION_SCHEMA
 from .sieve import SievePrescription
@@ -29,6 +30,7 @@ from .wrap import WrapPrescription
 
 __all__ = [
     "BootPrescription",
+    "GitHubReleaseNotesWrapPrescription",
     "PseudonymPrescription",
     "PRESCRIPTION_SCHEMA",
     "SievePrescription",

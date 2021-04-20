@@ -44,6 +44,7 @@ from .sieve import SievePrescription
 from .step import StepPrescription
 from .stride import StridePrescription
 from .wrap import WrapPrescription
+from .github_release_notes import GitHubReleaseNotesWrapPrescription
 
 if TYPE_CHECKING:
     from thoth.adviser.unit_types import UnitType  # noqa: F401
@@ -293,4 +294,12 @@ class Prescription:
 
     def iter_wrap_units(self) -> Generator[Type["WrapType"], None, None]:
         """Iterate over prescription stride units registered in the prescription supplied."""
-        return self._iter_units(WrapPrescription, self.wraps_dict)
+        for prescription in self.wraps_dict.values():
+            if prescription["type"] == "wrap":
+                WrapPrescription.set_prescription(prescription)
+                yield WrapPrescription
+            elif prescription["type"] == "wrap.GitHubReleaseNotes":
+                GitHubReleaseNotesWrapPrescription.set_prescription(prescription)
+                yield GitHubReleaseNotesWrapPrescription
+            else:
+                raise ValueError(f"Unknown wrap pipeline unit type: {prescription['type']!r}")
