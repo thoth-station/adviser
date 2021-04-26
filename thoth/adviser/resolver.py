@@ -737,6 +737,7 @@ class Resolver:
                     {
                         "type": "ERROR",
                         "message": msg,
+                        "link": jl("unresolved"),
                     }
                 )
                 raise CannotProduceStack(msg, stack_info=self.context.stack_info)
