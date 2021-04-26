@@ -65,6 +65,10 @@ def prepare_adviser(request_file_content: Dict[str, Any]) -> None:
     with open(os.path.join(_ADVISER_INPUTS_DIR, "runtime_environment.json"), "w") as f:
         json.dump(runtime_environment, f, indent=2)
 
+    constraints_content = request_file_content.get("constraints") or []
+    with open(os.path.join(_ADVISER_INPUTS_DIR, "constraints.txt"), "w") as f:
+        json.dump(constraints_content, f, indent=2)
+
 
 def prepare_provenance(request_file_content: Dict[str, Any]) -> None:
     """Prepare inputs for provenance-checker."""

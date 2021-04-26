@@ -258,7 +258,12 @@ class TestPipelineBuilder(AdviserTestCase):
 
         # It is not relevant if adviser/dependency monkey is called in this case.
         pipeline = getattr(PipelineBuilder, pipeline_config_method)(
-            graph=None, project=None, library_usage=None, prescription=None, cli_parameters=None, **kwargs
+            graph=None,
+            project=None,
+            library_usage=None,
+            prescription=None,
+            cli_parameters=None,
+            **kwargs,
         )
 
         assert pipeline.to_dict() == {

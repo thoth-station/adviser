@@ -18,6 +18,7 @@
 """Implementation of sieves used in adviser pipeline."""
 
 from .filter_index import FilterIndexSieve
+from .constraints import ConstraintsSieve
 from .index_enabled import PackageIndexSieve
 from .legacy_version import LegacyVersionSieve
 from .locked import CutLockedSieve
@@ -38,6 +39,7 @@ from .version_constraint import VersionConstraintSieve
 __all__ = [
     "LegacyVersionSieve",
     "CutPreReleasesSieve",
+    "ConstraintsSieve",
     "SelectiveCutPreReleasesSieve",
     "FilterConfiguredIndexSieve",
     "PackageIndexConfigurationSieve",
