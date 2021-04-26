@@ -40,7 +40,7 @@ from .unit import Unit
 from .wrap import Wrap
 
 __title__ = "thoth-adviser"
-__version__ = "0.28.0"
+__version__ = "0.29.0"
 __author__ = "Fridolin Pokorny <fridolin@redhat.com>"
 
 
