@@ -730,13 +730,14 @@ class Resolver:
 
             if not package_versions:
                 msg = (
-                    f"Cannot satisfy direct dependencies - direct dependencies of type {direct_dependency_name!r} "
+                    f"Cannot satisfy direct dependencies: direct dependencies of type {direct_dependency_name!r} "
                     "were removed by pipeline sieves"
                 )
                 self.context.stack_info.append(
                     {
                         "type": "ERROR",
                         "message": msg,
+                        "link": jl("unresolved"),
                     }
                 )
                 raise CannotProduceStack(msg, stack_info=self.context.stack_info)
