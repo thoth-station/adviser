@@ -14,6 +14,12 @@ resolver.
   Check `thoth-station/prescriptions <https://github.com/thoth-station/prescriptions>`__
   repository that provides prescriptions for open-source Python packages.
 
+  See also `this pull request
+  <https://github.com/thoth-station/adviser/pull/1821>`__ for a refence on how
+  to implement specific pipeline unit type that extend resolver functionality.
+  A high level overview can be found in `the following YouTube video
+  <https://www.youtube.com/watch?v=oK1qYdhmquY>`__.
+
 .. raw:: html
 
     <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
@@ -1615,6 +1621,8 @@ GitHubReleaseNotesWrap
 ======================
 
 A specific type of wrap pipeline unit that adds links to GitHub release page.
+See `the linked demo for more info
+<https://www.youtube.com/watch?v=oK1qYdhmquY>`__.
 
 GitHubReleaseNotesWrap ``run.release_notes``
 ############################################
@@ -1629,7 +1637,7 @@ to GitHub release should be constructed.
   .. code-block:: yaml
 
     name: GitHubReleaseNotesWrap
-    type: wrap
+    type: wrap.GitHubReleaseNotes
     should_include:
       adviser_pipeline: true
     run:
