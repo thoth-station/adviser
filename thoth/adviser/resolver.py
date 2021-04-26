@@ -730,7 +730,7 @@ class Resolver:
 
             if not package_versions:
                 msg = (
-                    f"Cannot satisfy direct dependencies - direct dependencies of type {direct_dependency_name!r} "
+                    f"Cannot satisfy direct dependencies: direct dependencies of type {direct_dependency_name!r} "
                     "were removed by pipeline sieves"
                 )
                 self.context.stack_info.append(
