@@ -6213,3 +6213,15 @@
 * Minor improvements in docs (#1813)
 * Remove not relevant to do comment (#1810)
 * Allow including one pipeline unit multiple times per matched entry (#1806)
+
+## Release 0.29.0 (2021-04-26T21:32:24)
+### Features
+* Implement support for constraints
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Adjust format for unsolved direct dependencies report (#1829)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1827)
+* Add github release notes to justification (#1821)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1824)
+* Revisit architecture overview (#1816)
+### Non-functional
+* Link YouTube video and pull request implementing GH release notes wrap (#1831)
