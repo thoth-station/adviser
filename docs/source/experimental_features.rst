@@ -176,3 +176,58 @@ Python package index to be used per dependency, see `Pipenv configuration
 <https://pipenv.pypa.io/en/latest/advanced/#specifying-package-indexes>`__.
 Also note, Pipenv does not enforce this configuration as it treats Python
 package indexes as mirrors (see :ref:`compatibility` section for more info).
+
+Constraints files
+=================
+
+Unlike Pipenv, Thoth resolver supports `constraints files
+<https://pip.pypa.io/en/stable/user_guide/#constraints-files>`__ that are
+considered during the resolution. Constraints files are requirements files that
+only control which version of a requirement is installed, not whether it is
+installed or not (cite from the linked pip documentation).
+
+Constraints files should be placed besides Pipfile/Pipfile.lock or
+requirements.txt/requirements.in files (dependending on the requirements format
+used) in the project root or respecting overlays configuration. See `thamos
+documentation
+<https://thoth-station.ninja/docs/developers/thamos/index.html>`__ for more
+info.
+
+Constraints files use similar syntax as requirements.txt files (see
+`PEP-508 <https://www.python.org/dev/peps/pep-0508/>`__).
+
+An example of a constraints file content:
+
+.. code-block:: text
+
+  # Accept only flask in version <=1.0.0:
+  flask<=1.0.0
+
+  # Accept requests package following the stated version range specification
+  # only for Python above or equal to version 3.6.
+  requests>=2.8.1,<=3.0.0; python_version >= "3.6"
+
+`Environment markers <https://www.python.org/dev/peps/pep-0496/>`__ can be
+applied for constraints. See sections below for supported and unsupported
+environment markers.
+
+**Supported environment markers**
+
+The following markers are supported when specifying constraints:
+
+* ``python_full_version``
+* ``implementation_name``
+* ``os_name``
+* ``platform_machine``
+* ``platform_python_implementation``
+* ``platform_system``
+* ``python_version``
+* ``implementation_version``
+* ``sys_platform``
+
+**Unsupported environment markers**
+
+The following markers are currently not supported when declaring constraints:
+
+* ``platform_release``
+* ``platform_version``
