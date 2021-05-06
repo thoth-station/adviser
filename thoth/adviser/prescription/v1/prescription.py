@@ -45,6 +45,7 @@ from .step import StepPrescription
 from .stride import StridePrescription
 from .wrap import WrapPrescription
 from .github_release_notes import GitHubReleaseNotesWrapPrescription
+from .skip_package import SkipPackageSievePrescription
 
 if TYPE_CHECKING:
     from thoth.adviser.unit_types import UnitType  # noqa: F401
@@ -282,7 +283,15 @@ class Prescription:
 
     def iter_sieve_units(self) -> Generator[Type["SieveType"], None, None]:
         """Iterate over prescription sieve units registered in the prescription supplied."""
-        return self._iter_units(SievePrescription, self.sieves_dict)
+        for prescription in self.sieves_dict.values():
+            if prescription["type"] == "sieve":
+                SievePrescription.set_prescription(prescription)
+                yield SievePrescription
+            elif prescription["type"] == "sieve.SkipPackage":
+                SkipPackageSievePrescription.set_prescription(prescription)
+                yield SkipPackageSievePrescription
+            else:
+                raise ValueError(f"Unknown sieve pipeline unit type: {prescription['type']!r}")
 
     def iter_step_units(self) -> Generator[Type["StepType"], None, None]:
         """Iterate over prescription step units registered in the prescription supplied."""

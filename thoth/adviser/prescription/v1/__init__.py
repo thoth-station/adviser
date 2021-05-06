@@ -22,6 +22,7 @@ from .github_release_notes import GitHubReleaseNotesWrapPrescription
 from .pseudonym import PseudonymPrescription
 from .schema import PRESCRIPTION_SCHEMA
 from .sieve import SievePrescription
+from .skip_package import SkipPackageSievePrescription
 from .step import StepPrescription
 from .stride import StridePrescription
 from .unit import UnitPrescription
@@ -31,9 +32,10 @@ from .wrap import WrapPrescription
 __all__ = [
     "BootPrescription",
     "GitHubReleaseNotesWrapPrescription",
-    "PseudonymPrescription",
     "PRESCRIPTION_SCHEMA",
+    "PseudonymPrescription",
     "SievePrescription",
+    "SkipPackageSievePrescription",
     "StepPrescription",
     "StridePrescription",
     "UnitPrescription",
