@@ -1146,6 +1146,36 @@ run multiple times during the resolution process.
           message: "Not considering package pysaml2 based on vulnerability present"
           link: "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-21238"
 
+SkipPackageSieve
+================
+
+A sieve that removes the given package from the dependency graph. Removing the
+given package causes that the whole sub-graph of dependencies introduced by the
+given dependency is removed. This unit can be used to remove accidentally added
+requirements.
+
+.. note::
+
+  *Example:*
+
+  .. code-block:: yaml
+
+    name: SkipPackageSieve
+    type: sieve.SkipPackage
+    should_include:
+      adviser_pipeline: true
+    match:
+       package_name: scipy
+    run:
+      log:
+        message: "Some text printed to log on pipeline unit run."
+        type: "WARNING"
+
+      stack_info:
+        - type: WARNING
+          message: "Package scipy was removed"
+          link: https://github.com/tensorflow/tensorflow/issues/35709
+
 Steps
 =====
 
