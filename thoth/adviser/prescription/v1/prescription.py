@@ -44,9 +44,9 @@ from .sieve import SievePrescription
 from .step import StepPrescription
 from .stride import StridePrescription
 from .wrap import WrapPrescription
-from .github_release_notes import GitHubReleaseNotesWrapPrescription
 from .gh_release_notes import GHReleaseNotesWrapPrescription
-from .skip_package import SkipPackageSievePrescription
+from .skip_package_sieve import SkipPackageSievePrescription
+from .skip_package_step import SkipPackageStepPrescription
 from .schema import PRESCRIPTION_SCHEMA
 
 if TYPE_CHECKING:
@@ -365,7 +365,15 @@ class Prescription:
 
     def iter_step_units(self) -> Generator[Type["StepType"], None, None]:
         """Iterate over prescription step units registered in the prescription supplied."""
-        return self._iter_units(StepPrescription, self.steps_dict)
+        for prescription in self.steps_dict.values():
+            if prescription["type"] == "step":
+                StepPrescription.set_prescription(prescription)
+                yield StepPrescription
+            elif prescription["type"] == "step.SkipPackage":
+                SkipPackageStepPrescription.set_prescription(prescription)
+                yield SkipPackageStepPrescription
+            else:
+                raise ValueError(f"Unknown step pipeline unit type: {prescription['type']!r}")
 
     def iter_stride_units(self) -> Generator[Type["StrideType"], None, None]:
         """Iterate over prescription stride units registered in the prescription supplied."""

@@ -24,7 +24,6 @@ import pytest
 
 from thoth.adviser.exceptions import SkipPackage
 from thoth.adviser.context import Context
-from thoth.adviser.state import State
 from thoth.adviser.prescription.v1 import SkipPackageSievePrescription
 from thoth.adviser.prescription.v1.schema import PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA
 
@@ -34,7 +33,7 @@ from .base import AdviserUnitPrescriptionTestCase
 class TestSkipPackageSievePrescription(AdviserUnitPrescriptionTestCase):
     """Tests related to skip package prescription."""
 
-    def test_run(self, context: Context, state: State) -> None:
+    def test_run(self, context: Context) -> None:
         """Test running this pipeline unit."""
         prescription_str = """
 name: SkipPackageSieve
@@ -43,6 +42,49 @@ should_include:
   adviser_pipeline: true
 match:
   package_name: flask
+run:
+  stack_info:
+    - type: INFO
+      message: Skip package info stack info
+      link: https://thoth-station.ninja
+  log:
+    message: Skip package info message
+    type: INFO
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA(prescription)
+        SkipPackageSievePrescription.set_prescription(prescription)
+
+        context.stack_info.clear()
+
+        unit = SkipPackageSievePrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            with pytest.raises(SkipPackage):
+                unit.run((i for i in (flexmock(),)))
+
+            # Run multiple times to verify stack_info is adjusted just once.
+            with pytest.raises(SkipPackage):
+                unit.run((i for i in (flexmock(),)))
+
+        assert context.stack_info == [
+            {
+                "type": "INFO",
+                "message": "Skip package info stack info",
+                "link": "https://thoth-station.ninja",
+            }
+        ]
+
+    def test_run_list(self, context: Context) -> None:
+        """Test running this pipeline unit."""
+        prescription_str = """
+name: SkipPackageSieve
+type: sieve.SkipPackage
+should_include:
+  adviser_pipeline: true
+match:
+  - package_name: flask
+  - package_name: connexion
 run:
   stack_info:
     - type: INFO

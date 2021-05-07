@@ -1355,7 +1355,10 @@ requirements.
       stack_info:
         - type: WARNING
           message: "Package scipy was removed"
-          link: https://github.com/tensorflow/tensorflow/issues/35709
+          link: "https://thoth-station.ninja"
+
+Note sieves have no access to the resolver state. To remove a package when
+a specific package is in resolved state, check `SkipPackageStep`_.
 
 Steps
 =====
@@ -1595,6 +1598,45 @@ Step ``run.eager_stop_pipeline``
 
 If the given pipeline unit is registered and matched, it will cause the whole
 resolution to halt and report back any results computed.
+
+.. _skip_package_step:
+SkipPackageStep
+===============
+
+A step that removes the given package considering also
+resolver's internal state. This pipeline unit is more
+expensive than `SkipPackageSieve`_
+which does not have capability of checking resolver's state.
+
+.. note::
+
+  *Example:*
+
+  .. code-block:: yaml
+
+    name: SkipPackageStep
+    type: step.SkipPackage
+    should_include:
+      adviser_pipeline: true
+    match:
+      package_version:
+        name: scipy
+        version: "==1.4.0"
+        index_url: 'https://pypi.org/simple'
+      state:
+        resolved_dependencies:
+          - name: tensorflow
+            version: '==2.1.0'
+            index_url: 'https://pypi.org/simple'  # Not directive can be used.
+    run:
+      log:
+        message: "Removing scipy package accidentally included as a dependency of TensorFlow"
+        type: "WARNING"
+
+      stack_info:
+        - type: WARNING
+          message: "Removing scipy package accidentally included as a dependency of TensorFlow"
+          link: https://github.com/tensorflow/tensorflow/issues/35709
 
 Strides
 =======
