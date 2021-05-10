@@ -65,6 +65,7 @@ class PipelineBuilderContext:
     recommendation_type = attr.ib(type=Optional[RecommendationType], kw_only=True, default=None)
     cli_parameters = attr.ib(type=Dict[str, Any], kw_only=True, default=attr.Factory(dict))
     prescription = attr.ib(type=Optional["Prescription"], kw_only=True, default=None)
+    iteration = attr.ib(type=int, kw_only=True, default=0)
 
     _boots = attr.ib(type=Dict[Optional[str], List["BootType"]], factory=dict, kw_only=True)
     _pseudonyms = attr.ib(type=Dict[str, List["PseudonymType"]], factory=dict, kw_only=True)
@@ -327,8 +328,10 @@ class PipelineBuilder:
         )
 
         change = True
+        ctx.iteration = -1
         while change:
             change = False
+            ctx.iteration += 1
             for unit_class in cls._iter_units(ctx):
                 unit_name = unit_class.get_unit_name()
                 if unit_name in blocked_units:
