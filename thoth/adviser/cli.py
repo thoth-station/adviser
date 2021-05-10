@@ -519,6 +519,8 @@ def advise(
 
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
     recommendation_type = RecommendationType.by_name(recommendation_type)
+    _LOGGER.info("Using recommendation type %s", recommendation_type.name.lower())
+
     requirements_format = PythonRecommendationOutput.by_name(requirements_format)
     project = _instantiate_project(
         requirements, requirements_locked, runtime_environment=runtime_environment, constraints=constraints
