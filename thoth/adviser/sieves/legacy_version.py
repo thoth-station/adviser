@@ -18,9 +18,11 @@
 """A sieve to filter out legacy versions."""
 
 import logging
-from typing import Dict
 from typing import Any
+from typing import Dict
 from typing import Generator
+from typing import Set
+from typing import Tuple
 from typing import TYPE_CHECKING
 
 import attr
@@ -44,6 +46,8 @@ class LegacyVersionSieve(Sieve):
 
     CONFIGURATION_DEFAULT = {"package_name": None}
 
+    _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
+
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Include this sieve once, always."""
@@ -54,14 +58,22 @@ class LegacyVersionSieve(Sieve):
         yield from ()
         return None
 
+    def pre_run(self) -> None:
+        """Initialize this pipeline unit before each run."""
+        self._messages_logged.clear()
+        super().pre_run()
+
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Cut-off legacy versions from the resolution process."""
         for package_version in package_versions:
             if package_version.semantic_version.is_legacy_version:
-                _LOGGER.warning(
-                    "Removing package %s as the version identifier is a legacy version string",
-                    package_version.to_tuple(),
-                )
+                package_tuple = package_version.to_tuple()
+                if package_tuple not in self._messages_logged:
+                    self._messages_logged.add(package_tuple)
+                    _LOGGER.warning(
+                        "Removing package %s as the version identifier is a legacy version string",
+                        package_version.to_tuple(),
+                    )
                 continue
 
             yield package_version
