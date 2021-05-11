@@ -65,6 +65,11 @@ class TestFullySpecifiedEnvironment(AdviserUnitTestCase):
         context.project.runtime_environment.should_receive("is_fully_specified").and_return(False)
 
         unit = FullySpecifiedEnvironment()
+        assert not context.stack_info
+
         with pytest.raises(NotAcceptable):
             with unit.assigned_context(context):
                 unit.run()
+
+        assert len(context.stack_info) == 1
+        assert self.verify_justification_schema(context.stack_info)

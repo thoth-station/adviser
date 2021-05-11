@@ -64,7 +64,15 @@ class SolvedSoftwareEnvironmentBoot(Boot):
         msg = (
             f"No observations found for {runtime_environment.operating_system.name!r} in "
             f"version {runtime_environment.operating_system.version!r} using "
-            f"Python {runtime_environment.python_version!r} - see {self._JUSTIFICATION_LINK}"
+            f"Python {runtime_environment.python_version!r}"
+        )
+
+        self.context.stack_info.append(
+            {
+                "type": "ERROR",
+                "message": msg,
+                "link": self._JUSTIFICATION_LINK,
+            }
         )
 
         _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_LINK)
