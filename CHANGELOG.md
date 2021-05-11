@@ -6225,3 +6225,19 @@
 * Revisit architecture overview (#1816)
 ### Non-functional
 * Link YouTube video and pull request implementing GH release notes wrap (#1831)
+
+## Release 0.30.0 (2021-05-11T09:16:52)
+### Features
+* Log recommendation type used when starting adviser (#1859)
+* Log removal of a legacy version just once (#1858)
+* Keep track of iteration in pipeline builder (#1860)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1856)
+* Add support for skip package prescription unit
+* :arrow_up: Automatic update of dependencies by Kebechet (#1852)
+* Let users know where to report bugs or service issues (#1849)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1851)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1847)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1844)
+* :arrow_up: Automatic update of dependencies by Kebechet
+### Improvements
+* Document how to use constraints files
