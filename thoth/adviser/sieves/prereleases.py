@@ -46,7 +46,9 @@ class CutPreReleasesSieve(Sieve):
         if builder_context.project.prereleases_allowed or (
             builder_context.project.pipfile.thoth and builder_context.project.pipfile.thoth.allow_prereleases
         ):
-            _LOGGER.info("Project accepts pre-releases, skipping cutting pre-releases step")
+            if builder_context.iteration == 0:
+                # Log just once in the very first pipeline builder iteration.
+                _LOGGER.info("Project accepts pre-releases, skipping cutting pre-releases step")
             yield from ()
             return None
 
