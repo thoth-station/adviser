@@ -266,12 +266,6 @@ class Resolver:
                 boot.run()
             except NotAcceptable as exc:
                 msg = f"Boot pipeline unit {boot.get_unit_name()!r} failed: {str(exc)}"
-                self.context.stack_info.append(
-                    {
-                        "message": msg,
-                        "type": "ERROR",
-                    }
-                )
                 raise CannotProduceStack(msg, stack_info=self.context.stack_info)
             except Exception as exc:
                 raise BootError(f"Failed to run pipeline boot {boot.get_unit_name()!r}: {str(exc)}") from exc
