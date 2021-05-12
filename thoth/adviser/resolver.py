@@ -751,6 +751,17 @@ class Resolver:
             # dict during iteration.
             direct_dependencies.pop(direct_dependency_name)
 
+        if not direct_dependencies:
+            msg = "Cannot satisfy direct dependencies: all direct dependencies were filtered by sieves"
+            self.context.stack_info.append(
+                {
+                    "type": "ERROR",
+                    "message": msg,
+                    "link": jl("unresolved"),
+                }
+            )
+            raise CannotProduceStack(msg, stack_info=self.context.stack_info)
+
         # Create an initial state which is made out of all the direct dependencies (kept as unresolved) in
         # resolved versions.
         self.beam.wipe()

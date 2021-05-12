@@ -646,6 +646,26 @@ class TestResolver(AdviserTestCase):
         with pytest.raises(CannotProduceStack):
             resolver._prepare_initial_state(with_devel=True)
 
+    def test_prepare_initial_state_cannot_produce_stack_sieved(
+        self,
+        resolver: Resolver,
+        numpy_package_versions: List[PackageVersion],
+    ) -> None:
+        """Test preparing initial state for predictor when all direct dependencies are sieved."""
+        resolver.should_receive("_resolve_direct_dependencies").with_args(with_devel=True).and_return(
+            {"numpy": [numpy_package_versions[0]]}
+        ).once()
+
+        # This is dependent on dict order, Python 3.6+ required.
+        resolver.should_receive("_run_sieves").with_args(object).and_raise(SkipPackage).once()
+
+        resolver._init_context()
+        with pytest.raises(
+            CannotProduceStack,
+            match="Cannot satisfy direct dependencies: all direct dependencies were filtered by sieves",
+        ):
+            resolver._prepare_initial_state(with_devel=True)
+
     def test_prepare_initial_state(
         self,
         resolver: Resolver,
