@@ -18,7 +18,7 @@ projects):
 * ``amun-inspection`` (optional, used on Amun)
 
 The main reason behind splitting the application into multiple namespaces are
-workloads.  Thoth is running different type of one-time workloads based on an
+workloads.  Thoth is running different type of one-time workloads based on a
 trigger - for example a single ``adviser`` instance is created as per user
 request. The workload is then scheduled into a separate namespace (backend, in
 case of adviser) and the given namespace acts as a pool of resources that are
@@ -31,7 +31,7 @@ Thoth is deployed from `thoth-station/thoth-application repo
 using using `kustomize <https://kustomize.io/>`__.
 
 See `Requirements for AICoE-CI & Thoth deployment
-<https://docs.google.com/document/d/14itc_SqPrK_rOai8ETVMhP7MBhdG3K8ql0iW8g1P6YE/>`__
+<https://github.com/AICoE/aicoe-ci>`__
 with more detailed information.
 
 Infra Namespace
@@ -90,8 +90,7 @@ itself for more info. You can also find more info in the :ref:`integration
   periodic job responsible for gathering CVE information about packages
 
 * `package-update-job <https://github.com/thoth-station/package-update-job>`__
-  - a periodic job responsible for checking the availability of packages along
-    with their hashes from Python's package index.
+  - a periodic job responsible for checking the availability of packages along with their hashes from Python's package index.
 
 * `cve-update-job <https://github.com/thoth-station/cve-update-job>`__ - a
   periodic job responsible for gathering CVE information about packages
