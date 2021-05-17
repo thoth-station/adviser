@@ -146,7 +146,7 @@ Development dependencies (dev flag)
 
 In some cases, Thoth is recommending a software stack for application
 deployments. Development dependencies are usually not installed in such cases
-(if so, you should rething how the application is structured). By `eliminating
+(if so, you should re-think how the application is structured). By `eliminating
 development dependencies <https://thoth-station.ninja/j/no_dev.html>`__ the
 dependency graph explored on Thoth's side can be smaller which can narrow down
 the exploration to dependencies that go to the deployment. Naturally, this can
