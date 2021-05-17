@@ -117,8 +117,8 @@ unit instances will be shared.
 
 All pipeline units are grouped based on their type in the
 :class:`PipelineConfig <thoth.adviser.pipeline_config.PipelineConfig>` and
-resolver runs respect they relative ordering when pipeline units are executed.
-Pipeline units specific for a certein packages are prioritized in oposite to
+resolver runs with respect to their relative ordering when pipeline units are executed.
+Pipeline units specific for a certain packages are prioritized in oposite to
 the generic ones - see :ref:`the units section for more info <units>`.
 
 The very first pipeline units triggered are pipeline units of type :class:`Boot
@@ -154,7 +154,7 @@ Decision Process <introduction_rl>`) is added to the resolver beam as a state
 to be considered during resolver run, respecting :ref:`beam width parameter
 <beam_width>`.
 
-The resolver than picks a state  stored in the beam based on
+The resolver then picks a state stored in the beam based on
 :ref:`predictor's decision <predictor>` and resolves not yet resolved
 dependencies in the state. The resolution of a dependency makes a dependency
 resolved and all its dependencies, if any, unresolved. Resolver, again,
@@ -200,7 +200,7 @@ score 1000 software stacks (``limit`` parameter to adviser).
 
 
 As can be seen, the beam limited number of states taken into consideration
-until approx. 1800th round. After this round, the temperature in the
+until approximately 18000th round. After this round, the temperature in the
 :ref:`adaptive simulated annealing <annealing>` started to drop so resolver
 ended up expanding just the top rated state based on :ref:`adaptive simulated
 annealing <annealing>` predictor output (so stack resolution pipeline started
