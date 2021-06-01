@@ -72,7 +72,7 @@ annealing run when ``temperature_coefficient`` is set to ``0.98``.
    :target: ../_static/asa_tc_098.png
    :alt: Resolving software stacks with simulated annealing with randomized data and temperature coefficient set to 0.98.
 
-Even thught in both cases there were used same input data and same seed for
+Even though in both cases there were used same input data and same seed for
 random generator, results differ as steps taken by resolver differ across
 iterations.
 

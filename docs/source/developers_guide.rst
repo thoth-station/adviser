@@ -12,7 +12,7 @@ A prerequisite for this document are the following documents:
 * `Basic usage of Pipenv <https://pipenv.readthedocs.io/en/latest/basics/>`_
 
 * Basics of OpenShift - see for example `Basic Walkthrough
-  <https://docs.openshift.com/online/getting_started/basic_walkthrough.html>`_
+  <https://docs.openshift.com/container-platform/3.6/getting_started/developers_console.html>`_
 
 Preparing Developer's Environment
 =================================
@@ -74,7 +74,7 @@ If you would like to install some additional libraries, just issue:
 
   $ pipenv install <name-of-a-package>   # Add --dev if it is a devel dependency.
 
-The ``Pipfile`` and ``Pipfile.lock`` file get updated.
+The ``Pipfile`` and ``Pipfile.lock`` files get updated.
 
 If you would like to run a CLI provided by a repository, issue the following
 command:
