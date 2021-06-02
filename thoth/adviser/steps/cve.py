@@ -102,12 +102,12 @@ class CvePenalizationStep(Step):
                     for cve_record in cve_records:
                         message = (
                             f"Skipping including package {package_version_tuple!r} as a CVE "
-                            f"{cve_record.get('cve_name') or cve_record.get('cve_id')!r} was found"
+                            f"{cve_record['cve_id']!r} was found"
                         )
                         _LOGGER.warning(
                             "%s: %s",
                             message,
-                            cve_record["advisory"],
+                            cve_record["description"],
                         )
 
                         self.context.stack_info.append(
@@ -118,11 +118,18 @@ class CvePenalizationStep(Step):
 
             penalization = len(cve_records) * self.configuration["cve_penalization"]
 
-            # Note down package causing this CVE.
-            for record in cve_records:
-                record["package_name"] = package_version.name
-                record["link"] = self._JUSTIFICATION_LINK
+            justification = []
+            for cve_record in cve_records:
+                message = f"Package  {package_version_tuple!r} has a CVE {cve_record['cve_id']!r}"
+                justification.append(
+                    {
+                        "package_name": package_version.name,
+                        "link": self._JUSTIFICATION_LINK,
+                        "message": message,
+                        "type": "WARNING",
+                    }
+                )
 
-            return max(penalization, -1.0), cve_records
+            return max(penalization, -1.0), justification
 
         return None
