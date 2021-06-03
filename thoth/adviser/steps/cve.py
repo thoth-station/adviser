@@ -125,6 +125,7 @@ class CvePenalizationStep(Step):
                     {
                         "package_name": package_version.name,
                         "link": self._JUSTIFICATION_LINK,
+                        "advisory": cve_record["description"],
                         "message": message,
                         "type": "WARNING",
                     }
