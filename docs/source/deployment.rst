@@ -154,3 +154,31 @@ have positive impact on the resulting software stack recommended (a better one
 can be found given the smaller state space explored). You can always force
 resolving also development dependencies by providing ``--dev`` flag to `Thamos
 CLI <https://github.com/thoth-station/thamos>`__.
+
+Configuring solver rules
+########################
+
+It is possible to restrict which packages should be analyzed by the system.
+This feature is called "solver rules" and such rules can be configured on
+management-api.
+
+Solver rules create an interface to resolver's data aggregation logic and can
+block analyses of certain packages. An example can be blocking old releases of
+``setuptools`` that will never be used in more recent environments, thus they
+do not need to be solved and subsequently analyzed. An example of a solver rule
+added to management-api:
+
+.. code-block:: json
+
+  {
+    "package_name": "setuptools",
+    "version_specifier": "<20.0.0",
+    "index_url": "https://pypi.org/simple",
+    "description": "Do not solve old releases of setuptools"
+  }
+
+The example above will block all the ``setuptools<20.0.0`` coming from PyPI.
+If ``index_url`` is omitted, the rule is not specific to any package index.
+
+Adviser automatically removes packages that have rules assigned during the
+resolution process in case rules were added after the package was analyzed.
