@@ -43,12 +43,11 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
     ]
 
     _FLASK_CVE = {
-        "advisory": "flask version Before 0.12.3 contains a CWE-20: Improper Input Validation "
+        "description": "flask version Before 0.12.3 contains a CWE-20: Improper Input Validation "
         "vulnerability in flask that can result in Large amount of memory usage "
         "possibly leading to denial of service.",
-        "cve_name": "CVE-2018-1000656",
-        "version_range": "<0.12.3",
-        "cve_id": "pyup.io-36388",
+        "cve_id": "CVE-ID",
+        "aggregated_at": "2021-06-02T08:23:17.11783Z",
     }
 
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
@@ -80,7 +79,14 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
         assert isinstance(result[0], float)
         assert result[0] == 1 * CvePenalizationStep.CONFIGURATION_DEFAULT["cve_penalization"]
         assert isinstance(result[1], list)
-        assert result[1] == [self._FLASK_CVE]
+        assert result[1] == [
+            {
+                "link": "https://thoth-station.ninja/j/cve",
+                "message": "Package  ('flask', '0.12.0', 'https://pypi.org/simple') has a CVE 'CVE-ID'",
+                "package_name": "flask",
+                "type": "WARNING",
+            }
+        ]
         assert self.verify_justification_schema(result[1])
 
     def test_no_cve_record(self) -> None:
