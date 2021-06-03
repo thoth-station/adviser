@@ -6241,3 +6241,31 @@
 * :arrow_up: Automatic update of dependencies by Kebechet
 ### Improvements
 * Document how to use constraints files
+
+## Release 0.31.0 (2021-06-03T13:54:32)
+### Features
+* Keep CVE advisory in the justification output
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Add a sieve implementing filtering based on solver rules
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Document solver rules
+* Adjust for CVEs consumed from PyPA
+* :arrow_up: Automatic update of dependencies by Kebechet
+* :arrow_up: Automatic update of dependencies by Kebechet
+* :arrow_up: Automatic update of dependencies by Kebechet
+* :arrow_up: Automatic update of dependencies by Kebechet (#1871)
+* :hatched_chick: update the prow resource limits (#1869)
+* Update latest.rst
+* Update annealing.rst
+* Update latest.rst
+* Update pipeline.rst
+* Update deployment.rst
+* Update architecture.rst
+* Update developers_guide.rst
+* :arrow_up: Automatic update of dependencies by Kebechet (#1866)
+* Report all unresolved dependencies (#1864)
+### Bug Fixes
+* Handle error when all the direct deps are sieved (#1867)
+### Improvements
+* Add video demonstrating constaints.txt use
+* Make boot pipeline unit responsible for providing stack info (#1863)
