@@ -159,6 +159,7 @@ class Resolver:
     library_usage = attr.ib(type=Dict[str, Any], kw_only=True, converter=_library_usage)
     graph = attr.ib(type=GraphDatabase, kw_only=True)
     predictor = attr.ib(type=Predictor, kw_only=True)
+    labels = attr.ib(type=Dict[str, str], kw_only=True, default=attr.Factory(dict))
     recommendation_type = attr.ib(type=Optional[RecommendationType], kw_only=True, default=None)
     decision_type = attr.ib(type=Optional[DecisionType], kw_only=True, default=None)
     limit = attr.ib(type=int, kw_only=True, default=DEFAULT_LIMIT)
@@ -243,6 +244,7 @@ class Resolver:
         self._context = Context(
             project=self.project,
             graph=self.graph,
+            labels=self.labels,
             library_usage=self.library_usage,
             limit=self.limit,
             count=self.count,
@@ -1394,6 +1396,7 @@ class Resolver:
         beam_width: Optional[int] = None,
         count: int = DEFAULT_COUNT,
         graph: Optional[GraphDatabase] = None,
+        labels: Optional[Dict[str, str]] = None,
         library_usage: Optional[Dict[str, Any]] = None,
         limit: int = DEFAULT_LIMIT,
         limit_latest_versions: Optional[int] = DEFAULT_LIMIT_LATEST_VERSIONS,
@@ -1412,6 +1415,7 @@ class Resolver:
             pipeline = PipelineBuilder.get_adviser_pipeline_config(
                 recommendation_type=recommendation_type,
                 project=project,
+                labels=labels or {},
                 library_usage=library_usage,
                 graph=graph,
                 prescription=prescription,
@@ -1431,6 +1435,7 @@ class Resolver:
             beam_width=beam_width,
             count=count,
             graph=graph,
+            labels=labels or {},
             library_usage=library_usage,
             limit_latest_versions=limit_latest_versions,
             limit=limit,
@@ -1450,6 +1455,7 @@ class Resolver:
         beam_width: Optional[int] = None,
         count: int = DEFAULT_COUNT,
         graph: Optional[GraphDatabase] = None,
+        labels: Optional[Dict[str, str]] = None,
         library_usage: Optional[Dict[str, Any]] = None,
         limit_latest_versions: Optional[int] = DEFAULT_LIMIT_LATEST_VERSIONS,
         project: Project,
@@ -1468,6 +1474,7 @@ class Resolver:
                 decision_type=decision_type,
                 graph=graph,
                 project=project,
+                labels=labels or {},
                 library_usage=library_usage,
                 prescription=prescription,
                 cli_parameters=cli_parameters or {},
@@ -1487,6 +1494,7 @@ class Resolver:
             count=count,
             limit=count,  # always match as limit is always same as count for Dependency Monkey.
             graph=graph,
+            labels=labels or {},
             library_usage=library_usage,
             limit_latest_versions=limit_latest_versions,
             pipeline=pipeline,

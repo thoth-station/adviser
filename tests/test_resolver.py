@@ -1759,6 +1759,7 @@ class TestResolver(AdviserTestCase):
             recommendation_type=kwargs["recommendation_type"],
             project=kwargs["project"],
             library_usage=kwargs["library_usage"],
+            labels={},
             graph=graph_mock,
             prescription=None,
             cli_parameters={},
@@ -1803,6 +1804,7 @@ class TestResolver(AdviserTestCase):
             project=kwargs["project"],
             library_usage=kwargs["library_usage"],
             graph=graph_mock,
+            labels={},
             prescription=None,
             cli_parameters={},
         ).and_return(pipeline).once()

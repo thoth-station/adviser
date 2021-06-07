@@ -99,11 +99,23 @@ def _library_usage(v: object) -> None:
         _NONEMPTY_LIST_OF_NONEMPTY_STRINGS(v)
 
 
+def _labels(v: object) -> None:
+    if not isinstance(v, dict):
+        raise Invalid(f"Expected a dictionary describing labels, got {v}")
+
+    for val in v.values():
+        if not isinstance(val, str):
+            raise Invalid(f"Expected a non-empty string for label value, got {type(val)} instead: {val!r}")
+
+        _NONEMPTY_STRING(val)
+
+
 PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
     {
         Optional("times", default=1): All(int, Range(min=0, max=1)),
         Optional("adviser_pipeline"): bool,
         Optional("dependency_monkey_pipeline"): bool,
+        Optional("labels"): _labels,
         Optional("dependencies"): Schema(
             {
                 Optional("boots"): _NONEMPTY_LIST_OF_NONEMPTY_STRINGS,

@@ -454,6 +454,16 @@ def provenance(
     help="Constraints to be used during the resolution.",
 )
 @click.option(
+    "--labels",
+    "-l",
+    envvar="THOTH_ADVISER_LABELS",
+    type=str,
+    metavar='{"key1": "val1", "key2": "val2"}',
+    default=None,
+    show_default=True,
+    help="Labels used used to label the request.",
+)
+@click.option(
     "--user-stack-scoring/--no-user-stack-scoring",
     envvar="THOTH_ADVISER_USER_STACK_SCORING",
     is_flag=True,
@@ -495,6 +505,7 @@ def advise(
     constraints: Optional[str] = None,
     user_stack_scoring: bool = True,
     dev: bool = False,
+    labels: Optional[str] = None,
 ):
     """Advise package and package versions in the given stack or on solely package only."""
     parameters = locals()
@@ -516,6 +527,21 @@ def advise(
 
         # Show library usage in the final report.
         parameters["library_usage"] = library_usage
+
+    labels_dict = {}
+    if labels:
+        if os.path.isfile(labels):
+            try:
+                with open(labels, "r") as f:
+                    labels_dict = json.load(labels)
+            except Exception:
+                _LOGGER.error("Failed to load labels file %r", labels)
+                raise
+        else:
+            labels_dict = json.loads(labels)
+
+        # Show labels in the final report.
+        parameters["labels"] = labels_dict
 
     runtime_environment = RuntimeEnvironment.load(runtime_environment)
     recommendation_type = RecommendationType.by_name(recommendation_type)
@@ -560,6 +586,7 @@ def advise(
     resolver = Resolver.get_adviser_instance(
         predictor=predictor_instance,
         project=project,
+        labels=labels_dict,
         library_usage=library_usage,
         recommendation_type=recommendation_type,
         limit=limit,

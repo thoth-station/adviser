@@ -61,6 +61,7 @@ class PipelineBuilderContext:
     graph = attr.ib(type=GraphDatabase, kw_only=True, default=None)
     project = attr.ib(type=Project, kw_only=True, default=None)
     library_usage = attr.ib(type=Optional[Dict[str, Any]], kw_only=True, default=None)
+    labels = attr.ib(type=Dict[str, str], kw_only=True, default=attr.Factory(dict))
     decision_type = attr.ib(type=Optional[DecisionType], kw_only=True, default=None)
     recommendation_type = attr.ib(type=Optional[RecommendationType], kw_only=True, default=None)
     cli_parameters = attr.ib(type=Dict[str, Any], kw_only=True, default=attr.Factory(dict))
@@ -498,6 +499,7 @@ class PipelineBuilder:
         recommendation_type: RecommendationType,
         graph: GraphDatabase,
         project: Project,
+        labels: Dict[str, str],
         library_usage: Optional[Dict[str, Any]],
         prescription: Optional["Prescription"],
         cli_parameters: Dict[str, Any],
@@ -507,6 +509,7 @@ class PipelineBuilder:
             PipelineBuilderContext(
                 graph=graph,
                 project=project,
+                labels=labels,
                 library_usage=library_usage,
                 recommendation_type=recommendation_type,
                 prescription=prescription,
@@ -521,6 +524,7 @@ class PipelineBuilder:
         decision_type: DecisionType,
         graph: GraphDatabase,
         project: Project,
+        labels: Dict[str, str],
         library_usage: Optional[Dict[str, Any]],
         prescription: Optional["Prescription"],
         cli_parameters: Dict[str, Any],
@@ -530,6 +534,7 @@ class PipelineBuilder:
             PipelineBuilderContext(
                 graph=graph,
                 project=project,
+                labels=labels,
                 library_usage=library_usage,
                 decision_type=decision_type,
                 prescription=prescription,

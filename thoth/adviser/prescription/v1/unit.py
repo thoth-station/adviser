@@ -187,6 +187,21 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 )
                 return False
 
+        labels_expected = should_include_dict.get("labels", {})
+        if labels_expected:
+            for label_key, value in labels_expected.items():
+                value_context = builder_context.labels.get(label_key)
+                if value == value_context:
+                    break
+            else:
+                _LOGGER.debug(
+                    "%s: Not registering as labels requested %s do not match with labels supplied %s",
+                    unit_name,
+                    labels_expected,
+                    builder_context.labels,
+                )
+                return False
+
         # Library usage.
         library_usage_expected = should_include_dict.get("library_usage", {})
         if library_usage_expected:
