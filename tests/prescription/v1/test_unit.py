@@ -496,3 +496,40 @@ class TestUnitPrescription(AdviserTestCase):
         assert builder_context.is_adviser_pipeline()
         builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
         assert UnitPrescription._should_include_base(builder_context) == include
+
+    @pytest.mark.parametrize(
+        "labels_expected,labels_supplied,include",
+        [
+            ({}, {}, True),
+            ({"foo": "bar"}, {}, False),
+            ({}, {"foo": "bar"}, True),
+            ({"foo": "bar"}, {"foo": "bar"}, True),
+            ({"foo": "bar", "qux": "baz"}, {"foo": "bar"}, False),
+            ({"foo": "bar"}, {"foo": "bar", "qux": "baz"}, True),
+        ],
+    )
+    def test_should_include_labels(
+        self,
+        builder_context: PipelineBuilderContext,
+        labels_expected: Optional[Dict[str, str]],
+        labels_supplied: Dict[str, str],
+        include: bool,
+    ) -> None:
+        """Test including pipeline units based on labels."""
+        should_include = {"adviser_pipeline": True}
+        if labels_expected is not None:
+            should_include["labels"] = labels_expected
+
+        PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include)
+
+        UnitPrescription._PRESCRIPTION = {
+            "name": "LabelsUnit",
+            "should_include": should_include,
+        }
+
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.decision_type = None
+        builder_context.labels = labels_supplied
+        assert builder_context.is_adviser_pipeline()
+        builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
+        assert UnitPrescription._should_include_base(builder_context) == include

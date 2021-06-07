@@ -64,6 +64,7 @@ def context(project: Project) -> Context:
         project=project,
         graph=GraphDatabase(),
         library_usage=None,
+        labels={},
         limit=100,
         count=3,
         beam=Beam(),

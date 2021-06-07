@@ -55,6 +55,7 @@ class Context:
 
     project = attr.ib(type=Project, kw_only=True)
     graph = attr.ib(type=GraphDatabase, kw_only=True)
+    labels = attr.ib(type=Dict[str, str], kw_only=True)
     library_usage = attr.ib(type=Optional[Dict[str, Any]], kw_only=True)
     limit = attr.ib(type=int, kw_only=True)
     count = attr.ib(type=int, kw_only=True)
