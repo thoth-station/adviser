@@ -6269,3 +6269,11 @@
 ### Improvements
 * Add video demonstrating constaints.txt use
 * Make boot pipeline unit responsible for providing stack info (#1863)
+
+## Release 0.32.0 (2021-06-07T11:08:03)
+### Features
+* Include pipeline units if any label matches the environment
+* Introduce labels to the resolution engine
+* :arrow_up: Automatic update of dependencies by Kebechet
+### Improvements
+* Document use of labels in prescriptions
