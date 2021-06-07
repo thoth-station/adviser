@@ -504,8 +504,9 @@ class TestUnitPrescription(AdviserTestCase):
             ({"foo": "bar"}, {}, False),
             ({}, {"foo": "bar"}, True),
             ({"foo": "bar"}, {"foo": "bar"}, True),
-            ({"foo": "bar", "qux": "baz"}, {"foo": "bar"}, False),
+            ({"foo": "bar", "qux": "baz"}, {"foo": "bar"}, True),
             ({"foo": "bar"}, {"foo": "bar", "qux": "baz"}, True),
+            ({"foo": "bar"}, {"qux": "baz", "baz": "foo"}, False),
         ],
     )
     def test_should_include_labels(

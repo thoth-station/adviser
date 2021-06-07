@@ -325,34 +325,21 @@ Labels introduce a mechanism to register pipeline units only for requests that
 state the given label. An example can be a CI system that is asking for an
 advise and labels the request with ``requester=ci_foo``. In such a case, the
 resolution engine includes pipeline units that are specific to the CI system
-(besides the ones that are added by default).
-
-By providing ``labels``, the given pipeline unit is added only if the request
-states the given label or set of labels. ``labels``,, the given pipeline unit
-is added only if the request states the given label or set of labels.
+(besides the ones that are added by default or matching other labels stated
+in the request).
 
 .. note::
 
   *Example:*
 
-  Register the given pipeline unit if both labels were provided in the request:
+  Register the given pipeline unit if ``team=thoth`` or ``requester=ci_foo``
+  were provided:
 
   .. code-block:: yaml
 
     labels:
       team: thoth
-      requester=ci_foo
-
-  Register the given pipeline unit if ``team=thoth`` is provided in the request
-  labels (besides possibly other labels).
-
-  .. code-block:: yaml
-
-    labels:
-      team: thoth
-
-Specifying labels in pipeline units state the request **has to** provide all
-the labels in order to register the given pipeline unit (besides possibly others).
+      requester: ci_foo
 
 Runtime environments - ``should_include.runtime_environments``
 ==============================================================
