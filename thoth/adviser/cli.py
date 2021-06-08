@@ -533,7 +533,7 @@ def advise(
         if os.path.isfile(labels):
             try:
                 with open(labels, "r") as f:
-                    labels_dict = json.load(labels)
+                    labels_dict = json.load(f)
             except Exception:
                 _LOGGER.error("Failed to load labels file %r", labels)
                 raise
