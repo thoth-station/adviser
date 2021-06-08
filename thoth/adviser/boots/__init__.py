@@ -19,6 +19,7 @@
 
 from .fully_specified_environment import FullySpecifiedEnvironment
 from .gpu import GPUBoot
+from .labels import LabelsBoot
 from .pipfile_hash import PipfileHashBoot
 from .platform import PlatformBoot
 from .prescription_release import PrescriptionReleaseBoot
@@ -37,6 +38,7 @@ from .ubi import UbiBoot
 # can be mentioned here.
 __all__ = [
     # "MemTraceBoot",
+    "LabelsBoot",
     "PipfileHashBoot",  # Should be placed before any changes to the input.
     "GPUBoot",  # Should be placed before any GPU specific pipeline unit.
     "ThothS2IBoot",
