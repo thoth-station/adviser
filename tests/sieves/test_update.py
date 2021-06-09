@@ -42,7 +42,7 @@ class TestPackageUpdateSieve(AdviserUnitTestCase):
     }
 
     @pytest.mark.skip(
-        reason="Skip default configuration as default is not considered valid and needs futher adjustments"
+        reason="Skip default configuration as default is not considered valid and needs further adjustments"
     )
     def test_default_configuration(self) -> None:
         """Skip testing default configuration."""
