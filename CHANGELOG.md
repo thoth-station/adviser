@@ -6277,3 +6277,10 @@
 * :arrow_up: Automatic update of dependencies by Kebechet
 ### Improvements
 * Document use of labels in prescriptions
+
+## Release 0.33.0 (2021-06-09T11:20:36)
+### Features
+* Fix wrong read variable
+* Notify users if they use runtime environment not known to deployment
+* Notify users about labels used during the resolution process
+* :arrow_up: Automatic update of dependencies by Kebechet
