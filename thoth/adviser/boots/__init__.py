@@ -26,6 +26,7 @@ from .prescription_release import PrescriptionReleaseBoot
 from .python_version import PythonVersionBoot
 from .rhel_version import RHELVersionBoot
 from .solved_software_environment import SolvedSoftwareEnvironmentBoot
+from .solvers_configured import SolversConfiguredBoot
 from .thoth_s2i import ThothS2IBoot
 from .thoth_s2i_info import ThothS2IInfoBoot
 from .ubi import UbiBoot
@@ -46,6 +47,7 @@ __all__ = [
     "UbiBoot",
     "PythonVersionBoot",
     "SolvedSoftwareEnvironmentBoot",
+    "SolversConfiguredBoot",  # Should be placed after SolvedSoftwareEnvironmentBoot.
     "RHELVersionBoot",
     "PlatformBoot",
     "PrescriptionReleaseBoot",
