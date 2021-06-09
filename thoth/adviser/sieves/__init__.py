@@ -17,27 +17,29 @@
 
 """Implementation of sieves used in adviser pipeline."""
 
-from .filter_index import FilterIndexSieve
 from .constraints import ConstraintsSieve
+from .experimental_filter_conf_index import FilterConfiguredIndexSieve
+from .experimental_package_index import PackageIndexConfigurationSieve
+from .experimental_prereleases import SelectiveCutPreReleasesSieve
+from .filter_index import FilterIndexSieve
 from .index_enabled import PackageIndexSieve
 from .legacy_version import LegacyVersionSieve
 from .locked import CutLockedSieve
 from .prereleases import CutPreReleasesSieve
-from .experimental_filter_conf_index import FilterConfiguredIndexSieve
-from .experimental_package_index import PackageIndexConfigurationSieve
-from .experimental_prereleases import SelectiveCutPreReleasesSieve
-from .solved import SolvedSieve
 from .rules import SolverRulesSieve
+from .solved import SolvedSieve
 from .tensorflow import TensorFlow240AVX2IllegalInstructionSieve
 from .tensorflow import TensorFlowAPISieve
 from .tensorflow import TensorFlowCUDASieve
 from .thoth_s2i_abi_compat import ThothS2IAbiCompatibilitySieve
+from .update import PackageUpdateSieve
 from .version_constraint import VersionConstraintSieve
 
 # Relative ordering of units is relevant, as the order specifies order
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
 __all__ = [
+    "PackageUpdateSieve",
     "LegacyVersionSieve",
     "CutPreReleasesSieve",
     "ConstraintsSieve",
