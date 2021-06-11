@@ -107,7 +107,7 @@ class CvePenalizationStep(Step):
                         _LOGGER.warning(
                             "%s: %s",
                             message,
-                            cve_record["description"],
+                            cve_record["details"],
                         )
 
                         self.context.stack_info.append(
@@ -125,7 +125,7 @@ class CvePenalizationStep(Step):
                     {
                         "package_name": package_version.name,
                         "link": self._JUSTIFICATION_LINK,
-                        "advisory": cve_record["description"],
+                        "advisory": cve_record["details"],
                         "message": message,
                         "type": "WARNING",
                     }

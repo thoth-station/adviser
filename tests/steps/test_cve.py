@@ -43,7 +43,7 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
     ]
 
     _FLASK_CVE = {
-        "description": "flask version Before 0.12.3 contains a CWE-20: Improper Input Validation "
+        "details": "flask version Before 0.12.3 contains a CWE-20: Improper Input Validation "
         "vulnerability in flask that can result in Large amount of memory usage "
         "possibly leading to denial of service.",
         "cve_id": "CVE-ID",
