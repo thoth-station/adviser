@@ -6284,3 +6284,13 @@
 * Notify users if they use runtime environment not known to deployment
 * Notify users about labels used during the resolution process
 * :arrow_up: Automatic update of dependencies by Kebechet
+
+## Release 0.33.1 (2021-06-11T07:10:33)
+### Features
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Fix spelling mistake in tests.
+* :arrow_up: Automatic update of dependencies by Kebechet
+### Bug Fixes
+* Fix wrong CVE key obtained
+### Improvements
+* Add update sieve responsible for package updates
