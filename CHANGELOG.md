@@ -6294,3 +6294,9 @@
 * Fix wrong CVE key obtained
 ### Improvements
 * Add update sieve responsible for package updates
+
+## Release 0.33.2 (2021-06-14T11:35:41)
+### Features
+* :arrow_up: updated labels of issue templates
+### Improvements
+* Turn warning to debug message
