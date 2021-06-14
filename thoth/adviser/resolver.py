@@ -786,7 +786,7 @@ class Resolver:
             for pseudonym_package_tuple in unit.run(package_version):
                 # Pseudonyms introduced do not have dependents (we work on direct dependencies - initial state).
                 if pseudonym_package_tuple[0] in state.resolved_dependencies:
-                    _LOGGER.warning(
+                    _LOGGER.debug(
                         "Pseudonym %r already present in a resolved form, skipping pseudonym creation",
                         pseudonym_package_tuple,
                     )
