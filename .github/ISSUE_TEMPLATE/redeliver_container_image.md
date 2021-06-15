@@ -3,7 +3,7 @@ name: Deliver Container Image
 about: build a git tag and push it as a container image to quay
 title: Deliver Container Image
 assignees: sesheta
-labels: bot
+labels: bot, priority/critical-urgent
 ---
 
 Hey, AICoE-CI!
