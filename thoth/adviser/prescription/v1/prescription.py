@@ -23,6 +23,7 @@ import yaml
 from itertools import chain
 
 from collections import OrderedDict
+from collections import deque
 from typing import Any
 from typing import List
 from typing import Tuple
@@ -37,7 +38,6 @@ import attr
 from ...exceptions import InternalError
 from ...exceptions import PrescriptionDuplicateUnitNameError
 from ...exceptions import PrescriptionSchemaError
-from .schema import PRESCRIPTION_SCHEMA
 from .boot import BootPrescription
 from .pseudonym import PseudonymPrescription
 from .sieve import SievePrescription
@@ -46,6 +46,7 @@ from .stride import StridePrescription
 from .wrap import WrapPrescription
 from .github_release_notes import GitHubReleaseNotesWrapPrescription
 from .skip_package import SkipPackageSievePrescription
+from .schema import PRESCRIPTION_SCHEMA
 
 if TYPE_CHECKING:
     from thoth.adviser.unit_types import UnitType  # noqa: F401
@@ -64,6 +65,9 @@ _LOGGER = logging.getLogger(__name__)
 class Prescription:
     """Dynamically create pipeline units based on inscription."""
 
+    _PRESCRIPTION_METADATA_FILE = "_prescription_metadata.yaml"
+    _PRESCRIPTION_DEFAULT_NAME = "UNKNOWN"
+    _PRESCRIPTION_DEFAULT_RELEASE = "UNKNOWN"
     _VALIDATE_PRESCRIPTION_SCHEMA = bool(int(os.getenv("THOTH_ADVISER_VALIDATE_PRESCRIPTION_SCHEMA", 1)))
 
     prescriptions = attr.ib(type=List[Tuple[str, str]], kw_only=True, default=attr.Factory(list))
@@ -104,7 +108,7 @@ class Prescription:
         # Verify semantics of prescription.
         any_error = False
 
-        units = prescription["spec"]["units"]
+        units = prescription["units"]
         for unit in chain(
             units.get("boots", []),
             units.get("pseudonyms", []),
@@ -170,7 +174,12 @@ class Prescription:
 
     @classmethod
     def from_dict(
-        cls, prescription: Dict[str, Any], *, prescription_instance: Optional["Prescription"] = None
+        cls,
+        prescription: Dict[str, Any],
+        *,
+        prescription_instance: Optional["Prescription"] = None,
+        prescription_name: str,
+        prescription_release: str,
     ) -> "Prescription":
         """Instantiate prescription from a dictionary representation.
 
@@ -179,12 +188,8 @@ class Prescription:
         if cls._VALIDATE_PRESCRIPTION_SCHEMA:
             cls.validate(prescription)
 
-        prescription_name = prescription["spec"]["name"]
-        prescription_release = prescription["spec"]["release"]
-        _LOGGER.info("Using v1 prescription %r release %r", prescription_name, prescription_release)
-
         boots_dict = prescription_instance.boots_dict if prescription_instance is not None else OrderedDict()
-        for boot_spec in prescription["spec"]["units"].get("boots") or []:
+        for boot_spec in prescription["units"].get("boots") or []:
             name = f"{prescription_name}.{boot_spec['name']}"
             boot_spec["name"] = name
             if name in boots_dict:
@@ -192,7 +197,7 @@ class Prescription:
             boots_dict[boot_spec["name"]] = boot_spec
 
         pseudonyms_dict = prescription_instance.pseudonyms_dict if prescription_instance else OrderedDict()
-        for pseudonym_spec in prescription["spec"]["units"].get("pseudonyms") or []:
+        for pseudonym_spec in prescription["units"].get("pseudonyms") or []:
             name = f"{prescription_name}.{pseudonym_spec['name']}"
             pseudonym_spec["name"] = name
             if name in pseudonyms_dict:
@@ -200,7 +205,7 @@ class Prescription:
             pseudonyms_dict[pseudonym_spec["name"]] = pseudonym_spec
 
         sieves_dict = prescription_instance.sieves_dict if prescription_instance else OrderedDict()
-        for sieve_spec in prescription["spec"]["units"].get("sieves") or []:
+        for sieve_spec in prescription["units"].get("sieves") or []:
             name = f"{prescription_name}.{sieve_spec['name']}"
             sieve_spec["name"] = name
             if name in sieves_dict:
@@ -208,7 +213,7 @@ class Prescription:
             sieves_dict[sieve_spec["name"]] = sieve_spec
 
         steps_dict = prescription_instance.steps_dict if prescription_instance else OrderedDict()
-        for step_spec in prescription["spec"]["units"].get("steps") or []:
+        for step_spec in prescription["units"].get("steps") or []:
             name = f"{prescription_name}.{step_spec['name']}"
             step_spec["name"] = name
             if name in steps_dict:
@@ -216,7 +221,7 @@ class Prescription:
             steps_dict[step_spec["name"]] = step_spec
 
         strides_dict = prescription_instance.strides_dict if prescription_instance else OrderedDict()
-        for stride_spec in prescription["spec"]["units"].get("strides") or []:
+        for stride_spec in prescription["units"].get("strides") or []:
             name = f"{prescription_name}.{stride_spec['name']}"
             stride_spec["name"] = name
             if name in strides_dict:
@@ -224,7 +229,7 @@ class Prescription:
             strides_dict[stride_spec["name"]] = stride_spec
 
         wraps_dict = prescription_instance.wraps_dict if prescription_instance else OrderedDict()
-        for wrap_spec in prescription["spec"]["units"].get("wraps") or []:
+        for wrap_spec in prescription["units"].get("wraps") or []:
             name = f"{prescription_name}.{wrap_spec['name']}"
             wrap_spec["name"] = name
             if name in wraps_dict:
@@ -233,7 +238,9 @@ class Prescription:
 
         if prescription_instance:
             # Adjust release info at the end once successful.
-            prescription_instance.prescriptions.append((prescription_name, prescription_release))
+            prescription_meta = (prescription_name, prescription_release)
+            if prescription_meta not in prescription_instance.prescriptions:
+                prescription_instance.prescriptions.append(prescription_meta)
             return prescription_instance
 
         return cls(
@@ -246,24 +253,80 @@ class Prescription:
             prescriptions=[(prescription_name, prescription_release)],
         )
 
+    def is_empty(self) -> bool:
+        """Check if no prescription units are loaded."""
+        return (
+            not self.boots_dict
+            and not self.pseudonyms_dict
+            and not self.sieves_dict
+            and not self.steps_dict
+            and not self.strides_dict
+            and not self.wraps_dict
+        )
+
     @classmethod
     def load(cls, *prescriptions: str) -> "Prescription":
         """Load prescription from files or from their YAML representation."""
-        instance = None
+        queue = deque([(p, cls._PRESCRIPTION_DEFAULT_NAME, cls._PRESCRIPTION_DEFAULT_RELEASE) for p in prescriptions])
+        prescription_instance = Prescription()
 
-        for prescription in prescriptions:
+        while queue:
+            prescription, prescription_name, prescription_release = queue.popleft()
+
             if os.path.isfile(prescription):
-                _LOGGER.info("Loading prescription %r", prescription)
+                if not prescription.endswith((".yaml", ".yml")):
+                    _LOGGER.debug("Skipping file %r: not a YAML file", prescription)
+                    continue
+
+                _LOGGER.debug("Loading prescriptions from %r", prescription)
                 with open(prescription, "r") as config_file:
-                    instance = cls.from_dict(yaml.safe_load(config_file), prescription_instance=instance)
+                    prescription_instance = cls.from_dict(
+                        yaml.safe_load(config_file),
+                        prescription_instance=prescription_instance,
+                        prescription_name=prescription_name,
+                        prescription_release=prescription_release,
+                    )
+            elif os.path.isdir(prescription):
+                prescription_metadata_file_path = os.path.join(prescription, cls._PRESCRIPTION_METADATA_FILE)
+                if os.path.isfile(prescription_metadata_file_path):
+                    with open(prescription_metadata_file_path) as f:
+                        _LOGGER.debug("Loading prescription metadata file %r", prescription_metadata_file_path)
+                        metadata = yaml.safe_load(f)
+
+                        prescription_name = metadata.get("prescription", {}).get("name", cls._PRESCRIPTION_DEFAULT_NAME)
+                        if prescription_name == cls._PRESCRIPTION_DEFAULT_NAME:
+                            _LOGGER.warning("No prescription name parsed from %r", prescription_metadata_file_path)
+
+                        prescription_release = metadata.get("prescription", {}).get(
+                            "release", cls._PRESCRIPTION_DEFAULT_RELEASE
+                        )
+                        if prescription_release == cls._PRESCRIPTION_DEFAULT_RELEASE:
+                            _LOGGER.warning("No prescription release parsed from %r", prescription_metadata_file_path)
+
+                        _LOGGER.info("Using prescriptions %r release %r", prescription_name, prescription_release)
+
+                for file_ in os.listdir(prescription):
+                    if file_ == cls._PRESCRIPTION_METADATA_FILE:
+                        continue
+
+                    if file_.startswith("."):
+                        _LOGGER.debug("Skipping hidden file or directory %r", file_)
+                        continue
+
+                    queue.append((os.path.join(prescription, file_), prescription_name, prescription_release))
             else:
                 # Passed using string.
-                instance = cls.from_dict(yaml.safe_load(prescription), prescription_instance=instance)
+                prescription_instance = cls.from_dict(
+                    yaml.safe_load(prescription),
+                    prescription_instance=prescription_instance,
+                    prescription_name=prescription_name,
+                    prescription_release=prescription_release,
+                )
 
-        if instance is None:
+        if prescription_instance.is_empty():
             raise InternalError("No prescription loaded")
 
-        return instance
+        return prescription_instance
 
     @staticmethod
     def _iter_units(unit_class: Type["UnitType"], units: Dict[str, Any]) -> Generator[Type["UnitType"], None, None]:

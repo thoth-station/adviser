@@ -1,0 +1,77 @@
+units:
+  boots:
+    - name: BootUnit
+      type: boot
+      should_include:
+        adviser_pipeline: true
+      run:
+        log:
+          message: "Hello, Thoth!"
+          type: "WARNING"
+  pseudonyms:
+    - name: PseudonymUnit
+      type: pseudonym
+      should_include:
+        adviser_pipeline: true
+      match:
+        package_version:
+          name: flask
+          version: '>1.0,<=1.1.0'
+          index_url: 'https://pypi.org/simple'
+      run:
+        yield:
+          package_version:
+            name: flask
+            locked_version: '==1.2.0'
+            index_url: 'https://pypi.org/simple'
+  sieves:
+    - name: SieveUnit
+      type: sieve
+      should_include:
+        adviser_pipeline: true
+      match:
+        package_version:
+          name: flask
+          version: '>1.0,<=1.1.0'
+          index_url: 'https://pypi.org/simple'
+  steps:
+    - name: StepUnit
+      type: step
+      should_include:
+        adviser_pipeline: true
+      match:
+        package_version:
+          name: flask
+          version: '>1.0<=1.1.0'
+          index_url: 'https://pypi.org/simple'
+      run:
+        score: 0.42
+  strides:
+    - name: StrideUnit
+      type: stride
+      should_include:
+        adviser_pipeline: true
+      match:
+        state:
+          resolved_dependencies:
+            - name: werkzeug
+              version: "==1.0.0"
+              index_url: 'https://pypi.org/simple'
+      run:
+        eager_stop_pipeline: "Stopping the pipeline"
+  wraps:
+    - name: WrapUnit
+      type: wrap
+      should_include:
+        adviser_pipeline: true
+      match:
+        state:
+          resolved_dependencies:
+            - name: werkzeug
+              version: "==1.0.0"
+              index_url: 'https://pypi.org/simple'
+      run:
+        justification:
+          - message: "Some justification printed"
+            type: "WARNING"
+            link: some_link

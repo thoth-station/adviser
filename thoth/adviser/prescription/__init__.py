@@ -17,11 +17,9 @@
 
 """Prescription module implementation."""
 
-from .v1 import PRESCRIPTION_SCHEMA
 from .v1.prescription import Prescription
 
 
 __all__ = [
-    "PRESCRIPTION_SCHEMA",
     "Prescription",
 ]

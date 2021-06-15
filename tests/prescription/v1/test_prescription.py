@@ -31,7 +31,7 @@ class TestPrescription(AdviserTestCase):
 
     def test_load(self) -> None:
         """Test loading prescription."""
-        prescription_path = str(self.data_dir / "prescriptions" / "basic.yaml")
+        prescription_path = str(self.data_dir / "prescriptions")
         instance = Prescription.load(prescription_path)
         assert instance is not None
         assert list(instance.boots_dict) == ["thoth.BootUnit"]
@@ -51,7 +51,7 @@ class TestPrescription(AdviserTestCase):
     def test_from_dict_validate_error(self) -> None:
         """Test raising an error if schema validation fails."""
         with pytest.raises(PrescriptionSchemaError):
-            Prescription.from_dict({"foo": "bar"})
+            Prescription.from_dict({"foo": "bar"}, prescription_name="thoth", prescription_release="2021.06.15")
 
     def test_from_dict_duplicate_name_error(self) -> None:
         """Test raising duplicate error if unit names clash."""
@@ -63,16 +63,10 @@ class TestPrescription(AdviserTestCase):
         }
 
         prescription = {
-            "apiVersion": "thoth-station.ninja/v1",
-            "kind": "prescription",
-            "spec": {
-                "name": "thoth",
-                "release": "2021.03.30",
-                "units": {
-                    "boots": [unit, dict(unit)],
-                },
+            "units": {
+                "boots": [unit, dict(unit)],
             },
         }
 
         with pytest.raises(PrescriptionDuplicateUnitNameError):
-            Prescription.from_dict(prescription)
+            Prescription.from_dict(prescription, prescription_name="thoth", prescription_release="2021.06.15")

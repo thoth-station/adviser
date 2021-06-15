@@ -34,7 +34,7 @@ class TestPrescriptionReleaseBoot(AdviserUnitTestCase):
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
         builder_context.recommendation_type = RecommendationType.LATEST
-        prescription_path = str(self.data_dir / "prescriptions" / "basic.yaml")
+        prescription_path = str(self.data_dir / "prescriptions")
         builder_context.prescription = Prescription.load(prescription_path)
         self.verify_multiple_should_include(builder_context)
 
@@ -45,7 +45,7 @@ class TestPrescriptionReleaseBoot(AdviserUnitTestCase):
 
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test including this pipeline unit."""
-        prescription_path = str(self.data_dir / "prescriptions" / "basic.yaml")
+        prescription_path = str(self.data_dir / "prescriptions")
         builder_context.prescription = Prescription.load(prescription_path)
         assert list(self.UNIT_TESTED.should_include(builder_context)) == [{}]
 
@@ -53,7 +53,7 @@ class TestPrescriptionReleaseBoot(AdviserUnitTestCase):
         """Test remapping UBI to RHEL."""
         assert not context.stack_info
 
-        prescription_path = str(self.data_dir / "prescriptions" / "basic.yaml")
+        prescription_path = str(self.data_dir / "prescriptions")
         context.prescription = Prescription.load(prescription_path)
 
         unit = self.UNIT_TESTED()
@@ -64,5 +64,5 @@ class TestPrescriptionReleaseBoot(AdviserUnitTestCase):
         assert context.stack_info, "No stack info provided"
         assert len(context.stack_info) == 1
         assert context.stack_info[0]["type"] == "INFO"
-        assert context.stack_info[0]["message"] == "Using prescription 'thoth' release '2020.03.18'"
+        assert context.stack_info[0]["message"] == "Using prescription 'thoth' release '2021.06.15.dev'"
         assert self.verify_justification_schema(context.stack_info) is True
