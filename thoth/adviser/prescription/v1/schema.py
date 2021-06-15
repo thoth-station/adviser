@@ -449,7 +449,7 @@ PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_SCHEMA = Schema(
 # Prescription.
 #
 
-PRESCRIPTION_SPEC_UNITS_SCHEMA = Schema(
+PRESCRIPTION_UNITS_SCHEMA = Schema(
     {
         Optional("boots"): [PRESCRIPTION_BOOT_SCHEMA],
         Optional("sieves"): [Any(PRESCRIPTION_SIEVE_SCHEMA, PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA)],
@@ -460,18 +460,8 @@ PRESCRIPTION_SPEC_UNITS_SCHEMA = Schema(
     }
 )
 
-PRESCRIPTION_SPEC_SCHEMA = Schema(
-    {
-        Required("release"): _NONEMPTY_STRING,
-        Required("name"): _NONEMPTY_STRING,
-        Required("units"): PRESCRIPTION_SPEC_UNITS_SCHEMA,
-    }
-)
-
 PRESCRIPTION_SCHEMA = Schema(
     {
-        Required("apiVersion"): "thoth-station.ninja/v1",
-        Required("kind"): "prescription",
-        Required("spec"): PRESCRIPTION_SPEC_SCHEMA,
+        Required("units"): PRESCRIPTION_UNITS_SCHEMA,
     }
 )
