@@ -6300,3 +6300,13 @@
 * :arrow_up: updated labels of issue templates
 ### Improvements
 * Turn warning to debug message
+
+## Release 0.34.0 (2021-06-16T15:04:54)
+### Features
+* add priority/critical-urgent label to all bot related issue templates
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Adjust copyright notice in headers
+* Add YouTube video for solver rules
+* :arrow_up: updated labels of issue templates
+### Improvements
+* Load prescriptions from a directory structure
