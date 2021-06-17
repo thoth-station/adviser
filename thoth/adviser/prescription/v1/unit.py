@@ -390,6 +390,120 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 )
                 return False
 
+        rpm_packages = runtime_environment_dict.get("rpm_packages")
+        if rpm_packages:
+            if not runtime_used.base_image:
+                _LOGGER.error(
+                    "%s: Check on RPM packages present but no base image provided - please report this error "
+                    "to administrator",
+                    unit_name,
+                )
+                return False
+
+            base_image = cls.get_base_image(runtime_used.base_image, raise_on_error=True)
+            if not base_image:
+                _LOGGER.error(
+                    "%s: Failed to parse base image %r - please report this error to administrator",
+                    unit_name,
+                    runtime_used.base_image,
+                )
+                return False
+
+            analysis_document_id = builder_context.graph.get_last_analysis_document_id(
+                base_image[0],
+                base_image[1],
+                is_external=False,
+            )
+
+            if not analysis_document_id:
+                _LOGGER.debug(
+                    "%s: No analysis for base container image %r found, skipping including unit",
+                    unit_name,
+                    runtime_used.base_image,
+                )
+                return False
+
+            rpm_packages_present = builder_context.graph.get_rpm_package_version_all(analysis_document_id)
+            if not rpm_packages_present:
+                _LOGGER.debug("%s: No RPM packages found for %r", unit_name, runtime_used.base_image)
+                return False
+            if not cls._check_rpm_packages(unit_name, rpm_packages_present, rpm_packages):
+                _LOGGER.debug(
+                    "%s: Not matching RPM packages present in the base image %r", unit_name, runtime_used.base_image
+                )
+                return False
+
+        return True
+
+    @staticmethod
+    def _check_rpm_packages(
+        unit_name: str,
+        rpm_packages_present: List[Dict[str, str]],
+        rpm_packages_required: Union[List[Dict[str, str]], List[Dict[str, str]]],
+    ) -> bool:
+        """Check if required RPM packages are present."""
+        # Convert RPM packages present to mapping to save some cycles and have O(1) look up.
+        rpm_packages_pres = {i["package_name"]: i for i in rpm_packages_present}
+        rpm_packages_req: List[Dict[str, str]]
+        if isinstance(rpm_packages_required, dict):
+            if "not" not in rpm_packages_required:
+                _LOGGER.error("%r: Unable to parse description of RPM packages required", unit_name)
+                return False
+
+            should_be_present = False
+            rpm_packages_req = [i for i in rpm_packages_required["not"]]
+        else:
+            should_be_present = True
+            rpm_packages_req = [i for i in rpm_packages_required]
+
+        for rpm_package_req in rpm_packages_req:
+            rpm_name = rpm_package_req["package_name"]
+            rpm_present = rpm_packages_pres.get(rpm_name)
+
+            if should_be_present:
+                if not rpm_present:
+                    _LOGGER.debug(
+                        "%s: Not including unit as RPM %r is not present in the runtime environment",
+                        unit_name,
+                        rpm_name,
+                    )
+                    return False
+
+                for key, value in rpm_package_req.items():
+                    value_present = rpm_present.get(key)
+                    if value_present != value:
+                        _LOGGER.debug(
+                            "%s: Not including unit as RPM %r has not matching %r - expected %r got %r",
+                            unit_name,
+                            rpm_name,
+                            key,
+                            value,
+                            value_present,
+                        )
+                        return False
+            else:
+                if not rpm_present:
+                    # If just one is not present, we know the unit is included.
+                    return True
+
+                for key, value in rpm_package_req.items():
+                    value_present = rpm_present.get(key)
+                    if value_present != value:
+                        _LOGGER.debug(
+                            "%s: Not including unit as RPM %s has matching %r - expected %r got %r",
+                            unit_name,
+                            rpm_name,
+                            key,
+                            value,
+                            value_present,
+                        )
+                        return True
+
+        if not should_be_present:
+            _LOGGER.debug("%s: Not including unit as all RPM are present in the runtime environment", unit_name)
+            return False
+
+        # Path to should be present.
         return True
 
     @classmethod

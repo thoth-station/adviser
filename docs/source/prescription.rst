@@ -713,6 +713,62 @@ the logic.
       not:
         - GLIBC_2.4
 
+``should_include.runtime_environments.rpm_packages``
+####################################################
+
+A list of RPM packages that should or should *not* be present
+in the runtime environment in order to register the given pipeline unit.
+
+An RPM package can be specified using the following fields.
+
+* ``package_identifier`` - fully qualified package
+  identifier (e.g. ``gcc-c++-8.3.1-5.1.el8.x86_64``)
+
+* ``package_name`` - name of the package ``gcc-c++`` (mandatory)
+
+* ``epoch`` - used for clarifying version history
+
+* ``package_version`` - package version identifier (e.g. ``8.3.1``)
+
+* ``release`` - RPM package release (e.g. ``5.1.el8``)
+
+* ``arch`` - architecture (e.g. ``x86_64``)
+
+* ``src`` - boolean describing whether the given package is a source
+  distribution (e.g. ``false``)
+
+See `RPM packaging guide <https://rpm-packaging-guide.github.io/>`__ for more
+information on *NEVRA* (Name-Epoch-Version-Release-Architecture).
+
+If any field is not provided (except for ``package_name`` which is mandatory)
+any value on the runtime environment side is evaluated as matching.
+
+.. note::
+
+  *Example:*
+
+  .. code-block:: yaml
+
+    rpm_packages:
+      # Include the given pipeline unit if git is present (any version)
+      # and gcc+c++ based on package specification supplied.
+      - package_name: git
+      - arch: x86_64
+        epoch: null
+        package_identifier: gcc-c++-8.3.1-5.1.el8.x86_64
+        package_name: gcc-c++
+        package_version: 8.3.1
+        release: 5.1.el8
+        src: false
+
+  .. code-block:: yaml
+
+    rpm_packages:
+      # Include the given pipeline unit if git is **not** present in the
+      # runtime environment.
+      not:
+        - package_name: git
+
 Boots
 =====
 

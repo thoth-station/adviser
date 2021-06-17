@@ -47,6 +47,18 @@ def _with_not(entity: object) -> Schema:
     return Schema(Any(entity, Schema({"not": entity})))
 
 
+_RPM_PACKAGE_VERSION_SCHEMA = Schema(
+    {
+        Required("package_name"): _NONEMPTY_STRING,
+        Optional("arch"): _NONEMPTY_STRING,
+        Optional("epoch"): _NONEMPTY_STRING,
+        Optional("package_identifier"): _NONEMPTY_STRING,
+        Optional("package_version"): _NONEMPTY_STRING,
+        Optional("release"): _NONEMPTY_STRING,
+        Optional("src"): bool,
+    }
+)
+
 PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA = Schema(
     {
         Optional("operating_systems"): [
@@ -78,6 +90,7 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA = Schema(
         Optional("mkl_versions"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
         Optional("base_images"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
         Optional("shared_objects"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS),
+        Optional("rpm_packages"): _with_not(All([_RPM_PACKAGE_VERSION_SCHEMA], Length(min=1))),
     }
 )
 
