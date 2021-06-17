@@ -19,8 +19,9 @@
 
 from typing import Any
 from typing import Dict
-from typing import Optional
 from typing import List
+from typing import Optional
+from typing import Union
 
 import flexmock
 import pytest
@@ -534,3 +535,95 @@ class TestUnitPrescription(AdviserTestCase):
         assert builder_context.is_adviser_pipeline()
         builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
         assert UnitPrescription._should_include_base(builder_context) == include
+
+    @pytest.mark.parametrize(
+        "shared_objects_present,shared_objects_configured,include",
+        [
+            ([], [], True),
+            (["GLIBC_2.2.5"], [], True),
+            ([], ["GLIBC_2.2.5"], False),
+            (["GLIBC_2.2.5"], ["GLIBC_2.2.5"], True),
+            (["GLIBC_2.2.5", "GNUTLS_3_6_14"], ["GLIBC_2.2.5"], True),
+            (["GLIBC_2.2.5"], ["GNUTLS_3_6_14", "GLIBC_2.2.5"], False),
+            (["GLIBC_2.2.5", "GNUTLS_3_6_14"], ["GNUTLS_3_6_14", "GLIBC_2.2.5"], True),
+            (["GLIBC_2.2.5", "GNUTLS_3_6_14"], {"not": ["GNUTLS_3_6_14"]}, False),
+            (["GLIBC_2.2.5"], {"not": ["GNUTLS_3_6_14"]}, True),
+            (["GNUTLS_3_6_14"], {"not": ["GLIBC_2.2.5", "GNUTLS_3_6_14"]}, False),
+            ([], {"not": ["GLIBC_2.2.5"]}, False),
+        ],
+    )
+    def test_should_include_shared_objects(
+        self,
+        builder_context: PipelineBuilderContext,
+        shared_objects_present: Optional[List[str]],
+        shared_objects_configured: Union[List[str], Dict[str, List[str]]],
+        include: bool,
+    ) -> None:
+        """Test including pipeline units based on shared objects present in the base image."""
+        base_image_present_name, base_image_present_version = "s2i-thoth", "1.0.0"
+        builder_context.project.runtime_environment.base_image = (
+            f"{base_image_present_name}:v{base_image_present_version}"
+        )
+        should_include = {
+            "adviser_pipeline": True,
+            "runtime_environments": {"base_images": [builder_context.project.runtime_environment.base_image]},
+        }
+
+        if shared_objects_configured:
+            should_include["runtime_environments"]["shared_objects"] = shared_objects_configured
+
+        PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include)
+
+        if shared_objects_configured:
+            builder_context.graph.should_receive("get_thoth_s2i_analyzed_image_symbols_all").with_args(
+                base_image_present_name,
+                base_image_present_version,
+                is_external=False,
+            ).and_return(shared_objects_present).once()
+        else:
+            builder_context.graph.should_receive("get_thoth_s2i_analyzed_image_symbols_all").times(0)
+
+        UnitPrescription._PRESCRIPTION = {
+            "name": "SharedObjectsUnit",
+            "should_include": should_include,
+        }
+
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.decision_type = None
+
+        assert builder_context.is_adviser_pipeline()
+        builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
+        assert UnitPrescription._should_include_base(builder_context) == include
+
+    @pytest.mark.parametrize("base_images", [[], ["s2i-thoth:v1.0.0"], ["s2i-thoth:v1.0.0", "s2i-thoth:v2.0.0"]])
+    def test_should_include_shared_objects_no_image_error(
+        self, base_images: List[str], builder_context: PipelineBuilderContext
+    ) -> None:
+        """Test including pipeline units based on shared objects present in the base image.
+
+        This test covers a case when base image is not present in the user's configuration file.
+        """
+        builder_context.project.runtime_environment.base_image = None
+        should_include = {
+            "adviser_pipeline": True,
+            "runtime_environments": {
+                "shared_objects": ["GNUTLS_3_6_14"],
+            },
+        }
+
+        if base_images:
+            should_include["runtime_environments"]["base_images"] = base_images
+
+        PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include)
+
+        UnitPrescription._PRESCRIPTION = {
+            "name": "SharedObjectsUnit",
+            "should_include": should_include,
+        }
+
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.decision_type = None
+
+        assert builder_context.is_adviser_pipeline()
+        builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
+        assert UnitPrescription._should_include_base(builder_context) is False
