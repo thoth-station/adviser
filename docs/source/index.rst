@@ -52,6 +52,7 @@ Resolver and stack resolution pipeline
    resolver
    predictor
    justifications
+   security
    manifest_changes
 
 
