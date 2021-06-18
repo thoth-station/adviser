@@ -1072,11 +1072,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:1d2ef58b68ffdf8acf04503ff07c724f8c58976b9b76936526d3fc8a8f4dc774",
-                "sha256:5d5af23ff98494aac169dd5389861f409d29d823cb8e8c5e93b2cacf84aab9db"
+                "sha256:e5b167f160ef7731791137d80fc86e5bc47c7303f8b529899c5a4d8129e597de",
+                "sha256:ea2ba48d6097e5f2b9039f4d1012562b98b186459abc5f0d06adfe92a763e359"
             ],
             "index": "pypi",
-            "version": "==0.47.0"
+            "version": "==0.48.0"
         },
         "timestamp": {
             "hashes": [
@@ -1255,7 +1255,7 @@
                 "sha256:f0b278ce10936db1a37e6954e15a3730bea96a0997c26d7fee88e6c396c2086d",
                 "sha256:f11642dddbb0253cc8853254301b51390ba0081750a8ac03f20ea8103f0c56b6"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4.0'",
             "version": "==5.5"
         },
         "filelock": {
