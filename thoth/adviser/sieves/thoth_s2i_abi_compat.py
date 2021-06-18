@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-adviser
-# Copyright(C) 2019-2021 Kevin Postlehtwait
+# Copyright(C) 2019-2021 Kevin Postlehtwait, Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -63,8 +63,8 @@ class ThothS2IAbiCompatibilitySieve(Sieve):
     def pre_run(self) -> None:
         """Initialize image_symbols."""
         base_image = self.context.project.runtime_environment.base_image
-        parts = base_image.split(":", maxsplit=1)
-        if len(parts) != 2:
+        parsed_base_image = self.get_base_image(base_image, raise_on_error=False)
+        if parsed_base_image is None:
             error_msg = (
                 f"Cannot determine Thoth s2i version information from {base_image}, "
                 "recommendations specific for ABI used will not be taken into account"
@@ -77,16 +77,11 @@ class ThothS2IAbiCompatibilitySieve(Sieve):
                     "link": self._LINK_BAD_IMAGE,
                 }
             )
-
             self.image_symbols = set()
+            super().pre_run()
             return
 
-        thoth_s2i_image_name, thoth_s2i_image_version = parts
-        if thoth_s2i_image_version.startswith("v"):
-            # Not nice as we always prefix with "v" but do not store it with "v" in the database
-            # (based on env var exported and detected in Thoth's s2i).
-            thoth_s2i_image_version = thoth_s2i_image_version[1:]
-
+        thoth_s2i_image_name, thoth_s2i_image_version = parsed_base_image
         self.image_symbols = set(
             self.context.graph.get_thoth_s2i_analyzed_image_symbols_all(
                 thoth_s2i_image_name=thoth_s2i_image_name,

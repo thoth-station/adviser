@@ -341,6 +341,55 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             _LOGGER.debug("%s: Not matching base image used (using %r)", unit_name, runtime_used.base_image)
             return False
 
+        shared_objects = runtime_environment_dict.get("shared_objects")
+        if shared_objects:
+            if not runtime_used.base_image:
+                _LOGGER.error(
+                    "%s: Check on image symbols is present but no base image provided - please report this error "
+                    "to administrator",
+                    unit_name,
+                )
+                return False
+
+            base_image = cls.get_base_image(runtime_used.base_image, raise_on_error=True)
+            if not base_image:
+                _LOGGER.error(
+                    "%s: Failed to parse base image %r - please report this error to administrator",
+                    unit_name,
+                    runtime_used.base_image,
+                )
+                return False
+
+            symbols_present = set(
+                builder_context.graph.get_thoth_s2i_analyzed_image_symbols_all(
+                    base_image[0],
+                    base_image[1],
+                    is_external=False,
+                )
+            )
+            if not symbols_present:
+                _LOGGER.debug("%s: No symbols found for %r", unit_name, runtime_used.base_image)
+                return False
+
+            if isinstance(shared_objects, dict) and "not" in shared_objects:
+                # Negate operation.
+                if symbols_present.intersection(set(shared_objects["not"])):
+                    _LOGGER.debug("%s: Not matching shared objects present in the base image", unit_name)
+                    return False
+                else:
+                    return True
+            elif isinstance(shared_objects, list):
+                if set(shared_objects).issubset(symbols_present):
+                    return True
+                else:
+                    _LOGGER.debug("%s: Not matching shared objects present in the base image", unit_name)
+                    return False
+            else:
+                _LOGGER.error(
+                    "%s: Unknown shared objects definition - please report this error to administrator", unit_name
+                )
+                return False
+
         return True
 
     @classmethod

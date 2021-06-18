@@ -35,6 +35,10 @@ class SkipPackage(AdviserException):
     """An exception raised during stack generation when the given package should be skipped in the stack."""
 
 
+class ParseBaseImageError(AdviserException):
+    """An exception raised when parsing base image fails."""
+
+
 class PipfileParseError(AdviserException):
     """An exception raised on invalid Pipfile or Pipfile.lock."""
 

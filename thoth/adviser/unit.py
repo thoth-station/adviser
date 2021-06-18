@@ -25,6 +25,7 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import Optional
+from typing import Tuple
 from typing import Union
 from contextlib import contextmanager
 
@@ -35,6 +36,7 @@ from voluptuous import Any as SchemaAny
 from thoth.python import PackageVersion
 
 from .context import Context
+from .exceptions import ParseBaseImageError
 from .exceptions import PipelineUnitConfigurationSchemaError
 from .dm_report import DependencyMonkeyReport
 
@@ -213,6 +215,27 @@ class Unit(metaclass=abc.ABCMeta):
             package_version.index.url,
         )
         return None
+
+    @staticmethod
+    def get_base_image(base_image: str, *, raise_on_error: bool = False) -> Optional[Tuple[str, str]]:
+        """Return information about base image used."""
+        parts = base_image.split(":", maxsplit=1)
+        if len(parts) != 2:
+            if raise_on_error:
+                raise ParseBaseImageError(
+                    f"Cannot determine Thoth s2i version information from {base_image}, "
+                    "recommendations specific for ABI used will not be taken into account"
+                )
+
+            return None
+
+        thoth_s2i_image_name, thoth_s2i_image_version = parts
+        if thoth_s2i_image_version.startswith("v"):
+            # Not nice as we always prefix with "v" but do not store it with "v" in the database
+            # (based on env var exported and detected in Thoth's s2i).
+            thoth_s2i_image_version = thoth_s2i_image_version[1:]
+
+        return thoth_s2i_image_name, thoth_s2i_image_version
 
     def pre_run(self) -> None:  # noqa: D401
         """Called before running any pipeline unit with context already assigned.
