@@ -908,16 +908,13 @@ def dependency_monkey(
     click_ctx.exit(int(exit_code != 0))
 
 
-@cli.command("validate-prescription")
-@click.argument("prescription", nargs=1, metavar="PRESCRIPTION.yaml")
-def validate_prescription(prescription: str) -> None:
+@cli.command("validate-prescriptions")
+@click.argument("prescriptions", nargs=1, metavar="PRESCRIPTION_DIR")
+def validate_prescription(prescriptions: str) -> None:
     """Validate the given prescription."""
-    _LOGGER.info("Loading prescription %r", prescription)
-    with open(prescription, "r") as prescription_file:
-        content = yaml.safe_load(prescription_file)
-
-    Prescription.validate(content)
-    _LOGGER.info("Prescription %r validated successfully", prescription)
+    _LOGGER.info("Validating prescriptions in %r", prescriptions)
+    Prescription.validate(prescriptions)
+    _LOGGER.info("Prescriptions %r validated successfully", prescriptions)
 
 
 __name__ == "__main__" and cli()

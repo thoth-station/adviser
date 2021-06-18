@@ -79,6 +79,18 @@ class Prescription:
     strides_dict = attr.ib(type=Dict[str, Dict[str, Any]], kw_only=True, default=attr.Factory(OrderedDict))
     wraps_dict = attr.ib(type=Dict[str, Dict[str, Any]], kw_only=True, default=attr.Factory(OrderedDict))
 
+    @property
+    def units(self) -> Generator[Dict[str, Any], None, None]:
+        """Iterate over units."""
+        yield from chain(
+            self.boots_dict.values(),
+            self.pseudonyms_dict.values(),
+            self.sieves_dict.values(),
+            self.steps_dict.values(),
+            self.strides_dict.values(),
+            self.wraps_dict.values(),
+        )
+
     @staticmethod
     def _validate_run_base(unit: Dict[str, Any]) -> bool:
         """Validate run for a pipeline unit."""
@@ -93,33 +105,19 @@ class Prescription:
         return False
 
     @classmethod
-    def validate(cls, prescription: Dict[str, Any]) -> None:
+    def validate(cls, prescriptions: str) -> None:
         """Validate the given prescription."""
-        _LOGGER.debug("Validating prescription schema")
-        try:
-            PRESCRIPTION_SCHEMA(prescription)
-        except Exception as exc:
-            _LOGGER.exception(
-                "Failed to validate schema for prescription: %s",
-                str(exc),
-            )
-            raise PrescriptionSchemaError(str(exc))
+        _LOGGER.debug("Validating prescriptions schema")
+
+        prescription_instance = cls.load(prescriptions)
 
         # Verify semantics of prescription.
         any_error = False
 
-        units = prescription["units"]
-        for unit in chain(
-            units.get("boots", []),
-            units.get("pseudonyms", []),
-            units.get("sieves", []),
-            units.get("steps", []),
-            units.get("strides", []),
-            units.get("wraps", []),
-        ):
+        for unit in prescription_instance.units:
             any_error = any_error or cls._validate_run_base(unit)
 
-        for pseudonym in units.get("pseudonyms", []):
+        for pseudonym in prescription_instance.pseudonyms_dict.values():
             if pseudonym["run"]["yield"].get("yield_matched_version") and pseudonym["run"]["yield"][
                 "package_version"
             ].get("locked_version"):
@@ -131,7 +129,7 @@ class Prescription:
                 )
                 any_error = True
 
-        for step in units.get("steps", []):
+        for step in prescription_instance.steps_dict.values():
             step_run = step["run"]
             msg = f"Error in unit {step['name']} ({step['type']})"
 
@@ -154,7 +152,7 @@ class Prescription:
                 _LOGGER.error("%s: Using 'not_acceptable' together with 'score' leads to undefined behavior", msg)
                 any_error = True
 
-        for wrap in units.get("wrap", []):
+        for wrap in prescription_instance.wraps_dict.values():
             wrap_run = wrap["run"]
             msg = f"Error in unit {wrap['name']} ({wrap['type']})"
 
@@ -185,8 +183,14 @@ class Prescription:
 
         If an instance is provided, a safe merge will be performed.
         """
-        if cls._VALIDATE_PRESCRIPTION_SCHEMA:
-            cls.validate(prescription)
+        try:
+            PRESCRIPTION_SCHEMA(prescription)
+        except Exception as exc:
+            _LOGGER.exception(
+                "Failed to validate schema for prescription: %s",
+                str(exc),
+            )
+            raise PrescriptionSchemaError(str(exc))
 
         boots_dict = prescription_instance.boots_dict if prescription_instance is not None else OrderedDict()
         for boot_spec in prescription["units"].get("boots") or []:
