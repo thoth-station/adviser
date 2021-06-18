@@ -41,6 +41,45 @@ from ...base import AdviserTestCase
 class TestUnitPrescription(AdviserTestCase):
     """Test implementation of generic v1 prescription unit handling."""
 
+    _EXAMPLE_RPM_PACKAGES_PRESENT = [
+        {
+            "arch": "x86_64",
+            "epoch": None,
+            "package_identifier": "zlib-1.2.11-16.2.el8_3.x86_64",
+            "package_name": "zlib",
+            "package_version": "1.2.11",
+            "release": "16.2.el8_3",
+            "src": False,
+        },
+        {
+            "arch": "x86_64",
+            "epoch": None,
+            "package_identifier": "glib2-2.56.4-8.el8.x86_64",
+            "package_name": "glib2",
+            "package_version": "2.56.4",
+            "release": "8.el8",
+            "src": False,
+        },
+        {
+            "arch": "x86_64",
+            "epoch": None,
+            "package_identifier": "gcc-8.3.1-5.1.el8.x86_64",
+            "package_name": "gcc",
+            "package_version": "8.3.1",
+            "release": "5.1.el8",
+            "src": False,
+        },
+        {
+            "arch": "x86_64",
+            "epoch": "1",
+            "package_identifier": "findutils-1:4.6.0-20.el8.x86_64",
+            "package_name": "findutils",
+            "package_version": "4.6.0",
+            "release": "20.el8",
+            "src": False,
+        },
+    ]
+
     def test_prepare_justification_link(self) -> None:
         """Test preparing links to justifications."""
         justification = [
@@ -618,6 +657,218 @@ class TestUnitPrescription(AdviserTestCase):
 
         UnitPrescription._PRESCRIPTION = {
             "name": "SharedObjectsUnit",
+            "should_include": should_include,
+        }
+
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.decision_type = None
+
+        assert builder_context.is_adviser_pipeline()
+        builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
+        assert UnitPrescription._should_include_base(builder_context) is False
+
+    @pytest.mark.parametrize(
+        "rpms_present,rpms_configured,include",
+        [
+            ([], [], True),
+            ([{"package_name": "git"}], [], True),
+            ([], [{"package_name": "git"}], False),
+            ([{"package_name": "git"}], [{"package_name": "git"}], True),
+            ([{"package_name": "git"}], [{"package_name": "git"}], True),
+            ([{"package_name": "git"}, {"package_name": "glibc"}], [{"package_name": "git"}], True),
+            (
+                _EXAMPLE_RPM_PACKAGES_PRESENT,
+                [
+                    {
+                        "arch": "x86_64",
+                        "package_name": "gcc",
+                        "package_version": "8.3.1",
+                        "release": "5.1.el8",
+                    },
+                    {
+                        "epoch": "1",
+                        "package_name": "findutils",
+                        "package_version": "4.6.0",
+                        "release": "20.el8",
+                        "src": False,
+                    },
+                ],
+                True,
+            ),
+            (
+                _EXAMPLE_RPM_PACKAGES_PRESENT,
+                [
+                    {
+                        "arch": "x86_64",
+                        "package_name": "gcc",
+                        "package_version": "8.3.1",
+                        "release": "5.1.el8",
+                    },
+                    {
+                        "epoch": "1",
+                        "package_name": "findutils",
+                        "package_version": "5.0.0",  # This version is not present.
+                        "release": "20.el8",
+                        "src": False,
+                    },
+                ],
+                False,
+            ),
+            (
+                _EXAMPLE_RPM_PACKAGES_PRESENT,
+                {
+                    "not": [
+                        {
+                            "arch": "x86_64",
+                            "package_name": "gcc",
+                            "package_version": "8.3.1",
+                            "release": "5.1.el8",
+                        },
+                        {
+                            "epoch": "1",
+                            "package_name": "findutils",
+                            "package_version": "5.0.0",  # This version is not present.
+                            "release": "20.el8",
+                            "src": False,
+                        },
+                    ]
+                },
+                True,
+            ),
+            (
+                _EXAMPLE_RPM_PACKAGES_PRESENT,
+                {
+                    "not": [
+                        {
+                            "arch": "x86_64",
+                            "package_name": "gcc",
+                            "package_version": "8.3.1",
+                            "release": "5.1.el8",
+                        },
+                        {
+                            "epoch": "1",
+                            "package_name": "findutils",
+                            "package_version": "4.6.0",
+                            "release": "20.el8",
+                            "src": False,
+                        },
+                    ]
+                },
+                False,
+            ),
+        ],
+    )
+    def test_should_include_rpm_packages(
+        self,
+        builder_context: PipelineBuilderContext,
+        rpms_present: List[Dict[str, str]],
+        rpms_configured: List[Dict[str, str]],
+        include: bool,
+    ) -> None:
+        """Test including pipeline units based on RPM packages present in the base image."""
+        base_image_present_name, base_image_present_version = "s2i-thoth", "1.0.0"
+        builder_context.project.runtime_environment.base_image = (
+            f"{base_image_present_name}:v{base_image_present_version}"
+        )
+        should_include = {
+            "adviser_pipeline": True,
+            "runtime_environments": {"base_images": [builder_context.project.runtime_environment.base_image]},
+        }
+
+        if rpms_configured:
+            should_include["runtime_environments"]["rpm_packages"] = rpms_configured
+
+        PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include)
+
+        if rpms_configured:
+            builder_context.graph.should_receive("get_last_analysis_document_id").with_args(
+                base_image_present_name,
+                base_image_present_version,
+                is_external=False,
+            ).and_return("package-extract-foo-bar").once()
+            builder_context.graph.should_receive("get_rpm_package_version_all").with_args(
+                "package-extract-foo-bar"
+            ).and_return(rpms_present).once()
+        else:
+            builder_context.graph.should_receive("get_last_analysis_document_id").times(0)
+            builder_context.graph.should_receive("get_rpm_package_version_all").times(0)
+
+        UnitPrescription._PRESCRIPTION = {
+            "name": "RPMPackagesUnit",
+            "should_include": should_include,
+        }
+
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.decision_type = None
+
+        assert builder_context.is_adviser_pipeline()
+        builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
+        assert UnitPrescription._should_include_base(builder_context) == include
+
+    @pytest.mark.parametrize("base_images", [[], ["s2i-thoth:v1.0.0"], ["s2i-thoth:v1.0.0", "s2i-thoth:v2.0.0"]])
+    def test_should_include_rpm_packages_no_image_error(
+        self,
+        builder_context: PipelineBuilderContext,
+        base_images: List[str],
+    ) -> None:
+        """Test including pipeline units based on RPM packages present in the base image.
+
+        This test covers a case when base image is not present in the user's configuration file.
+        """
+        builder_context.project.runtime_environment.base_image = None
+        should_include = {
+            "adviser_pipeline": True,
+            "runtime_environments": {
+                "rpm_packages": [
+                    {
+                        "package_name": "git",
+                    }
+                ],
+            },
+        }
+
+        if base_images:
+            should_include["runtime_environments"]["base_images"] = base_images
+
+        PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include)
+
+        UnitPrescription._PRESCRIPTION = {
+            "name": "RPMPackagesUnit",
+            "should_include": should_include,
+        }
+
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.decision_type = None
+
+        assert builder_context.is_adviser_pipeline()
+        builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
+        assert UnitPrescription._should_include_base(builder_context) is False
+
+    def test_should_include_rpm_packages_no_analysis(self, builder_context: PipelineBuilderContext) -> None:
+        """Test not including pipeline units if the base image was not analysed."""
+        base_image_present_name, base_image_present_version = "s2i-thoth", "1.0.0"
+        builder_context.project.runtime_environment.base_image = (
+            f"{base_image_present_name}:v{base_image_present_version}"
+        )
+        should_include = {
+            "adviser_pipeline": True,
+            "runtime_environments": {
+                "base_images": [builder_context.project.runtime_environment.base_image],
+                "rpm_packages": [{"package_name": "glibc"}],
+            },
+        }
+
+        PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include)
+
+        builder_context.graph.should_receive("get_last_analysis_document_id").with_args(
+            base_image_present_name,
+            base_image_present_version,
+            is_external=False,
+        ).and_return(None).once()
+        builder_context.graph.should_receive("get_rpm_package_version_all").times(0)
+
+        UnitPrescription._PRESCRIPTION = {
+            "name": "RPMPackagesUnit",
             "should_include": should_include,
         }
 
