@@ -344,20 +344,20 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         shared_objects = runtime_environment_dict.get("shared_objects")
         if shared_objects:
             if not runtime_used.base_image:
-                _LOGGER.error(
-                    "%s: Check on image symbols is present but no base image provided - please report this error "
-                    "to administrator",
+                _LOGGER.debug(
+                    "%s: Check on image symbols is present but no base image provided",
                     unit_name,
                 )
                 return False
 
             base_image = cls.get_base_image(runtime_used.base_image, raise_on_error=True)
             if not base_image:
-                _LOGGER.error(
-                    "%s: Failed to parse base image %r - please report this error to administrator",
-                    unit_name,
-                    runtime_used.base_image,
-                )
+                if builder_context.iteration == 0:
+                    _LOGGER.error(
+                        "%s: Failed to parse base image %r",
+                        unit_name,
+                        runtime_used.base_image,
+                    )
                 return False
 
             symbols_present = set(
@@ -368,7 +368,10 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 )
             )
             if not symbols_present:
-                _LOGGER.debug("%s: No symbols found for %r", unit_name, runtime_used.base_image)
+                if builder_context.iteration == 0:
+                    _LOGGER.warning(
+                        f"%s: No symbols found for runtime environment %r", unit_name, runtime_used.base_image
+                    )
                 return False
 
             if isinstance(shared_objects, dict) and "not" in shared_objects:
@@ -393,20 +396,20 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         rpm_packages = runtime_environment_dict.get("rpm_packages")
         if rpm_packages:
             if not runtime_used.base_image:
-                _LOGGER.error(
-                    "%s: Check on RPM packages present but no base image provided - please report this error "
-                    "to administrator",
+                _LOGGER.debug(
+                    "%s: Check on RPM packages present but no base image provided",
                     unit_name,
                 )
                 return False
 
             base_image = cls.get_base_image(runtime_used.base_image, raise_on_error=True)
             if not base_image:
-                _LOGGER.error(
-                    "%s: Failed to parse base image %r - please report this error to administrator",
-                    unit_name,
-                    runtime_used.base_image,
-                )
+                if builder_context.iteration == 0:
+                    _LOGGER.error(
+                        "%s: Failed to parse base image %r",
+                        unit_name,
+                        runtime_used.base_image,
+                    )
                 return False
 
             analysis_document_id = builder_context.graph.get_last_analysis_document_id(
@@ -416,11 +419,12 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             )
 
             if not analysis_document_id:
-                _LOGGER.debug(
-                    "%s: No analysis for base container image %r found, skipping including unit",
-                    unit_name,
-                    runtime_used.base_image,
-                )
+                if builder_context.iteration == 0:
+                    _LOGGER.warning(
+                        "%s: No analysis for base container image %r found",
+                        unit_name,
+                        runtime_used.base_image,
+                    )
                 return False
 
             rpm_packages_present = builder_context.graph.get_rpm_package_version_all(analysis_document_id)
