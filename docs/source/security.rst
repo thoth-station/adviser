@@ -65,7 +65,7 @@ Using security advises in OpenShift S2I
 
 Thoth's integration in OpenShift S2I can block building Python applications
 that are potentially vulnerable. By adjusting ``recommendation_type`` to
-``security``, the build process fails if a any package is considered
+``security``, the build process fails if any package is considered
 vulnerable.
 
 .. raw:: html
