@@ -1,12 +1,12 @@
 .. _prescription:
 
-Declarative prescription for resolver
--------------------------------------
+Declarative prescriptions for resolver
+--------------------------------------
 
 The implementation of the recommendation engine allows to declaratively specify
 :ref:`pipeline units <unit>` that should be included in the :ref:`resolver
 pipeline <pipeline>` without actually implementing any code.  The document
-below describes core mechanics behind creating such "prescription" for the
+below describes core mechanics behind creating such "prescriptions" for the
 resolver.
 
 .. note::
@@ -15,7 +15,7 @@ resolver.
   repository that provides prescriptions for open-source Python packages.
 
   See also `this pull request
-  <https://github.com/thoth-station/adviser/pull/1821>`__ for a refence on how
+  <https://github.com/thoth-station/adviser/pull/1821>`__ for a reference on how
   to implement specific pipeline unit type that extend resolver functionality.
   A high level overview can be found in `the following YouTube video
   <https://www.youtube.com/watch?v=oK1qYdhmquY>`__.
@@ -38,84 +38,68 @@ multiple projects for which server-side resolution can provide guidance.
   For more sophisticated pipeline units one can still use the programmable
   interface.
 
-Prescription YAML v1
-====================
+Prescriptions structure
+=======================
 
-Each prescription YAML v1 document states the following core parts that will be
-discussed in detail in the upcoming sections.
+Prescriptions are written in a form of YAML files that are maintained in a Git
+repository. An example of such directory structure can be found at
+`thoth-station/prescriptions <https://github.com/thoth-station/prescriptions/>`__.
 
-.. note::
+The repository keeping prescriptions must state a metadata file keeping generic
+information for prescriptions. This file is named
+``_prescription_metadata.yaml`` and metadata stated in this file are inherited
+to all units declared in sub-directories living besides the metadata file.
 
-  Prescription YAML specification provides unit abstractions that map to their
-  Python code implementation. If you wish to create your own unit declaration
-  in the YAML configuration suitable for your needs, just declare your YAML
-  unit and provide its Python implementation. Core pipeline units can serve as
-  a base for the implementation.
+The content of the metadata file is (an `example
+<https://github.com/thoth-station/prescriptions/blob/b12d31510134a08b47e621c08d8d69977641b903/prescriptions/_prescription_metadata.yaml>`__):
 
 .. code-block:: yaml
 
-  apiVersion: thoth-station.ninja/v1
-  kind: prescription
-  spec:
-    name: thoth
-    release: 2021.03.30
-    units:
-      boots: []
-      pseudonyms: []
-      sieves: []
-      steps: []
-      strides: []
-      wraps: []
+  prescription:
+    name: <name>
+    release: <release>
 
-You can check `thoth-station/adviser repository
-<https://github.com/thoth-station/adviser/blob/master/thoth/adviser/prescription/v1/schema.py>`__
-to see the precise definition of the schema.
+Value stated in ``prescription.name`` acts as a namespace for prescriptions. If
+you use multiple prescriptions, you do not need to worry about any naming
+collisions unless you make sure these prescriptions live in a separate
+namespace (have different values of ``prescription.name``).
 
-The semantics behind entries stated:
+The identifier stated in ``prescription.release`` states release information
+about prescriptions.
 
-``apiVersion``
-##############
+.. note::
 
-API version of the prescription.
+  Check the resolution log to see what prescriptions in which versions are used
+  during the resolution process.
 
-Prescription units are versioned and provide certain capabilities to describe
-the resolution process. Prescriptions implementing different API version can
-provide different semantics or different feature set. Make sure you refer to
-the right API version when using prescriptions.
+Each sub-directory keeps information about prescriptions. It is a convention to put
+package specific prescriptions into sub-directories which match package names.
+Any generic or package agnostic prescriptions can be placed into
+sub-directories prefixed with and underscore (e.g. ``_generic``). Name of the
+YAML files are then determined based on the unit semantics written there.
 
-``kind``
-########
+.. note::
 
-Always set to ``prescription``.
-
-``spec``
-########
-
-Prescription specification.
-
-``spec.name``
-#############
-
-Name of the prescription used to create namespace for declared prescription
-units.
-
-*Example:* ``thoth``
-
-``spec.release``
-################
-
-A release identifier for the prescription.
-
-*Example:* A `calver <https://calver.org/>`__ can be used - ``2020.03.30``
-
-``spec.units``
-##############
-
-Units specified by the prescription grouped into categories based on their
-types.
+  If you are a package maintainer or you would like to follow updates for a
+  specific set of prescriptions, you can add yourself to `CODEOWNERS
+  <https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-on-github/about-code-owners>`__
+  file and follow updates only for a specific sub-directory.
 
 Unit schema
 ===========
+
+Units are stated in ``units`` listing in the corresponding YAML file respecting
+unit's base type:
+
+.. code-block:: yaml
+
+  units:
+    boots: []
+    pseudonyms: []
+    sieves: []
+    steps: []
+    strides: []
+    wraps: []
 
 Each unit, regardless of its type, has the following schema:
 
