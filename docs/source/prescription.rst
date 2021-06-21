@@ -699,7 +699,7 @@ the logic.
 
   .. code-block:: yaml
 
-    image_symbols:
+    shared_objects:
       # Include the given pipeline unit if the following two image symbols are
       # present in the environment.
       - GLIBC_2.4
@@ -707,7 +707,7 @@ the logic.
 
   .. code-block:: yaml
 
-    image_symbols:
+    shared_objects:
       # Include the given pipeline unit if the following image symbol
       # is **not** present in the environment.
       not:
