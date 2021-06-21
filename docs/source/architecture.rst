@@ -184,6 +184,10 @@ A separate namespace for database related deployments.
   <https://github.com/thoth-station/graph-backup-job>`__ - a periodic job that
   creates database backups
 
+* `graph-metrics-exporter
+  <https://github.com/thoth-station/graph-metrics-exporter/>`__ - a periodic
+  job that exports metrics out of the main database asynchronously
+
 Grafana dashboards
 ##################
 
