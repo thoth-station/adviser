@@ -85,6 +85,12 @@ YAML files are then determined based on the unit semantics written there.
   <https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-on-github/about-code-owners>`__
   file and follow updates only for a specific sub-directory.
 
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="https://www.youtube.com/embed/ocCVghdx7eM" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
+
 Unit schema
 ===========
 
@@ -324,6 +330,12 @@ in the request).
     labels:
       team: thoth
       requester: ci_foo
+
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="https://www.youtube.com/embed/eoJIfQip_6M" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
 
 Runtime environments - ``should_include.runtime_environments``
 ==============================================================
