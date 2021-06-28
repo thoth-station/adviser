@@ -95,6 +95,11 @@ itself for more info. You can also find more info in the :ref:`integration
 * `cve-update-job <https://github.com/thoth-station/cve-update-job>`__ - a
   periodic job responsible for gathering CVE information about packages
 
+* `pulp-pypi-sync-job
+  <https://github.com/thoth-station/pulp-pypi-sync-job>`__ - a periodic
+  job responsible for registering Python package indexes available on
+  `pulp-python <https://docs.pulpproject.org/pulp_python/index.html>`__
+
 Middletier Namespace
 ####################
 
