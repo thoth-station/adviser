@@ -618,6 +618,7 @@ def advise(
         result_dict={"parameters": parameters},
         with_devel=dev,
         user_stack_scoring=user_stack_scoring,
+        verbose=click_ctx.parent.params.get("verbose", False),
     )
 
     click_ctx.exit(int(exit_code != 0))
@@ -903,6 +904,8 @@ def dependency_monkey(
         plot=plot,
         with_devel=dev,
         user_stack_scoring=False,
+        # Keep verbose output (stating pipeline units run) in dependency-monkey.
+        verbose=True,
     )
 
     click_ctx.exit(int(exit_code != 0))

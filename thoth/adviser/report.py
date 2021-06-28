@@ -85,7 +85,7 @@ class Report:
             heapq.heappush(self._heapq, item)
             return True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self, *, verbose: bool = False) -> Dict[str, Any]:
         """Convert pipeline report to a dict representation."""
         stack_info: List[Dict[str, Any]] = []
         stack_info_metadata = os.getenv("THOTH_ADVISER_METADATA")
@@ -96,7 +96,7 @@ class Report:
                 _LOGGER.exception("Failed to load adviser metadata")
 
         return {
-            "pipeline": self.pipeline.to_dict(),
+            "pipeline": self.pipeline.to_dict() if verbose else None,
             "products": [product.to_dict() for product in self.iter_products()],
             "stack_info": stack_info + (self._stack_info or []),
             "resolver_iterations": self.resolver_iterations,
