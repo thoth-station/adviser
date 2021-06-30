@@ -55,6 +55,7 @@ def subprocess_run(
     plot: Optional[str] = None,
     *,
     with_devel: bool = True,
+    verbose: bool = False,
     user_stack_scoring: bool = True,
 ) -> int:
     """Run the given function (partial annealing method) in a subprocess and output the produced report."""
@@ -107,7 +108,7 @@ def subprocess_run(
                 else:
                     _LOGGER.info("Resolver history saved to %r", resolver_history_file)
 
-            result_dict.update(dict(error=False, error_msg=None, report=report.to_dict()))
+            result_dict.update(dict(error=False, error_msg=None, report=report.to_dict(verbose=verbose)))
         except UnresolvedDependencies as exc:
             _LOGGER.error(
                 "Resolver failed due to unsolved dependencies for packages %s; these dependencies will be "

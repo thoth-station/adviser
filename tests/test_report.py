@@ -46,7 +46,7 @@ class TestReport(AdviserTestCase):
         report.set_stack_info([{"foo": "bar"}])
 
         assert report.product_count() == 0
-        assert report.to_dict() == {
+        assert report.to_dict(verbose=True) == {
             "pipeline": {
                 "boots": [],
                 "pseudonyms": [],
@@ -134,7 +134,7 @@ class TestReport(AdviserTestCase):
 
         assert report.product_count() == 1
         assert list(report.iter_products()) == [product]
-        assert report.to_dict() == {
+        assert report.to_dict(verbose=True) == {
             "pipeline": pipeline_config.to_dict(),
             "products": [product.to_dict()],
             "stack_info": [],
@@ -173,7 +173,7 @@ class TestReport(AdviserTestCase):
         try:
             assert report.product_count() == 1
             assert list(report.iter_products()) == [product]
-            assert report.to_dict() == {
+            assert report.to_dict(verbose=True) == {
                 "pipeline": pipeline_config.to_dict(),
                 "products": [product.to_dict()],
                 "stack_info": list(chain(stack_info, report.stack_info)),
@@ -181,6 +181,43 @@ class TestReport(AdviserTestCase):
                 "accepted_final_states_count": 0,
                 "discarded_final_states_count": 0,
             }
-        except Exception:
+        finally:
             os.environ.pop("THOTH_ADVISER_METADATA")
-            raise
+
+    def test_no_verbose(self, pipeline_config: PipelineConfig) -> None:
+        """Test obtaining report with and without verbose flag set."""
+        report = Report(count=3, pipeline=pipeline_config)
+        report.set_stack_info([{"foo": "bar"}])
+
+        project = flexmock()
+        project_dict = {"aresto momentum": "avada kedavra"}
+        project.should_receive("to_dict").with_args(keep_thoth_section=True).and_return(project_dict)
+
+        product = Product(
+            project=project,
+            score=0.666,
+            justification=[{"gryffindor": "le gladium leviosa"}],
+            advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
+        )
+        report.add_product(product)
+
+        assert report.product_count() == 1
+        assert list(report.iter_products()) == [product]
+
+        assert report.to_dict(verbose=False) == {
+            "pipeline": None,
+            "products": [product.to_dict()],
+            "stack_info": report.stack_info,
+            "resolver_iterations": 0,
+            "accepted_final_states_count": 0,
+            "discarded_final_states_count": 0,
+        }
+
+        assert report.to_dict(verbose=True) == {
+            "pipeline": pipeline_config.to_dict(),
+            "products": [product.to_dict()],
+            "stack_info": report.stack_info,
+            "resolver_iterations": 0,
+            "accepted_final_states_count": 0,
+            "discarded_final_states_count": 0,
+        }

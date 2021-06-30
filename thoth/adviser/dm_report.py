@@ -42,6 +42,6 @@ class DependencyMonkeyReport:
         """Add a new response to response listing."""
         self._responses.append({"response": response, "product": product.to_dict()})
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self, *, verbose: bool = False) -> Dict[str, Any]:
         """Convert report to a dict representation suitable for serialization."""
         return {"skipped": self.skipped, "responses": self._responses}
