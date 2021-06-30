@@ -80,6 +80,49 @@ class TestUnitPrescription(AdviserTestCase):
         },
     ]
 
+    _EXAMPLE_PYTHON_PACKAGES_PRESENT = [
+        {
+            "location": "/usr/local/lib/python3.8/site-packages",
+            "package_name": "pip",
+            "package_version": "20.3.3",
+        },
+        {
+            "location": "/usr/lib64/python3.6/site-packages",
+            "package_name": "dbus-python",
+            "package_version": "1.2.4",
+        },
+        {
+            "location": "/usr/lib64/python3.6/site-packages",
+            "package_name": "gpg",
+            "package_version": "1.13.1",
+        },
+        {
+            "location": "/usr/lib64/python3.6/site-packages",
+            "package_name": "rpm",
+            "package_version": "4.14.3",
+        },
+        {
+            "location": "/usr/lib/python3.6/site-packages",
+            "package_name": "requests",
+            "package_version": "2.20.0",
+        },
+        {
+            "location": "/opt/app-root/lib/python3.8/site-packages",
+            "package_name": "wheel",
+            "package_version": "0.36.2",
+        },
+        {
+            "location": "/opt/app-root/lib/python3.8/site-packages",
+            "package_name": "yarl",
+            "package_version": "1.6.3",
+        },
+        {
+            "location": "/opt/app-root/lib/python3.8/site-packages",
+            "package_name": "yaspin",
+            "package_version": "2.0.0",
+        },
+    ]
+
     def test_prepare_justification_link(self) -> None:
         """Test preparing links to justifications."""
         justification = [
@@ -869,6 +912,198 @@ class TestUnitPrescription(AdviserTestCase):
 
         UnitPrescription._PRESCRIPTION = {
             "name": "RPMPackagesUnit",
+            "should_include": should_include,
+        }
+
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.decision_type = None
+
+        assert builder_context.is_adviser_pipeline()
+        builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
+        assert UnitPrescription._should_include_base(builder_context) is False
+
+    @pytest.mark.parametrize(
+        "python_present,python_configured,include",
+        [
+            ([], [], True),
+            (_EXAMPLE_PYTHON_PACKAGES_PRESENT, [], True),
+            # # Present.
+            (_EXAMPLE_PYTHON_PACKAGES_PRESENT, [{"name": "dbus-python"}], True),
+            (_EXAMPLE_PYTHON_PACKAGES_PRESENT, [{"name": "dbus-python"}, {"name": "wheel"}], True),
+            (_EXAMPLE_PYTHON_PACKAGES_PRESENT, [{"name": "dbus-python", "version": "<1.3.0,>1.2.0"}], True),
+            (
+                _EXAMPLE_PYTHON_PACKAGES_PRESENT,
+                [{"name": "dbus-python", "version": "<1.3.0,>1.2.0"}, {"name": "wheel", "version": "~=0.36.0"}],
+                True,
+            ),
+            (
+                _EXAMPLE_PYTHON_PACKAGES_PRESENT,
+                [
+                    {"name": "dbus-python", "version": "<1.3.0,>1.2.0", "location": "^/usr/lib64/.*"},
+                    {"name": "wheel", "version": "<=0.40.0", "location": "^/opt/app-root/lib/python3.8/site-packages$"},
+                ],
+                True,
+            ),
+            (_EXAMPLE_PYTHON_PACKAGES_PRESENT, [{"name": "micropipenv"}], False),  # Not present.
+            # Present but different version.
+            (_EXAMPLE_PYTHON_PACKAGES_PRESENT, [{"name": "dbus-python", "version": ">=2.0.0"}], False),
+            (
+                _EXAMPLE_PYTHON_PACKAGES_PRESENT,
+                [{"name": "dbus-python", "version": "<1.3.0,>1.2.0"}, {"name": "wheel", "version": "==0.36.0"}],
+                False,
+            ),
+            # Present but in another location.
+            (
+                _EXAMPLE_PYTHON_PACKAGES_PRESENT,
+                [
+                    {"name": "dbus-python", "version": "<1.3.0,>1.2.0", "location": "^/usr/lib64/"},
+                    {"name": "wheel", "version": "<=0.40.0", "location": "^/home/thoth$"},
+                ],
+                False,
+            ),
+            # Not present.
+            ([], [{"name": "micropipenv"}], False),
+            # Test "not" logic.
+            # micropipenv is not present.
+            (_EXAMPLE_PYTHON_PACKAGES_PRESENT, {"not": [{"name": "micropipenv"}]}, True),
+            # All not present.
+            (_EXAMPLE_PYTHON_PACKAGES_PRESENT, {"not": [{"name": "micropipenv"}, {"name": "selinon"}]}, True),
+            # dbus-python present.
+            (_EXAMPLE_PYTHON_PACKAGES_PRESENT, {"not": [{"name": "dbus-python"}, {"name": "selinon"}]}, False),
+            # dbus-python present in different location, selinon not present
+            (
+                _EXAMPLE_PYTHON_PACKAGES_PRESENT,
+                {
+                    "not": [
+                        {"name": "selinon"},
+                        {"name": "dbus-python", "location": "^/home/thoth/.*"},
+                    ]
+                },
+                True,
+            ),
+            # Version does not match so should be included based on "not".
+            (
+                _EXAMPLE_PYTHON_PACKAGES_PRESENT,
+                {
+                    "not": [
+                        {"name": "dbus-python", "version": ">=2.0"},
+                    ],
+                },
+                True,
+            ),
+        ],
+    )
+    def test_should_include_python_packages(
+        self,
+        builder_context: PipelineBuilderContext,
+        python_present: List[Dict[str, str]],
+        python_configured: List[Dict[str, str]],
+        include: bool,
+    ) -> None:
+        """Test including pipeline units based on RPM packages present in the base image."""
+        base_image_present_name, base_image_present_version = "s2i-thoth", "1.0.0"
+        builder_context.project.runtime_environment.base_image = (
+            f"{base_image_present_name}:v{base_image_present_version}"
+        )
+        should_include = {
+            "adviser_pipeline": True,
+            "runtime_environments": {"base_images": [builder_context.project.runtime_environment.base_image]},
+        }
+
+        if python_configured:
+            should_include["runtime_environments"]["python_packages"] = python_configured
+
+        PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include)
+
+        if python_configured:
+            builder_context.graph.should_receive("get_last_analysis_document_id").with_args(
+                base_image_present_name,
+                base_image_present_version,
+                is_external=False,
+            ).and_return("package-extract-foo-bar").once()
+            builder_context.graph.should_receive("get_python_package_version_all").with_args(
+                "package-extract-foo-bar"
+            ).and_return(python_present).once()
+        else:
+            builder_context.graph.should_receive("get_last_analysis_document_id").times(0)
+            builder_context.graph.should_receive("get_rpm_package_version_all").times(0)
+
+        UnitPrescription._PRESCRIPTION = {
+            "name": "PythonPackagesUnit",
+            "should_include": should_include,
+        }
+
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.decision_type = None
+
+        assert builder_context.is_adviser_pipeline()
+        builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
+        assert UnitPrescription._should_include_base(builder_context) == include
+
+    @pytest.mark.parametrize("base_images", [[], ["s2i-thoth:v1.0.0"], ["s2i-thoth:v1.0.0", "s2i-thoth:v2.0.0"]])
+    def test_should_include_python_packages_no_image_error(
+        self,
+        builder_context: PipelineBuilderContext,
+        base_images: List[str],
+    ) -> None:
+        """Test including pipeline units based on Python packages present in the base image.
+
+        This test covers a case when base image is not present in the user's configuration file.
+        """
+        builder_context.project.runtime_environment.base_image = None
+        should_include = {
+            "adviser_pipeline": True,
+            "runtime_environments": {
+                "python_packages": [
+                    {
+                        "name": "dbus-python",
+                    }
+                ],
+            },
+        }
+
+        if base_images:
+            should_include["runtime_environments"]["base_images"] = base_images
+
+        PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include)
+
+        UnitPrescription._PRESCRIPTION = {
+            "name": "PythonPackagesUnit",
+            "should_include": should_include,
+        }
+
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.decision_type = None
+
+        assert builder_context.is_adviser_pipeline()
+        builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
+        assert UnitPrescription._should_include_base(builder_context) is False
+
+    def test_should_include_python_packages_no_analysis(self, builder_context: PipelineBuilderContext) -> None:
+        """Test not including pipeline units if the base image was not analyzed."""
+        base_image_present_name, base_image_present_version = "s2i-thoth", "1.0.0"
+        builder_context.project.runtime_environment.base_image = (
+            f"{base_image_present_name}:v{base_image_present_version}"
+        )
+        should_include = {
+            "adviser_pipeline": True,
+            "runtime_environments": {
+                "base_images": [builder_context.project.runtime_environment.base_image],
+                "python_packages": [{"name": "dbus-python"}],
+            },
+        }
+
+        PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include)
+
+        builder_context.graph.should_receive("get_last_analysis_document_id").with_args(
+            base_image_present_name,
+            base_image_present_version,
+            is_external=False,
+        ).and_return(None).once()
+        builder_context.graph.should_receive("get_python_package_version_all").times(0)
+
+        UnitPrescription._PRESCRIPTION = {
+            "name": "PythonPackagesUnit",
             "should_include": should_include,
         }
 
