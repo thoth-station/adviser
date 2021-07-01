@@ -6310,3 +6310,27 @@
 * :arrow_up: updated labels of issue templates
 ### Improvements
 * Load prescriptions from a directory structure
+
+## Release 0.35.0 (2021-07-01T17:50:30)
+### Features
+* Point users to support repository to report issues
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Add demos from sprint 63
+* docs: Add pulp-python monitoring job
+* Fix docs for shared objects in prescriptions
+* :arrow_up: Automatic update of dependencies by Kebechet
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Add graph-metrics-exporter
+* Update docs/source/security.rst
+* Adjust reporting of RPM and SO specific issues
+* Perform recommendations based on RPM packages present in the environment
+* :arrow_up: Automatic update of dependencies by Kebechet
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Adjust validate logic to consume prescriptions from a dir
+* Filter Python packages present in software stack based on so files
+* add docs for security advises
+### Bug Fixes
+* Keep pipeline run information only when adviser is run in verbose mode
+### Improvements
+* Adjust documentation for prescriptions living in a dir structure
+* Extend documentation for security
