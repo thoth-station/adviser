@@ -24,7 +24,7 @@ Thoth-Station
 
   📊 `experiment with datasets available <https://github.com/thoth-station/datasets/>`__
 
-  🐛 `report a bug or service issues <https://github.com/thoth-station/thoth-application/issues/new/choose>`__
+  🐛 `report a bug or service issues <https://github.com/thoth-station/support/issues/new/choose>`__
 
 Introductory sections
 =====================
