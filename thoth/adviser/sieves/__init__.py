@@ -32,6 +32,7 @@ from .tensorflow import TensorFlow240AVX2IllegalInstructionSieve
 from .tensorflow import TensorFlowAPISieve
 from .tensorflow import TensorFlowCUDASieve
 from .thoth_s2i_abi_compat import ThothS2IAbiCompatibilitySieve
+from .thoth_s2i_packages import ThothS2IPackagesSieve
 from .update import PackageUpdateSieve
 from .version_constraint import VersionConstraintSieve
 
@@ -51,6 +52,7 @@ __all__ = [
     "SolvedSieve",
     "SolverRulesSieve",
     "VersionConstraintSieve",
+    "ThothS2IPackagesSieve",
     "ThothS2IAbiCompatibilitySieve",
     "FilterIndexSieve",
     "TensorFlow240AVX2IllegalInstructionSieve",
