@@ -58,6 +58,7 @@ class TensorFlowCUDASieve(Sieve):
     _TF_2_CUDA_10_0_SUPPORT = frozenset({(2, 0)})
     _TF_2_CUDA_10_1_SUPPORT = frozenset({(2, 1), (2, 2), (2, 3)})
     _TF_2_CUDA_11_0_SUPPORT = frozenset({(2, 4)})
+    _TF_2_CUDA_11_2_SUPPORT = frozenset({(2, 5)})
     _KNOWN_CUDA = frozenset({"8", "9", "10.0", "10.1", "11.0"})
 
     # Holds tensorflow version for which a message was printed to logs.
@@ -86,6 +87,9 @@ class TensorFlowCUDASieve(Sieve):
         elif cuda_version == "11.0":
             self._tf_1_cuda_support = self._EMPTY
             self._tf_2_cuda_support = self._TF_2_CUDA_11_0_SUPPORT
+        elif cuda_version == "11.2":
+            self._tf_1_cuda_support = self._EMPTY
+            self._tf_2_cuda_support = self._TF_2_CUDA_11_2_SUPPORT
         else:
             _LOGGER.error("Unsupported CUDA version, cannot provide recommendations for TensorFlow")
             self._tf_1_cuda_support = self._EMPTY
