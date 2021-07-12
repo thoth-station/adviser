@@ -30,6 +30,7 @@ from typing import Tuple
 import attr
 
 from thoth.common import RuntimeEnvironment
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.python import Project
 from thoth.storages.exceptions import NotFoundError
@@ -47,6 +48,11 @@ class Product:
     """A representation of an advised stack."""
 
     _LOG_HASHES: Set[Tuple[str, str, str]] = set()
+    _NO_OBSERVATION_JUSTIFICATION: Dict[str, str] = {
+        "link": jl("no_observations"),
+        "message": "No issues spotted for this stack based on Thoth's database",
+        "type": "INFO",
+    }
 
     project = attr.ib(type=Project, kw_only=True)
     score = attr.ib(type=float, kw_only=True)
@@ -141,10 +147,14 @@ class Product:
             except Exception:
                 _LOGGER.exception("Failed to parse adviser metadata")
 
+        justification = justification_metadata + state.justification
+        if not justification:
+            justification.append(cls._NO_OBSERVATION_JUSTIFICATION)
+
         return cls(
             project=advised_project,
             score=state.score,
-            justification=justification_metadata + state.justification,
+            justification=justification,
             advised_runtime_environment=state.advised_runtime_environment,
             advised_manifest_changes=state.advised_manifest_changes,
         )

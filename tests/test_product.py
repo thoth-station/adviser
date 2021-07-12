@@ -26,6 +26,7 @@ from itertools import chain
 from thoth.adviser.product import Product
 from thoth.adviser.state import State
 from thoth.adviser.context import Context
+from thoth.common import get_justification_link as jl
 from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
 from thoth.python import Pipfile
@@ -279,6 +280,7 @@ black = true
                 "tensorflow": ("tensorflow", "2.0.0", "https://pypi.org/simple"),
             },
             unresolved_dependencies={},
+            justification=[{"type": "INFO", "message": "Foo bar", "link": "https://thoth-station.ninja"}],
         )
 
         context.graph.should_receive("get_python_package_hashes_sha256").with_args(
@@ -330,7 +332,13 @@ black = true
         expected = {
             "advised_manifest_changes": [],
             "advised_runtime_environment": None,
-            "justification": [],
+            "justification": [
+                {
+                    "link": "https://thoth-station.ninja",
+                    "message": "Foo bar",
+                    "type": "INFO",
+                }
+            ],
             "project": {
                 "constraints": [],
                 "requirements": {
@@ -418,6 +426,7 @@ black = true
                 "tensorflow": ("tensorflow", "2.0.0", "https://pypi.org/simple"),
             },
             unresolved_dependencies={},
+            justification=[{"type": "INFO", "message": "Foo bar", "link": "https://thoth-station.ninja"}],
         )
 
         context.graph.should_receive("get_python_package_hashes_sha256").with_args(
@@ -496,7 +505,13 @@ black = true
         expected = {
             "advised_manifest_changes": [],
             "advised_runtime_environment": None,
-            "justification": [],
+            "justification": [
+                {
+                    "link": "https://thoth-station.ninja",
+                    "message": "Foo bar",
+                    "type": "INFO",
+                }
+            ],
             "project": {
                 "constraints": [],
                 "requirements": {
@@ -526,6 +541,94 @@ black = true
                         "numpy": {"hashes": ["sha256:000"], "index": "pypi-org-simple", "version": "==1.0.0"},
                         "pandas": {"hashes": ["sha256:222"], "index": "pypi-org-simple", "version": "==1.0.0"},
                         "tensorflow": {"hashes": ["sha256:111"], "index": "pypi-org-simple", "version": "==2.0.0"},
+                    },
+                    "develop": {},
+                },
+                "runtime_environment": {
+                    "base_image": None,
+                    "cuda_version": None,
+                    "cudnn_version": None,
+                    "hardware": {"cpu_family": None, "cpu_model": None, "gpu_model": None},
+                    "name": None,
+                    "operating_system": {"name": None, "version": None},
+                    "platform": None,
+                    "mkl_version": None,
+                    "openmpi_version": None,
+                    "openblas_version": None,
+                    "python_version": None,
+                    "recommendation_type": None,
+                },
+            },
+            "score": 0.0,
+        }
+
+        assert product.to_dict() == expected
+
+    def test_no_observation(self, context: Context) -> None:
+        """Test adding information about no justification added."""
+        state = State(
+            score=0.0,
+            resolved_dependencies={
+                "flask": ("flask", "0.12", "https://pypi.org/simple"),
+            },
+            unresolved_dependencies={},
+        )
+
+        context.project.pipfile.packages.packages.pop("tensorflow")
+
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            "flask", "0.12", "https://pypi.org/simple"
+        ).and_return(["222"]).once()
+
+        pypi = Source("https://pypi.org/simple")
+        pv_pandas_locked = PackageVersion(name="flask", version="==0.12", index=pypi, develop=False)
+
+        context.should_receive("get_package_version").with_args(
+            ("flask", "0.12", "https://pypi.org/simple"), graceful=False
+        ).and_return(pv_pandas_locked).once()
+
+        context.dependents = {
+            "flask": {("flask", "0.12", "https://pypi.org/simple"): set()},
+        }
+
+        product = Product.from_final_state(context=context, state=state)
+        expected = {
+            "advised_manifest_changes": [],
+            "advised_runtime_environment": None,
+            "justification": [
+                {
+                    "type": "INFO",
+                    "message": "No issues spotted for this stack based on Thoth's database",
+                    "link": jl("no_observations"),
+                }
+            ],
+            "project": {
+                "constraints": [],
+                "requirements": {
+                    "dev-packages": {},
+                    "packages": {"flask": "*"},
+                    "requires": {"python_version": "3.6"},
+                    "source": [
+                        {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True},
+                        {"name": "pypi-org-simple", "url": "https://pypi.org/simple", "verify_ssl": True},
+                    ],
+                    "thoth": {
+                        "allow_prereleases": {},
+                        "disable_index_adjustment": False,
+                    },
+                },
+                "requirements_locked": {
+                    "_meta": {
+                        "hash": {"sha256": "2e49395dfa87159358e581bd22e656c27c0dab04894d1b137a14f85bb387ea51"},
+                        "pipfile-spec": 6,
+                        "requires": {"python_version": "3.6"},
+                        "sources": [
+                            {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True},
+                            {"name": "pypi-org-simple", "url": "https://pypi.org/simple", "verify_ssl": True},
+                        ],
+                    },
+                    "default": {
+                        "flask": {"hashes": ["sha256:222"], "index": "pypi-org-simple", "version": "==0.12"},
                     },
                     "develop": {},
                 },
