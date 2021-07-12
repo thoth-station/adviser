@@ -18,6 +18,7 @@
 """Test implementation of prescription handling."""
 
 import pytest
+import yaml
 
 from thoth.adviser.exceptions import PrescriptionSchemaError
 from thoth.adviser.exceptions import PrescriptionDuplicateUnitNameError
@@ -70,3 +71,8 @@ class TestPrescription(AdviserTestCase):
 
         with pytest.raises(PrescriptionDuplicateUnitNameError):
             Prescription.from_dict(prescription, prescription_name="thoth", prescription_release="2021.06.15")
+
+    def test_yaml_cloader(self) -> None:
+        """Test loading using yaml.CLoader."""
+        content = yaml.load("foo: bar", Loader=yaml.CLoader)
+        assert content == {"foo": "bar"}

@@ -285,7 +285,7 @@ class Prescription:
                 _LOGGER.debug("Loading prescriptions from %r", prescription)
                 with open(prescription, "r") as config_file:
                     prescription_instance = cls.from_dict(
-                        yaml.safe_load(config_file),
+                        yaml.load(config_file, Loader=yaml.CLoader),
                         prescription_instance=prescription_instance,
                         prescription_name=prescription_name,
                         prescription_release=prescription_release,
