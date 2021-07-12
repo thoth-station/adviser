@@ -17,10 +17,11 @@
 
 """Wrap units implemented in adviser."""
 
-from typing import List
-
+from .pypi_release import PyPIReleaseWrap
 
 # Relative ordering of units is relevant, as the order specifies order
 # in which the asked to be registered - any dependencies between them
 # can be mentioned here.
-__all__: List[str] = []
+__all__ = [
+    "PyPIReleaseWrap",
+]
