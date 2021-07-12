@@ -43,7 +43,7 @@ from thoth.adviser.unit import Unit
 from thoth.adviser.wrap import Wrap
 
 
-class AdviserTestCaseException(Exception):
+class AdviserTestCaseException(Exception):  # noqa: N818
     """A base class for exceptions that can occur in the test suite."""
 
 
