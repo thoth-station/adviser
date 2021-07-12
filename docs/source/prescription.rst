@@ -765,6 +765,53 @@ any value on the runtime environment side is evaluated as matching.
       not:
         - package_name: git
 
+``should_include.runtime_environments.python_packages``
+#######################################################
+
+A list of Python packages that should or should *not* be present
+in the runtime environment in order to register the given pipeline unit.
+
+Information about Python package can be specified using the following fields.
+
+* ``name`` - mandatory, name of the package (e.g. ``jupyterhub``)
+
+* ``version`` - package version specifier (e.g. ``~=1.4.1``)
+
+* ``location`` - a regular expression describing where the given package should
+  be installed. An example use of this option is detecting Python packages
+  that are installed inside Python s2i environment. The regular expression is
+  matched using
+  `re.fullmatch <https://docs.python.org/3/library/re.html#re.fullmatch>`__.
+
+If ``version`` is not provided, any version present registers
+the given pipeline unit.
+
+If ``location`` is not provided, any location is considered. Note that the detection
+of Python packages does not enforce their availability on ``PYTHONPATH``.
+
+.. note::
+
+  *Example:*
+
+  .. code-block:: yaml
+
+    python_packages:
+      # Register if jupyterhub~=1.4.1 is present in s2i virtualenv
+      # and micropipenv<=1.1.0 is installed regardless of its location.
+      - name: jupyterhub
+        version: "~=1.4.1"
+        location: "^/opt/app-root/.*"
+      - name: micropipenv
+        version: <=1.1.0
+
+  .. code-block:: yaml
+
+    python_packages:
+      # Include the given pipeline unit if jupyterhub is **not** present in the
+      # runtime environment.
+      not:
+        - name: jupyterhub
+
 Boots
 =====
 

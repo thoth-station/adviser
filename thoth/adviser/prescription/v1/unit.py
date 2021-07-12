@@ -18,6 +18,7 @@
 """A base class for prescription based pipeline units."""
 
 import abc
+import re
 import logging
 from typing import Any
 from typing import Dict
@@ -341,23 +342,18 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             _LOGGER.debug("%s: Not matching base image used (using %r)", unit_name, runtime_used.base_image)
             return False
 
+        # All the following require base image information.
+        base_image = None
+        if runtime_used.base_image:
+            base_image = cls.get_base_image(runtime_used.base_image, raise_on_error=True)
+
         shared_objects = runtime_environment_dict.get("shared_objects")
         if shared_objects:
-            if not runtime_used.base_image:
+            if not base_image:
                 _LOGGER.debug(
-                    "%s: Check on image symbols is present but no base image provided",
+                    "%s: Check on shared objects present but no base image provided",
                     unit_name,
                 )
-                return False
-
-            base_image = cls.get_base_image(runtime_used.base_image, raise_on_error=True)
-            if not base_image:
-                if builder_context.iteration == 0:
-                    _LOGGER.error(
-                        "%s: Failed to parse base image %r",
-                        unit_name,
-                        runtime_used.base_image,
-                    )
                 return False
 
             symbols_present = set(
@@ -395,21 +391,11 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
 
         rpm_packages = runtime_environment_dict.get("rpm_packages")
         if rpm_packages:
-            if not runtime_used.base_image:
+            if not base_image:
                 _LOGGER.debug(
                     "%s: Check on RPM packages present but no base image provided",
                     unit_name,
                 )
-                return False
-
-            base_image = cls.get_base_image(runtime_used.base_image, raise_on_error=True)
-            if not base_image:
-                if builder_context.iteration == 0:
-                    _LOGGER.error(
-                        "%s: Failed to parse base image %r",
-                        unit_name,
-                        runtime_used.base_image,
-                    )
                 return False
 
             analysis_document_id = builder_context.graph.get_last_analysis_document_id(
@@ -437,13 +423,146 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 )
                 return False
 
+        python_packages = runtime_environment_dict.get("python_packages")
+        if python_packages:
+            if not base_image:
+                _LOGGER.debug(
+                    "%s: Check on Python packages present but no base image provided",
+                    unit_name,
+                )
+                return False
+
+            analysis_document_id = builder_context.graph.get_last_analysis_document_id(
+                base_image[0],
+                base_image[1],
+                is_external=False,
+            )
+
+            if not analysis_document_id:
+                if builder_context.iteration == 0:
+                    _LOGGER.warning(
+                        "%s: No analysis for base container image %r found",
+                        unit_name,
+                        runtime_used.base_image,
+                    )
+                return False
+
+            python_packages_present = builder_context.graph.get_python_package_version_all(analysis_document_id)
+            if not python_packages_present:
+                _LOGGER.debug("%s: No Python packages found for %r", unit_name, runtime_used.base_image)
+                return False
+            if not cls._check_python_packages(unit_name, python_packages_present, python_packages):
+                _LOGGER.debug(
+                    "%s: Not matching Python packages present in the base image %r", unit_name, runtime_used.base_image
+                )
+                return False
+
+        return True
+
+    @classmethod
+    def _check_python_packages(
+        cls,
+        unit_name: str,
+        python_packages_present: List[Dict[str, str]],
+        python_packages_required: List[Dict[str, str]],
+    ) -> bool:
+        """Check if required Python packages are present in the environment."""
+        # Convert to dict to have O(1) access time.
+        py_packages_present_dict: Dict[str, List[Dict[str, str]]] = {}
+        for python_package_present in python_packages_present:
+            package = py_packages_present_dict.get(python_package_present["package_name"])
+            if package is None:
+                py_packages_present_dict[python_package_present["package_name"]] = [python_package_present]
+            else:
+                package.append(python_package_present)
+
+        if isinstance(python_packages_required, dict):
+            if "not" not in python_packages_required:
+                _LOGGER.error("%s: Unable to parse description of Python packages required", unit_name)
+                return False
+
+            for not_required_python_package in python_packages_required["not"]:
+                for py_package_present in py_packages_present_dict.get(not_required_python_package["name"]) or []:
+                    location = not_required_python_package.get("location")
+                    if location is not None and not re.fullmatch(location, py_package_present["location"]):
+                        _LOGGER.debug(
+                            "%s: Python package %r in %r is located in different location %r as expected",
+                            unit_name,
+                            not_required_python_package["name"],
+                            py_package_present["location"],
+                            location,
+                        )
+                        continue
+
+                    version = not_required_python_package.get("version")
+                    if version and py_package_present["package_version"] not in SpecifierSet(version):
+                        _LOGGER.debug(
+                            "%s: Python package '%s==%s' (in %r) matches version %r but should not",
+                            unit_name,
+                            not_required_python_package["name"],
+                            py_package_present["package_version"],
+                            py_package_present["location"],
+                            version,
+                        )
+                        continue
+
+                    _LOGGER.debug(
+                        "%s: presence of Python package %r causes not including the pipeline unit",
+                        unit_name,
+                        py_package_present,
+                    )
+                    return False
+        else:
+            for required_python_package in python_packages_required:
+                for py_package_present in py_packages_present_dict.get(required_python_package["name"]) or []:
+                    version = required_python_package.get("version")
+                    if version and py_package_present["package_version"] not in SpecifierSet(version):
+                        _LOGGER.debug(
+                            "%s: Python package '%s==%s' (in %r) does not match required version %r",
+                            unit_name,
+                            required_python_package["name"],
+                            py_package_present["package_version"],
+                            py_package_present.get("location", "any"),
+                            version,
+                        )
+                        continue
+
+                    location = required_python_package.get("location")
+                    if location is not None and not re.fullmatch(location, py_package_present["location"]):
+                        _LOGGER.debug(
+                            "%s: Python package %r is located at %r but expected to be in %r",
+                            unit_name,
+                            required_python_package["name"],
+                            py_package_present["location"],
+                            location,
+                        )
+                        continue
+
+                    _LOGGER.debug(
+                        "%s: Python package %r in version %r (located in %r) is found in the runtime environment",
+                        unit_name,
+                        required_python_package["name"],
+                        required_python_package.get("version", "any"),
+                        py_package_present.get("location", "any"),
+                    )
+                    break
+                else:
+                    _LOGGER.debug(
+                        "%s: Not including as Python package %r (in version %r) is not present in the environment",
+                        unit_name,
+                        required_python_package["name"],
+                        required_python_package.get("version", "any"),
+                    )
+                    return False
+
+        _LOGGER.debug("%s: all Python package presence checks passed", unit_name)
         return True
 
     @staticmethod
     def _check_rpm_packages(
         unit_name: str,
         rpm_packages_present: List[Dict[str, str]],
-        rpm_packages_required: Union[List[Dict[str, str]], List[Dict[str, str]]],
+        rpm_packages_required: Union[List[Dict[str, str]], Dict[str, List[Dict[str, str]]]],
     ) -> bool:
         """Check if required RPM packages are present."""
         # Convert RPM packages present to mapping to save some cycles and have O(1) look up.
@@ -451,7 +570,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         rpm_packages_req: List[Dict[str, str]]
         if isinstance(rpm_packages_required, dict):
             if "not" not in rpm_packages_required:
-                _LOGGER.error("%r: Unable to parse description of RPM packages required", unit_name)
+                _LOGGER.error("%s: Unable to parse description of RPM packages required", unit_name)
                 return False
 
             should_be_present = False
@@ -508,6 +627,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             return False
 
         # Path to should be present.
+        _LOGGER.debug("%s: all RPM package presence checks passed", unit_name)
         return True
 
     @classmethod

@@ -47,6 +47,16 @@ def _with_not(entity: object) -> Schema:
     return Schema(Any(entity, Schema({"not": entity})))
 
 
+def _specifier_set(v: object) -> None:
+    """Validate a specifier set."""
+    if not isinstance(v, str):
+        raise Invalid(f"Value {v!r} is not valid version specifier (example: '<1.0>=0.5')")
+    try:
+        SpecifierSet(v)
+    except InvalidSpecifier as exc:
+        raise Invalid(str(exc))
+
+
 _RPM_PACKAGE_VERSION_SCHEMA = Schema(
     {
         Required("package_name"): _NONEMPTY_STRING,
@@ -56,6 +66,14 @@ _RPM_PACKAGE_VERSION_SCHEMA = Schema(
         Optional("package_version"): _NONEMPTY_STRING,
         Optional("release"): _NONEMPTY_STRING,
         Optional("src"): bool,
+    }
+)
+
+_PYTHON_PACKAGE_VERSION_SCHEMA = Schema(
+    {
+        Required("name"): _NONEMPTY_STRING,
+        Optional("version"): _specifier_set,
+        Optional("location"): Any(_NONEMPTY_STRING, None),
     }
 )
 
@@ -91,6 +109,7 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA = Schema(
         Optional("base_images"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
         Optional("shared_objects"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS),
         Optional("rpm_packages"): _with_not(All([_RPM_PACKAGE_VERSION_SCHEMA], Length(min=1))),
+        Optional("python_packages"): _with_not(All([_PYTHON_PACKAGE_VERSION_SCHEMA], Length(min=1))),
     }
 )
 
@@ -208,16 +227,6 @@ PACKAGE_VERSION_LOCKED_SCHEMA = Schema(
         Optional("index_url"): Optional(_NONEMPTY_STRING),
     }
 )
-
-
-def _specifier_set(v: object) -> None:
-    """Validate a specifier set."""
-    if not isinstance(v, str):
-        raise Invalid(f"Value {v!r} is not valid version specifier (example: '<1.0>=0.5')")
-    try:
-        SpecifierSet(v)
-    except InvalidSpecifier as exc:
-        raise Invalid(str(exc))
 
 
 PACKAGE_VERSION_SCHEMA = Schema(
