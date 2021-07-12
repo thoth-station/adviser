@@ -23,15 +23,15 @@ from typing import List
 from typing import Optional
 
 
-class AdviserException(Exception):
+class AdviserException(Exception):  # noqa: N818
     """A base adviser exception in adviser's exception hierarchy."""
 
 
-class NotAcceptable(AdviserException):
+class NotAcceptable(AdviserException):  # noqa: N818
     """An exception raised during stack generation when the given action would produce un-acceptable solution."""
 
 
-class SkipPackage(AdviserException):
+class SkipPackage(AdviserException):  # noqa: N818
     """An exception raised during stack generation when the given package should be skipped in the stack."""
 
 
@@ -47,11 +47,11 @@ class InternalError(AdviserException):
     """An exception raised on bugs in the code base."""
 
 
-class UnsupportedConfiguration(AdviserException):
+class UnsupportedConfiguration(AdviserException):  # noqa: N818
     """An exception raised on unsupported configuration by recommendation engine."""
 
 
-class NotFound(AdviserException):
+class NotFound(AdviserException):  # noqa: N818
     """An exception raised if the given resource was not found."""
 
 
@@ -59,19 +59,19 @@ class VersionIdentifierError(AdviserException):
     """An exception raised if the given version identifier is not a semver identifier."""
 
 
-class UnableLock(AdviserException):
+class UnableLock(AdviserException):  # noqa: N818
     """Raised if it is unable to lock dependencies given the set of constraints."""
 
 
-class NoHistoryKept(AdviserException):
+class NoHistoryKept(AdviserException):  # noqa: N818
     """Raised if a user asks for history, but history was not kept (e.g. temperature function history in annealing)."""
 
 
-class AdviserPipelineException(AdviserException):
+class AdviserPipelineException(AdviserException):  # noqa: N818
     """A base class for implementing pipeline specific exceptions."""
 
 
-class EagerStopPipeline(AdviserPipelineException):
+class EagerStopPipeline(AdviserPipelineException):  # noqa: N818
     """Raised to signalize premature end of pipeline."""
 
 
@@ -122,7 +122,7 @@ class PipelineConfigurationError(PipelineUnitError):
     """
 
 
-class AdviserRunException(AdviserException):
+class AdviserRunException(AdviserException):  # noqa: N818
     """A base class for implementing exceptions occurred during an andviser run."""
 
     def to_dict(self) -> Optional[Dict[str, str]]:
@@ -130,7 +130,7 @@ class AdviserRunException(AdviserException):
         return None
 
 
-class UnresolvedDependencies(AdviserRunException):
+class UnresolvedDependencies(AdviserRunException):  # noqa: N818
     """An exception raised if dependencies were not resolved and cannot produce stack."""
 
     __slots__ = ["unresolved", "stack_info"]
@@ -155,7 +155,7 @@ class UnresolvedDependencies(AdviserRunException):
         }
 
 
-class CannotProduceStack(AdviserRunException):
+class CannotProduceStack(AdviserRunException):  # noqa: N818
     """Raised if there was not produced any result."""
 
     __slots__ = ["stack_info"]
