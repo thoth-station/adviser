@@ -3,7 +3,7 @@ name: Patch release
 about: Create a new patch release
 title: New patch release
 assignees: sesheta
-labels: bot, priority/critical-urgent
+labels: "bot, priority/critical-urgent"
 ---
 
 Hey, Kebechet!
