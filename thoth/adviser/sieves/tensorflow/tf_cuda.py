@@ -58,7 +58,7 @@ class TensorFlowCUDASieve(Sieve):
     _TF_2_CUDA_10_0_SUPPORT = frozenset({(2, 0)})
     _TF_2_CUDA_10_1_SUPPORT = frozenset({(2, 1), (2, 2), (2, 3)})
     _TF_2_CUDA_11_0_SUPPORT = frozenset({(2, 4)})
-    _TF_2_CUDA_11_2_SUPPORT = frozenset({(2, 5)})
+    _TF_2_CUDA_11_2_SUPPORT = frozenset({(2, 5), (2, 6)})
     _KNOWN_CUDA = frozenset({"8", "9", "10.0", "10.1", "11.0"})
 
     # Holds tensorflow version for which a message was printed to logs.
