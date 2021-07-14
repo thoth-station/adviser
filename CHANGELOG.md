@@ -6334,3 +6334,21 @@
 ### Improvements
 * Adjust documentation for prescriptions living in a dir structure
 * Extend documentation for security
+
+## Release 0.36.0 (2021-07-14T07:04:54)
+### Features
+* Notify about packages published on Operate First Pulp instance
+* :bug: converted it to a string containing a comma separated list of strings
+* Add a wrap that notifies about Python package releases on PyPI
+* Remove no observations wrap
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Ignore flake8 errors on naming
+* Implement a pipeline unit for filtering Python packages already present in base
+* TensorFlow 2.5 is built with CUDA 11.2 support
+* Update TensorFlow API symbols to include symbols in 2.6 release
+* Introduce a mechanism for including unit based on Python packages
+* :arrow_up: Automatic update of dependencies by Kebechet
+### Improvements
+* TensorFlow 2.6 uses same CUDA as TensorFlow 2.5, CUDA 11.2
+* Add test for loading using yaml.CLoader
+* Use CLoader to load prescriptions to speed up loading
