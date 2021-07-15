@@ -33,6 +33,7 @@ from thoth.common import RuntimeEnvironment
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.python import Project
+from thoth.python import PipfileLock
 from thoth.storages.exceptions import NotFoundError
 
 from .context import Context
@@ -54,11 +55,13 @@ class Product:
         "type": "INFO",
     }
 
+    # This project is "advised project" and does not need to be exactly the same as the one stated in context.
     project = attr.ib(type=Project, kw_only=True)
     score = attr.ib(type=float, kw_only=True)
     justification = attr.ib(type=List[Dict[str, str]], kw_only=True)
     advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], default=None, kw_only=True)
     advised_manifest_changes = attr.ib(type=List[List[Dict[str, Any]]], kw_only=True, default=attr.Factory(list))
+    _context = attr.ib(type=Context, kw_only=True)
 
     @classmethod
     def from_final_state(cls, *, context: Context, state: State) -> "Product":
@@ -157,7 +160,32 @@ class Product:
             justification=justification,
             advised_runtime_environment=state.advised_runtime_environment,
             advised_manifest_changes=state.advised_manifest_changes,
+            context=context,
         )
+
+    @staticmethod
+    def _construct_dependency_graph(context: Context, pipfile_lock: PipfileLock) -> Dict[str, Any]:
+        """Construct dependency graph for the given Pipfile.lock."""
+        nodes: List[str] = []
+        nodes_idx: Dict[Tuple[str, str, str], int] = {}
+        for package_version in pipfile_lock.packages.packages.values():
+            package_version_tuple = package_version.to_tuple()
+            nodes.append(package_version_tuple)
+            nodes_idx[package_version_tuple] = len(nodes_idx)
+
+        edges = []
+        for src_idx, package_version_tuple in enumerate(nodes):
+            dependencies = context.dependencies.get(package_version_tuple[0], {}).get(package_version_tuple)
+            if not dependencies:
+                continue
+
+            for dependency in dependencies:
+                dst_idx = nodes_idx.get(dependency)
+                if dst_idx is not None:
+                    edges.append([src_idx, dst_idx])
+
+        # Discard version and index url as package name is good enough to locate nodes.
+        return {"nodes": [i[0] for i in nodes], "edges": edges}
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert this instance into a dictionary."""
@@ -167,6 +195,7 @@ class Product:
 
         return {
             "project": self.project.to_dict(keep_thoth_section=True),
+            "dependency_graph": self._construct_dependency_graph(self._context, self.project.pipfile_lock),
             "score": self.score,
             "justification": self.justification,
             "advised_runtime_environment": advised_runtime_environment,

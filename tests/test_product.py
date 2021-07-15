@@ -30,6 +30,7 @@ from thoth.common import get_justification_link as jl
 from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
 from thoth.python import Pipfile
+from thoth.python import PipfileLock
 from thoth.python import Source
 
 from .base import AdviserTestCase
@@ -55,6 +56,116 @@ python_version = "3.7"
 [thoth.allow_prereleases]
 black = true
 """
+
+    _DEPENDENCIES_NO_CYCLE = {
+        "absl-py": {
+            ("absl-py", "0.8.1", "https://pypi.org/simple"): {
+                ("six", "1.13.0", "https://pypi.org/simple"),
+                ("six", "1.9.0", "https://pypi.org/simple"),
+            }
+        },
+        "astor": {
+            ("astor", "0.8.0", "https://pypi.org/simple"): {
+                ("six", "1.13.0", "https://pypi.org/simple"),
+            }
+        },
+        "tensorflow": {
+            ("tensorflow", "1.9.0", "https://pypi.org/simple"): {
+                ("astor", "0.8.0", "https://pypi.org/simple"),
+                ("absl-py", "0.8.1", "https://pypi.org/simple"),
+            }
+        },
+    }
+
+    _DEPENDENCIES_CYCLE = {
+        "a": {
+            ("a", "1.0.0", "https://pypi.org/simple"): {
+                ("b", "1.0.0", "https://pypi.org/simple"),
+            }
+        },
+        "b": {
+            ("b", "1.0.0", "https://pypi.org/simple"): {
+                ("c", "1.1.0", "https://pypi.org/simple"),
+            }
+        },
+        "c": {
+            ("c", "1.0.0", "https://pypi.org/simple"): {
+                ("a", "1.0.0", "https://pypi.org/simple"),
+                ("b", "1.0.0", "https://pypi.org/simple"),
+            }
+        },
+    }
+
+    _DEPENDENCIES_NO_CYCLE_PIPFILE_LOCK = PipfileLock.from_dict(
+        {
+            "_meta": {
+                "hash": {"sha256": "001e85311f65a97fe23d21061c0b68139015dfea5b4bfb8b91551ede367fe1d1"},
+                "pipfile-spec": 6,
+                "requires": {"python_version": "3.6"},
+                "sources": [{"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True}],
+            },
+            "default": {
+                "absl-py": {
+                    "hashes": ["sha256:d9129186431e150d7fe455f1cb1ecbb92bb5dba9da9bc3ef7b012d98c4db2526"],
+                    "index": "pypi",
+                    "version": "==0.8.1",
+                },
+                "astor": {
+                    "hashes": [
+                        "sha256:37a6eed8b371f1228db08234ed7f6cfdc7817a3ed3824797e20cbb11dc2a7862",
+                    ],
+                    "index": "pypi",
+                    "version": "==0.8.0",
+                },
+                "six": {
+                    "hashes": [
+                        "sha256:13f9f196f330c7c2c5d7a5cf91af894110ca0215ac051b5844701f2bfd934d52",
+                    ],
+                    "index": "pypi",
+                    "version": "==1.13.0",
+                },
+                "tensorflow": {
+                    "hashes": [
+                        "sha256:d351f7db08b8de322536c5886fada3e37feae809bfd37368050f9eeea544b87e",
+                    ],
+                    "index": "pypi",
+                    "version": "==1.9.0",
+                },
+            },
+            "develop": {},
+        },
+        pipfile=None,
+    )
+
+    _DEPENDENCIES_CYCLE_PIPFILE_LOCK = PipfileLock.from_dict(
+        {
+            "_meta": {
+                "hash": {"sha256": "FOO"},
+                "pipfile-spec": 6,
+                "requires": {"python_version": "3.8"},
+                "sources": [{"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True}],
+            },
+            "default": {
+                "a": {
+                    "hashes": ["sha256:foo"],
+                    "index": "pypi",
+                    "version": "==1.0.0",
+                },
+                "b": {
+                    "hashes": ["sha256:foo"],
+                    "index": "pypi",
+                    "version": "==1.0.0",
+                },
+                "c": {
+                    "hashes": ["sha256:foo"],
+                    "index": "pypi",
+                    "version": "==1.0.0",
+                },
+            },
+            "develop": {},
+        },
+        pipfile=None,
+    )
 
     def test_from_final_state(self, context: Context) -> None:
         """Test instantiating product from a final state."""
@@ -233,9 +344,9 @@ black = true
             },
         }
 
-    def test_to_dict(self) -> None:
+    def test_to_dict(self, context: Context) -> None:
         """Test conversion of this product into a dictionary representation."""
-        project = flexmock()
+        project = context.project
         project.should_receive("to_dict").with_args(keep_thoth_section=True).and_return({"baz": "bar"}).once()
 
         advised_runtime_environment = flexmock()
@@ -261,6 +372,7 @@ black = true
             justification=[{"foo": "bar"}],
             project=project,
             score=0.999,
+            context=context,
         )
 
         assert product.to_dict() == {
@@ -269,6 +381,29 @@ black = true
             "justification": [{"foo": "bar"}],
             "advised_runtime_environment": {"hello": "thoth"},
             "advised_manifest_changes": advised_manifest_changes,
+            "dependency_graph": {
+                "edges": [],
+                "nodes": [
+                    "absl-py",
+                    "astor",
+                    "click",
+                    "flask",
+                    "gast",
+                    "grpcio",
+                    "itsdangerous",
+                    "jinja2",
+                    "markdown",
+                    "markupsafe",
+                    "numpy",
+                    "protobuf",
+                    "six",
+                    "tensorboard",
+                    "tensorflow",
+                    "termcolor",
+                    "werkzeug",
+                    "wheel",
+                ],
+            },
         }
 
     def test_environment_markers(self, context: Context) -> None:
@@ -339,6 +474,7 @@ black = true
                     "type": "INFO",
                 }
             ],
+            "dependency_graph": {"edges": [], "nodes": ["numpy", "tensorflow"]},
             "project": {
                 "constraints": [],
                 "requirements": {
@@ -505,6 +641,7 @@ black = true
         expected = {
             "advised_manifest_changes": [],
             "advised_runtime_environment": None,
+            "dependency_graph": {"edges": [], "nodes": ["pandas", "numpy", "tensorflow"]},
             "justification": [
                 {
                     "link": "https://thoth-station.ninja",
@@ -595,6 +732,7 @@ black = true
         expected = {
             "advised_manifest_changes": [],
             "advised_runtime_environment": None,
+            "dependency_graph": {"edges": [], "nodes": ["flask"]},
             "justification": [
                 {
                     "type": "INFO",
@@ -651,3 +789,17 @@ black = true
         }
 
         assert product.to_dict() == expected
+
+    def test_construct_dependency_graph_basic(self) -> None:
+        """Test constructing dependency graph."""
+        context = flexmock(dependencies=self._DEPENDENCIES_NO_CYCLE)
+        dependency_graph = Product._construct_dependency_graph(context, self._DEPENDENCIES_NO_CYCLE_PIPFILE_LOCK)
+        assert dependency_graph["nodes"] == ["absl-py", "astor", "six", "tensorflow"]
+        assert set(tuple(i) for i in dependency_graph["edges"]) == {(0, 2), (1, 2), (3, 1), (3, 0)}
+
+    def test_construct_dependency_graph_cycle(self, context: Context) -> None:
+        """Test constructing dependency graph information with cycles."""
+        context = flexmock(dependencies=self._DEPENDENCIES_CYCLE)
+        dependency_graph = Product._construct_dependency_graph(context, self._DEPENDENCIES_CYCLE_PIPFILE_LOCK)
+        assert dependency_graph["nodes"] == ["a", "b", "c"]
+        assert set(tuple(i) for i in dependency_graph["edges"]) == {(0, 1), (2, 0), (2, 1)}
