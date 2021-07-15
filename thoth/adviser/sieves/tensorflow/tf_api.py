@@ -24,7 +24,7 @@ from typing import Optional
 from typing import Set
 from typing import TYPE_CHECKING
 import attr
-import json
+import orjson
 import logging
 import os
 
@@ -68,7 +68,7 @@ class TensorFlowAPISieve(Sieve):
     def _pre_compute_releases(self) -> None:
         """Pre-compute releases that match library usage supplied by the user."""
         with open(os.path.join(self._DATA_DIR, "tensorflow", "api.json"), "r") as api_file:
-            known_api = json.load(api_file)
+            known_api = orjson.loads(api_file.read())
 
         self._acceptable_releases = set()
         tf_api_used = set(

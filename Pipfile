@@ -28,6 +28,7 @@ voluptuous = "*"
 fext = ">=0.2.0"
 termial-random = "*"
 thoth-common = "*"
+orjson = "*"
 
 [requires]
 python_version = "3.8"
