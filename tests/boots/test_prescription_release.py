@@ -64,5 +64,5 @@ class TestPrescriptionReleaseBoot(AdviserUnitTestCase):
         assert context.stack_info, "No stack info provided"
         assert len(context.stack_info) == 1
         assert context.stack_info[0]["type"] == "INFO"
-        assert context.stack_info[0]["message"] == "Using prescription 'thoth' release '2021.06.15.dev'"
+        assert context.stack_info[0]["message"] == "Using prescriptions 'thoth' release '2021.06.15.dev'"
         assert self.verify_justification_schema(context.stack_info) is True
