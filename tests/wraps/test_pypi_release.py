@@ -44,7 +44,7 @@ class TestPyPIReleaseWrap(AdviserUnitTestCase):
         assert state.justification == [
             {
                 "type": "INFO",
-                "message": "Package 'tensorflow' is released on PyPI",
+                "message": "Package 'tensorflow' in version '2.5.0' is released on PyPI",
                 "link": "https://pypi.org/project/tensorflow/2.5.0/",
             }
         ]
