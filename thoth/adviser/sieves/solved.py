@@ -49,7 +49,7 @@ class SolvedSieve(Sieve):
     CONFIGURATION_SCHEMA: Schema = Schema(
         {Required("package_name"): SchemaAny(str, None), Required("without_error"): bool}
     )
-    _JUSTIFICATION_LINK = jl("buildtime_error")
+    _JUSTIFICATION_LINK = jl("install_error")
 
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
 
@@ -93,7 +93,9 @@ class SolvedSieve(Sieve):
             if has_error and self.configuration["without_error"]:
                 if package_tuple not in self._messages_logged:
                     self._messages_logged.add(package_tuple)
-                    message = f"Removing package {package_tuple} due to build time error in the software environment"
+                    message = (
+                        f"Removing package {package_tuple} due to installation time error in the software environment"
+                    )
                     _LOGGER.warning("%s - see %s", message, self._JUSTIFICATION_LINK)
                     self.context.stack_info.append(
                         {
