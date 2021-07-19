@@ -268,7 +268,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 os_name = item.get("name")
                 os_version = item.get("version")
                 if os_name == os_used_name and os_version == os_used_version:
-                    _LOGGER.error("%s: Matching operating system %r in version %r", unit_name, os_name, os_version)
+                    _LOGGER.debug("%s: Matching operating system %r in version %r", unit_name, os_name, os_version)
                     break
             else:
                 _LOGGER.debug(
