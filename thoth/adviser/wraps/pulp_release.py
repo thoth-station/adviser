@@ -55,5 +55,6 @@ class PulpReleaseWrap(Wrap):
                     "type": "INFO",
                     "link": package_version_tuple[2],
                     "message": f"Package {package_version_tuple[0]!r} is released on Operate First Pulp instance",
+                    "package_name": package_version_tuple[0],
                 }
             )
