@@ -17,12 +17,12 @@
 
 """Test report as product by a resolver."""
 
-import flexmock
 import json
 import os
 import pytest
 from itertools import chain
 
+from thoth.adviser.context import Context
 from thoth.adviser.pipeline_config import PipelineConfig
 from thoth.adviser.product import Product
 from thoth.adviser.report import Report
@@ -62,17 +62,22 @@ class TestReport(AdviserTestCase):
             "discarded_final_states_count": 0,
         }
 
-    def test_add_product(self, pipeline_config: PipelineConfig) -> None:
+    def test_add_product(self, context: Context, pipeline_config: PipelineConfig) -> None:
         """Test adding a product to a report."""
+        project = context.project  # reuse the one stated in context
         report = Report(count=2, pipeline=pipeline_config)
 
-        product1 = Product(project=None, score=0.42, justification=[], advised_runtime_environment=None)
+        product1 = Product(
+            project=project, score=0.42, justification=[], advised_runtime_environment=None, context=context
+        )
         assert report.add_product(product1) is True
         assert report.product_count() == 1
         assert list(report.iter_products()) == [product1]
         assert list(report.iter_products_sorted()) == [product1]
 
-        product2 = Product(project=None, score=0.0, justification=[], advised_runtime_environment=None)
+        product2 = Product(
+            project=project, score=0.0, justification=[], advised_runtime_environment=None, context=context
+        )
         assert report.add_product(product2) is True
         assert report.product_count() == 2
         assert set(report.iter_products()) == {product1, product2}
@@ -80,7 +85,9 @@ class TestReport(AdviserTestCase):
         assert list(report.iter_products_sorted(reverse=True)) == [product1, product2]
         assert list(report.iter_products_sorted(reverse=False)) == [product2, product1]
 
-        product3 = Product(project=None, score=0.98, justification=[], advised_runtime_environment=None)
+        product3 = Product(
+            project=project, score=0.98, justification=[], advised_runtime_environment=None, context=context
+        )
         assert report.add_product(product3) is True
         assert report.product_count() == 2
         assert set(report.iter_products()) == {product3, product1}
@@ -89,10 +96,11 @@ class TestReport(AdviserTestCase):
         assert list(report.iter_products_sorted(reverse=False)) == [product1, product3]
 
         product4 = Product(
-            project=None,
+            project=project,
             score=0.666,
             justification=[],
             advised_runtime_environment=None,
+            context=context,
         )
         assert report.add_product(product4) is True
         assert report.product_count() == 2
@@ -102,10 +110,11 @@ class TestReport(AdviserTestCase):
         assert list(report.iter_products_sorted(reverse=False)) == [product4, product3]
 
         product5 = Product(
-            project=None,
+            project=project,
             score=-0.99999,
             justification=[],
             advised_runtime_environment=None,
+            context=context,
         )
         assert report.add_product(product5) is False
         assert report.product_count() == 2
@@ -114,11 +123,12 @@ class TestReport(AdviserTestCase):
         assert list(report.iter_products_sorted(reverse=True)) == [product3, product4]
         assert list(report.iter_products_sorted(reverse=False)) == [product4, product3]
 
-    def test_to_dict(self, pipeline_config: PipelineConfig) -> None:
+    def test_to_dict(self, context: Context, pipeline_config: PipelineConfig) -> None:
         """Test conversion to a dict."""
         report = Report(count=3, pipeline=pipeline_config)
 
-        project = flexmock()
+        # Reuse project from the context for this test case.
+        project = context.project
         project_dict = {"aresto momentum": "avada kedavra"}
         project.should_receive("to_dict").with_args(keep_thoth_section=True).and_return(
             project_dict
@@ -129,6 +139,7 @@ class TestReport(AdviserTestCase):
             score=0.666,
             justification=[{"gryffindor": "le gladium leviosa"}],
             advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
+            context=context,
         )
         report.add_product(product)
 
@@ -143,11 +154,12 @@ class TestReport(AdviserTestCase):
             "discarded_final_states_count": 0,
         }
 
-    def test_to_dict_metadata(self, pipeline_config: PipelineConfig) -> None:
+    def test_to_dict_metadata(self, context: Context, pipeline_config: PipelineConfig) -> None:
         """Test conversion to a dict with passed metadata."""
         report = Report(count=3, pipeline=pipeline_config)
 
-        project = flexmock()
+        # Reuse project from the context for this test case.
+        project = context.project
         project_dict = {"aresto momentum": "avada kedavra"}
         project.should_receive("to_dict").with_args(keep_thoth_section=True).and_return(project_dict)
 
@@ -156,6 +168,7 @@ class TestReport(AdviserTestCase):
             score=0.666,
             justification=[{"gryffindor": "le gladium leviosa"}],
             advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
+            context=context,
         )
         report.add_product(product)
 
@@ -184,12 +197,13 @@ class TestReport(AdviserTestCase):
         finally:
             os.environ.pop("THOTH_ADVISER_METADATA")
 
-    def test_no_verbose(self, pipeline_config: PipelineConfig) -> None:
+    def test_no_verbose(self, context: Context, pipeline_config: PipelineConfig) -> None:
         """Test obtaining report with and without verbose flag set."""
         report = Report(count=3, pipeline=pipeline_config)
         report.set_stack_info([{"foo": "bar"}])
 
-        project = flexmock()
+        # Reuse project from the context for this test case.
+        project = context.project
         project_dict = {"aresto momentum": "avada kedavra"}
         project.should_receive("to_dict").with_args(keep_thoth_section=True).and_return(project_dict)
 
@@ -198,6 +212,7 @@ class TestReport(AdviserTestCase):
             score=0.666,
             justification=[{"gryffindor": "le gladium leviosa"}],
             advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
+            context=context,
         )
         report.add_product(product)
 
