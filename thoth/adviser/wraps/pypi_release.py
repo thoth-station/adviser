@@ -54,5 +54,6 @@ class PyPIReleaseWrap(Wrap):
                     "link": f"https://pypi.org/project/{package_version_tuple[0]}/{package_version_tuple[1]}/",
                     "message": f"Package {package_version_tuple[0]!r} in version "
                     f"{package_version_tuple[1]!r} is released on PyPI",
+                    "package_name": package_version_tuple[0],
                 }
             )

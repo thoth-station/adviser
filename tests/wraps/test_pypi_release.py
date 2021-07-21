@@ -45,9 +45,11 @@ class TestPyPIReleaseWrap(AdviserUnitTestCase):
             {
                 "type": "INFO",
                 "message": "Package 'tensorflow' in version '2.5.0' is released on PyPI",
+                "package_name": "tensorflow",
                 "link": "https://pypi.org/project/tensorflow/2.5.0/",
             }
         ]
+        self.verify_justification_schema(state.justification)
 
     def test_run_no_justification(self) -> None:
         """Test NOT adding information if the given Python package is not a PyPI release."""
