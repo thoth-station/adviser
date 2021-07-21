@@ -9,7 +9,7 @@ pytest-timeout = "*"
 pytest-cov = "*"
 hypothesis-auto = "*"
 hypothesis = "*"
-flexmock = "*"
+flexmock = "<=0.10.4"
 pytest-mypy = "*"
 jsonpatch = "*"
 
