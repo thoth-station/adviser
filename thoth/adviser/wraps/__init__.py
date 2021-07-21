@@ -17,6 +17,7 @@
 
 """Wrap units implemented in adviser."""
 
+from .libraries_io import LibrariesIOWrap
 from .pulp_release import PulpReleaseWrap
 from .pypi_release import PyPIReleaseWrap
 from .sort_justifications import SortJustificationsWrap
@@ -28,5 +29,6 @@ from .sort_justifications import SortJustificationsWrap
 __all__ = [
     "PyPIReleaseWrap",
     "PulpReleaseWrap",
+    "LibrariesIOWrap",
     "SortJustificationsWrap",  # Keep this last.
 ]
