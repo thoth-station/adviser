@@ -19,6 +19,7 @@
 
 from .pulp_release import PulpReleaseWrap
 from .pypi_release import PyPIReleaseWrap
+from .sort_justifications import SortJustificationsWrap
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -27,4 +28,5 @@ from .pypi_release import PyPIReleaseWrap
 __all__ = [
     "PyPIReleaseWrap",
     "PulpReleaseWrap",
+    "SortJustificationsWrap",  # Keep this last.
 ]
