@@ -2032,16 +2032,15 @@ class TestResolver(AdviserTestCase):
         assert resolver.beam.size == 0
 
     def test_maybe_score_user_lock_file(self, resolver: Resolver) -> None:
-        """Test scoring user stack lock file when sieves removed a package."""
+        """Test scoring user stack lock file when the lock file is accepted."""
         resolver._init_context()
 
         resolver.should_receive("_prepare_user_lock_file").and_return(None).once()
 
         assert resolver.beam.size == 0
-        resolver._maybe_score_user_lock_file()
-        assert resolver.beam.size == 1
-
-        state = resolver.beam.get(0)
+        state = resolver._maybe_score_user_lock_file()
+        assert resolver.beam.size == 0
+        assert state is not None
 
         assert state.resolved_dependencies
         assert set(state.resolved_dependencies.values()) == set(
