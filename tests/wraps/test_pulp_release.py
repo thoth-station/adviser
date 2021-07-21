@@ -46,9 +46,11 @@ class TestPyPIReleaseWrap(AdviserUnitTestCase):
             {
                 "type": "INFO",
                 "message": f"Package {package_version_tuple[0]!r} is released on Operate First Pulp instance",
+                "package_name": package_version_tuple[0],
                 "link": package_version_tuple[2],
             }
         ]
+        self.verify_justification_schema(state.justification)
 
     def test_run_no_justification(self) -> None:
         """Test NOT adding a link to Pulp instance for the given package released."""
