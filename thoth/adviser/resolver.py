@@ -628,7 +628,6 @@ class Resolver:
             ]
         )
         self._run_wraps(state)
-        self.beam.add_state(state)
         _LOGGER.info("User's software stack has a score of %.2f - see %s", state.score, jl("user_stack"))
         return state
 
