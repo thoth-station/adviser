@@ -17,6 +17,7 @@
 
 """A wrap that links to a Pulp instance."""
 
+import os
 from typing import TYPE_CHECKING
 from typing import Generator
 from typing import Dict
@@ -32,7 +33,7 @@ if TYPE_CHECKING:
 class PulpReleaseWrap(Wrap):
     """A wrap that adds link to Red Hat's Pulp instance."""
 
-    _PULP_URL = "https://pulp.operate-first.cloud/"
+    _PULP_URL = os.getenv("THOTH_ADVISER_DEPLOYMENT_PULP_URL_BASE", "https://pulp.operate-first.cloud/")
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[Any, Any], None, None]:
