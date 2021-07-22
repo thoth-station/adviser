@@ -36,7 +36,7 @@ class TestPyPIReleaseWrap(AdviserUnitTestCase):
     def test_run_add_justification(self) -> None:
         """Test adding a link to Pulp instance for the given package released."""
         state = State()
-        package_version_tuple = ("tensorflow", "2.5.0", "https://pulp.operate-first.cloud/pypi/test/simple")
+        package_version_tuple = ("tensorflow", "2.5.0", f"{self.UNIT_TESTED._PULP_URL}pypi/test/simple")
         state.add_resolved_dependency(package_version_tuple)
 
         unit = self.UNIT_TESTED()
@@ -54,8 +54,11 @@ class TestPyPIReleaseWrap(AdviserUnitTestCase):
 
     def test_run_no_justification(self) -> None:
         """Test NOT adding a link to Pulp instance for the given package released."""
+        index_url = "https://pypi.org/simple"
+        assert not self.UNIT_TESTED._PULP_URL.startswith(index_url)
+
         state = State()
-        state.add_resolved_dependency(("tensorflow", "2.5.0", "https://pypi.org/simple"))
+        state.add_resolved_dependency(("tensorflow", "2.5.0", index_url))
 
         unit = self.UNIT_TESTED()
         unit.run(state)
