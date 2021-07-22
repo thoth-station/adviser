@@ -6352,3 +6352,26 @@
 * TensorFlow 2.6 uses same CUDA as TensorFlow 2.5, CUDA 11.2
 * Add test for loading using yaml.CLoader
 * Use CLoader to load prescriptions to speed up loading
+
+## Release 0.37.0 (2021-07-22T16:22:52)
+### Features
+* Make Pulp URL configurable
+* Link package information to libraries.io
+* State dependency graph in the resulting document
+* Do not add scored user stack to beam
+* Add package name to Pulp information
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Pin flexmock to <=0.10.4
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Fix wrong import
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Decrease log level accidentally stated as error
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Use prescriptions, plural
+* State also package version when notifying about PyPI packages
+* Use orjson to load TensorFlow API symbols
+### Bug Fixes
+* Rename build time error to installation time error
+### Improvements
+* Add package name to PyPI release justification info
+* Sort resulting justification for better UX
