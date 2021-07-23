@@ -29,6 +29,7 @@ from voluptuous import Range
 from voluptuous import Required
 from voluptuous import Schema
 
+from thoth.python import PackageVersion
 from packaging.specifiers import SpecifierSet
 from packaging.specifiers import InvalidSpecifier
 
@@ -57,6 +58,20 @@ def _specifier_set(v: object) -> None:
         raise Invalid(str(exc))
 
 
+def _python_package_name(n: object) -> None:
+    """Validate Python package name."""
+    if not isinstance(n, str):
+        raise Invalid(f"Value {n!r} is not a valid package name")
+
+    try:
+        normalized = PackageVersion.normalize_python_package_name(n)
+    except Exception as exc:
+        raise Invalid(f"Failed to parse Python package name {n!r}: {str(exc)}")
+    else:
+        if normalized != n:
+            raise Invalid(f"Python package name {n!r} is not in a normalized form, normalized: {normalized!r}")
+
+
 _RPM_PACKAGE_VERSION_SCHEMA = Schema(
     {
         Required("package_name"): _NONEMPTY_STRING,
@@ -71,7 +86,7 @@ _RPM_PACKAGE_VERSION_SCHEMA = Schema(
 
 _PYTHON_PACKAGE_VERSION_SCHEMA = Schema(
     {
-        Required("name"): _NONEMPTY_STRING,
+        Required("name"): _python_package_name,
         Optional("version"): _specifier_set,
         Optional("location"): Any(_NONEMPTY_STRING, None),
     }
@@ -200,7 +215,18 @@ STACK_INFO_SCHEMA = Schema(
 )
 
 
-JUSTIFICATION_SCHEMA = STACK_INFO_SCHEMA
+JUSTIFICATION_SCHEMA = Schema(
+    {
+        Required("type"): Any("WARNING", "INFO", "ERROR"),
+        Required("message"): _NONEMPTY_STRING,
+        Required("link"): _justification_link,
+        Optional("package_name"): _python_package_name,
+        Optional("advisory"): _NONEMPTY_STRING,
+        Optional("cve_id"): _NONEMPTY_STRING,
+        Optional("cve_name"): _NONEMPTY_STRING,
+        Optional("version_range"): _specifier_set,
+    }
+)
 
 
 _UNIT_RUN_SCHEMA_BASE_DICT = {
@@ -222,7 +248,7 @@ def _locked_version(v: object) -> None:
 
 PACKAGE_VERSION_LOCKED_SCHEMA = Schema(
     {
-        Required("name"): Optional(_NONEMPTY_STRING),
+        Required("name"): Optional(_python_package_name),
         Optional("locked_version"): Optional(_locked_version),
         Optional("index_url"): Optional(_NONEMPTY_STRING),
     }
@@ -231,7 +257,7 @@ PACKAGE_VERSION_LOCKED_SCHEMA = Schema(
 
 PACKAGE_VERSION_SCHEMA = Schema(
     {
-        Optional("name"): Optional(_NONEMPTY_STRING),
+        Optional("name"): Optional(_python_package_name),
         Optional("version"): _specifier_set,
         Optional("index_url"): Optional(_NONEMPTY_STRING),
     }
@@ -240,7 +266,7 @@ PACKAGE_VERSION_SCHEMA = Schema(
 
 PACKAGE_VERSION_REQUIRED_NAME_SCHEMA = Schema(
     {
-        Required("name"): _NONEMPTY_STRING,
+        Required("name"): _python_package_name,
         Optional("version"): _specifier_set,
         Optional("index_url"): Optional(_NONEMPTY_STRING),
     }
