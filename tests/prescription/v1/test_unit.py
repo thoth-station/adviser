@@ -619,7 +619,7 @@ class TestUnitPrescription(AdviserTestCase):
         assert UnitPrescription._should_include_base(builder_context) == include
 
     @pytest.mark.parametrize(
-        "shared_objects_present,shared_objects_configured,include",
+        "abi_present,abi_configured,include",
         [
             ([], [], True),
             (["GLIBC_2.2.5"], [], True),
@@ -634,14 +634,14 @@ class TestUnitPrescription(AdviserTestCase):
             ([], {"not": ["GLIBC_2.2.5"]}, False),
         ],
     )
-    def test_should_include_shared_objects(
+    def test_should_include_abi(
         self,
         builder_context: PipelineBuilderContext,
-        shared_objects_present: Optional[List[str]],
-        shared_objects_configured: Union[List[str], Dict[str, List[str]]],
+        abi_present: Optional[List[str]],
+        abi_configured: Union[List[str], Dict[str, List[str]]],
         include: bool,
     ) -> None:
-        """Test including pipeline units based on shared objects present in the base image."""
+        """Test including pipeline units based on ABI present in the base image."""
         base_image_present_name, base_image_present_version = "s2i-thoth", "1.0.0"
         builder_context.project.runtime_environment.base_image = (
             f"{base_image_present_name}:v{base_image_present_version}"
@@ -651,17 +651,17 @@ class TestUnitPrescription(AdviserTestCase):
             "runtime_environments": {"base_images": [builder_context.project.runtime_environment.base_image]},
         }
 
-        if shared_objects_configured:
-            should_include["runtime_environments"]["shared_objects"] = shared_objects_configured
+        if abi_configured:
+            should_include["runtime_environments"]["abi"] = abi_configured
 
         PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include)
 
-        if shared_objects_configured:
+        if abi_configured:
             builder_context.graph.should_receive("get_thoth_s2i_analyzed_image_symbols_all").with_args(
                 base_image_present_name,
                 base_image_present_version,
                 is_external=False,
-            ).and_return(shared_objects_present).once()
+            ).and_return(abi_present).once()
         else:
             builder_context.graph.should_receive("get_thoth_s2i_analyzed_image_symbols_all").times(0)
 
@@ -678,10 +678,10 @@ class TestUnitPrescription(AdviserTestCase):
         assert UnitPrescription._should_include_base(builder_context) == include
 
     @pytest.mark.parametrize("base_images", [[], ["s2i-thoth:v1.0.0"], ["s2i-thoth:v1.0.0", "s2i-thoth:v2.0.0"]])
-    def test_should_include_shared_objects_no_image_error(
+    def test_should_include_abi_no_image_error(
         self, base_images: List[str], builder_context: PipelineBuilderContext
     ) -> None:
-        """Test including pipeline units based on shared objects present in the base image.
+        """Test including pipeline units based on ABI present in the base image.
 
         This test covers a case when base image is not present in the user's configuration file.
         """
@@ -689,7 +689,7 @@ class TestUnitPrescription(AdviserTestCase):
         should_include = {
             "adviser_pipeline": True,
             "runtime_environments": {
-                "shared_objects": ["GNUTLS_3_6_14"],
+                "abi": ["GNUTLS_3_6_14"],
             },
         }
 

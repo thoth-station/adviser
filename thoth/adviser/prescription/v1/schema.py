@@ -122,7 +122,7 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA = Schema(
         Optional("cudnn_versions"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
         Optional("mkl_versions"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
         Optional("base_images"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
-        Optional("shared_objects"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS),
+        Optional("abi"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS),
         Optional("rpm_packages"): _with_not(All([_RPM_PACKAGE_VERSION_SCHEMA], Length(min=1))),
         Optional("python_packages"): _with_not(All([_PYTHON_PACKAGE_VERSION_SCHEMA], Length(min=1))),
     }

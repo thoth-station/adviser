@@ -347,11 +347,11 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         if runtime_used.base_image:
             base_image = cls.get_base_image(runtime_used.base_image, raise_on_error=True)
 
-        shared_objects = runtime_environment_dict.get("shared_objects")
-        if shared_objects:
+        abi = runtime_environment_dict.get("abi")
+        if abi:
             if not base_image:
                 _LOGGER.debug(
-                    "%s: Check on shared objects present but no base image provided",
+                    "%s: Check on ABI present but no base image provided",
                     unit_name,
                 )
                 return False
@@ -370,23 +370,21 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                     )
                 return False
 
-            if isinstance(shared_objects, dict) and "not" in shared_objects:
+            if isinstance(abi, dict) and "not" in abi:
                 # Negate operation.
-                if symbols_present.intersection(set(shared_objects["not"])):
-                    _LOGGER.debug("%s: Not matching shared objects present in the base image", unit_name)
+                if symbols_present.intersection(set(abi["not"])):
+                    _LOGGER.debug("%s: Not matching ABI present in the base image", unit_name)
                     return False
                 else:
                     return True
-            elif isinstance(shared_objects, list):
-                if set(shared_objects).issubset(symbols_present):
+            elif isinstance(abi, list):
+                if set(abi).issubset(symbols_present):
                     return True
                 else:
-                    _LOGGER.debug("%s: Not matching shared objects present in the base image", unit_name)
+                    _LOGGER.debug("%s: Not matching ABI present in the base image", unit_name)
                     return False
             else:
-                _LOGGER.error(
-                    "%s: Unknown shared objects definition - please report this error to administrator", unit_name
-                )
+                _LOGGER.error("%s: Unknown ABI definition - please report this error to administrator", unit_name)
                 return False
 
         rpm_packages = runtime_environment_dict.get("rpm_packages")
