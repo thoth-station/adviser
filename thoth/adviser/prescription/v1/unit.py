@@ -135,6 +135,44 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         cls._PRESCRIPTION = prescription
 
     @classmethod
+    def _check_symbols(
+        cls, unit_name: str, library_name: str, symbols_expected: List[str], symbols_used: List[str]
+    ) -> bool:
+        """Check if symbols expected are available given the symbols used."""
+        for symbol_expected in symbols_expected:
+            for symbol_used in symbols_used:
+                if symbol_expected.endswith(".*"):
+                    if symbol_used.startswith(symbol_expected[:-2]):  # Discard ending ".*"
+                        _LOGGER.debug(
+                            "%s: Library symbol %r matching unit requirement on symbol %r for %r",
+                            unit_name,
+                            symbol_used,
+                            symbol_expected,
+                            library_name,
+                        )
+                        break
+                elif symbol_used == symbol_expected:
+                    _LOGGER.debug(
+                        "%s: Library symbol %r matching unit requirement on symbol %r for %r",
+                        unit_name,
+                        symbol_used,
+                        symbol_expected,
+                        library_name,
+                    )
+                    break
+
+                _LOGGER.debug(
+                    "%s: Not registering as library symbol requested %r for %r is not used",
+                    unit_name,
+                    symbol_expected,
+                    library_name,
+                )
+                return False
+
+        _LOGGER.debug("%s: All library symbols required for %r unit are used", unit_name, library_name)
+        return True
+
+    @classmethod
     def _should_include_base(cls, builder_context: "PipelineBuilderContext") -> bool:
         """Determine if this unit should be included."""
         if cls._PRESCRIPTION is None:
@@ -210,13 +248,14 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 _LOGGER.debug("%s: Not registering as no library usage supplied", unit_name)
                 return False
 
-            for library, symbols in library_usage_expected.items():
-                if library not in builder_context.library_usage:
-                    _LOGGER.debug("%s: Not registering as library %r is not used", unit_name, library)
+            for library_name, symbols_expected in library_usage_expected.items():
+                symbols_used = builder_context.library_usage.get(library_name)
+
+                if not symbols_used:
+                    _LOGGER.debug("%s: Not registering as library %s is not used", unit_name, library_name)
                     return False
 
-                if not set(symbols).issubset(builder_context.library_usage[library]):
-                    _LOGGER.debug("%s: Not registering as not all required symbols for %r used", unit_name, library)
+                if not cls._check_symbols(unit_name, library_name, symbols_expected, symbols_used):
                     return False
             else:
                 _LOGGER.debug("%s: All library symbols required present in the library usage supplied", unit_name)

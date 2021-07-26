@@ -553,6 +553,17 @@ class TestUnitPrescription(AdviserTestCase):
                 False,
             ),
             ({"flask": ["flask.Flask"]}, {"tensorflow": ["tensorflow.keras.layers.Embedding"]}, False),
+            ({"flask": ["flask.*"]}, {"flask": ["flask.Flask"]}, True),
+            (
+                {"flask": ["flask.*"]},
+                {"tensorflow": ["tensorflow.keras.layers.Embedding"], "flask": ["flask.Flask"]},
+                True,
+            ),
+            (
+                {"flask": ["flask.*"], "tensorflow": ["tensorflow.*"]},
+                {"flask": ["flask.Flask"], "tensorflow": ["tensorflow.keras.layers.Embedding"]},
+                True,
+            ),
         ],
     )
     def test_should_include_library_usage(
@@ -574,6 +585,7 @@ class TestUnitPrescription(AdviserTestCase):
             "should_include": should_include,
         }
 
+        builder_context.library_usage = library_usage_supplied
         builder_context.recommendation_type = RecommendationType.LATEST
         builder_context.decision_type = None
         assert builder_context.is_adviser_pipeline()

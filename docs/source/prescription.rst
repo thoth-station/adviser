@@ -228,7 +228,13 @@ library are used that affect the application.
     library_usage:
       # from flask import Flask
       flask:
-        Flask
+        - flask.Flask
+      # Match if anything is imported from tensorflow.keras.
+      tensorflow:
+        - tensorflow.keras.*
+
+The use of libraries is statically checked using on client side
+`invectio library <https://github.com/thoth-station/invectio>`__.
 
 ``should_include.dependencies``
 ###############################
