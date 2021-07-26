@@ -681,10 +681,10 @@ the logic.
         - quay.io/thoth-station/s2i-thoth-ubi8-py38:v1.0.0
         - quay.io/thoth-station/s2i-thoth-ubi8-py36:v0.8.1
 
-``should_include.runtime_environments.shared_objects``
-#######################################################
+``should_include.runtime_environments.abi``
+###########################################
 
-A list of shared objects (``so`` files) that have to be present in the runtime environment.
+A list of ABI that have to be present in the runtime environment.
 
 Alternatively, the list can be wrapped with a "not" statement which inverts
 the logic.
@@ -695,7 +695,7 @@ the logic.
 
   .. code-block:: yaml
 
-    shared_objects:
+    abi:
       # Include the given pipeline unit if the following two image symbols are
       # present in the environment.
       - GLIBC_2.4
@@ -703,7 +703,7 @@ the logic.
 
   .. code-block:: yaml
 
-    shared_objects:
+    abi:
       # Include the given pipeline unit if the following image symbol
       # is **not** present in the environment.
       not:
