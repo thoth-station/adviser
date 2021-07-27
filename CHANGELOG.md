@@ -6375,3 +6375,11 @@
 ### Improvements
 * Add package name to PyPI release justification info
 * Sort resulting justification for better UX
+
+## Release 0.38.0 (2021-07-27T16:14:01)
+### Features
+* Derive information from trove classifiers for users
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Implement "globbing" when including units based on detected libs
+* Rename shared objects to ABI
+* Improve parsing of Python package name and extend justification
