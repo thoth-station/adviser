@@ -444,7 +444,7 @@ PRESCRIPTION_STRIDE_SCHEMA = Schema(
 #
 
 PRESCRIPTION_WRAP_MATCH_ENTRY_SCHEMA = Schema(
-    {Required("state"): Schema({Required("resolved_dependencies"): [PACKAGE_VERSION_SCHEMA]})}
+    {Optional("state"): Schema({Required("resolved_dependencies"): [PACKAGE_VERSION_SCHEMA]})}
 )
 
 PRESCRIPTION_WRAP_RUN_SCHEMA = Schema(

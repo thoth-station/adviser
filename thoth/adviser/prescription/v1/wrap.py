@@ -26,8 +26,9 @@ from typing import TYPE_CHECKING
 
 from thoth.adviser.state import State
 from voluptuous import Any as SchemaAny
-from voluptuous import Schema
+from voluptuous import Optional
 from voluptuous import Required
+from voluptuous import Schema
 
 from .unit import UnitPrescription
 from .schema import PRESCRIPTION_WRAP_MATCH_ENTRY_SCHEMA
@@ -44,7 +45,7 @@ class WrapPrescription(UnitPrescription):
     CONFIGURATION_SCHEMA: Schema = Schema(
         {
             Required("package_name"): SchemaAny(str, None),
-            Required("match"): PRESCRIPTION_WRAP_MATCH_ENTRY_SCHEMA,
+            Optional("match"): PRESCRIPTION_WRAP_MATCH_ENTRY_SCHEMA,
             Required("run"): PRESCRIPTION_WRAP_RUN_SCHEMA,
         }
     )
