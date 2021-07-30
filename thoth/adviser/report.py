@@ -18,16 +18,12 @@
 """A class for adviser's report - output of an adviser run."""
 
 import os
-import heapq
 import json
 import logging
-import operator
 from typing import Any
 from typing import Dict
-from typing import Generator
 from typing import List
 from typing import Optional
-from typing import Tuple
 
 import attr
 
@@ -42,18 +38,12 @@ _LOGGER = logging.getLogger(__name__)
 class Report:
     """A report stating output of an adviser run."""
 
-    count = attr.ib(type=int, kw_only=True)
+    products = attr.ib(type=List[Product], kw_only=True)
     pipeline = attr.ib(type=PipelineConfig, kw_only=True)
     resolver_iterations = attr.ib(type=int, kw_only=True, default=0)
     accepted_final_states_count = attr.ib(type=int, kw_only=True, default=0)
     discarded_final_states_count = attr.ib(type=int, kw_only=True, default=0)
     _stack_info = attr.ib(type=Optional[List[Dict[str, Any]]], kw_only=True, default=None)
-    _heapq = attr.ib(
-        type=List[Tuple[Tuple[float, int], Product]],
-        default=attr.Factory(list),
-        kw_only=True,
-    )
-    _heapq_counter = attr.ib(type=int, default=0, kw_only=True)
 
     @property
     def stack_info(self) -> Optional[List[Dict[str, Any]]]:
@@ -63,27 +53,6 @@ class Report:
     def set_stack_info(self, stack_info: List[Dict[str, Any]]) -> None:
         """Set stack information."""
         self._stack_info = stack_info
-
-    def will_add_product_from_state(self, score: float) -> bool:
-        """Check if a product with the given score would be added."""
-        if not self._heapq:
-            # Empty heap, always add without any check on count.
-            return True
-
-        key = score, self._heapq_counter
-        return key > self._heapq[-1][0]
-
-    def add_product(self, product: Product) -> bool:
-        """Add adviser pipeline product to report."""
-        item = ((product.score, self._heapq_counter), product)
-        self._heapq_counter -= 1
-
-        if len(self._heapq) >= self.count:
-            popped = heapq.heappushpop(self._heapq, item)
-            return popped is not item
-        else:
-            heapq.heappush(self._heapq, item)
-            return True
 
     def to_dict(self, *, verbose: bool = False) -> Dict[str, Any]:
         """Convert pipeline report to a dict representation."""
@@ -97,21 +66,9 @@ class Report:
 
         return {
             "pipeline": self.pipeline.to_dict() if verbose else None,
-            "products": [product.to_dict() for product in self.iter_products()],
+            "products": [product.to_dict() for product in self.products],
             "stack_info": stack_info + (self._stack_info or []),
             "resolver_iterations": self.resolver_iterations,
             "accepted_final_states_count": self.accepted_final_states_count,
             "discarded_final_states_count": self.discarded_final_states_count,
         }
-
-    def product_count(self) -> int:
-        """Get number of products stored in the report."""
-        return len(self._heapq)
-
-    def iter_products(self) -> Generator[Product, None, None]:
-        """Iterate over products stored in this report, respect their scores."""
-        return (item[1] for item in self._heapq)
-
-    def iter_products_sorted(self, reverse: bool = True) -> Generator[Product, None, None]:
-        """Iterate over products stored in this report, respect their scores."""
-        return (item[1] for item in sorted(self._heapq, key=operator.itemgetter(0), reverse=reverse))

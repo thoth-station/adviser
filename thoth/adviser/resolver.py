@@ -35,6 +35,7 @@ from itertools import chain
 import contextlib
 import signal
 import weakref
+import heapq
 
 import attr
 import matplotlib
@@ -1302,18 +1303,21 @@ class Resolver:
 
     def resolve(self, *, with_devel: bool = True, user_stack_scoring: bool = True) -> Report:
         """Resolve software stacks and return resolver report."""
-        report = Report(count=self.count, pipeline=self.pipeline)
+        states: List[Tuple[Tuple[float, int], State]] = []  # The first item in tuple is used for sorting.
+        heapq_counter = 0  # Making sure the first resolved state takes precedence when adding to the report.
 
         self._init_context()
         with Unit.assigned_context(self.context), self.predictor.assigned_context(self.context):
             for state in self._do_resolve_states(with_devel=with_devel, user_stack_scoring=user_stack_scoring):
-                if report.will_add_product_from_state(state.score):
-                    # An optimization - we do not need to run wraps if the product is not part of the final result.
-                    self._run_wraps(state)
-                    product = Product.from_final_state(context=self.context, state=state)
-                    report.add_product(product)
+                item = ((state.score, heapq_counter), state)
+                heapq_counter -= 1
 
-            if report.product_count() == 0:
+                if len(states) >= self.count:
+                    heapq.heappushpop(states, item)
+                else:
+                    heapq.heappush(states, item)
+
+            if len(states) == 0:
                 msg = (
                     f"Resolver did not find any stack that would satisfy requirements and stack "
                     f"characteristics given the time allocated"
@@ -1328,16 +1332,25 @@ class Resolver:
                 )
                 raise CannotProduceStack(msg + f" - see {link}", stack_info=self.context.stack_info)
 
-            if self.context.stack_info:
-                report.set_stack_info(self.context.stack_info)
+            for item in states:
+                self._run_wraps(item[1])
+
+            report = Report(
+                products=[
+                    Product.from_final_state(context=self.context, state=s[1])
+                    for s in sorted(states, key=lambda s: s[0], reverse=True)
+                ],
+                pipeline=self.pipeline,
+                resolver_iterations=self.context.iteration,
+                accepted_final_states_count=self.context.accepted_final_states_count,
+                discarded_final_states_count=self.context.discarded_final_states_count,
+                stack_info=self.context.stack_info,
+            )
 
             self.predictor.post_run_report(report)
             self.pipeline.call_post_run_report(report)
 
-        report.resolver_iterations = self.context.iteration
-        report.accepted_final_states_count = self.context.accepted_final_states_count
-        report.discarded_final_states_count = self.context.discarded_final_states_count
-        return report
+            return report
 
     def plot(self) -> matplotlib.figure.Figure:
         """Plot history captured during the resolution process."""
