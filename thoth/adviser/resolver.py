@@ -622,9 +622,14 @@ class Resolver:
                 {
                     "type": "INFO",
                     "message": "Score of the supplied lock file is the highest possible "
-                    "according to the current knowledge in Thoth and the parameters used to solve the stack.",
+                    "according to the current knowledge in Thoth and the parameters used to solve the stack",
                     "link": jl("user_stack"),
-                }
+                },
+                {
+                    "type": "WARNING",
+                    "message": "Correctness and the dependency graph of the supplied lock file is not verified",
+                    "link": jl("user_stack"),
+                },
             ]
         )
         self._run_wraps(state)
