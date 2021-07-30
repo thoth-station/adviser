@@ -6383,3 +6383,7 @@
 * Implement "globbing" when including units based on detected libs
 * Rename shared objects to ABI
 * Improve parsing of Python package name and extend justification
+
+## Release 0.38.1 (2021-07-30T11:33:45)
+### Features
+* Make wrap match part optional
