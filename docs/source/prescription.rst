@@ -1639,11 +1639,6 @@ semantically):
           index_url: 'https://pypi.org/simple'
 
   run:
-    not_acceptable: "Bad package inclusion"         # Block resolving the given stack.
-
-    # Configuration of prematurely terminating the resolution process.
-    eager_stop_pipeline: "Stop pipeline"
-
     log:                                            # Optional text printed to logs when the unit gets called.
       message: "Some text printed to log on pipeline unit run."
       type: "WARNING"

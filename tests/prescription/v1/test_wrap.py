@@ -82,61 +82,6 @@ run:
         state.add_resolved_dependency(("flask", "0.12", "https://pypi.org/simple"))
         self.check_run_log(caplog, context, log_level, WrapPrescription, state=state)
 
-    def test_run_eager_stop_pipeline(self, context: Context, state: State) -> None:
-        """Check eager stop pipeline configuration."""
-        prescription_str = """
-name: WrapUnit
-type: wrap
-should_include:
-  times: 1
-  dependency_monkey_pipeline: true
-match:
- state:
-   resolved_dependencies:
-    - name: flask
-      version: ==0.12
-    - name: werkzeug
-      version: ==1.0.1
-    - name: itsdangerous
-      version: <1.0
-run:
-  eager_stop_pipeline: These three cannot occur together
-"""
-        prescription = yaml.safe_load(prescription_str)
-        PRESCRIPTION_WRAP_SCHEMA(prescription)
-        WrapPrescription.set_prescription(prescription)
-        state.add_resolved_dependency(("flask", "0.12.0", "https://pypi.org/simple"))
-        state.add_resolved_dependency(("werkzeug", "1.0.1", "https://pypi.org/simple"))
-        state.add_resolved_dependency(("itsdangerous", "0.5.1", "https://pypi.org/simple"))
-        self.check_run_eager_stop_pipeline(context, WrapPrescription, state=state)
-
-    def test_run_not_acceptable(self, context: Context, state: State) -> None:
-        """Check raising not acceptable."""
-        prescription_str = """
-name: WrapUnit
-type: wrap
-should_include:
-  times: 1
-  adviser_pipeline: true
-match:
-  state:
-    resolved_dependencies:
-      - name: flask
-        version: "<=1.0.0,>=0.12"
-        index_url: "https://pypi.org/simple"
-      - name: connexion
-        version: "==2.7.0"
-        index_url: "https://pypi.org/simple"
-run:
-  not_acceptable: This is exception message reported
-"""
-        prescription = yaml.safe_load(prescription_str)
-        PRESCRIPTION_WRAP_SCHEMA(prescription)
-        WrapPrescription.set_prescription(prescription)
-        state.add_resolved_dependency(("flask", "0.12", "https://pypi.org/simple"))
-        state.add_resolved_dependency(("connexion", "2.7.0", "https://pypi.org/simple"))
-        self.check_run_not_acceptable(context, WrapPrescription, state=state)
-
     def test_run_no_match(self, context: Context, state: State) -> None:
         """Test running this pipeline unit without match."""
         prescription_str = """

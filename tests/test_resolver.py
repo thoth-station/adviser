@@ -32,6 +32,7 @@ from typing import Dict
 import random
 
 from thoth.adviser.beam import Beam
+from thoth.adviser.context import Context
 from thoth.adviser.resolver import Resolver
 from thoth.adviser.state import State
 from thoth.adviser.predictor import Predictor
@@ -1730,9 +1731,8 @@ class TestResolver(AdviserTestCase):
         report = resolver.resolve(with_devel=True)
 
         assert resolver.context is not None, "Context is not bound to resolver"
-        assert report.product_count() == 1
-        product = list(report.iter_products())[0]
-        assert product.score == state.score
+        assert len(report.products) == 1
+        assert report.products[0].score == state.score
 
     def test_get_adviser_instance(self, predictor_mock: Predictor) -> None:
         """Test getting a resolver for adviser."""
@@ -3019,3 +3019,62 @@ class TestResolver(AdviserTestCase):
         assert package_version.name not in state.resolved_dependencies
         assert package_version.name not in state.unresolved_dependencies
         assert resolver.beam.size == 0
+
+    def test_resolve_report(self, context: Context, resolver: Resolver) -> None:
+        """Test correct handling of resolution when a report is generated."""
+        resolver.count = 2
+
+        state0 = State(score=0.2)
+        package_tuple0 = ("numpy", "1.16.2", "https://pypi.org/simple")
+        state0.add_resolved_dependency(package_tuple0)
+
+        state1 = State(score=1.0)
+        package_tuple1 = ("numpy", "1.17.4", "https://pypi.org/simple")
+        state1.add_resolved_dependency(package_tuple1)
+
+        state2 = State(score=0.5)
+        package_tuple2 = ("numpy", "1.21.1", "https://pypi.org/simple")
+        state2.add_resolved_dependency(package_tuple2)
+
+        # Same score but state2 should take precedence based on resolved-first priority.
+        state3 = State(score=0.5)
+        package_tuple3 = ("numpy", "1.20.2", "https://pypi.org/simple")
+        state3.add_resolved_dependency(package_tuple3)
+
+        runtime_environment = context.project.runtime_environment
+        context.register_package_tuple(
+            package_tuple1,
+            develop=False,
+            os_name=runtime_environment.operating_system.name,
+            os_version=runtime_environment.operating_system.version,
+            python_version=runtime_environment.python_version,
+        )
+        context.register_package_tuple(
+            package_tuple2,
+            develop=False,
+            os_name=runtime_environment.operating_system.name,
+            os_version=runtime_environment.operating_system.version,
+            python_version=runtime_environment.python_version,
+        )
+
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(*package_tuple1).and_return(["bar"])
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(*package_tuple2).and_return(["foo"])
+
+        resolver._context = context
+        resolver.should_receive("_init_context").and_return(None)
+        resolver.should_receive("_do_resolve_states").with_args(with_devel=True, user_stack_scoring=True).and_yield(
+            state0,
+            state1,
+            state2,
+            state3,
+        )
+        report = resolver.resolve(with_devel=True, user_stack_scoring=True)
+
+        report_dict = report.to_dict()
+        assert len(report_dict["products"]) == 2
+        assert report_dict["products"][0]["score"] == 1.0
+        assert report_dict["products"][1]["score"] == 0.5
+        assert (
+            report_dict["products"][1]["project"]["requirements_locked"]["default"]["numpy"]["version"]
+            == f"=={package_tuple2[1]}"
+        ), "Order of resolved dependencies is not preserved"

@@ -109,7 +109,7 @@ class TestPipelineConfig(AdviserTestCase):
 
     def test_call_post_run_report(self, pipeline_config: PipelineConfig) -> None:
         """Test calling post-run method with report."""
-        report = Report(count=2, pipeline=pipeline_config)
+        report = Report(products=[flexmock()], pipeline=pipeline_config)
 
         for unit in pipeline_config.iter_units():
             flexmock(unit).should_receive("post_run_report").with_args(report=report).and_return(None).once()

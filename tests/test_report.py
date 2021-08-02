@@ -42,10 +42,9 @@ class TestReport(AdviserTestCase):
 
     def test_stack_info(self, pipeline_config: PipelineConfig) -> None:
         """Test setting a global stack information."""
-        report = Report(count=2, pipeline=pipeline_config)
+        report = Report(products=[], pipeline=pipeline_config)
         report.set_stack_info([{"foo": "bar"}])
 
-        assert report.product_count() == 0
         assert report.to_dict(verbose=True) == {
             "pipeline": {
                 "boots": [],
@@ -62,71 +61,8 @@ class TestReport(AdviserTestCase):
             "discarded_final_states_count": 0,
         }
 
-    def test_add_product(self, context: Context, pipeline_config: PipelineConfig) -> None:
-        """Test adding a product to a report."""
-        project = context.project  # reuse the one stated in context
-        report = Report(count=2, pipeline=pipeline_config)
-
-        product1 = Product(
-            project=project, score=0.42, justification=[], advised_runtime_environment=None, context=context
-        )
-        assert report.add_product(product1) is True
-        assert report.product_count() == 1
-        assert list(report.iter_products()) == [product1]
-        assert list(report.iter_products_sorted()) == [product1]
-
-        product2 = Product(
-            project=project, score=0.0, justification=[], advised_runtime_environment=None, context=context
-        )
-        assert report.add_product(product2) is True
-        assert report.product_count() == 2
-        assert set(report.iter_products()) == {product1, product2}
-        assert list(report.iter_products_sorted()) == [product1, product2]
-        assert list(report.iter_products_sorted(reverse=True)) == [product1, product2]
-        assert list(report.iter_products_sorted(reverse=False)) == [product2, product1]
-
-        product3 = Product(
-            project=project, score=0.98, justification=[], advised_runtime_environment=None, context=context
-        )
-        assert report.add_product(product3) is True
-        assert report.product_count() == 2
-        assert set(report.iter_products()) == {product3, product1}
-        assert list(report.iter_products_sorted()) == [product3, product1]
-        assert list(report.iter_products_sorted(reverse=True)) == [product3, product1]
-        assert list(report.iter_products_sorted(reverse=False)) == [product1, product3]
-
-        product4 = Product(
-            project=project,
-            score=0.666,
-            justification=[],
-            advised_runtime_environment=None,
-            context=context,
-        )
-        assert report.add_product(product4) is True
-        assert report.product_count() == 2
-        assert set(report.iter_products()) == {product3, product4}
-        assert list(report.iter_products_sorted()) == [product3, product4]
-        assert list(report.iter_products_sorted(reverse=True)) == [product3, product4]
-        assert list(report.iter_products_sorted(reverse=False)) == [product4, product3]
-
-        product5 = Product(
-            project=project,
-            score=-0.99999,
-            justification=[],
-            advised_runtime_environment=None,
-            context=context,
-        )
-        assert report.add_product(product5) is False
-        assert report.product_count() == 2
-        assert set(report.iter_products()) == {product3, product4}
-        assert list(report.iter_products_sorted()) == [product3, product4]
-        assert list(report.iter_products_sorted(reverse=True)) == [product3, product4]
-        assert list(report.iter_products_sorted(reverse=False)) == [product4, product3]
-
     def test_to_dict(self, context: Context, pipeline_config: PipelineConfig) -> None:
         """Test conversion to a dict."""
-        report = Report(count=3, pipeline=pipeline_config)
-
         # Reuse project from the context for this test case.
         project = context.project
         project_dict = {"aresto momentum": "avada kedavra"}
@@ -141,10 +77,9 @@ class TestReport(AdviserTestCase):
             advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
             context=context,
         )
-        report.add_product(product)
 
-        assert report.product_count() == 1
-        assert list(report.iter_products()) == [product]
+        report = Report(products=[product], pipeline=pipeline_config)
+
         assert report.to_dict(verbose=True) == {
             "pipeline": pipeline_config.to_dict(),
             "products": [product.to_dict()],
@@ -156,8 +91,6 @@ class TestReport(AdviserTestCase):
 
     def test_to_dict_metadata(self, context: Context, pipeline_config: PipelineConfig) -> None:
         """Test conversion to a dict with passed metadata."""
-        report = Report(count=3, pipeline=pipeline_config)
-
         # Reuse project from the context for this test case.
         project = context.project
         project_dict = {"aresto momentum": "avada kedavra"}
@@ -170,22 +103,25 @@ class TestReport(AdviserTestCase):
             advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
             context=context,
         )
-        report.add_product(product)
 
         stack_info = [{"type": "WARNING", "message": "Hello, metadata"}]
+
+        report = Report(
+            products=[product],
+            pipeline=pipeline_config,
+            stack_info=stack_info,
+        )
+
         stack_info_metadata = {
             "thoth.adviser": {
                 "stack_info": stack_info,
             }
         }
-        report.set_stack_info([{"foo": "bar"}])
 
         assert "THOTH_ADVISER_METADATA" not in os.environ
         os.environ["THOTH_ADVISER_METADATA"] = json.dumps(stack_info_metadata)
 
         try:
-            assert report.product_count() == 1
-            assert list(report.iter_products()) == [product]
             assert report.to_dict(verbose=True) == {
                 "pipeline": pipeline_config.to_dict(),
                 "products": [product.to_dict()],
@@ -199,9 +135,6 @@ class TestReport(AdviserTestCase):
 
     def test_no_verbose(self, context: Context, pipeline_config: PipelineConfig) -> None:
         """Test obtaining report with and without verbose flag set."""
-        report = Report(count=3, pipeline=pipeline_config)
-        report.set_stack_info([{"foo": "bar"}])
-
         # Reuse project from the context for this test case.
         project = context.project
         project_dict = {"aresto momentum": "avada kedavra"}
@@ -214,10 +147,12 @@ class TestReport(AdviserTestCase):
             advised_runtime_environment=RuntimeEnvironment.from_dict({"python_version": "3.6"}),
             context=context,
         )
-        report.add_product(product)
 
-        assert report.product_count() == 1
-        assert list(report.iter_products()) == [product]
+        report = Report(
+            products=[product],
+            pipeline=pipeline_config,
+            stack_info=[{"foo": "bar"}],
+        )
 
         assert report.to_dict(verbose=False) == {
             "pipeline": None,
