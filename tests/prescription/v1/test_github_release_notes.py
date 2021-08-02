@@ -118,10 +118,12 @@ run:
                 ("type", "INFO"),
                 ("message", "Release notes for package 'thoth-adviser'"),
                 ("link", "https://github.com/thoth-station/adviser/releases/tag/v1.0.0"),
+                ("package_name", "thoth-adviser"),
             ),
             (
                 ("type", "INFO"),
                 ("message", "Release notes for package 'thoth-analyzer'"),
                 ("link", "https://github.com/thoth-station/analyzer/releases/tag/1.0.1"),
+                ("package_name", "thoth-analyzer"),
             ),
         }

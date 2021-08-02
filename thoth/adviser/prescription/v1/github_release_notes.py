@@ -117,6 +117,7 @@ class GitHubReleaseNotesWrapPrescription(UnitPrescription):
                         tag_version_prefix=conf_matched.get("tag_version_prefix"),
                         locked_version=resolved_package_tuple[1],
                     ),
+                    "package_name": resolved_package_tuple[0],
                 }
             )
 
