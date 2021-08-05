@@ -87,6 +87,7 @@ class ThothS2IPackagesSieve(Sieve):
         if not python_packages:
             _LOGGER.debug(
                 "No Python packages found in %r, not considering any possible Python packages available in %r",
+                analysis_document_id,
                 base_image,
             )
             yield from ()
@@ -100,6 +101,7 @@ class ThothS2IPackagesSieve(Sieve):
                 "Taking into account package %r in version %r located in %r in the container image",
                 python_package["package_name"],
                 python_package["package_version"],
+                python_package["location"],
             )
             yield {"package_name": python_package["package_name"], "package_version": python_package["package_version"]}
 
