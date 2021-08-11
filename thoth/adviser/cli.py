@@ -913,11 +913,42 @@ def dependency_monkey(
 
 @cli.command("validate-prescriptions")
 @click.argument("prescriptions", nargs=1, metavar="PRESCRIPTION_DIR")
-def validate_prescription(prescriptions: str) -> None:
+@click.option(
+    "--show-unit-names",
+    envvar="THOTH_ADVISER_VALIDATE_PRESCRIPTION_SHOW_UNIT_NAMES",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Show names of prescriptions that were validated.",
+)
+def validate_prescription(prescriptions: str, show_unit_names: bool) -> None:
     """Validate the given prescription."""
     _LOGGER.info("Validating prescriptions in %r", prescriptions)
-    Prescription.validate(prescriptions)
+    prescription = Prescription.validate(prescriptions)
     _LOGGER.info("Prescriptions %r validated successfully", prescriptions)
+
+    result = {
+        "prescriptions": [{"name": p[0], "release": p[1]} for p in prescription.prescriptions],
+        "count": {
+            "boots_count": sum(1 for _ in prescription.iter_boot_units()),
+            "pseudonyms_count": sum(1 for _ in prescription.iter_pseudonym_units()),
+            "sieves_count": sum(1 for _ in prescription.iter_sieve_units()),
+            "steps_count": sum(1 for _ in prescription.iter_step_units()),
+            "strides_count": sum(1 for _ in prescription.iter_stride_units()),
+            "wraps_count": sum(1 for _ in prescription.iter_wrap_units()),
+        },
+        "count_all": sum(1 for _ in prescription.units)
+    }
+
+    if show_unit_names:
+        result["boots"] = sorted(prescription.boots_dict.keys())
+        result["pseudonyms"] = sorted(prescription.pseudonyms_dict.keys())
+        result["sieves"] = sorted(prescription.sieves_dict.keys())
+        result["steps"] = sorted(prescription.steps_dict.keys())
+        result["strides"] = sorted(prescription.strides_dict.keys())
+        result["wraps"] = sorted(prescription.wraps_dict.keys())
+
+    yaml.safe_dump(result, sys.stdout)
 
 
 __name__ == "__main__" and cli()
