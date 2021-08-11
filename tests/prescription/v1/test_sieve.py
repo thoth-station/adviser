@@ -266,3 +266,49 @@ match:
 
         builder_context = flexmock()
         assert list(SievePrescription.should_include(builder_context)) == []
+
+    def test_sieve_not_index_url(self, context: Context) -> None:
+        """Test sieving packages based on "not" index_url."""
+        prescription_str = """
+name: SieveUnit
+type: sieve
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: flask
+    index_url:
+      not: https://pypi.org/simple
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_SIEVE_SCHEMA(prescription)
+        SievePrescription.set_prescription(prescription)
+        package_versions = [
+            PackageVersion(
+                name="flask",
+                version="==1.1.0",
+                index=Source("https://thoth-station.ninja/simple"),
+                develop=False,
+            ),
+            PackageVersion(
+                name="flask",
+                version="==1.1.2",
+                index=Source("https://pypi.org/simple"),
+                develop=False,
+            ),
+            PackageVersion(
+                name="flask",
+                version="==1.0.2",
+                index=Source("https://pypi.org/simple"),
+                develop=False,
+            ),
+        ]
+
+        unit = SievePrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            result = list(unit.run((pv for pv in package_versions)))
+
+        assert len(result) == 2
+        assert result == [package_versions[1], package_versions[2]]

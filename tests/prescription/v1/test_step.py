@@ -414,3 +414,127 @@ run:
 
         builder_context = flexmock()
         assert list(StepPrescription.should_include(builder_context)) == []
+
+    def test_run_state_not_index_url(self, context: Context, state: State) -> None:
+        """Test running the prescription if state matches."""
+        prescription_str = """
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+    version: '==1.19.1'
+    index_url:
+      not: 'https://pypi.org/simple'
+  state:
+    resolved_dependencies:
+      - name: tensorflow
+        version: '~=2.4.0'
+        index_url:
+          not: 'https://pypi.org/simple'
+run:
+  score: 0.5
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+        package_version = PackageVersion(
+            name="numpy",
+            version="==1.19.1",
+            index=Source("https://thoth-station.ninja/simple"),
+            develop=False,
+        )
+
+        state.add_resolved_dependency(("tensorflow", "2.4.0", "https://thoth-station.ninja/simple"))
+
+        unit = StepPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            result = unit.run(state, package_version)
+
+        assert isinstance(result, tuple)
+        assert result[0] == 0.5
+        assert result[1] is None
+
+    def test_run_state_not_index_url_not_match(self, context: Context, state: State) -> None:
+        """Test running the prescription if state matches."""
+        prescription_str = """
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+    version: '==1.19.1'
+    index_url:
+      not: 'https://pypi.org/simple'
+  state:
+    resolved_dependencies:
+      - name: tensorflow
+        version: '~=2.4.0'
+        index_url:
+          not: 'https://pypi.org/simple'
+run:
+  score: 0.5
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+        package_version = PackageVersion(
+            name="numpy",
+            version="==1.19.1",
+            index=Source("https://pypi.org/simple"),  # This does match.
+            develop=False,
+        )
+
+        state.add_resolved_dependency(("tensorflow", "2.4.0", "https://thoth-station.ninja/simple"))
+
+        unit = StepPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            assert unit.run(state, package_version) is None
+
+    def test_run_state_not_index_url_not_match_state(self, context: Context, state: State) -> None:
+        """Test running the prescription if state matches."""
+        prescription_str = """
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+    version: '==1.19.1'
+    index_url:
+      not: 'https://pypi.org/simple'
+  state:
+    resolved_dependencies:
+      - name: tensorflow
+        version: '~=2.4.0'
+        index_url:
+          not: 'https://pypi.org/simple'
+run:
+  score: 0.5
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+        package_version = PackageVersion(
+            name="numpy",
+            version="==1.19.1",
+            index=Source("https://thoth-station.ninja/simple"),
+            develop=False,
+        )
+
+        state.add_resolved_dependency(("tensorflow", "2.4.0", "https://pypi.org/simple"))  # This does match.
+
+        unit = StepPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            assert unit.run(state, package_version) is None

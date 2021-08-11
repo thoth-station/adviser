@@ -20,10 +20,11 @@
 import attr
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import List
 from typing import Optional
-from typing import Generator
 from typing import Tuple
+from typing import Union
 from typing import TYPE_CHECKING
 import logging
 
@@ -119,7 +120,7 @@ class StepPrescription(UnitPrescription):
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Run main entry-point for steps to filter and score packages."""
-        if self._index_url and package_version.index.url != self._index_url:
+        if not self._index_url_check(self._index_url, package_version.index.url):
             return None
 
         if self._specifier and package_version.locked_version not in self._specifier:

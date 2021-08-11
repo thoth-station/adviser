@@ -497,6 +497,20 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         return True
 
     @classmethod
+    def _index_url_check(cls, index_url_conf: Optional[Union[str, Dict[str, str]]], index_url: str) -> bool:
+        """Convert index_url to a comparable object considering "not"."""
+        if index_url_conf is None:
+            return True
+
+        if isinstance(index_url_conf, dict):
+            if list(index_url_conf.keys()) != ["not"]:
+                raise ValueError("index_url configuration should state directly string or a 'not' value")
+
+            return index_url_conf["not"] != index_url
+        else:
+            return index_url_conf == index_url
+
+    @classmethod
     def _check_python_packages(
         cls,
         unit_name: str,
@@ -749,8 +763,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 if not resolved:
                     return False
 
-                index_url = resolved_dependency.get("index_url")
-                if index_url is not None and resolved[2] != resolved_dependency["index_url"]:
+                if not self._index_url_check(resolved_dependency.get("index_url"), resolved[2]):
                     return False
 
                 version = resolved_dependency.get("version")

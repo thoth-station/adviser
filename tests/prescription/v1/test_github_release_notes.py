@@ -127,3 +127,44 @@ run:
                 ("package_name", "thoth-analyzer"),
             ),
         }
+
+    def test_run_not_index_url(self, context: Context, state: State) -> None:
+        """Test running this pipeline unit resulting in a justification addition when "not" index url is used."""
+        prescription_str = """
+name: GitHubReleaseNotes
+type: wrap.GitHubReleaseNotes
+should_include:
+  adviser_pipeline: true
+run:
+  release_notes:
+    - organization: thoth-station
+      repository: solver
+      tag_version_prefix: v
+      package_version:
+        name: thoth-solver
+        index_url:
+          not: https://thoth-station.ninja/simple
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_SCHEMA(prescription)
+        GitHubReleaseNotesWrapPrescription.set_prescription(prescription)
+
+        state.resolved_dependencies.clear()
+        state.justification.clear()
+
+        state.add_resolved_dependency(("thoth-solver", "0.5.0", "https://pypi.org/simple"))
+
+        unit = GitHubReleaseNotesWrapPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            assert unit.run(state) is None
+
+        self.verify_justification_schema(state.justification)
+        assert set(tuple(i.items()) for i in state.justification) == {
+            (
+                ("type", "INFO"),
+                ("message", "Release notes for package 'thoth-solver'"),
+                ("link", "https://github.com/thoth-station/solver/releases/tag/v0.5.0"),
+                ("package_name", "thoth-solver"),
+            ),
+        }
