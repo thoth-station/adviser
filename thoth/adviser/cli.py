@@ -937,7 +937,7 @@ def validate_prescription(prescriptions: str, show_unit_names: bool) -> None:
             "strides_count": sum(1 for _ in prescription.iter_stride_units()),
             "wraps_count": sum(1 for _ in prescription.iter_wrap_units()),
         },
-        "count_all": sum(1 for _ in prescription.units)
+        "count_all": sum(1 for _ in prescription.units),
     }
 
     if show_unit_names:
