@@ -20,9 +20,10 @@
 import logging
 from typing import Any
 from typing import Dict
-from typing import Tuple
 from typing import Generator
 from typing import Optional
+from typing import Tuple
+from typing import Union
 from typing import TYPE_CHECKING
 
 from thoth.python import PackageVersion
@@ -88,7 +89,7 @@ class PseudonymPrescription(UnitPrescription):
 
     def run(self, package_version: PackageVersion) -> Generator[Tuple[str, str, str], None, None]:
         """Run main entry-point for pseudonyms to map packages to their counterparts."""
-        if (self._index_url and package_version.index.url != self._index_url) or (
+        if (not self._index_url_check(self._index_url, package_version.index.url)) or (
             self._specifier is not None and package_version.locked_version not in self._specifier
         ):
             yield from ()

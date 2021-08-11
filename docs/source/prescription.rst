@@ -1026,7 +1026,7 @@ semantically):
     package_version:
       name: flask                                   # Mandatory, name of the package for which pseudonym should be registered.
       version: '>1.0,<=1.1.0'                       # Version specifier for which the pseudonym should be run. If not provided, defaults to any version.
-      index_url: 'https://pypi.org/simple'          # Package source index for which the pseudonym should be run. If not provided, defaults to any index.
+      index_url: 'https://pypi.org/simple'          # Package source index for which the pseudonym should be run. If not provided, defaults to any index. Can be negated using "not".
   run:
     log:                                            # Optional text printed to logs when the unit gets called.
       message: "Some text printed to log on pipeline unit run."
@@ -1075,7 +1075,7 @@ entries:
 * ``version`` - optional, version in a form of version specifier for which the
   pseudonym should be provided
 * ``index_url`` - optional, Python package index URL for which the pseudonym
-  should be provided
+  should be provided. Can be negated using "not".
 
 See examples below for more info.
 
@@ -1179,7 +1179,7 @@ semantically):
     package_version:                                # Any package matching this criteria will be filtered out from the resolution.
       name: flask                                   # Name of the package for which the unit should be registered.
       version: '>1.0,<=1.1.0'                       # Version specifier for which the sieve should be run. If not provided, defauts to any version.
-      index_url: 'https://pypi.org/simple'          # Package source index for which the sieve should be run. If not provided, defaults to any index.
+      index_url: 'https://pypi.org/simple'          # Package source index for which the sieve should be run. If not provided, defaults to any index. Can be negated using "not".
   run:
     log:                                            # Optional text printed to logs when the unit gets called.
       message: "Some text printed to log on pipeline unit run."
@@ -1203,7 +1203,7 @@ The package is described by:
 * ``version`` - version in a form of version specification to be matched, any
   version matched if not provided
 * ``index_url`` - URL of the Python package index from where the given package
-  is consumed, matches any index if not provided
+  is consumed, matches any index if not provided. Can be negated using "not".
 
 .. note::
 
@@ -1370,7 +1370,7 @@ semantically):
     package_version:                                # Any package matching this criteria will be filtered out from the resolution.
       name: flask                                   # Name of the package for which the unit should be registered.
       version: '>1.0,<=1.1.0'                       # Version specifier for which the sieve should be run. If not provided, defaults to any version.
-      index_url: 'https://pypi.org/simple'          # Package source index for which the sieve should be run. If not provided, defaults to any index.
+      index_url: 'https://pypi.org/simple'          # Package source index for which the sieve should be run. If not provided, defaults to any index. Can be negated using "not".
     state:                                          # Optional, resolver internal state to match for the given resolution step.
       resolved_dependencies:
         - name: werkzeug                            # Dependencies that have to be present in the resolved state.
@@ -1411,7 +1411,7 @@ about to be resolved:
 
   * ``name`` - optional, name of the package
   * ``version`` - optional, version in a form of version specifier
-  * ``index_url`` - optional, Python package index URL
+  * ``index_url`` - optional, Python package index URL, can be negated using ``not``
 
 * ``state`` - internal resolver's state with resolved dependencies
 
@@ -1424,7 +1424,7 @@ listing is described as:
 * ``version`` - optional package version in a form of version specifier that
   has to be stated in the resolved dependency listing
 * ``index_url`` - optional package index from which the given package is
-  consumed
+  consumed, can be negated using ``not``
 
 To run the given step, all the packages in the resolved dependency listing
 need to be present in the resolved software stack. Also both ``state`` and
@@ -1432,6 +1432,41 @@ need to be present in the resolved software stack. Also both ``state`` and
 
 It is possible to provide a listing of matching criteria to run the given
 pipeline unit multiple times.
+
+
+.. note::
+
+  *Example:*
+
+  .. code-block:: yaml
+
+  # Match when torch in a 1.9.0 compatible release from PyPI is about to
+  # be included into resolver's state with torchvision==0.9.0 from PyPI.
+  match:
+    package_version:
+      name: torch
+      version: "~=1.9.0"
+      index_url: "https://pypi.org/simple"
+    state:
+      resolved_dependencies:
+        name: torchvision
+        version: "==0.9.0"
+        index_url: "https://pypi.org/simple"
+
+  # Match when torch in a 1.9.0 compatible release *not* from PyPI is about to
+  # be included into resolver's state with torchvision==0.9.0 *not* from PyPI.
+  match:
+    package_version:
+      name: torch
+      version: "~=1.9.0"
+      index_url:
+        not: "https://pypi.org/simple"
+    state:
+      resolved_dependencies:
+        name: torchvision
+        version: "==0.9.0"
+        index_url:
+          not: "https://pypi.org/simple"
 
 Step ``run.log``
 ################
@@ -1569,8 +1604,8 @@ semantically):
     state:                                          # Optional, resolver internal state to match for the given stride.
       resolved_dependencies:
         - name: werkzeug                            # Dependencies that have to be present in the resolved state.
-          version: "~=1.0.0"
-          index_url: 'https://pypi.org/simple'
+          version: "~=1.0.0"                        # Version specifier specifying version range.
+          index_url: 'https://pypi.org/simple'      # Index URL used when consuming the release. Can be negated using "not".
   run:
     log:                                            # Optional text printed to logs when the unit gets called.
       message: "Some text printed to log on pipeline unit run."
@@ -1598,7 +1633,7 @@ listing is described as:
 * ``version`` - optional package version in a form of version specifier that
   has to be stated in the resolved dependency listing
 * ``index_url`` - optional package index from which the given package is
-  consumed
+  consumed, can be negated using "not"
 
 To run the given stride, all the packages in the resolved dependency listing
 need to be present in the resolved software stack.
@@ -1653,8 +1688,8 @@ semantically):
     state:                                          # Optional, resolver internal state to match for the given stride.
       resolved_dependencies:
         - name: werkzeug                            # Dependencies that have to be present in the resolved state.
-          version: ">=1.0.0,<2.5.0"
-          index_url: 'https://pypi.org/simple'
+          version: ">=1.0.0,<2.5.0"                 # Version specifier for matching version ranges.
+          index_url: 'https://pypi.org/simple'      # Index URL used for consuming the package. Can be negated using "not".
 
   run:
     log:                                            # Optional text printed to logs when the unit gets called.
@@ -1694,7 +1729,7 @@ listing is described as:
 * ``version`` - optional package version in a form of version specifier that
   has to be stated in the resolved dependency listing
 * ``index_url`` - optional package index from which the given package is
-  consumed
+  consumed, can be negated using "not"
 
 To run the given wrap pipeline unit, all the packages in the resolved
 dependency listing need to be present in the resolved software stack.

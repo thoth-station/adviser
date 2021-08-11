@@ -104,7 +104,7 @@ class GitHubReleaseNotesWrapPrescription(UnitPrescription):
                 continue
 
             index_url = conf_matched["package_version"].get("index_url")
-            if index_url is not None and resolved_package_tuple[2] != index_url:
+            if not self._index_url_check(index_url, resolved_package_tuple[2]):
                 continue
 
             justification_addition.append(

@@ -21,6 +21,7 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import Optional
+from typing import Union
 from typing import TYPE_CHECKING
 import logging
 
@@ -89,7 +90,7 @@ class SievePrescription(UnitPrescription):
         """Run main entry-point for sieves to filter and score packages."""
         for package_version in package_versions:
             if (not self._specifier or package_version.locked_version in self._specifier) and (
-                not self._index_url or package_version.index.url == self._index_url
+                self._index_url_check(self._index_url, package_version.index.url)
             ):
                 if not self._logged:
                     self._logged = True
