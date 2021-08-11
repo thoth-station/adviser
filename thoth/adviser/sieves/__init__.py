@@ -30,7 +30,6 @@ from .rules import SolverRulesSieve
 from .solved import SolvedSieve
 from .tensorflow import TensorFlow240AVX2IllegalInstructionSieve
 from .tensorflow import TensorFlowAPISieve
-from .tensorflow import TensorFlowCUDASieve
 from .thoth_s2i_abi_compat import ThothS2IAbiCompatibilitySieve
 from .thoth_s2i_packages import ThothS2IPackagesSieve
 from .update import PackageUpdateSieve
@@ -57,5 +56,4 @@ __all__ = [
     "FilterIndexSieve",
     "TensorFlow240AVX2IllegalInstructionSieve",
     "TensorFlowAPISieve",
-    "TensorFlowCUDASieve",
 ]
