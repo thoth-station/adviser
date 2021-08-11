@@ -105,7 +105,7 @@ class Prescription:
         return False
 
     @classmethod
-    def validate(cls, prescriptions: str) -> None:
+    def validate(cls, prescriptions: str) -> "Prescription":
         """Validate the given prescription."""
         _LOGGER.debug("Validating prescriptions schema")
 
@@ -169,6 +169,8 @@ class Prescription:
 
         if any_error:
             raise PrescriptionSchemaError("Failed to validate prescription units, see logs reported for more info")
+
+        return prescription_instance
 
     @classmethod
     def from_dict(
