@@ -260,6 +260,7 @@ PACKAGE_VERSION_SCHEMA = Schema(
         Optional("name"): Optional(_python_package_name),
         Optional("version"): _specifier_set,
         Optional("index_url"): Optional(Any(_NONEMPTY_STRING, {"not": _NONEMPTY_STRING})),
+        Optional("develop"): bool,
     }
 )
 
@@ -269,6 +270,7 @@ PACKAGE_VERSION_REQUIRED_NAME_SCHEMA = Schema(
         Required("name"): _python_package_name,
         Optional("version"): _specifier_set,
         Optional("index_url"): Optional(Any(_NONEMPTY_STRING, {"not": _NONEMPTY_STRING})),
+        Optional("develop"): bool,
     }
 )
 

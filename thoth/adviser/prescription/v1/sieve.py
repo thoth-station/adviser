@@ -56,6 +56,7 @@ class SievePrescription(UnitPrescription):
     _logged = attr.ib(type=bool, kw_only=True, init=False, default=False)
     _specifier = attr.ib(type=Optional[SpecifierSet], kw_only=True, init=False, default=None)
     _index_url = attr.ib(type=Optional[str], kw_only=True, init=False, default=None)
+    _develop = attr.ib(type=Optional[str], kw_only=True, init=False, default=None)
 
     @staticmethod
     def is_sieve_unit_type() -> bool:
@@ -83,13 +84,16 @@ class SievePrescription(UnitPrescription):
 
         self._index_url = package_version.get("index_url")
         self._logged = False
+        self._develop = package_version.get("develop")
         super().pre_run()
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Run main entry-point for sieves to filter and score packages."""
         for package_version in package_versions:
-            if (not self._specifier or package_version.locked_version in self._specifier) and (
-                self._index_url_check(self._index_url, package_version.index.url)
+            if (
+                (not self._specifier or package_version.locked_version in self._specifier)
+                and self._index_url_check(self._index_url, package_version.index.url)
+                and (self._develop is None or self._develop == package_version.develop)
             ):
                 if not self._logged:
                     self._logged = True

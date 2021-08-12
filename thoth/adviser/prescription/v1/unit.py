@@ -763,6 +763,17 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 if not resolved:
                     return False
 
+                develop = resolved_dependency.get("develop")
+                if develop is not None:
+                    package_version = self.context.get_package_version(resolved)
+                    if not package_version:
+                        # This is a programming error as the give dependency has to be registered in the context.
+                        _LOGGER.error("No matching package version for %r registered in the context", resolved)
+                        return False
+
+                    if package_version.develop != develop:
+                        return False
+
                 if not self._index_url_check(resolved_dependency.get("index_url"), resolved[2]):
                     return False
 

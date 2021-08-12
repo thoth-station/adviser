@@ -312,3 +312,43 @@ match:
 
         assert len(result) == 2
         assert result == [package_versions[1], package_versions[2]]
+
+    @pytest.mark.parametrize("develop", [True, False])
+    def test_sieve_develop_true(self, context: Context, develop: bool) -> None:
+        """Test sieving packages based on develop flag set to true."""
+        prescription_str = f"""
+name: SieveUnit
+type: sieve
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: flask
+    develop: {'true' if develop else 'false'}
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_SIEVE_SCHEMA(prescription)
+        SievePrescription.set_prescription(prescription)
+        package_versions = [
+            PackageVersion(
+                name="flask",
+                version="==1.1.2",
+                index=Source("https://pypi.org/simple"),
+                develop=develop,
+            ),
+            PackageVersion(
+                name="flask",
+                version="==1.0.2",
+                index=Source("https://pypi.org/simple"),
+                develop=not develop,
+            ),
+        ]
+
+        unit = SievePrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            result = list(unit.run((pv for pv in package_versions)))
+
+        assert len(result) == 1
+        assert [result[0]] == [pv for pv in package_versions if pv.develop != develop]
