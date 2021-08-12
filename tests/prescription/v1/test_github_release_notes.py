@@ -18,11 +18,14 @@
 """Test implementation of GitHub release notes wrap."""
 
 import yaml
+import pytest
 
 from thoth.adviser.context import Context
 from thoth.adviser.state import State
 from thoth.adviser.prescription.v1 import GitHubReleaseNotesWrapPrescription
 from thoth.adviser.prescription.v1.schema import PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_SCHEMA
+from thoth.python import PackageVersion
+from thoth.python import Source
 
 from .base import AdviserUnitPrescriptionTestCase
 
@@ -168,3 +171,91 @@ run:
                 ("package_name", "thoth-solver"),
             ),
         }
+
+    @pytest.mark.parametrize("develop", [True, False])
+    def test_run_develop(self, context: Context, state: State, develop: bool) -> None:
+        """Test running this pipeline unit resulting in a justification addition when "not" index url is used."""
+        prescription_str = f"""
+name: GitHubReleaseNotes
+type: wrap.GitHubReleaseNotes
+should_include:
+  adviser_pipeline: true
+run:
+  release_notes:
+    - organization: thoth-station
+      repository: solver
+      tag_version_prefix: v
+      package_version:
+        name: thoth-solver
+        develop: {'true' if develop else 'false'}
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_SCHEMA(prescription)
+        GitHubReleaseNotesWrapPrescription.set_prescription(prescription)
+
+        state.resolved_dependencies.clear()
+        state.justification.clear()
+
+        package_version = PackageVersion(
+            name="thoth-solver",
+            version="==0.5.0",
+            index=Source("https://pypi.org/simple"),
+            develop=develop,
+        )
+        state.add_resolved_dependency(package_version.to_tuple())
+        context.register_package_version(package_version)
+
+        unit = GitHubReleaseNotesWrapPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            assert unit.run(state) is None
+
+        self.verify_justification_schema(state.justification)
+        assert set(tuple(i.items()) for i in state.justification) == {
+            (
+                ("type", "INFO"),
+                ("message", "Release notes for package 'thoth-solver'"),
+                ("link", "https://github.com/thoth-station/solver/releases/tag/v0.5.0"),
+                ("package_name", "thoth-solver"),
+            ),
+        }
+
+    @pytest.mark.parametrize("develop", [True, False])
+    def test_run_develop_no_match(self, context: Context, state: State, develop: bool) -> None:
+        """Test running this pipeline unit resulting in a justification addition when "not" index url is used."""
+        prescription_str = f"""
+name: GitHubReleaseNotes
+type: wrap.GitHubReleaseNotes
+should_include:
+  adviser_pipeline: true
+run:
+  release_notes:
+    - organization: thoth-station
+      repository: solver
+      tag_version_prefix: v
+      package_version:
+        name: thoth-solver
+        develop: {'true' if develop else 'false'}
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_SCHEMA(prescription)
+        GitHubReleaseNotesWrapPrescription.set_prescription(prescription)
+
+        state.resolved_dependencies.clear()
+        state.justification.clear()
+
+        package_version = PackageVersion(
+            name="thoth-solver",
+            version="==0.5.0",
+            index=Source("https://pypi.org/simple"),
+            develop=not develop,
+        )
+        state.add_resolved_dependency(package_version.to_tuple())
+        context.register_package_version(package_version)
+
+        unit = GitHubReleaseNotesWrapPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            assert unit.run(state) is None
+
+        assert not state.justification

@@ -66,6 +66,7 @@ class StepPrescription(UnitPrescription):
 
     _specifier = attr.ib(type=Optional[SpecifierSet], kw_only=True, init=False, default=None)
     _index_url = attr.ib(type=Optional[str], kw_only=True, init=False, default=None)
+    _develop = attr.ib(type=Optional[bool], kw_only=True, init=False, default=None)
 
     @staticmethod
     def is_step_unit_type() -> bool:
@@ -113,6 +114,7 @@ class StepPrescription(UnitPrescription):
 
         self._index_url = package_version.get("index_url")
         self._prepare_justification_link(self.run_prescription.get("justification", []))
+        self._develop = package_version.get("develop")
         super().pre_run()
 
     def run(
@@ -123,6 +125,9 @@ class StepPrescription(UnitPrescription):
             return None
 
         if self._specifier and package_version.locked_version not in self._specifier:
+            return None
+
+        if self._develop is not None and package_version.develop != self._develop:
             return None
 
         if not self._run_state(state):

@@ -25,6 +25,8 @@ from thoth.adviser.context import Context
 from thoth.adviser.state import State
 from thoth.adviser.prescription.v1 import StridePrescription
 from thoth.adviser.prescription.v1.schema import PRESCRIPTION_STRIDE_SCHEMA
+from thoth.python import PackageVersion
+from thoth.python import Source
 
 from .base import AdviserUnitPrescriptionTestCase
 
@@ -326,3 +328,87 @@ run:
 
         builder_context = flexmock()
         assert list(StridePrescription.should_include(builder_context)) == []
+
+    @pytest.mark.parametrize("develop", [True, False])
+    def test_run_match_develop(self, context: Context, state: State, develop: bool) -> None:
+        """Test running this pipeline unit based on develop matching."""
+        prescription_str = f"""
+name: StrideUnit
+type: stride
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        develop: {'true' if develop else 'false'}
+run:
+  stack_info:
+    - type: INFO
+      message: This message will be shown
+      link: https://thoth-station.ninja
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STRIDE_SCHEMA(prescription)
+        StridePrescription.set_prescription(prescription)
+        package_version = PackageVersion(
+            name="flask",
+            version="==2.0.1",
+            index=Source("https://pypi.org/simple"),
+            develop=develop,
+        )
+        state.add_resolved_dependency(package_version.to_tuple())
+        context.register_package_version(package_version)
+
+        assert not context.stack_info
+
+        unit = StridePrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            assert unit.run(state) is None
+
+        assert context.stack_info == [
+            {"type": "INFO", "message": "This message will be shown", "link": "https://thoth-station.ninja"}
+        ]
+
+    @pytest.mark.parametrize("develop", [True, False])
+    def test_run_not_match_develop(self, context: Context, state: State, develop: bool) -> None:
+        """Test running this pipeline unit when develop is not matching."""
+        prescription_str = f"""
+name: StrideUnit
+type: stride
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        develop: {'true' if develop else 'false'}
+run:
+  stack_info:
+    - type: INFO
+      message: This message will NOT be shown
+      link: https://thoth-station.ninja
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STRIDE_SCHEMA(prescription)
+        StridePrescription.set_prescription(prescription)
+        package_version = PackageVersion(
+            name="flask",
+            version="==2.0.1",
+            index=Source("https://pypi.org/simple"),
+            develop=not develop,
+        )
+        state.add_resolved_dependency(package_version.to_tuple())
+        context.register_package_version(package_version)
+
+        assert not context.stack_info
+
+        unit = StridePrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            assert unit.run(state) is None
+
+        assert not context.stack_info

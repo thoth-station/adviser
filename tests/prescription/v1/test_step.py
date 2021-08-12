@@ -538,3 +538,125 @@ run:
         unit.pre_run()
         with unit.assigned_context(context):
             assert unit.run(state, package_version) is None
+
+    @pytest.mark.parametrize("develop", [True, False])
+    def test_run_develop_match(self, context: Context, state: State, develop: bool) -> None:
+        """Test running the prescription if develop flag is set."""
+        prescription_str = f"""
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+    develop: {'true' if develop else 'false'}
+run:
+  score: 0.5
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+        package_version = PackageVersion(
+            name="numpy",
+            version="==1.19.1",
+            index=Source("https://thoth-station.ninja/simple"),
+            develop=develop,
+        )
+
+        unit = StepPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            result = unit.run(state, package_version)
+
+        assert isinstance(result, tuple)
+        assert result[0] == 0.5
+        assert result[1] is None
+
+    @pytest.mark.parametrize("develop", [True, False])
+    def test_run_develop_not_match(self, context: Context, state: State, develop: bool) -> None:
+        """Test not running the prescription if develop flag is set."""
+        prescription_str = f"""
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+    develop: {'true' if develop else 'false'}
+run:
+  score: 0.5
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+        package_version = PackageVersion(
+            name="numpy",
+            version="==1.19.1",
+            index=Source("https://thoth-station.ninja/simple"),
+            develop=not develop,
+        )
+
+        unit = StepPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            assert unit.run(state, package_version) is None
+
+    @pytest.mark.parametrize(
+        "develop,state_develop",
+        [
+            (True, True),
+            (False, True),
+            (True, False),
+            (False, False),
+        ],
+    )
+    def test_run_develop_state_match(self, context: Context, state: State, develop: bool, state_develop: bool) -> None:
+        """Test not running the prescription if develop flag is set also on the state match."""
+        prescription_str = f"""
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+    develop: {'true' if develop else 'false'}
+  state:
+    resolved_dependencies:
+      - name: pytest
+        develop: {'true' if state_develop else 'false'}
+run:
+  score: 0.5
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+        package_version = PackageVersion(
+            name="numpy",
+            version="==1.19.1",
+            index=Source("https://pypi.org/simple"),
+            develop=develop,
+        )
+
+        state_package_version = PackageVersion(
+            name="pytest",
+            version="==6.2.4",
+            index=Source("https://pypi.org/simple"),
+            develop=state_develop,
+        )
+        state.add_resolved_dependency(state_package_version.to_tuple())
+        context.register_package_version(state_package_version)
+
+        unit = StepPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            result = unit.run(state, package_version)
+
+        assert isinstance(result, tuple)
+        assert result[0] == 0.5
+        assert result[1] is None

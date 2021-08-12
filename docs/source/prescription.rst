@@ -1027,6 +1027,7 @@ semantically):
       name: flask                                   # Mandatory, name of the package for which pseudonym should be registered.
       version: '>1.0,<=1.1.0'                       # Version specifier for which the pseudonym should be run. If not provided, defaults to any version.
       index_url: 'https://pypi.org/simple'          # Package source index for which the pseudonym should be run. If not provided, defaults to any index. Can be negated using "not".
+      develop: false                                # If specified, match development or not development dependencies.
   run:
     log:                                            # Optional text printed to logs when the unit gets called.
       message: "Some text printed to log on pipeline unit run."
@@ -1076,6 +1077,8 @@ entries:
   pseudonym should be provided
 * ``index_url`` - optional, Python package index URL for which the pseudonym
   should be provided. Can be negated using "not".
+* ``develop`` - optional, if provided it additionally specifies if the dependency
+  should or should not be a development dependency
 
 See examples below for more info.
 
@@ -1100,6 +1103,7 @@ by providing a match listing.
         - package_version:
             name: tensorflow-gpu
             index_url: "https://pypi.org/simple"
+            develop: false
       run:
         stack_info:
           - message: "Considering also intel-tensorflow and tensorflow-gpu as an alternative to tensorflow"
@@ -1180,6 +1184,7 @@ semantically):
       name: flask                                   # Name of the package for which the unit should be registered.
       version: '>1.0,<=1.1.0'                       # Version specifier for which the sieve should be run. If not provided, defauts to any version.
       index_url: 'https://pypi.org/simple'          # Package source index for which the sieve should be run. If not provided, defaults to any index. Can be negated using "not".
+      develop: false                                #
   run:
     log:                                            # Optional text printed to logs when the unit gets called.
       message: "Some text printed to log on pipeline unit run."
@@ -1204,6 +1209,8 @@ The package is described by:
   version matched if not provided
 * ``index_url`` - URL of the Python package index from where the given package
   is consumed, matches any index if not provided. Can be negated using "not".
+* ``develop`` - optional, if provided it additionally specifies if the dependency
+  should or should not be a development dependency
 
 .. note::
 
@@ -1371,6 +1378,7 @@ semantically):
       name: flask                                   # Name of the package for which the unit should be registered.
       version: '>1.0,<=1.1.0'                       # Version specifier for which the sieve should be run. If not provided, defaults to any version.
       index_url: 'https://pypi.org/simple'          # Package source index for which the sieve should be run. If not provided, defaults to any index. Can be negated using "not".
+      develop: true                                 #
     state:                                          # Optional, resolver internal state to match for the given resolution step.
       resolved_dependencies:
         - name: werkzeug                            # Dependencies that have to be present in the resolved state.
@@ -1412,6 +1420,9 @@ about to be resolved:
   * ``name`` - optional, name of the package
   * ``version`` - optional, version in a form of version specifier
   * ``index_url`` - optional, Python package index URL, can be negated using ``not``
+  * ``develop`` - optional, if provided it additionally specifies if the dependency
+    should or should not be a development dependency
+
 
 * ``state`` - internal resolver's state with resolved dependencies
 
@@ -1440,13 +1451,14 @@ pipeline unit multiple times.
 
   .. code-block:: yaml
 
-  # Match when torch in a 1.9.0 compatible release from PyPI is about to
-  # be included into resolver's state with torchvision==0.9.0 from PyPI.
+  # Match when torch (not dev) in a 1.9.0 compatible release from PyPI is
+  # about to be included into resolver's state with torchvision==0.9.0 from PyPI.
   match:
     package_version:
       name: torch
       version: "~=1.9.0"
       index_url: "https://pypi.org/simple"
+      develop: false
     state:
       resolved_dependencies:
         name: torchvision

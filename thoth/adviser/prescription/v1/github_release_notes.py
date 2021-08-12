@@ -19,6 +19,7 @@
 
 import attr
 
+import logging
 from typing import Any
 from typing import Dict
 from typing import Generator
@@ -35,6 +36,9 @@ from .schema import PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_RUN_ENTRIES_SCHEMA
 
 if TYPE_CHECKING:
     from ...pipeline_builder import PipelineBuilderContext
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
@@ -98,6 +102,19 @@ class GitHubReleaseNotesWrapPrescription(UnitPrescription):
             conf_matched = self._conf_map.get(resolved_package_tuple[0])
             if not conf_matched:
                 continue
+
+            develop = conf_matched["package_version"].get("develop")
+            if develop is not None:
+                package_version = self.context.get_package_version(resolved_package_tuple)
+                if not package_version:
+                    # This is a programming error as the give dependency has to be registered in the context.
+                    _LOGGER.error(
+                        "No matching package version for %r registered in the context", resolved_package_tuple
+                    )
+                    continue
+
+                if package_version.develop != develop:
+                    continue
 
             version = conf_matched["package_version"].get("version")
             if version is not None and resolved_package_tuple[1] not in SpecifierSet(version):

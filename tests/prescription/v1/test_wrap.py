@@ -25,6 +25,8 @@ from thoth.adviser.context import Context
 from thoth.adviser.state import State
 from thoth.adviser.prescription.v1 import WrapPrescription
 from thoth.adviser.prescription.v1.schema import PRESCRIPTION_WRAP_SCHEMA
+from thoth.python import PackageVersion
+from thoth.python import Source
 
 from .base import AdviserUnitPrescriptionTestCase
 
@@ -417,3 +419,87 @@ run:
                 },
             }
         ]
+
+    @pytest.mark.parametrize("develop", [True, False])
+    def test_run_develop(self, context: Context, state: State, develop: bool) -> None:
+        """Test running this pipeline unit based on matching develop flag."""
+        prescription_str = f"""
+name: WrapUnit
+type: wrap
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        develop: {'true' if develop else 'false'}
+run:
+  justification:
+    - type: INFO
+      message: This message will be shown
+      link: https://thoth-station.ninja
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_WRAP_SCHEMA(prescription)
+        WrapPrescription.set_prescription(prescription)
+
+        package_version = PackageVersion(
+            name="flask",
+            version="==2.0.1",
+            index=Source("https://pypi.org/simple"),
+            develop=develop,
+        )
+        state.add_resolved_dependency(package_version.to_tuple())
+        context.register_package_version(package_version)
+
+        state.justification.clear()
+
+        unit = WrapPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            assert unit.run(state) is None
+
+        assert state.justification == unit.run_prescription["justification"]
+
+    @pytest.mark.parametrize("develop", [True, False])
+    def test_run_develop_no_match(self, context: Context, state: State, develop: bool) -> None:
+        """Test running this pipeline unit based on NOT matching develop flag."""
+        prescription_str = f"""
+name: WrapUnit
+type: wrap
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  state:
+    resolved_dependencies:
+      - name: flask
+        develop: {'true' if develop else 'false'}
+run:
+  justification:
+    - type: INFO
+      message: This message will be shown
+      link: https://thoth-station.ninja
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_WRAP_SCHEMA(prescription)
+        WrapPrescription.set_prescription(prescription)
+
+        package_version = PackageVersion(
+            name="flask",
+            version="==2.0.1",
+            index=Source("https://pypi.org/simple"),
+            develop=not develop,
+        )
+        state.add_resolved_dependency(package_version.to_tuple())
+        context.register_package_version(package_version)
+
+        state.justification.clear()
+
+        unit = WrapPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            assert unit.run(state) is None
+
+        assert not state.justification
