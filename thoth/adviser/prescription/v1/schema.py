@@ -471,6 +471,7 @@ PRESCRIPTION_WRAP_SCHEMA = Schema(
 
 #
 # GitHub release notes wrap unit.
+# **deprecated**
 #
 
 PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_RUN_ENTRY_SCHEMA = Schema(
@@ -495,6 +496,49 @@ PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_SCHEMA = Schema(
 )
 
 #
+# GitHub release notes wrap unit.
+#
+
+PRESCRIPTION_GH_RELEASE_NOTES_WRAP_MATCH_ENTRY_SCHEMA = Schema(
+    {
+        Required("state"): Schema(
+            {
+                Required("resolved_dependencies"): Any(
+                    All([PACKAGE_VERSION_REQUIRED_NAME_SCHEMA], Length(min=1, max=1)),
+                    PACKAGE_VERSION_REQUIRED_NAME_SCHEMA,
+                )
+            }
+        )
+    }
+)
+
+PRESCRIPTION_GH_RELEASE_NOTES_WRAP_RUN_ENTRY_SCHEMA = Schema(
+    {
+        Required("organization"): _NONEMPTY_STRING,
+        Optional("tag_version_prefix"): _NONEMPTY_STRING,
+        Required("repository"): _NONEMPTY_STRING,
+    }
+)
+
+
+PRESCRIPTION_GH_RELEASE_NOTES_WRAP_RUN_ENTRIES_SCHEMA = Schema(
+    {"release_notes": PRESCRIPTION_GH_RELEASE_NOTES_WRAP_RUN_ENTRY_SCHEMA}
+)
+
+
+PRESCRIPTION_GH_RELEASE_NOTES_WRAP_SCHEMA = Schema(
+    {
+        Required("type"): "wrap.GHReleaseNotes",
+        Required("match"): Any(
+            All([PRESCRIPTION_GH_RELEASE_NOTES_WRAP_MATCH_ENTRY_SCHEMA], Length(min=1)),
+            PRESCRIPTION_GH_RELEASE_NOTES_WRAP_MATCH_ENTRY_SCHEMA,
+        ),
+        Required("run"): PRESCRIPTION_GH_RELEASE_NOTES_WRAP_RUN_ENTRIES_SCHEMA,
+        **_UNIT_SCHEMA_BASE_DICT,
+    }
+)
+
+#
 # Prescription.
 #
 
@@ -505,7 +549,13 @@ PRESCRIPTION_UNITS_SCHEMA = Schema(
         Optional("steps"): [PRESCRIPTION_STEP_SCHEMA],
         Optional("pseudonyms"): [PRESCRIPTION_PSEUDONYM_SCHEMA],
         Optional("strides"): [PRESCRIPTION_STRIDE_SCHEMA],
-        Optional("wraps"): [Any(PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_SCHEMA, PRESCRIPTION_WRAP_SCHEMA)],
+        Optional("wraps"): [
+            Any(
+                PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_SCHEMA,
+                PRESCRIPTION_WRAP_SCHEMA,
+                PRESCRIPTION_GH_RELEASE_NOTES_WRAP_SCHEMA,
+            )
+        ],
     }
 )
 

@@ -1866,9 +1866,7 @@ See :ref:`manifest_changes` section for more info and semantics.
 GitHubReleaseNotesWrap
 ======================
 
-A specific type of wrap pipeline unit that adds links to GitHub release page.
-See `the linked demo for more info
-<https://www.youtube.com/watch?v=oK1qYdhmquY>`__.
+**DEPRECATED**
 
 GitHubReleaseNotesWrap ``run.release_notes``
 ############################################
@@ -1908,3 +1906,44 @@ to GitHub release should be constructed.
   version 1.1.0 <https://github.com/pallets/flask/releases/tag/1.1.0>`__ and
   `tensorflow in version 2.3.2
   <https://github.com/tensorflow/tensorflow/releases/tag/v2.3.2>`__.
+
+GHReleaseNotesWrap
+============================================
+
+A specific type of wrap pipeline unit that adds links to GitHub release page.
+See `the linked demo for more info
+<https://www.youtube.com/watch?v=oK1qYdhmquY>`__.
+
+A list of entries describing release for which resolved a link
+to GitHub release should be constructed.
+
+.. note::
+
+  *Example:*
+
+  .. code-block:: yaml
+
+    name: GitHubReleaseNotesWrap
+    type: wrap.GitHubReleaseNotes
+    should_include:
+      adviser_pipeline: true
+    match:
+      - state:
+          resolved_dependencies:
+            name: flask
+      - state:
+          resolved_dependencies:
+            name: flask-fork
+            version: "~=1.1.0"
+            develop: false
+            index_url: 'https://pypi.org/simple'
+    run:
+      release_notes:
+        organization: pallets
+        repository: flask
+        tag_version_prefix: v
+
+  The example above will link to GitHub release info if listed packages are
+  in the resolved stack. Restrictions on ``version``, ``develop`` and ``index_url``
+  are optional. If not provided, any values are accepted. An example link for
+  `flask in version 1.1.0 <https://github.com/pallets/flask/releases/tag/1.1.0>`__.

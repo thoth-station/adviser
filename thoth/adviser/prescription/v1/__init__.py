@@ -19,6 +19,7 @@
 
 from .boot import BootPrescription
 from .github_release_notes import GitHubReleaseNotesWrapPrescription
+from .gh_release_notes import GHReleaseNotesWrapPrescription
 from .pseudonym import PseudonymPrescription
 from .sieve import SievePrescription
 from .skip_package import SkipPackageSievePrescription
@@ -31,6 +32,7 @@ from .wrap import WrapPrescription
 __all__ = [
     "BootPrescription",
     "GitHubReleaseNotesWrapPrescription",
+    "GHReleaseNotesWrapPrescription",
     "PseudonymPrescription",
     "SievePrescription",
     "SkipPackageSievePrescription",
