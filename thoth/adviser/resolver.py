@@ -263,15 +263,15 @@ class Resolver:
             package_boots.extend(self.pipeline.boots_dict.get(package_version.name, []))
 
         for boot in chain(package_boots, self.pipeline.boots_dict.get(None, [])):
-            _LOGGER.debug("Running boot %r", boot.get_unit_name())
+            _LOGGER.debug("Running boot %r", boot.name)
             boot.unit_run = True
             try:
                 boot.run()
             except NotAcceptable as exc:
-                msg = f"Boot pipeline unit {boot.get_unit_name()!r} failed: {str(exc)}"
+                msg = f"Boot pipeline unit {boot.name} failed: {str(exc)}"
                 raise CannotProduceStack(msg, stack_info=self.context.stack_info)
             except Exception as exc:
-                raise BootError(f"Failed to run pipeline boot {boot.get_unit_name()!r}: {str(exc)}") from exc
+                raise BootError(f"Failed to run pipeline boot {boot.name!r}: {str(exc)}") from exc
 
     def _run_sieves(
         self, package_versions: List[PackageVersion], *, log_level: int = logging.DEBUG
@@ -282,7 +282,7 @@ class Resolver:
             for sieve in chain(
                 self.pipeline.sieves_dict.get(package_versions[0].name, []), self.pipeline.sieves_dict.get(None, [])
             ):
-                _LOGGER.debug("Running sieve %r", sieve.get_unit_name())
+                _LOGGER.debug("Running sieve %r", sieve.name)
                 sieve.unit_run = True
                 try:
                     result = sieve.run(result)
@@ -292,14 +292,14 @@ class Resolver:
                     _LOGGER.log(
                         log_level,
                         "Sieve %r removed packages %r: %s",
-                        sieve.get_unit_name(),
+                        sieve.name,
                         str(exc),
                     )
                     result = []  # type: ignore
                     break
                 except Exception as exc:
                     raise SieveError(
-                        f"Failed to run sieve {sieve.get_unit_name()!r} for "
+                        f"Failed to run sieve {sieve.name!r} for "
                         f"Python packages {[pv.to_tuple() for pv in package_versions]}: {str(exc)}"
                     ) from exc
 
@@ -341,14 +341,14 @@ class Resolver:
         for step in chain(
             self.pipeline.steps_dict.get(package_version.name, []), self.pipeline.steps_dict.get(None, [])
         ):
-            _LOGGER.debug("Running step %r for %r", step.get_unit_name(), package_version_tuple)
+            _LOGGER.debug("Running step %r for %r", step.name, package_version_tuple)
             step.unit_run = True
 
             if multi_package_resolution and not step.configuration["multi_package_resolution"]:
                 _LOGGER.debug(
                     "Skipping running step %r - this step was already run for package %r "
                     "and the given step has no multi_package_resolution flag set",
-                    step.get_unit_name(),
+                    step.name,
                     package_version_tuple,
                 )
                 continue
@@ -362,7 +362,7 @@ class Resolver:
                     self._log_step_skip_package,
                     package_version_tuple,
                     "Step %r discarded addition of package %r: %s",
-                    step.get_unit_name(),
+                    step.name,
                     package_version_tuple,
                     str(exc),
                     level=log_level,
@@ -375,7 +375,7 @@ class Resolver:
                     self._log_step_not_acceptable,
                     package_version_tuple,
                     "Step %r discarded addition of package %r: %s",
-                    step.get_unit_name(),
+                    step.name,
                     package_version_tuple,
                     str(exc),
                     level=log_level,
@@ -388,8 +388,7 @@ class Resolver:
                 return None
             except Exception as exc:
                 raise StepError(
-                    f"Failed to run step {step.get_unit_name()!r} for Python package "
-                    f"{package_version_tuple!r}: {str(exc)}"
+                    f"Failed to run step {step.name!r} for Python package {package_version_tuple!r}: {str(exc)}"
                 ) from exc
 
             if step_result:
@@ -398,18 +397,18 @@ class Resolver:
                 if step_score_addition is not None:
                     if math.isnan(step_score_addition):
                         raise StepError(
-                            f"Step {step.get_unit_name()} returned score which is not a number",
+                            f"Step {step.name} returned score which is not a number",
                         )
 
                     if math.isinf(step_score_addition):
                         raise StepError(
-                            f"Step {step.get_unit_name()} returned score that is infinite",
+                            f"Step {step.name} returned score that is infinite",
                         )
 
                     if step_score_addition > step.SCORE_MAX:
                         _LOGGER.warning(
                             "Step %r returned score higher than allowed (%g), normalizing to %g",
-                            step.get_unit_name(),
+                            step.name,
                             step_score_addition,
                             step.SCORE_MAX,
                         )
@@ -417,7 +416,7 @@ class Resolver:
                     elif step_score_addition < step.SCORE_MIN:
                         _LOGGER.warning(
                             "Step %r returned score lower than allowed (%g), normalizing to %g",
-                            step.get_unit_name(),
+                            step.name,
                             step_score_addition,
                             step.SCORE_MIN,
                         )
@@ -473,20 +472,20 @@ class Resolver:
             package_strides.extend(self.pipeline.strides_dict.get(package_name, []))
 
         for stride in chain(package_strides, self.pipeline.strides_dict.get(None, [])):
-            _LOGGER.debug("Running stride %r", stride.get_unit_name())
+            _LOGGER.debug("Running stride %r", stride.name)
             stride.unit_run = True
             try:
                 stride.run(state)
             except NotAcceptable as exc:
                 _LOGGER.debug(
                     "Stride %r removed final state %r: %s",
-                    stride.get_unit_name(),
+                    stride.name,
                     state,
                     str(exc),
                 )
                 return False
             except Exception as exc:
-                raise StrideError(f"Failed to run stride {stride.get_unit_name()!r}: {str(exc)}") from exc
+                raise StrideError(f"Failed to run stride {stride.name!r}: {str(exc)}") from exc
 
         return True
 
@@ -497,12 +496,12 @@ class Resolver:
             package_wraps.extend(self.pipeline.wraps_dict.get(package_name, []))
 
         for wrap in chain(package_wraps, self.pipeline.wraps_dict.get(None, [])):
-            _LOGGER.debug("Running wrap %r", wrap.get_unit_name())
+            _LOGGER.debug("Running wrap %r", wrap.name)
             wrap.unit_run = True
             try:
                 wrap.run(state)
             except Exception as exc:
-                raise WrapError(f"Failed to run wrap {wrap.get_unit_name()!r} on a final state: {str(exc)}") from exc
+                raise WrapError(f"Failed to run wrap {wrap.name!r} on a final state: {str(exc)}") from exc
 
     def _prepare_user_lock_file(self, *, with_devel: bool = True) -> None:
         """Perform operations on the user's lock file required before running the pipeline.
@@ -786,7 +785,7 @@ class Resolver:
         """Run pseudonym units the given package tuple."""
         package_version: PackageVersion = self.context.get_package_version(package_tuple)
         for unit in self.pipeline.pseudonyms_dict.get(package_tuple[0], []):
-            _LOGGER.debug("Running pseudonym %r", unit.get_unit_name())
+            _LOGGER.debug("Running pseudonym %r", unit.name)
             unit.unit_run = True
             for pseudonym_package_tuple in unit.run(package_version):
                 # Pseudonyms introduced do not have dependents (we work on direct dependencies - initial state).
