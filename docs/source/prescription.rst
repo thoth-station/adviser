@@ -1880,8 +1880,8 @@ to GitHub release should be constructed.
 
   .. code-block:: yaml
 
-    name: GitHubReleaseNotesWrap
-    type: wrap.GitHubReleaseNotes
+    name: GHReleaseNotesWrap
+    type: wrap.GHReleaseNotes
     should_include:
       adviser_pipeline: true
     run:
