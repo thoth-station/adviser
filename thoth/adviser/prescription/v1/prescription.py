@@ -45,6 +45,7 @@ from .step import StepPrescription
 from .stride import StridePrescription
 from .wrap import WrapPrescription
 from .github_release_notes import GitHubReleaseNotesWrapPrescription
+from .gh_release_notes import GHReleaseNotesWrapPrescription
 from .skip_package import SkipPackageSievePrescription
 from .schema import PRESCRIPTION_SCHEMA
 
@@ -379,5 +380,8 @@ class Prescription:
             elif prescription["type"] == "wrap.GitHubReleaseNotes":
                 GitHubReleaseNotesWrapPrescription.set_prescription(prescription)
                 yield GitHubReleaseNotesWrapPrescription
+            elif prescription["type"] == "wrap.GHReleaseNotes":
+                GHReleaseNotesWrapPrescription.set_prescription(prescription)
+                yield GHReleaseNotesWrapPrescription
             else:
                 raise ValueError(f"Unknown wrap pipeline unit type: {prescription['type']!r}")
