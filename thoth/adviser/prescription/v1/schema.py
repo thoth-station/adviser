@@ -395,7 +395,7 @@ PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA = Schema(
 PRESCRIPTION_STEP_RUN_SCHEMA = Schema(
     {
         Optional("score"): Optional(float),
-        Optional("justification"): [JUSTIFICATION_SCHEMA],
+        Optional("justification"): All([JUSTIFICATION_SCHEMA], Length(min=1)),
         Optional("not_acceptable"): _NONEMPTY_STRING,
         Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
         Optional("multi_package_resolution"): bool,
@@ -451,7 +451,7 @@ PRESCRIPTION_WRAP_MATCH_ENTRY_SCHEMA = Schema(
 
 PRESCRIPTION_WRAP_RUN_SCHEMA = Schema(
     {
-        Optional("justification"): [JUSTIFICATION_SCHEMA],
+        Optional("justification"): All([JUSTIFICATION_SCHEMA], Length(min=1)),
         Optional("advised_manifest_changes"): object,
         **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
