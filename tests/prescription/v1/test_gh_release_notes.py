@@ -305,7 +305,7 @@ run:
         assert len(state.justification) == int(include)
 
     def test_instantiate_multiple(self) -> None:
-        """Test instantiating mutliple GitHub release notes wraps from a single prescription."""
+        """Test instantiating multiple GitHub release notes wraps from a single prescription."""
         prescription_str = f"""
 name: GHReleaseNotes
 type: wrap.GHReleaseNotes
