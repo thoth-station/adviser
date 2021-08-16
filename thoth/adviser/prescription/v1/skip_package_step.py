@@ -18,11 +18,9 @@
 """A step prescription class implementing skipping a package in a dependency graph."""
 
 import attr
-from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
-from typing import Generator
 from typing import Tuple
 from typing import TYPE_CHECKING
 import logging
@@ -34,23 +32,20 @@ from thoth.python import PackageVersion
 
 from thoth.adviser.state import State
 from thoth.adviser.exceptions import SkipPackage
-from .unit import UnitPrescription
+from .step import StepPrescription
 from .schema import PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA
 from .schema import PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA
-
-if TYPE_CHECKING:
-    from ...pipeline_builder import PipelineBuilderContext
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class SkipPackageStepPrescription(UnitPrescription):
+class SkipPackageStepPrescription(StepPrescription):
     """A step prescription class implementing skipping a package in a dependency graph."""
 
     CONFIGURATION_SCHEMA: Schema = Schema(
         {
-            Required("package_name"): SchemaAny(str, None),
+            Required("package_name"): str,
             Required("multi_package_resolution"): bool,
             Required("run"): SchemaAny(PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA, None),
             Required("match"): PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA,
@@ -59,58 +54,25 @@ class SkipPackageStepPrescription(UnitPrescription):
 
     _logged = attr.ib(type=bool, default=False, init=False, kw_only=True)
 
-    @staticmethod
-    def is_step_unit_type() -> bool:
-        """Check if this unit is of type step."""
-        return True
-
-    @staticmethod
-    def _yield_should_include(unit_prescription: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
-        """Yield for every entry stated in the match field."""
-        match = unit_prescription["match"]
-        run = unit_prescription["run"]
-        if isinstance(match, list):
-            for item in match:
-                yield {
-                    "package_name": item["package_name"],
-                    "multi_package_resolution": False,
-                    "match": item,
-                    "run": run,
-                }
-        else:
-            yield {
-                "package_name": match["package_name"],
-                "multi_package_resolution": False,
-                "match": match,
-                "run": run,
-            }
-
-    @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
-        """Check if the given pipeline unit should be included in the given pipeline configuration."""
-        if cls._should_include_base(builder_context):
-            prescription: Dict[str, Any] = cls._PRESCRIPTION  # type: ignore
-            yield from cls._yield_should_include(prescription)
+    def run(
+        self, state: State, package_version: PackageVersion
+    ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
+        """Run main entry-point for steps to skip a package."""
+        if not self._index_url_check(self._index_url, package_version.index.url):
             return None
 
-        yield from ()
-        return None
+        if self._specifier and package_version.locked_version not in self._specifier:
+            return None
 
-    def pre_run(self) -> None:
-        """Prepare before running this pipeline unit."""
-        self._logged = False
-        super().pre_run()
-
-    def run(self, state: State, _: PackageVersion) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
-        """Run main entry-point for steps to skip a package."""
-        if not self._run_state(state):
+        if self._develop is not None and package_version.develop != self._develop:
             return None
 
         # XXX: we might want to do more sophisticated logic here - it would be great to check
         # if the package removed was introduced only by an expected package and such
-        if not self._logged:
-            self._logged = True
-            self._run_log()
-            self._run_stack_info()
 
-        raise SkipPackage
+        if not self._run_state(state):
+            return None
+
+        self._run_base()
+
+        raise SkipPackage(f"Package {package_version.to_tuple()} skipped based on prescription {self.get_unit_name()}")
