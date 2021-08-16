@@ -20,7 +20,6 @@
 from .cve import CvePenalizationStep
 from .dropout import DropoutStep
 from .security_indicators import SecurityIndicatorStep
-from .tensorflow import TensorFlowRemoveSciPyStep
 
 from ._debug import GenerateScoreStep
 from ._debug import MockScoreStep
@@ -37,5 +36,4 @@ __all__ = [
     "MockScoreStep",
     "SetScoreStep",
     "GenerateScoreStep",
-    "TensorFlowRemoveSciPyStep",
 ]
