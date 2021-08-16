@@ -388,7 +388,9 @@ PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA = Schema(
 PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA = Schema(
     {
         Required("package_version"): PACKAGE_VERSION_SCHEMA,
-        Optional("state"): Schema({Optional("resolved_dependencies"): [PACKAGE_VERSION_SCHEMA]}),
+        Optional("state"): Schema(
+            {Optional("resolved_dependencies"): All([PACKAGE_VERSION_REQUIRED_NAME_SCHEMA], Length(min=1))}
+        ),
     }
 )
 
