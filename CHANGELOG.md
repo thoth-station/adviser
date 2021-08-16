@@ -1,4 +1,29 @@
 
+## Release 0.39.0 (2021-08-16T19:01:49)
+### Features
+* Be more strict about resolved dependencies length
+* Be more strict with justification list length
+* :arrow_up: Automatic update of dependencies by Kebechet
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Allow matching dependencies based on the develop flag
+* Fix link to Embed YouTube video
+* Fix pre-commit complains
+* Support "not" operator when matching Python package index URL
+* Show statistics of validated units
+* Add demo about ABI symbols
+* Add demo for considering RPM packages in the runtime environment
+* Add demo for python_packages prescription rule
+* Provide also package name to the GitHub release notes wrap
+* Make wraps more lazy
+* Notify about not verified user's stack
+### Bug Fixes
+* Minor typo fix
+### Improvements
+* Fix reporting unit names to logs
+* Optimize GitHub release notes pipeline unit wrap
+* Remove TensorFlow CUDA sieves replaced with prescriptions
+* Add missing parameters to the log messages
+
 ## Release 0.1.0 (2018-09-17T13:12:16)
 * Initial dependency lock
 * Add forgotten lxml library for bs4 parsing
