@@ -403,14 +403,11 @@ the logic.
       - cpu_families:
           not: [1]
 
-``should_include.runtime_environments.python_versions``
-#######################################################
+``should_include.runtime_environments.python_version``
+######################################################
 
-A list of Python versions that need to be matched for including the
+Python version specifier that need to be matched for including the
 given pipeline unit.
-
-Alternatively, the list can be wrapped with a "not" statement which inverts
-the logic.
 
 .. note::
 
@@ -418,14 +415,10 @@ the logic.
 
   .. code-block:: yaml
 
-    python_versions:
-      # Match when running 3.8 or 3.9:
-      - '3.8'
-      - '3.9'
+    # Match when running 3.8 or 3.9:
+    python_version: ">=3.8,<3.9"
 
-    python_versions:
-      # Match all except for 3.8
-      not: ['3.8']
+    python_version: "!=3.8"
 
 If this configuration option is not provided, it defaults to any
 Python version.
@@ -433,14 +426,11 @@ Python version.
 Python version is always in form of ``<major>.<minor>``. Patch versions
 are not considered.
 
-``should_include.runtime_environments.cuda_versions``
-#####################################################
+``should_include.runtime_environments.cuda_version``
+####################################################
 
-A list of Nvidia CUDA versions that need to be matched for including the given
+Nvidia CUDA versions that need to be matched for including the given
 pipeline unit.
-
-Alternatively the list can be wrapped with a "not" statement which inverts
-the logic.
 
 .. note::
 
@@ -448,34 +438,13 @@ the logic.
 
   .. code-block:: yaml
 
-    cuda_versions:
-      # Match when running CUDA 9.0 or 9.2.
-      - '9.0'
-      - '9.2'
-
-    cuda_versions:
-      # Match all except for 9.0 and 9.2.
-      not: ['9.0', '9.2]
+    # Match when running from CUDA 9.0 to 9.2.
+    cuda_version: ">=9.0,<=9.2"
 
   If this configuration option is not provided, it defaults to any
   CUDA version - even if none available.
 
 A special value of ``null`` means no CUDA version available.
-
-.. note::
-
-  *Example:*
-
-  .. code-block:: yaml
-
-    cuda_versions:
-      # Match when running CUDA 9.1 or no CUDA available.
-      - '9.1'
-      - null
-
-    cuda_versions:
-      # Match if any CUDA is available.
-      not: [null]
 
 ``should_include.runtime_environments.platforms``
 #################################################
@@ -500,14 +469,11 @@ the logic.
 
 If this configuration option is not supplied, it defaults to *any* platform.
 
-``should_include.runtime_environments.openblas_versions``
-#########################################################
+``should_include.runtime_environments.openblas_version``
+########################################################
 
-A list of `OpenBLAS <https://www.openblas.net/>`__ versions that need to be
+`OpenBLAS <https://www.openblas.net/>`__ versions that need to be
 matched for including the given pipeline unit.
-
-Alternatively, the list can be wrapped with a "not" statement which inverts
-the logic.
 
 .. note::
 
@@ -515,15 +481,17 @@ the logic.
 
   .. code-block:: yaml
 
-    openblas_versions:
-      # Match when running OpenBLAS 0.3.13, 0.3.0.
-      - '0.3.13'
-      - '0.3.0'
+    # Match when running OpenBLAS 0.3.0, 0.3.13.
+    openblas_version: ">=0.3.0,<=0.3.13"
 
   If this configuration option is not provided, it defaults to any OpenBLAS
   version - even none available.
 
-A special value of ``null`` means no OpenBLAS version available.
+``should_include.runtime_environments.openmpi_version``
+#######################################################
+
+`OpenMPI <https://www.open-mpi.org/>`__ versions that need to be matched for
+including the given pipeline unit.
 
 .. note::
 
@@ -531,131 +499,48 @@ A special value of ``null`` means no OpenBLAS version available.
 
   .. code-block:: yaml
 
-    openblas_versions:
-      # Match when running OpenBLAS 0.3.13 or no OpenBLAS is available.
-      - '0.3.13'
-      - null
-
-    openblas_versions:
-      # Match when any version of OpenBLAS is available.
-      not: [null]
-
-``should_include.runtime_environments.openmpi_versions``
-########################################################
-
-A list of `OpenMPI <https://www.open-mpi.org/>`__ versions that need to be
-matched for including the given pipeline unit.
-
-Alternatively, the list can be wrapped with a "not" statement which inverts
-the logic.
-
-.. note::
-
-  *Example:*
-
-  .. code-block:: yaml
-
-    openmpi_versions:
-      # Match when running OpenMPI 4.1.0 or 4.0.5
-      - '4.1.0'
-      - '4.0.5'
+    openmpi_version: ">=4.0.5,<=4.1.0"
+      # Match when running OpenMPI from 4.0.5 to 4.1.0.
 
   If this configuration option is not provided, it defaults to any OpenMPI
   version - even none available.
 
-A special value of ``null`` means no OpenMPI version available.
+``should_include.runtime_environments.cudnn_version``
+#####################################################
 
-.. note::
-
-  *Example:*
-
-  .. code-block:: yaml
-
-    openblas_versions:
-      # Match when no OpenMPI is available.
-      - null
-
-    openblas_versions:
-      # Match when any version of OpenMPI is available.
-      not: [null]
-
-``should_include.runtime_environments.cudnn_versions``
-######################################################
-
-A list of Nvidia cuDNN versions that need to be matched for including the given
+Nvidia cuDNN versions that need to be matched for including the given
 pipeline unit.
 
-Alternatively, the list can be wrapped with a "not" statement which inverts
-the logic.
-
 .. note::
 
   *Example:*
 
   .. code-block:: yaml
 
-    cudnn_versions:
-      # Match when running cuDNN 8.0.5 or 7.6.5
-      - '8.0.5'
-      - '7.6.5'
+    # Match when running cuDNN from 7.6.5 to 8.0.5.
+    cudnn_version: ">=7.6.5,<=8.0.5"
 
   If this configuration option is not provided, it defaults to any cuDNN version
   - even none available.
 
-A special value of ``null`` means no cuDNN version available.
+``should_include.runtime_environments.mkl_version``
+###################################################
 
-.. note::
-
-  *Example:*
-
-  .. code-block:: yaml
-
-    cudnn_versions:
-      # Match when no cuDNN is available.
-      - null
-
-    cudnn_versions:
-      # Match when cuDNN is available.
-      not: [null]
-
-``should_include.runtime_environments.mkl_versions``
-####################################################
-
-A list of `Intel MKL
+`Intel MKL
 <https://software.intel.com/content/www/us/en/develop/articles/oneapi-math-kernel-library-release-notes.html>`__
 versions that need to be matched for including the given pipeline unit.
 
-Alternatively, the list can be wrapped with a "not" statement which inverts
-the logic.
-
 .. note::
 
   *Example:*
 
   .. code-block:: yaml
 
-    mkl_versions:
-      # Match when running MKL 2021.1
-      - '2021.1'
+    # Match when running MKL 2021.1
+    mkl_version: "==2021.1"
 
   If this configuration option is not provided, it defaults to any MKL
   version - even none available.
-
-A special value of ``null`` means no MKL version available.
-
-.. note::
-
-  *Example:*
-
-  .. code-block:: yaml
-
-    mkl_versions:
-      # Match when no Intel MKL is available.
-      - null
-
-    mkl_versions:
-      # Match when any Intel MKL is available.
-      not: [null]
 
 ``should_include.runtime_environments.base_images``
 ###################################################
@@ -952,7 +837,7 @@ The link can be in a form of a valid HTTP or HTTPS URL or a string which
         operating_systems:
           - name: rhel
             version: '8'
-        python_versions: ['3.6']
+        python_version: '==3.6'
     run:
       stack_info:
         - type: WARNING
@@ -1279,7 +1164,7 @@ Print the given message to logs if the pipeline unit is included and run.
       times: 1
       adviser_pipeline: true
       runtime_environments:
-        python_versions: ['3.5', '3.6', '3.7', '3.8', '3.9']
+        python_version: '>=3.5,<=3.9'
     match:
       package_version:
         name: enum34
