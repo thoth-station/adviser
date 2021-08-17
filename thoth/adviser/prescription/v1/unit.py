@@ -24,9 +24,10 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import List
-from typing import Union
 from typing import Optional
+from typing import Type
 from typing import TYPE_CHECKING
+from typing import Union
 from packaging.specifiers import SpecifierSet
 from voluptuous import Schema
 from voluptuous import Required
@@ -38,9 +39,11 @@ from thoth.adviser.exceptions import EagerStopPipeline
 from thoth.adviser.state import State
 from thoth.common import get_justification_link as jl
 
+from .unit_cache import should_include_cache
 from ...unit import Unit
 
 if TYPE_CHECKING:
+    from typing import Callable
     from ...pipeline_builder import PipelineBuilderContext
 
 
@@ -69,6 +72,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
     """A base class for implementing pipeline units based on prescription supplied."""
 
     # Each prescription unit defines these specifically.
+    SHOULD_INCLUDE_CACHE: Dict[str, bool] = {}
     CONFIGURATION_SCHEMA: Schema = Schema(
         {
             Required("package_name"): str,
@@ -185,6 +189,57 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         if times == 0 or builder_context.is_included(cls):
             return False
 
+        if not cls._should_include_base_cached(unit_name, builder_context, should_include_dict):
+            # Using pre-cached results based on parts that do not change or first time run.
+            return False
+
+        # Dependencies.
+        dependencies = should_include_dict.get("dependencies", {})
+        for boot_name in dependencies.get("boots", []):
+            if boot_name not in builder_context.get_included_boot_names():
+                _LOGGER.debug("%s: Not registering as dependency on boot %r is not satisfied", unit_name, boot_name)
+                return False
+
+        for pseudonym_name in dependencies.get("pseudonyms", []):
+            if pseudonym_name not in builder_context.get_included_pseudonym_names():
+                _LOGGER.debug(
+                    "%s: Not registering as dependency on pseudonym %r is not satisfied", unit_name, pseudonym_name
+                )
+                return False
+
+        for sieve_name in dependencies.get("sieves", []):
+            if sieve_name not in builder_context.get_included_sieve_names():
+                _LOGGER.debug("%s: Not registering as dependency on sieve %r is not satisfied", unit_name, sieve_name)
+                return False
+
+        for step_name in dependencies.get("steps", []):
+            if step_name not in builder_context.get_included_step_names():
+                _LOGGER.debug("%s: Not registering as dependency on step %r is not satisfied", unit_name, step_name)
+                return False
+
+        for stride_name in dependencies.get("strides", []):
+            if stride_name not in builder_context.get_included_stride_names():
+                _LOGGER.debug("%s: Not registering as dependency on stride %r is not satisfied", unit_name, stride_name)
+                return False
+
+        for wrap_name in dependencies.get("wraps", []):
+            if wrap_name not in builder_context.get_included_wrap_names():
+                _LOGGER.debug("%s: Not registering as dependency on stride %r is not satisfied", unit_name, wrap_name)
+                return False
+
+        return True
+
+    if TYPE_CHECKING:
+        SHOULD_INCLUDE_FUNC_TYPE = Callable[
+            [Type["UnitPrescription"], str, "PipelineBuilderContext", Dict[str, Any]], bool
+        ]
+
+    @classmethod
+    @should_include_cache
+    def _should_include_base_cached(
+        cls, unit_name: str, builder_context: "PipelineBuilderContext", should_include_dict: Dict[str, Any]
+    ) -> bool:
+        """Determine if this unit should be included."""
         adviser_pipeline = should_include_dict.get("adviser_pipeline", False)
         if not adviser_pipeline and builder_context.is_adviser_pipeline():
             _LOGGER.debug("%s: Not registering for adviser pipeline", unit_name)
@@ -259,40 +314,6 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                     return False
             else:
                 _LOGGER.debug("%s: All library symbols required present in the library usage supplied", unit_name)
-
-        # Dependencies.
-        dependencies = should_include_dict.get("dependencies", {})
-        for boot_name in dependencies.get("boots", []):
-            if boot_name not in builder_context.get_included_boot_names():
-                _LOGGER.debug("%s: Not registering as dependency on boot %r is not satisfied", unit_name, boot_name)
-                return False
-
-        for pseudonym_name in dependencies.get("pseudonyms", []):
-            if pseudonym_name not in builder_context.get_included_pseudonym_names():
-                _LOGGER.debug(
-                    "%s: Not registering as dependency on pseudonym %r is not satisfied", unit_name, pseudonym_name
-                )
-                return False
-
-        for sieve_name in dependencies.get("sieves", []):
-            if sieve_name not in builder_context.get_included_sieve_names():
-                _LOGGER.debug("%s: Not registering as dependency on sieve %r is not satisfied", unit_name, sieve_name)
-                return False
-
-        for step_name in dependencies.get("steps", []):
-            if step_name not in builder_context.get_included_step_names():
-                _LOGGER.debug("%s: Not registering as dependency on step %r is not satisfied", unit_name, step_name)
-                return False
-
-        for stride_name in dependencies.get("strides", []):
-            if stride_name not in builder_context.get_included_stride_names():
-                _LOGGER.debug("%s: Not registering as dependency on stride %r is not satisfied", unit_name, stride_name)
-                return False
-
-        for wrap_name in dependencies.get("wraps", []):
-            if wrap_name not in builder_context.get_included_wrap_names():
-                _LOGGER.debug("%s: Not registering as dependency on stride %r is not satisfied", unit_name, wrap_name)
-                return False
 
         runtime_environment_dict = should_include_dict.get("runtime_environments", {})
 

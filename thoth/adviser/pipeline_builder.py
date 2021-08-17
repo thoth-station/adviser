@@ -40,6 +40,7 @@ from .exceptions import InternalError
 from .exceptions import UnknownPipelineUnitError
 from .exceptions import PipelineConfigurationError
 from .pipeline_config import PipelineConfig
+from .prescription import UnitPrescription
 
 if TYPE_CHECKING:
     from .prescription import Prescription  # noqa: F401
@@ -330,45 +331,49 @@ class PipelineBuilder:
 
         change = True
         ctx.iteration = -1
-        while change:
-            change = False
-            ctx.iteration += 1
-            for unit_class in cls._iter_units(ctx):
-                unit_name = unit_class.get_unit_name()
-                if unit_name in blocked_units:
-                    _LOGGER.debug(
-                        "Avoiding adding pipeline unit %r based on blocked units configuration",
-                        unit_name,
-                    )
-                    continue
-
-                for unit_configuration in unit_class.should_include(ctx):
-                    if unit_configuration is None:
+        try:
+            while change:
+                change = False
+                ctx.iteration += 1
+                for unit_class in cls._iter_units(ctx):
+                    unit_name = unit_class.get_unit_name()
+                    if unit_name in blocked_units:
                         _LOGGER.debug(
-                            "Pipeline unit %r will not be included in the pipeline configuration in this round",
+                            "Avoiding adding pipeline unit %r based on blocked units configuration",
                             unit_name,
                         )
                         continue
 
-                    change = True
+                    for unit_configuration in unit_class.should_include(ctx):
+                        if unit_configuration is None:
+                            _LOGGER.debug(
+                                "Pipeline unit %r will not be included in the pipeline configuration in this round",
+                                unit_name,
+                            )
+                            continue
 
-                    _LOGGER.debug(
-                        "Including pipeline unit %r in pipeline configuration with unit configuration %r",
-                        unit_name,
-                        unit_configuration,
-                    )
-                    unit_instance = unit_class()  # type: ignore
+                        change = True
 
-                    # Always perform update, even with an empty dict. Update triggers a schema check.
-                    try:
-                        unit_instance.update_configuration(unit_configuration)
-                    except Exception as exc:
-                        raise PipelineConfigurationError(
-                            f"Filed to initialize pipeline unit configuration for {unit_name!r} "
-                            f"with configuration {unit_configuration!r}: {str(exc)}"
-                        ) from exc
+                        _LOGGER.debug(
+                            "Including pipeline unit %r in pipeline configuration with unit configuration %r",
+                            unit_name,
+                            unit_configuration,
+                        )
+                        unit_instance = unit_class()  # type: ignore
 
-                    ctx.add_unit(unit_instance)
+                        # Always perform update, even with an empty dict. Update triggers a schema check.
+                        try:
+                            unit_instance.update_configuration(unit_configuration)
+                        except Exception as exc:
+                            raise PipelineConfigurationError(
+                                f"Filed to initialize pipeline unit configuration for {unit_name!r} "
+                                f"with configuration {unit_configuration!r}: {str(exc)}"
+                            ) from exc
+
+                        ctx.add_unit(unit_instance)
+        finally:
+            # Once the build pipeline is constructed or fails to construct, we can clear cached results.
+            UnitPrescription.SHOULD_INCLUDE_CACHE.clear()
 
         pipeline = PipelineConfig(
             boots=ctx.boots_dict,
