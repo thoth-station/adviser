@@ -29,6 +29,7 @@ from typing import Type
 from typing import TYPE_CHECKING
 from typing import Union
 from packaging.specifiers import SpecifierSet
+from packaging.version import Version
 from voluptuous import Schema
 from voluptuous import Required
 
@@ -175,6 +176,20 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
 
         _LOGGER.debug("%s: All library symbols required for %r unit are used", unit_name, library_name)
         return True
+
+    @staticmethod
+    def _check_version(version_present: Optional[str], version_spec_declared: Optional[str]) -> bool:
+        """Check that version present matches version specification."""
+        if version_present is None:
+            if version_spec_declared is not None:
+                return False
+            else:
+                return True
+        else:
+            if version_spec_declared is None:
+                return True
+
+            return Version(version_present) in SpecifierSet(version_spec_declared)
 
     @classmethod
     def _should_include_base(cls, builder_context: "PipelineBuilderContext") -> bool:
@@ -362,14 +377,24 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         # Software present.
         runtime_used = builder_context.project.runtime_environment
 
-        python_versions = runtime_environment_dict.get("python_versions")
-        if python_versions is not None and runtime_used.python_version not in _ValueList(python_versions):
-            _LOGGER.debug("%s: Not matching Python version used (using %r)", unit_name, runtime_used.python_version)
+        python_version_spec = runtime_environment_dict.get("python_version")
+        if not cls._check_version(runtime_used.python_version, python_version_spec):
+            _LOGGER.debug(
+                "%s: Not matching Python version used (using %r; expected %r)",
+                unit_name,
+                runtime_used.python_version,
+                python_version_spec,
+            )
             return False
 
-        cuda_versions = runtime_environment_dict.get("cuda_versions")
-        if cuda_versions is not None and runtime_used.cuda_version not in _ValueList(cuda_versions):
-            _LOGGER.debug("%s: Not matching CUDA version used (using %r)", unit_name, runtime_used.cuda_version)
+        cuda_version_spec = runtime_environment_dict.get("cuda_version")
+        if not cls._check_version(runtime_used.cuda_version, cuda_version_spec):
+            _LOGGER.debug(
+                "%s: Not matching CUDA version used (using %r; expected %r)",
+                unit_name,
+                runtime_used.cuda_version,
+                cuda_version_spec,
+            )
             return False
 
         platforms = runtime_environment_dict.get("platforms")
@@ -377,24 +402,44 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             _LOGGER.debug("%s: Not matching platform used (using %r)", unit_name, runtime_used.platform)
             return False
 
-        openblas_versions = runtime_environment_dict.get("openblas_versions")
-        if openblas_versions is not None and runtime_used.openblas_version not in _ValueList(openblas_versions):
-            _LOGGER.debug("%s: Not matching openblas version used (using %r)", unit_name, runtime_used.openblas_version)
+        openblas_version_spec = runtime_environment_dict.get("openblas_version")
+        if not cls._check_version(runtime_used.openblas_version, openblas_version_spec):
+            _LOGGER.debug(
+                "%s: Not matching openblas version used (using %r; expected %r)",
+                unit_name,
+                runtime_used.openblas_version,
+                openblas_version_spec,
+            )
             return False
 
-        openmpi_versions = runtime_environment_dict.get("openmpi_versions")
-        if openmpi_versions is not None and runtime_used.openmpi_version not in _ValueList(openmpi_versions):
-            _LOGGER.debug("%s: Not matching openmpi version used (using %r)", unit_name, runtime_used.openmpi_version)
+        openmpi_version_spec = runtime_environment_dict.get("openmpi_version")
+        if not cls._check_version(runtime_used.openmpi_version, openmpi_version_spec):
+            _LOGGER.debug(
+                "%s: Not matching openmpi version used (using %r; expected %r)",
+                unit_name,
+                runtime_used.openmpi_version,
+                openmpi_version_spec,
+            )
             return False
 
-        cudnn_versions = runtime_environment_dict.get("cudnn_versions")
-        if cudnn_versions is not None and runtime_used.cudnn_version not in _ValueList(cudnn_versions):
-            _LOGGER.debug("%s: Not matching cudnn version used (using %r)", unit_name, runtime_used.cudnn_version)
+        cudnn_version_spec = runtime_environment_dict.get("cudnn_version")
+        if not cls._check_version(runtime_used.cudnn_version, cudnn_version_spec):
+            _LOGGER.debug(
+                "%s: Not matching cudnn version used (using %r; expected %r)",
+                unit_name,
+                runtime_used.cudnn_version,
+                cudnn_version_spec,
+            )
             return False
 
-        mkl_versions = runtime_environment_dict.get("mkl_versions")
-        if mkl_versions is not None and runtime_used.mkl_version not in _ValueList(mkl_versions):
-            _LOGGER.debug("%s: Not matching mkl version used (using %r)", unit_name, runtime_used.mkl_version)
+        mkl_version_spec = runtime_environment_dict.get("mkl_version")
+        if not cls._check_version(runtime_used.mkl_version, mkl_version_spec):
+            _LOGGER.debug(
+                "%s: Not matching mkl version used (using %r; expected %r)",
+                unit_name,
+                runtime_used.mkl_version,
+                mkl_version_spec,
+            )
             return False
 
         base_images = runtime_environment_dict.get("base_images")
