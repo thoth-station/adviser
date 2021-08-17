@@ -261,6 +261,7 @@ class TestUnitPrescription(AdviserTestCase):
         builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False)
         # builder context has decision type ALL and prescription has dependency monkey pipeline configured
         assert UnitPrescription._should_include_base(builder_context) is True
+        UnitPrescription.SHOULD_INCLUDE_CACHE.clear()
 
         builder_context.recommendation_type = RecommendationType.LATEST
         builder_context.decision_type = None
@@ -268,6 +269,7 @@ class TestUnitPrescription(AdviserTestCase):
 
         # builder context has recommendation type LATEST and prescription has dependency monkey pipeline configured
         assert UnitPrescription._should_include_base(builder_context) is False
+        UnitPrescription.SHOULD_INCLUDE_CACHE.clear()
 
         should_include_dict = {"adviser_pipeline": True}
         PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include_dict)
@@ -278,6 +280,7 @@ class TestUnitPrescription(AdviserTestCase):
         builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False)
         # builder context has recommendation type LATEST and prescription has adviser pipeline configured
         assert UnitPrescription._should_include_base(builder_context) is True
+        UnitPrescription.SHOULD_INCLUDE_CACHE.clear()
 
         builder_context.recommendation_type = None
         builder_context.decision_type = DecisionType.ALL
@@ -285,6 +288,7 @@ class TestUnitPrescription(AdviserTestCase):
 
         # builder context has decision type ALL and prescription has adviser pipeline configured
         assert UnitPrescription._should_include_base(builder_context) is False
+        UnitPrescription.SHOULD_INCLUDE_CACHE.clear()
 
     @pytest.mark.parametrize("adviser_pipeline", [True, False])
     def test_should_include_times(self, builder_context: PipelineBuilderContext, adviser_pipeline: bool) -> None:

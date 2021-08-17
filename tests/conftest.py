@@ -29,6 +29,7 @@ from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.pipeline_config import PipelineConfig
 from thoth.adviser.resolver import Resolver
 from thoth.adviser.predictor import Predictor
+from thoth.adviser.prescription import UnitPrescription
 from thoth.adviser.state import State
 from thoth.common import RuntimeEnvironment
 from thoth.python import Project
@@ -196,13 +197,16 @@ def builder_context(project: Project) -> PipelineBuilderContext:
     flexmock(PipelineBuilderContext)
     flexmock(GraphDatabase)
 
-    return PipelineBuilderContext(
+    yield PipelineBuilderContext(
         graph=GraphDatabase(),
         project=project,
         library_usage=None,
         decision_type=None,
         recommendation_type=RecommendationType.LATEST,
     )
+    # Clear any changes done to the should_include cache. This somehow mimics pipeline builder that
+    # always clears the cache once the pipeline is constructed.
+    UnitPrescription.SHOULD_INCLUDE_CACHE.clear()
 
 
 @pytest.fixture(scope="session", autouse=True)

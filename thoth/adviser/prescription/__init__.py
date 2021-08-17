@@ -17,9 +17,11 @@
 
 """Prescription module implementation."""
 
+from .v1 import UnitPrescription
 from .v1.prescription import Prescription
 
 
 __all__ = [
+    "UnitPrescription",
     "Prescription",
 ]
