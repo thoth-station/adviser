@@ -18,6 +18,7 @@
 """Handle caching of pipeline units."""
 
 import functools
+import logging
 from typing import Any
 from typing import Dict
 from typing import Type
@@ -29,6 +30,8 @@ if TYPE_CHECKING:
     from ...pipeline_builder import PipelineBuilderContext
 
     SHOULD_INCLUDE_FUNC_TYPE = Callable[[Type["UnitPrescription"], str, "PipelineBuilderContext", Dict[str, Any]], bool]
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def should_include_cache(func: "SHOULD_INCLUDE_FUNC_TYPE") -> "SHOULD_INCLUDE_FUNC_TYPE":  # noqa: D202
@@ -43,6 +46,9 @@ def should_include_cache(func: "SHOULD_INCLUDE_FUNC_TYPE") -> "SHOULD_INCLUDE_FU
     ) -> bool:
         cached_result = cls.SHOULD_INCLUDE_CACHE.get(unit_name)
         if cached_result is not None:
+            _LOGGER.info(
+                "%s: Using pre-cached result (%r) of should include prescription part", unit_name, cached_result
+            )
             return cached_result
 
         result: bool = func(cls, unit_name, pipeline_builder, should_include_dict)
