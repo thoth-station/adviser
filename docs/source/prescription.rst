@@ -1312,15 +1312,23 @@ about to be resolved:
 * ``state`` - internal resolver's state with resolved dependencies
 
 A state that needs to be met to trigger the given step pipeline. The state
-states resolved dependencies where each entry in the resolved dependency
+can state:
+
+* ``resolved_dependencies`` where each entry in the resolved dependency
 listing is described as:
 
-* ``name`` - optional package name that has to be stated in the resolved
-  dependency listing
-* ``version`` - optional package version in a form of version specifier that
-  has to be stated in the resolved dependency listing
-* ``index_url`` - optional package index from which the given package is
-  consumed, can be negated using ``not``
+  * ``name`` - optional package name that has to be stated in the resolved
+    dependency listing
+  * ``version`` - optional package version in a form of version specifier that
+    has to be stated in the resolved dependency listing
+  * ``index_url`` - optional package index from which the given package is
+    consumed, can be negated using ``not``
+  * ``develop`` - optional boolean stating whether the package is or is not in
+    the development dependency listing
+
+* ``package_version_from`` where each entry describes packages that introduced
+  the matched package. Entries are identical to entries in the
+  ``resolved_dependencies`` listing.
 
 To run the given step, all the packages in the resolved dependency listing
 need to be present in the resolved software stack. Also both ``state`` and
@@ -1328,7 +1336,6 @@ need to be present in the resolved software stack. Also both ``state`` and
 
 It is possible to provide a listing of matching criteria to run the given
 pipeline unit multiple times.
-
 
 .. note::
 
@@ -1480,6 +1487,52 @@ Step ``run.eager_stop_pipeline``
 
 If the given pipeline unit is registered and matched, it will cause the whole
 resolution to halt and report back any results computed.
+
+SkipPackage step
+================
+
+This pipeline unit skips including the given package in the resolved stack considering
+also state of the resolver. The pipeline unit considers what packages introduced the
+package that is supposed to be removed and optionally other packages that are present
+in the resolved state.
+
+.. note::
+
+  *Example:*
+
+  A pipeline unit that removes SciPy package from the stack if SciPy was introduced
+  by the given TensorFlow version.
+
+  .. code-block:: yaml
+
+    name: SkipPackageStepUnit
+    type: step.SkipPackage
+    should_include:
+      adviser_pipeline: true
+    match:
+      package_version:
+        name: scipy
+        # Optionally version can be stated.
+        # Optionally index_url can be stated.
+        # Optionally develop can be stated.
+      state:
+        package_version_from:
+          - name: tensorflow
+            version: '>=2.1,<=2.3'
+            index_url: https://pypi.org/simple
+            develop: false
+    run:
+      # multi_package_resolution: false
+      stack_info:
+        - type: WARNING
+          message: "TensorFlow in versions >=2.1<=2.3 stated SciPy as a dependency but it is not used in the codebase"
+          link: "https://github.com/tensorflow/tensorflow/issues/35709"
+
+The pipeline unit accepts also ``match.state.resolved_dependencies`` that
+states a list of packages that should be present in the resolved state in order
+to skip the given package from inclusion in the stack. Unlike
+``package_version_from``, no relations are checked. Naturally, presence of
+packages in the ``package_version_from`` is checked in the resolver's state.
 
 Strides
 =======

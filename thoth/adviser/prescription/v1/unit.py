@@ -25,6 +25,7 @@ from typing import Dict
 from typing import Generator
 from typing import List
 from typing import Optional
+from typing import Tuple
 from typing import Type
 from typing import TYPE_CHECKING
 from typing import Union
@@ -39,6 +40,7 @@ from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.exceptions import EagerStopPipeline
 from thoth.adviser.state import State
 from thoth.common import get_justification_link as jl
+from thoth.python import PackageVersion
 
 from .unit_cache import should_include_cache
 from ...unit import Unit
@@ -820,34 +822,90 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         if stack_info:
             self.context.stack_info.extend(stack_info)
 
+    def _check_package_tuple_from_prescription(
+        self, dependency_tuple: Tuple[str, str, str], dependency: Dict[str, str]
+    ) -> bool:
+        """Check if the given package version tuple matches with what was written in prescription."""
+        develop = dependency.get("develop")
+        if develop is not None:
+            package_version = self.context.get_package_version(dependency_tuple, graceful=True)
+            if not package_version:
+                return False
+
+            if package_version.develop != develop:
+                return False
+
+        if not self._index_url_check(dependency.get("index_url"), dependency_tuple[2]):
+            return False
+
+        version = dependency.get("version")
+        if version is not None:
+            specifier = SpecifierSet(version)
+            if dependency_tuple[1] not in specifier:
+                return False
+
+        return True
+
     def _run_state(self, state: State) -> bool:
         """Check state match."""
         state_prescription = self.match_prescription.get("state")
-        if state_prescription:
-            for resolved_dependency in state_prescription.get("resolved_dependencies", []):
-                resolved = state.resolved_dependencies.get(resolved_dependency["name"])
-                if not resolved:
+        if not state_prescription:
+            # Nothing to check.
+            return True
+
+        for resolved_dependency in state_prescription.get("resolved_dependencies", []):
+            resolved = state.resolved_dependencies.get(resolved_dependency["name"])
+            if not resolved:
+                return False
+
+            if not self._check_package_tuple_from_prescription(resolved, resolved_dependency):
+                return False
+
+        return True
+
+    def _run_state_with_initiator(self, state: State, package_version: PackageVersion) -> bool:
+        """Check state match respecting also initiator of the give package."""
+        state_prescription = self.match_prescription.get("state")
+        if not state_prescription:
+            # Nothing to check.
+            return True
+
+        package_version_from = state_prescription.get("package_version_from") or []
+        # XXX: we explicitly do not consider runtime environment as we expect to have it only one here.
+        dependents = {
+            i[0] for i in self.context.dependents.get(package_version.name, {}).get(package_version.to_tuple(), set())
+        }
+
+        for resolved_dependency in package_version_from:
+            resolved = state.resolved_dependencies.get(resolved_dependency["name"])
+            if not resolved:
+                return False
+
+            if not self._check_package_tuple_from_prescription(resolved, resolved_dependency):
+                return False
+
+            if resolved not in dependents:
+                _LOGGER.debug(
+                    "Package %r stated in package_version_from not a did not introduce package %r",
+                    resolved,
+                    package_version.to_tuple(),
+                )
+                return False
+
+            dependents.discard(resolved)
+
+        if dependents and not state_prescription.get("package_version_from_allow_other", False):
+            for dependent in dependents:
+                if dependent == state.resolved_dependencies.get(dependent[0]):
                     return False
 
-                develop = resolved_dependency.get("develop")
-                if develop is not None:
-                    package_version = self.context.get_package_version(resolved)
-                    if not package_version:
-                        # This is a programming error as the give dependency has to be registered in the context.
-                        _LOGGER.error("No matching package version for %r registered in the context", resolved)
-                        return False
+        for resolved_dependency in state_prescription.get("resolved_dependencies", []):
+            resolved = state.resolved_dependencies.get(resolved_dependency["name"])
+            if not resolved:
+                return False
 
-                    if package_version.develop != develop:
-                        return False
-
-                if not self._index_url_check(resolved_dependency.get("index_url"), resolved[2]):
-                    return False
-
-                version = resolved_dependency.get("version")
-                if version is not None:
-                    specifier = SpecifierSet(version)  # XXX: this could be optimized out
-                    if resolved[1] not in specifier:
-                        return False
+            if not self._check_package_tuple_from_prescription(resolved, resolved_dependency):
+                return False
 
         return True
 

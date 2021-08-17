@@ -628,8 +628,8 @@ match:
     develop: {'true' if develop else 'false'}
   state:
     resolved_dependencies:
-      - name: pytest
-        develop: {'true' if state_develop else 'false'}
+    - name: pytest
+      develop: {'true' if state_develop else 'false'}
 run:
   score: 0.5
 """
@@ -660,3 +660,328 @@ run:
         assert isinstance(result, tuple)
         assert result[0] == 0.5
         assert result[1] is None
+
+    @pytest.mark.parametrize(
+        "package_version_from_version,package_version_from_index,package_version_from_develop,"
+        "register_dependency,pipeline_run",
+        [
+            ("<=0.25.0", "https://pypi.org/simple", "false", True, True),
+            (">0.25.0", "https://pypi.org/simple", "false", True, False),  # Version not matching.
+            ("<=0.25.0", '{"not": "https://pypi.org/simple"}', "false", True, False),  # Index not matching.
+            ("<=0.25.0", "https://pypi.org/simple", "true", True, False),  # Develop flag not matching.
+            ("<=0.25.0", "https://pypi.org/simple", "false", False, False),  # Dependency is not registered.
+        ],
+    )
+    def test_run_package_version_from(
+        self,
+        context: Context,
+        state: State,
+        package_version_from_version: str,
+        package_version_from_index: str,
+        package_version_from_develop: str,
+        register_dependency: bool,
+        pipeline_run: bool,
+    ) -> None:
+        """Test running the prescription based on the dependency introduced."""
+        prescription_str = f"""
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+  state:
+    package_version_from:
+    - name: scikit-learn
+      version: "{package_version_from_version}"
+      develop: {package_version_from_develop}
+      index_url: {package_version_from_index}
+run:
+  score: 0.5
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+
+        pypi = Source("https://pypi.org/simple")
+        package_version = PackageVersion(
+            name="numpy",
+            version="==1.19.1",
+            index=pypi,
+            develop=False,
+        )
+
+        package_version_from = PackageVersion(
+            name="scikit-learn",
+            version="==0.24.2",
+            index=pypi,
+            develop=False,
+        )
+
+        state.add_resolved_dependency(package_version_from.to_tuple())
+        context.register_package_version(package_version_from)
+
+        if register_dependency:
+            runtime_env = context.project.runtime_environment
+            context.register_package_tuple(
+                package_version.to_tuple(),
+                dependent_tuple=package_version_from.to_tuple(),
+                develop=False,
+                extras=None,
+                os_name=runtime_env.operating_system.name,
+                os_version=runtime_env.operating_system.version,
+                python_version=runtime_env.python_version,
+            )
+
+        unit = StepPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            result = unit.run(state, package_version)
+
+        if pipeline_run:
+            assert isinstance(result, tuple)
+            assert result[0] == 0.5
+            assert result[1] is None
+        else:
+            assert result is None
+
+    @pytest.mark.parametrize(
+        "package_version_from_version,package_version_from_index,package_version_from_develop,"
+        "resolved_version,resolved_index,resolved_develop,"
+        "add_resolved,pipeline_run",
+        [
+            ("<=0.25.0", "https://pypi.org/simple", "false", "==8.0.0", "https://pypi.org/simple", "false", True, True),
+            # Version not matching.
+            (">0.25.0", "https://pypi.org/simple", "false", "==8.0.0", "https://pypi.org/simple", "false", True, False),
+            # Index not matching.
+            (
+                "<=0.25.0",
+                '{"not": "https://pypi.org/simple"}',
+                "false",
+                "==8.0.0",
+                "https://pypi.org/simple",
+                "false",
+                True,
+                False,
+            ),
+            # Develop flag not matching.
+            ("<=0.25.0", "https://pypi.org/simple", "true", "==8.0.0", "https://pypi.org/simple", "false", True, False),
+            # Version not matching.
+            (
+                "<=0.25.0",
+                "https://pypi.org/simple",
+                "false",
+                "!=8.0.0",
+                "https://pypi.org/simple",
+                "false",
+                True,
+                False,
+            ),
+            # Index not matching.
+            (
+                "<=0.25.0",
+                "https://pypi.org/simple",
+                "false",
+                "==8.0.0",
+                '{"not": "https://pypi.org/simple"}',
+                "false",
+                True,
+                False,
+            ),
+            # Develop flag not matching.
+            ("<=0.25.0", "https://pypi.org/simple", "false", "==8.0.0", "https://pypi.org/simple", "true", True, False),
+            # Resolved dependency nit present.
+            (
+                "<=0.25.0",
+                "https://pypi.org/simple",
+                "false",
+                "==8.0.0",
+                "https://pypi.org/simple",
+                "false",
+                False,
+                False,
+            ),
+        ],
+    )
+    def test_run_package_version_from_with_resolved(
+        self,
+        context: Context,
+        state: State,
+        package_version_from_version: str,
+        package_version_from_index: str,
+        package_version_from_develop: str,
+        resolved_version: str,
+        resolved_index: str,
+        resolved_develop: str,
+        add_resolved: bool,
+        pipeline_run: bool,
+    ) -> None:
+        """Test running the prescription based on the dependency introduced."""
+        prescription_str = f"""
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+  state:
+    package_version_from:
+    - name: scikit-learn
+      version: "{package_version_from_version}"
+      develop: {package_version_from_develop}
+      index_url: {package_version_from_index}
+    resolved_dependencies:
+    - name: click
+      version: "{resolved_version}"
+      develop: {resolved_develop}
+      index_url: {resolved_index}
+run:
+  score: 0.5
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+
+        pypi = Source("https://pypi.org/simple")
+        package_version = PackageVersion(
+            name="numpy",
+            version="==1.19.1",
+            index=pypi,
+            develop=False,
+        )
+
+        package_version_from = PackageVersion(
+            name="scikit-learn",
+            version="==0.24.2",
+            index=pypi,
+            develop=False,
+        )
+
+        package_version_resolved = PackageVersion(
+            name="click",
+            version="==8.0.0",
+            index=pypi,
+            develop=False,
+        )
+
+        state.add_resolved_dependency(package_version_from.to_tuple())
+        context.register_package_version(package_version_from)
+
+        if add_resolved:
+            state.add_resolved_dependency(package_version_resolved.to_tuple())
+            context.register_package_version(package_version_resolved)
+
+        runtime_env = context.project.runtime_environment
+        context.register_package_tuple(
+            package_version.to_tuple(),
+            dependent_tuple=package_version_from.to_tuple(),
+            develop=False,
+            extras=None,
+            os_name=runtime_env.operating_system.name,
+            os_version=runtime_env.operating_system.version,
+            python_version=runtime_env.python_version,
+        )
+
+        unit = StepPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            result = unit.run(state, package_version)
+
+        if pipeline_run:
+            assert isinstance(result, tuple)
+            assert result[0] == 0.5
+            assert result[1] is None
+        else:
+            assert result is None
+
+    @pytest.mark.parametrize("allow_other", [True, False])
+    def test_run_package_version_from_with_other(self, context: Context, state: State, allow_other: bool) -> None:
+        """Test running the prescription based on the dependency introduced without with considering other packages."""
+        prescription_str = f"""
+name: StepUnit
+type: step
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+  state:
+    package_version_from_allow_other: {'true' if allow_other else 'false'}
+    package_version_from:
+    - name: scikit-learn
+      version: "<1.0.0"
+      develop: false
+      index_url: https://pypi.org/simple
+run:
+  score: 0.5
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_STEP_SCHEMA(prescription)
+        StepPrescription.set_prescription(prescription)
+
+        pypi = Source("https://pypi.org/simple")
+
+        package_version = PackageVersion(
+            name="numpy",
+            version="==1.19.4",
+            index=pypi,
+            develop=False,
+        )
+
+        package_version_other = PackageVersion(
+            name="tensorflow",
+            version="==2.6.0",
+            index=pypi,
+            develop=False,
+        )
+
+        package_version_from = PackageVersion(
+            name="scikit-learn",
+            version="==0.24.2",
+            index=pypi,
+            develop=False,
+        )
+
+        state.add_resolved_dependency(package_version_from.to_tuple())
+        context.register_package_version(package_version_from)
+
+        state.add_resolved_dependency(package_version_other.to_tuple())
+        context.register_package_version(package_version_other)
+
+        runtime_env = context.project.runtime_environment
+        context.register_package_tuple(
+            package_version.to_tuple(),
+            dependent_tuple=package_version_from.to_tuple(),
+            develop=False,
+            extras=None,
+            os_name=runtime_env.operating_system.name,
+            os_version=runtime_env.operating_system.version,
+            python_version=runtime_env.python_version,
+        )
+
+        context.register_package_tuple(
+            package_version.to_tuple(),
+            dependent_tuple=package_version_other.to_tuple(),
+            develop=False,
+            extras=None,
+            os_name=runtime_env.operating_system.name,
+            os_version=runtime_env.operating_system.version,
+            python_version=runtime_env.python_version,
+        )
+
+        unit = StepPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            result = unit.run(state, package_version)
+
+        if allow_other:
+            assert isinstance(result, tuple)
+            assert result[0] == 0.5
+            assert result[1] is None
+        else:
+            assert result is None
