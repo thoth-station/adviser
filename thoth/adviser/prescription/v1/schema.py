@@ -473,32 +473,6 @@ PRESCRIPTION_WRAP_SCHEMA = Schema(
 
 #
 # GitHub release notes wrap unit.
-# **deprecated**
-#
-
-PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_RUN_ENTRY_SCHEMA = Schema(
-    {
-        Required("package_version"): PACKAGE_VERSION_REQUIRED_NAME_SCHEMA,
-        Required("organization"): _NONEMPTY_STRING,
-        Optional("tag_version_prefix"): _NONEMPTY_STRING,
-        Required("repository"): _NONEMPTY_STRING,
-    }
-)
-
-PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_RUN_ENTRIES_SCHEMA = All(
-    [PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_RUN_ENTRY_SCHEMA], Length(min=1)
-)
-
-PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_SCHEMA = Schema(
-    {
-        Required("type"): "wrap.GitHubReleaseNotes",
-        Required("run"): Schema({"release_notes": PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_RUN_ENTRIES_SCHEMA}),
-        **_UNIT_SCHEMA_BASE_DICT,
-    }
-)
-
-#
-# GitHub release notes wrap unit.
 #
 
 PRESCRIPTION_GH_RELEASE_NOTES_WRAP_MATCH_ENTRY_SCHEMA = Schema(
@@ -553,7 +527,6 @@ PRESCRIPTION_UNITS_SCHEMA = Schema(
         Optional("strides"): [PRESCRIPTION_STRIDE_SCHEMA],
         Optional("wraps"): [
             Any(
-                PRESCRIPTION_GITHUB_RELEASE_NOTES_WRAP_SCHEMA,
                 PRESCRIPTION_WRAP_SCHEMA,
                 PRESCRIPTION_GH_RELEASE_NOTES_WRAP_SCHEMA,
             )

@@ -1863,50 +1863,6 @@ Suggested changes to the manifest files used for deployment.
 
 See :ref:`manifest_changes` section for more info and semantics.
 
-GitHubReleaseNotesWrap
-======================
-
-**DEPRECATED**
-
-GitHubReleaseNotesWrap ``run.release_notes``
-############################################
-
-A list of entries describing release for which resolved a link
-to GitHub release should be constructed.
-
-.. note::
-
-  *Example:*
-
-  .. code-block:: yaml
-
-    name: GHReleaseNotesWrap
-    type: wrap.GHReleaseNotes
-    should_include:
-      adviser_pipeline: true
-    run:
-      release_notes:
-        - organization: pallets
-          repository: flask
-          package_version:
-            name: flask
-            index_url: 'https://pypi.org/simple'
-        - organization: tensorflow
-          repository: tensorflow
-          # Tags are prefixed with 'v'.
-          tag_version_prefix: v
-          package_version:
-            name: tensorflow
-            version: '>=1.0.0'
-            index_url: 'https://pypi.org/simple'
-
-  The example above will link to GitHub release info if listed packages are
-  in the resolved stack. Restrictions on ``version`` and ``index_url`` are
-  optional. If not provided, any values are accepted. Examples for `flask in
-  version 1.1.0 <https://github.com/pallets/flask/releases/tag/1.1.0>`__ and
-  `tensorflow in version 2.3.2
-  <https://github.com/tensorflow/tensorflow/releases/tag/v2.3.2>`__.
-
 GHReleaseNotesWrap
 ============================================
 
