@@ -46,7 +46,7 @@ def should_include_cache(func: "SHOULD_INCLUDE_FUNC_TYPE") -> "SHOULD_INCLUDE_FU
     ) -> bool:
         cached_result = cls.SHOULD_INCLUDE_CACHE.get(unit_name)
         if cached_result is not None:
-            _LOGGER.info(
+            _LOGGER.debug(
                 "%s: Using pre-cached result (%r) of should include prescription part", unit_name, cached_result
             )
             return cached_result
