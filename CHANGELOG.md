@@ -1,4 +1,20 @@
 
+## Release 0.40.0 (2021-08-19T21:20:28)
+### Features
+* Remove Python implementation of pseudonym available in prescriptions
+* Remove TensorFlow specific pipeline unit for removing scipy
+* Introduce skip package step
+* Be less verbose about cache hits in prescription unit cache
+* Use version specifiers for versions in prescriptions
+* Log pre-cached results of should_include if used
+* Remove tensorflow specific wrap module
+* Decommission old GitHub release notes wrap
+### Bug Fixes
+* Report prescription file that failed to load
+### Improvements
+* Update documentation for version spec version requirements
+* Optimize some parts of should_include by caching them
+
 ## Release 0.39.0 (2021-08-16T19:01:49)
 ### Features
 * Be more strict about resolved dependencies length
