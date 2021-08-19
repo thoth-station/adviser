@@ -24,7 +24,6 @@ import pytest
 
 from thoth.adviser.exceptions import SkipPackage
 from thoth.adviser.context import Context
-from thoth.adviser.state import State
 from thoth.adviser.prescription.v1 import SkipPackageSievePrescription
 from thoth.adviser.prescription.v1.schema import PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA
 
@@ -32,9 +31,9 @@ from .base import AdviserUnitPrescriptionTestCase
 
 
 class TestSkipPackageSievePrescription(AdviserUnitPrescriptionTestCase):
-    """Tests related to skip package prescription."""
+    """Tests related to skip package sieve prescription."""
 
-    def test_run(self, context: Context, state: State) -> None:
+    def test_run(self, context: Context) -> None:
         """Test running this pipeline unit."""
         prescription_str = """
 name: SkipPackageSieve

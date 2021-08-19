@@ -389,7 +389,11 @@ PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA = Schema(
     {
         Required("package_version"): PACKAGE_VERSION_SCHEMA,
         Optional("state"): Schema(
-            {Optional("resolved_dependencies"): All([PACKAGE_VERSION_REQUIRED_NAME_SCHEMA], Length(min=1))}
+            {
+                Optional("resolved_dependencies"): All([PACKAGE_VERSION_REQUIRED_NAME_SCHEMA], Length(min=1)),
+                Optional("package_version_from"): All([PACKAGE_VERSION_REQUIRED_NAME_SCHEMA], Length(min=1)),
+                Optional("package_version_from_allow_other"): bool,
+            }
         ),
     }
 )
@@ -415,6 +419,46 @@ PRESCRIPTION_STEP_SCHEMA = Schema(
         **_UNIT_SCHEMA_BASE_DICT,
     }
 )
+
+
+#
+# Skip package step unit.
+#
+
+PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA = Schema(
+    {
+        Required("package_version"): PACKAGE_VERSION_SCHEMA,
+        Optional("state"): Schema(
+            {
+                Optional("resolved_dependencies"): All([PACKAGE_VERSION_REQUIRED_NAME_SCHEMA], Length(min=1)),
+                Required("package_version_from"): All([PACKAGE_VERSION_REQUIRED_NAME_SCHEMA], Length(min=1)),
+                Optional("package_version_from_allow_other"): bool,
+            }
+        ),
+    }
+)
+
+
+PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA = Schema(
+    {
+        Optional("multi_package_resolution"): bool,
+        **_UNIT_RUN_SCHEMA_BASE_DICT,
+    }
+)
+
+
+PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA = Schema(
+    {
+        Required("match"): Any(
+            All([PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA], Length(min=1)),
+            PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA,
+        ),
+        Optional("run"): PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA,
+        Required("type"): "step.SkipPackage",
+        **_UNIT_SCHEMA_BASE_DICT,
+    }
+)
+
 
 #
 # Stride unit.
@@ -522,7 +566,7 @@ PRESCRIPTION_UNITS_SCHEMA = Schema(
     {
         Optional("boots"): [PRESCRIPTION_BOOT_SCHEMA],
         Optional("sieves"): [Any(PRESCRIPTION_SIEVE_SCHEMA, PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA)],
-        Optional("steps"): [PRESCRIPTION_STEP_SCHEMA],
+        Optional("steps"): [Any(PRESCRIPTION_STEP_SCHEMA, PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA)],
         Optional("pseudonyms"): [PRESCRIPTION_PSEUDONYM_SCHEMA],
         Optional("strides"): [PRESCRIPTION_STRIDE_SCHEMA],
         Optional("wraps"): [

@@ -21,7 +21,8 @@ from .boot import BootPrescription
 from .gh_release_notes import GHReleaseNotesWrapPrescription
 from .pseudonym import PseudonymPrescription
 from .sieve import SievePrescription
-from .skip_package import SkipPackageSievePrescription
+from .skip_package_sieve import SkipPackageSievePrescription
+from .skip_package_step import SkipPackageStepPrescription
 from .step import StepPrescription
 from .stride import StridePrescription
 from .unit import UnitPrescription
@@ -34,6 +35,7 @@ __all__ = [
     "PseudonymPrescription",
     "SievePrescription",
     "SkipPackageSievePrescription",
+    "SkipPackageStepPrescription",
     "StepPrescription",
     "StridePrescription",
     "UnitPrescription",

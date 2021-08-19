@@ -338,6 +338,7 @@ class Resolver:
         score_addition = 0.0
         justification_addition = []
         skip_package = False
+        step_result = None
         for step in chain(
             self.pipeline.steps_dict.get(package_version.name, []), self.pipeline.steps_dict.get(None, [])
         ):
@@ -438,27 +439,27 @@ class Resolver:
             # Optimization - reuse the old one as it would be discarded anyway.
             cloned_state = state
             if not user_stack_scoring and (
-                (not skip_package and score_addition != 0.0)
-                or (not state.unresolved_dependencies and not unresolved_dependencies)
+                (not skip_package and step_result)
+                or (not state.unresolved_dependencies and (skip_package or not unresolved_dependencies))
             ):
                 self.beam.remove(cloned_state)
 
         if unresolved_dependencies and not skip_package:
             cloned_state.set_unresolved_dependencies(unresolved_dependencies)
-            self._run_pseudonyms(cloned_state, newly_added)
 
-        cloned_state.remove_unresolved_dependency_subtree(package_version_tuple[0])
         if not skip_package:
-            cloned_state.add_justification(justification_addition)
+            cloned_state.remove_unresolved_dependency_subtree(package_version_tuple[0])
             cloned_state.add_resolved_dependency(package_version_tuple)
+            cloned_state.add_justification(justification_addition)
             cloned_state.score += score_addition
+            self._run_pseudonyms(cloned_state, newly_added)
 
         cloned_state.iteration = self.context.iteration
 
         if not user_stack_scoring:
             if cloned_state.unresolved_dependencies:
                 self.predictor.set_reward_signal(cloned_state, package_version_tuple, score_addition)
-                if state is not cloned_state or score_addition != 0.0:
+                if not skip_package and (state is not cloned_state or step_result):
                     self.beam.add_state(cloned_state)
             else:
                 self.predictor.set_reward_signal(cloned_state, package_version_tuple, math.inf)

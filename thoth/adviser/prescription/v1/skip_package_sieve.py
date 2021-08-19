@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A prescription class implementing skipping a package in a dependency graph."""
+"""A prescription sieve implementing skipping a package in a dependency graph."""
 
 from typing import Any
 from typing import Dict
@@ -43,7 +43,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @attr.s(slots=True)
 class SkipPackageSievePrescription(UnitPrescription):
-    """Skip package prescription unit implementation."""
+    """Skip package sieve prescription unit implementation."""
 
     CONFIGURATION_SCHEMA: Schema = Schema(
         {

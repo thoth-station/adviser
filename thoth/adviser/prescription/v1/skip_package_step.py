@@ -15,28 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A base class for implementing steps."""
+"""A prescription step implementing skipping a package in a dependency graph."""
 
-import attr
 from typing import Any
 from typing import Dict
 from typing import Generator
-from typing import List
 from typing import Optional
-from typing import Tuple
 from typing import TYPE_CHECKING
 import logging
 
+import attr
+from thoth.adviser.state import State
+from thoth.python import PackageVersion
 from voluptuous import Any as SchemaAny
 from voluptuous import Schema
 from voluptuous import Required
-from thoth.python import PackageVersion
-
-from thoth.adviser.state import State
 from packaging.specifiers import SpecifierSet
-from .unit import UnitPrescription
-from .schema import PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA
-from .schema import PRESCRIPTION_STEP_RUN_SCHEMA
+
+from .step import StepPrescription
+from .schema import PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA
+from .schema import PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA
+
+from ...exceptions import SkipPackage
 
 if TYPE_CHECKING:
     from ...pipeline_builder import PipelineBuilderContext
@@ -45,24 +45,17 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class StepPrescription(UnitPrescription):
-    """Step base class implementation.
-
-    Configuration option `multi_package_resolution` states whether a step should be run if package
-    is resolved multiple times for the same stack.
-    """
+class SkipPackageStepPrescription(StepPrescription):
+    """Skip package prescription step unit implementation."""
 
     CONFIGURATION_SCHEMA: Schema = Schema(
         {
             Required("package_name"): SchemaAny(str, None),
-            Required("match"): PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA,
+            Required("match"): PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA,
             Required("multi_package_resolution"): bool,
-            Required("run"): PRESCRIPTION_STEP_RUN_SCHEMA,
+            Required("run"): SchemaAny(PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA, None),
         }
     )
-
-    SCORE_MAX = 1.0
-    SCORE_MIN = -1.0
 
     _specifier = attr.ib(type=Optional[SpecifierSet], kw_only=True, init=False, default=None)
     _index_url = attr.ib(type=Optional[str], kw_only=True, init=False, default=None)
@@ -117,10 +110,8 @@ class StepPrescription(UnitPrescription):
         self._develop = package_version.get("develop")
         super().pre_run()
 
-    def run(
-        self, state: State, package_version: PackageVersion
-    ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
-        """Run main entry-point for steps to filter and score packages."""
+    def run(self, state: State, package_version: PackageVersion) -> None:
+        """Run main entry-point for steps to skip packages."""
         if not self._index_url_check(self._index_url, package_version.index.url):
             return None
 
@@ -135,7 +126,4 @@ class StepPrescription(UnitPrescription):
 
         self._run_base()
 
-        score = self.run_prescription.get("score")
-        justification = self.run_prescription.get("justification")
-
-        return score, justification
+        raise SkipPackage
