@@ -286,12 +286,17 @@ class Prescription:
 
                 _LOGGER.debug("Loading prescriptions from %r", prescription)
                 with open(prescription, "r") as config_file:
-                    prescription_instance = cls.from_dict(
-                        yaml.load(config_file, Loader=yaml.CLoader),
-                        prescription_instance=prescription_instance,
-                        prescription_name=prescription_name,
-                        prescription_release=prescription_release,
-                    )
+                    try:
+                        prescription_instance = cls.from_dict(
+                            yaml.load(config_file, Loader=yaml.CLoader),
+                            prescription_instance=prescription_instance,
+                            prescription_name=prescription_name,
+                            prescription_release=prescription_release,
+                        )
+                    except Exception:
+                        _LOGGER.error("Failed to load prescription from %r", prescription)
+                        raise
+
             elif os.path.isdir(prescription):
                 prescription_metadata_file_path = os.path.join(prescription, cls._PRESCRIPTION_METADATA_FILE)
                 if os.path.isfile(prescription_metadata_file_path):
