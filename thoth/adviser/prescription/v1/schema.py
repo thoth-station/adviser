@@ -425,18 +425,7 @@ PRESCRIPTION_STEP_SCHEMA = Schema(
 # Skip package step unit.
 #
 
-PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA = Schema(
-    {
-        Required("package_version"): PACKAGE_VERSION_SCHEMA,
-        Optional("state"): Schema(
-            {
-                Optional("resolved_dependencies"): All([PACKAGE_VERSION_REQUIRED_NAME_SCHEMA], Length(min=1)),
-                Required("package_version_from"): All([PACKAGE_VERSION_REQUIRED_NAME_SCHEMA], Length(min=1)),
-                Optional("package_version_from_allow_other"): bool,
-            }
-        ),
-    }
-)
+PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA = PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA
 
 
 PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA = Schema(
@@ -455,6 +444,42 @@ PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA = Schema(
         ),
         Optional("run"): PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA,
         Required("type"): "step.SkipPackage",
+        **_UNIT_SCHEMA_BASE_DICT,
+    }
+)
+
+
+#
+# Add package step unit.
+#
+
+PRESCRIPTION_ADD_PACKAGE_STEP_MATCH_ENTRY_SCHEMA = PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA
+
+
+PRESCRIPTION_ADD_PACKAGE_STEP_RUN_SCHEMA = Schema(
+    {
+        Optional("multi_package_resolution"): bool,
+        Required("package_version"): Schema(
+            {
+                Required("name"): _python_package_name,
+                Required("locked_version"): _locked_version,
+                Required("index_url"): _NONEMPTY_STRING,
+                Required("develop"): bool,
+            }
+        ),
+        **_UNIT_RUN_SCHEMA_BASE_DICT,
+    }
+)
+
+
+PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA = Schema(
+    {
+        Required("match"): Any(
+            All([PRESCRIPTION_ADD_PACKAGE_STEP_MATCH_ENTRY_SCHEMA], Length(min=1)),
+            PRESCRIPTION_ADD_PACKAGE_STEP_MATCH_ENTRY_SCHEMA,
+        ),
+        Required("run"): PRESCRIPTION_ADD_PACKAGE_STEP_RUN_SCHEMA,
+        Required("type"): "step.AddPackage",
         **_UNIT_SCHEMA_BASE_DICT,
     }
 )
@@ -566,7 +591,9 @@ PRESCRIPTION_UNITS_SCHEMA = Schema(
     {
         Optional("boots"): [PRESCRIPTION_BOOT_SCHEMA],
         Optional("sieves"): [Any(PRESCRIPTION_SIEVE_SCHEMA, PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA)],
-        Optional("steps"): [Any(PRESCRIPTION_STEP_SCHEMA, PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA)],
+        Optional("steps"): [
+            Any(PRESCRIPTION_STEP_SCHEMA, PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA, PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA)
+        ],
         Optional("pseudonyms"): [PRESCRIPTION_PSEUDONYM_SCHEMA],
         Optional("strides"): [PRESCRIPTION_STRIDE_SCHEMA],
         Optional("wraps"): [

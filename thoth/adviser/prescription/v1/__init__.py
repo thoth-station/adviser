@@ -17,6 +17,7 @@
 
 """Schema v1 based prescription units."""
 
+from .add_package_step import AddPackageStepPrescription
 from .boot import BootPrescription
 from .gh_release_notes import GHReleaseNotesWrapPrescription
 from .pseudonym import PseudonymPrescription
@@ -30,6 +31,7 @@ from .wrap import WrapPrescription
 
 
 __all__ = [
+    "AddPackageStepPrescription",
     "BootPrescription",
     "GHReleaseNotesWrapPrescription",
     "PseudonymPrescription",
