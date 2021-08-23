@@ -17,11 +17,6 @@
 
 """A prescription step implementing skipping a package in a dependency graph."""
 
-from typing import Any
-from typing import Dict
-from typing import Generator
-from typing import Optional
-from typing import TYPE_CHECKING
 import logging
 
 import attr
@@ -30,16 +25,12 @@ from thoth.python import PackageVersion
 from voluptuous import Any as SchemaAny
 from voluptuous import Schema
 from voluptuous import Required
-from packaging.specifiers import SpecifierSet
 
 from .step import StepPrescription
 from .schema import PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA
 from .schema import PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA
 
 from ...exceptions import SkipPackage
-
-if TYPE_CHECKING:
-    from ...pipeline_builder import PipelineBuilderContext
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -56,59 +47,6 @@ class SkipPackageStepPrescription(StepPrescription):
             Required("run"): SchemaAny(PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA, None),
         }
     )
-
-    _specifier = attr.ib(type=Optional[SpecifierSet], kw_only=True, init=False, default=None)
-    _index_url = attr.ib(type=Optional[str], kw_only=True, init=False, default=None)
-    _develop = attr.ib(type=Optional[bool], kw_only=True, init=False, default=None)
-
-    @staticmethod
-    def is_step_unit_type() -> bool:
-        """Check if this unit is of type step."""
-        return True
-
-    @staticmethod
-    def _yield_should_include(unit_prescription: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
-        """Yield for every entry stated in the match field."""
-        match = unit_prescription["match"]
-        run = unit_prescription["run"]
-        if isinstance(match, list):
-            for item in match:
-                yield {
-                    "package_name": item["package_version"].get("name"),
-                    "multi_package_resolution": run.get("multi_package_resolution", False),
-                    "match": item,
-                    "run": run,
-                }
-        else:
-            yield {
-                "package_name": match["package_version"].get("name"),
-                "multi_package_resolution": run.get("multi_package_resolution", False),
-                "match": match,
-                "run": run,
-            }
-
-    @classmethod
-    def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
-        """Check if the given pipeline unit should be included in the given pipeline configuration."""
-        if cls._should_include_base(builder_context):
-            prescription: Dict[str, Any] = cls._PRESCRIPTION  # type: ignore
-            yield from cls._yield_should_include(prescription)
-            return None
-
-        yield from ()
-        return None
-
-    def pre_run(self) -> None:
-        """Prepare before running this pipeline unit."""
-        package_version = self.match_prescription.get("package_version", {})
-        version_specifier = package_version.get("version")
-        if version_specifier:
-            self._specifier = SpecifierSet(version_specifier)
-
-        self._index_url = package_version.get("index_url")
-        self._prepare_justification_link(self.run_prescription.get("justification", []))
-        self._develop = package_version.get("develop")
-        super().pre_run()
 
     def run(self, state: State, package_version: PackageVersion) -> None:
         """Run main entry-point for steps to skip packages."""
