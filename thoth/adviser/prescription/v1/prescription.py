@@ -46,6 +46,7 @@ from .stride import StridePrescription
 from .wrap import WrapPrescription
 from .gh_release_notes import GHReleaseNotesWrapPrescription
 from .skip_package_sieve import SkipPackageSievePrescription
+from .add_package_step import AddPackageStepPrescription
 from .skip_package_step import SkipPackageStepPrescription
 from .schema import PRESCRIPTION_SCHEMA
 
@@ -377,6 +378,9 @@ class Prescription:
             elif prescription["type"] == "step.SkipPackage":
                 SkipPackageStepPrescription.set_prescription(prescription)
                 yield SkipPackageStepPrescription
+            elif prescription["type"] == "step.AddPackage":
+                AddPackageStepPrescription.set_prescription(prescription)
+                yield AddPackageStepPrescription
             else:
                 raise ValueError(f"Unknown step pipeline unit type: {prescription['type']!r}")
 
