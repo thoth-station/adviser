@@ -96,7 +96,7 @@ class SolvedSieve(Sieve):
                     message = (
                         f"Removing package {package_tuple} due to installation time error in the software environment"
                     )
-                    _LOGGER.warning("%s - see %s", message, self._JUSTIFICATION_LINK)
+                    _LOGGER.debug("%s - see %s", message, self._JUSTIFICATION_LINK)
                     self.context.stack_info.append(
                         {
                             "type": "WARNING",
