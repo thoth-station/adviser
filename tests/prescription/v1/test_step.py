@@ -277,10 +277,10 @@ should_include:
   times: 1
   adviser_pipeline: true
 match:
-  package_version:
-    name: numpy
-    version: '==1.19.1'
-    index_url: 'https://pypi.org/simple'
+  - package_version:
+      name: numpy
+      version: '==1.19.1'
+      index_url: 'https://pypi.org/simple'
 run:
   multi_package_resolution: true
   score: 0.1

@@ -3,6 +3,11 @@
 Sieve pipeline unit type
 ------------------------
 
+.. note::
+
+  💊 :ref:`Check sieve prescription pipeline unit <prescription_sieves>` for
+  a higher-level abstraction.
+
 The next pipeline unit type triggered after :ref:`pseudonym type pipeline
 units <pseudonyms>` is called ":class:`sieve <thoth.adviser.sieve.Sieve>`". The
 main purpose of this pipeline unit is to filter out (hence "sieve") packages
@@ -22,7 +27,7 @@ adviser) after pipeline sieve runs - this option reduces the state space
 considered. If sieves accept more package versions than
 ``limit_latest_versions`` package versions they will be reduced to
 ``limit_latest_versions`` size. Note the :ref:`issues that can arise by
-providing `limit_latest_versions` parameter <beam_width>`, usually this
+providing "limit latest versions" parameter <beam_width>`, usually this
 parameter is not needed.
 
 It's guaranteed that the list will contain package-versions in a specific

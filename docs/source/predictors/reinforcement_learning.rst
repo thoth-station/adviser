@@ -3,6 +3,10 @@
 Reinforcement learning driven resolution process
 ------------------------------------------------
 
+.. note::
+
+  Check :ref:`high level predictor docs <predictor>` for predictor basics.
+
 As described in the introductory section, the whole resolution can be treated
 as a :ref:`Markov Decision Process (MDP) <introduction_rl>` (see `MDP on
 Wikipedia <https://en.wikipedia.org/wiki/Markov_decision_process>`__). Treating

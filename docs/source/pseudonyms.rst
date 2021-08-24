@@ -3,6 +3,11 @@
 Pseudonym pipeline unit type
 ----------------------------
 
+.. note::
+
+  💊 :ref:`Check pseudonym prescription pipeline unit <prescription_pseudonyms>`
+  for a higher-level abstraction.
+
 This pipeline unit was introduced to provide "pseudonym" functionality. This
 functionality is handy if you would like to create an alternative to the
 package in the software stack. This alternative can be considered on package
@@ -11,7 +16,7 @@ is guaranteed by the resolution logic.
 
 .. warning::
 
-  Try to avoid creating alternatives if they do not produce valid alternatives
+  ⚠️ Try to avoid creating alternatives if they do not produce valid alternatives
   or they result in too many new states. This has significant performance
   impact in the resolution process.
 

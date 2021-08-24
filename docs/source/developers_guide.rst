@@ -17,14 +17,10 @@ A prerequisite for this document are the following documents:
 Preparing Developer's Environment
 =================================
 
-Use Ansible script `git-clone-repos.yaml` present in the `Core repository
-<https://github.com/thoth-station/core/blob/master/git-clone-repos.yaml>`_ and
-follow instructions present on the `following page
-<https://url.corp.redhat.com/clone-thoth>`_.
-
-Once you finish cloning the GitHub repositories, the directory structure in
-your desired directory should state all the active repositories under the
-`Thoth-Station organization on GitHub <https://github.com/thoth-station>`_:
+You can clone repositories from `thoth-station organization
+<https://github.com/thoth-station>`__ to your local directory.  It is preferred
+to place repositories one next to anther as it will simplify import adjustments
+stated later:
 
 .. code-block:: console
 
@@ -40,29 +36,26 @@ your desired directory should state all the active repositories under the
   zuul-test-config
   zuul-test-jobs
 
-These all are the repositories cloned to the most recent master branch (see
-also `git-update-repos.yaml
-<https://github.com/thoth-station/core/blob/master/git-update-repos.yaml>`_
-Ansible script to update repositories after some time).
+Using Pipenv and Thamos CLI
+===========================
 
-Using Pipenv
-============
-
-All of the Thoth packages use `Pipenv <https://pipenv.kennethreitz.org/>`_ to
+All of the Thoth packages use `Pipenv <https://pipenv.pypa.io/>`__ to
 create a separated and reproducible environment in which the given component
 can run. Almost every repository has its own ``Pipfile`` and ``Pipfile.lock``
 file. The ``Pipfile`` file states direct dependencies for a project and
 ``Pipfile.lock`` file states all the dependencies (including the transitive
 ones) pinned to a specific version.
 
-If you have cloned the repositories via the provided Ansible script, the
-Ansible script prepares the environment for you. It runs the following command
+If you have cloned the repositories, you can run the following command
 to prepare a separate virtual environment with all the dependencies (including
 the transitive ones):
 
 .. code-block:: console
 
-  $ pipenv install --dev
+  $ thamos install --dev
+
+  # Alternatively you can use Thamos CLI:
+  $ thamos install --dev
 
 As the environment is separated for each and every repository, you can now
 switch between environments that can have different versions of packages
@@ -73,6 +66,9 @@ If you would like to install some additional libraries, just issue:
 .. code-block:: console
 
   $ pipenv install <name-of-a-package>   # Add --dev if it is a devel dependency.
+
+  # Alternatively, you can use Thamos CLI:
+  $ thamos add <name-of-a-package>
 
 The ``Pipfile`` and ``Pipfile.lock`` files get updated.
 
@@ -86,7 +82,7 @@ command:
   $ pipenv run python3 ./thoth-adviser --help
 
 The command above automatically activates separated virtual environment created
-for the `thoth-adviser <https://github.com/thoth-station/adviser>`_ and uses
+for the `thoth-adviser <https://github.com/thoth-station/adviser>`__ and uses
 packages from there.
 
 To activate virtual environment permanently, issue:
@@ -210,16 +206,12 @@ available in ``thoth-storages`` package and you can talk to Ceph instance.
 In most cases you will need to set ``THOTH_DEPLOYMENT_NAME`` environment
 variable which distinguishes different deployments.
 we follow the pattern of ``(ClusterName)-(DeploymentName)`` to assign the
-``THOTH_DEPLOYMENT_NAME`` environment variable. Ex: ocp-stage
-Some of the older deployments were `thoth-test-core`, `thoth-core-upshift-stage`,
-and etc. These can be found in ceph bucket.
-
-**Disclaimer**: Older deployments would be deprecated and removed. Please check
-the existence of the deployment in ceph before using.
+``THOTH_DEPLOYMENT_NAME`` environment variable. Ex: ``ocp4-stage``.
+Names can be found in the corresponding Ceph bucket.
 
 .. code-block:: console
 
-  $ export THOTH_DEPLOYMENT_NAME=ocp-stage
+  $ export THOTH_DEPLOYMENT_NAME=ocp4-stage
 
 To browse data stored on Ceph, you can use ``awscli`` utility from `PyPI
 <https://pypi.org/project/awscli/>`__ that provides ``aws`` command (use ``aws
@@ -286,8 +278,8 @@ practice to use such deps in prod-like deployments):
 .. note::
 
   If you use an S2I build process with advises turned on, you can bypass the
-  error by turning off recommendations, just set``THOTH_ADVISE`` to ``0`` in
-  the corresponding buildconfig.
+  error by turning off recommendations, just set ``THOTH_ADVISE`` to ``0`` in
+  the corresponding build config.
 
 **Disclaimer:** Please, do **NOT** commit such changes into repositories. We
 always rely on versioned packages with proper release management.
@@ -329,4 +321,4 @@ information from function documentation):
 
 Once all the adapters get imported and instantiated, you can perform scheduling
 of workload using the OpenShift abstraction, which will directly talk to
-OpenShift's master to schedule workload in the cluster.
+OpenShift to schedule workload in the cluster.

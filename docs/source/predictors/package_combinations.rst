@@ -3,6 +3,10 @@
 Package Combinations Predictor
 ------------------------------
 
+.. note::
+
+  Check :ref:`high level predictor docs <predictor>` for predictor basics.
+
 Yet another predictor was designed for :ref:`Dependency Monkey
 <dependency_monkey>` runs and is suitable for generating combinations of
 certain packages in a software stack. An example use case can be a TensorFlow
@@ -38,14 +42,14 @@ parts are:
    specific version on pipeline unit level in opposite to locking on the
    requirements level:
 
-  .. code-block:: yaml
+   .. code-block:: yaml
 
-    steps:
-    # Pin numpy to one version that can occur across all the stacks resolved:
-    - configuration:
-       only_once: false
-       package_name: numpy
-      name: OneVersionStride
+     steps:
+     # Pin numpy to one version that can occur across all the stacks resolved:
+     - configuration:
+        only_once: false
+        package_name: numpy
+       name: OneVersionStride
 
 3. Parameters passed to the predictor specify which package combinations should
    be considered during the resolution (thus predictor guides the resolution
@@ -58,8 +62,7 @@ parts are:
     - urllib3
 
 As can be seen, using the pipeline configuration and the predictor in a
-specific way can lead to desired results. They can cooperate to achieve desired
-results.
+specific way can lead to desired results - both can cooperate together.
 
 The video below demonstrates the whole process in action:
 

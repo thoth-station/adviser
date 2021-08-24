@@ -61,7 +61,7 @@ state. The state  will be expanded in the next resolver round by resolving the
 returned package.  The package is resolved by retrieving all the direct
 dependencies of that dependency in different versions and new states are
 generated out of all the combinations of packages in different versions that
-can occur -- if such transition is valid based Thoth's judgement ecosystem
+can occur -- if such transition is valid based Thoth's judgement
 (based on dependency specification in Python packages and based on
 :ref:`pseudonyms <pseudonyms>`); and dependencies are accepted by pipeline
 :ref:`sieves <sieves>` and :ref:`steps <steps>`.

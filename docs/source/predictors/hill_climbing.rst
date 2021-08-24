@@ -1,7 +1,11 @@
 .. _hill_climbing:
 
-Hill climbing
--------------
+Hill climbing predictor
+-----------------------
+
+.. note::
+
+  Check :ref:`high level predictor docs <predictor>` for predictor basics.
 
 Another simple predictor is based on an optimization technique called
 :class:`hill climbing <thoth.adviser.predictors.HillClimbing>`

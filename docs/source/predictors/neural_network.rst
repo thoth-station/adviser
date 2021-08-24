@@ -3,6 +3,10 @@
 Using deep reinforcement learning in predictor
 ----------------------------------------------
 
+.. note::
+
+  Check :ref:`high level predictor docs <predictor>` for predictor basics.
+
 Previous sections discuss about Markov decision process (MDP) and reinforcement
 learning based dependency resolution that uses gradient-free methods. Naturally,
 gradient based methods will be discussed next.

@@ -3,6 +3,11 @@
 Step pipeline unit type
 -----------------------
 
+.. note::
+
+  💊 :ref:`Check step prescription pipeline unit <prescription_steps>` for
+  a higher-level abstraction.
+
 Another type of unit used in Thoth's adviser is called "step". You can see step
 as a step performed by resolver to obtain fully pinned down software stack - a
 package in a specific version is added to the resolver's internal state (see
@@ -27,23 +32,26 @@ internal state) so steps can judge whether the given package should be added to
 the state based on packages already present (see Real world examples section
 bellow for examples).
 
-.. note::
+.. _multi_package_resolution:
 
-  Step pipeline units can be called even though a package that is about to be
-  added to a state is already present in the state. This can happen if there
-  are multiple packages that introduce such dependency. An example can be a
-  pipeline step run when adding ``tensorflow`` to a state based on requirement
-  ``keras``, but ``tensorflow`` is already present in the state as it was
-  introduced by Seldon dependency (another example can be package ``six`` that
-  can be introduced by many Python packages in the software stack).
+Multi package resolution
+========================
 
-  Note this behaviour is turned off by default. If the pipeline step requires
-  such call, the step implementation should set
-  ``step_instance.configuration["multi_package_resolution"]`` to ``True`` in
-  derived classes implementing step logic. This is usually accomplished using
-  the default configuration (if the unit should not behave differently based on
-  the ``should_include`` logic). The default option can be set using
-  ``Step.CONFIGURATION_DEFAULT["multi_package_resolution"] = True``
+Step pipeline units can be called even though a package that is about to be
+added to a state is already present in the state. This can happen if there are
+multiple packages that introduce such dependency. An example can be a pipeline
+step run when adding ``tensorflow`` to a state based on requirement ``keras``,
+but ``tensorflow`` is already present in the state as it was introduced by
+Seldon dependency (another example can be package ``six`` that can be
+introduced by many Python packages in the software stack).
+
+Note this behaviour is turned off by default. If the pipeline step requires
+such call, the step implementation should set
+``step_instance.configuration["multi_package_resolution"]`` to ``True`` in
+derived classes implementing step logic. This is usually accomplished using the
+default configuration (if the unit should not behave differently based on the
+``should_include`` logic). The default option can be set using
+``Step.CONFIGURATION_DEFAULT["multi_package_resolution"] = True``
 
 Main usage
 ==========

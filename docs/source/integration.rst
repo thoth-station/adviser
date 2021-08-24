@@ -82,7 +82,8 @@ And configure your project to use Thoth's recommendations and ask for them:
   thamos advise
 
 Before you ask for an advise, make sure your Pipenv's files ``Pipfile`` and
-optionally ``Pipfile.lock`` are present in the root directory of your project:
+optionally ``Pipfile.lock`` are present in the root directory of your project
+or respecting overlays directory configuration:
 
 .. code-block:: console
 
@@ -100,6 +101,8 @@ dependencies using:
 .. code-block:: console
 
   thamos install --deploy --dev
+  # Or directly:
+  # thamos advise --install --dev
 
 Please follow `Thamos documentation for more info
 <https://thoth-station.ninja/docs/developers/thamos>`__. Also check
@@ -158,12 +161,6 @@ advises, issue:
 An example of an S2I application powered by Thoth S2I can be found in
 `thoth-station/s2i-example <https://github.com/thoth-station/s2i-example>`__
 repository.
-
-.. raw:: html
-
-    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
-        <iframe src="https://www.youtube.com/embed/FtW1PAuI3nk" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
-    </div>
 
 Kebechet - GitHub application
 =============================

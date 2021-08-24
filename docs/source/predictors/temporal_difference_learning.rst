@@ -1,7 +1,11 @@
 .. _temporal_difference_learning:
 
-Temporal Difference learning (TD-learning)
-------------------------------------------
+Predictor based on Temporal Difference learning (TD-learning)
+-------------------------------------------------------------
+
+.. note::
+
+  Check :ref:`high level predictor docs <predictor>` for predictor basics.
 
 See `Wikipedia for a brief intro to Temporal Difference learning
 <https://en.wikipedia.org/wiki/Monte_Carlo_tree_search>`__.

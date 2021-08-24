@@ -71,6 +71,8 @@ As you can see above, the resolver has quite a few arguments to be passed:
 * ``predictor`` - an implementation of :class:`Predictor <thoth.adviser.predictor.Predictor>` to be used together with resolver to resolve software stacks
 * ``project`` - instance of ``Project`` available in ``thoth-python`` library that provides direct dependencies and information about runtime environment used to run and build the application
 * ``recommendation_type`` - type of targeted recommendations - see :class:`RecommendationType <thoth.adviser.enums.RecommendationType>`
+* ``prescription`` - instance of ``Prescription`` stating loaded prescriptions
+* ``cli_parameters`` - parameters passed in based on CLI invocation
 
 A similar method, :func:`Resolver.get_dependency_monkey_instance
 <thoth.adviser.resolver.Resolver.get_dependency_monkey_instance>` obtains
@@ -130,7 +132,7 @@ executed, resolver resolves all the direct dependencies (that are sorted and
 filtered out based on ``limit_latest_versions`` configuration option) of the
 application and executes pipeline units of type :class:`Pseudonym
 <thoth.adviser.pseudonym.Pseudonym>` to compute "pseudonyms" for packages
-(packages providing same functionality but have different name of different
+(packages providing same functionality but have different name or different
 version identifier). See :ref:`pseudonyms section for more info <pseudonyms>`.
 
 The next pipeline units of type :class:`Sieve <thoth.adviser.sieve.Sieve>`
@@ -142,11 +144,12 @@ states that are formed out of all the combinations of packages in different
 versions that can occur in a software stack considering also pseydonyms
 computed. As packages in different versions are sorted based on their version
 string semantics, the very first combination has always the latest versions of
-all the packages (this fact is used for example in hill climbing in the
+all the packages (this fact is used for example in hill climbing or in the
 :ref:`adaptive simulated annealing approach <annealing>`).  For each newly
 created initial state, there are run :ref:`pipeline steps <steps>` that decide
-whether inclusion of a package version is valid to a state - this is done for
-each and every package-version combination.
+whether inclusion of a package version is valid to a state and if so, what is
+the quality of such a resolution step - this is done for each and every
+package-version combination.
 
 If all the steps on a state accept the given package, a newly created state
 (this :ref:`corresponds to taking an action from a state to a new state in a Markov
@@ -181,8 +184,8 @@ pipeline unit or predictor for Thoth's adviser:
 
 Beam is an abstract data type maintained by resolver that keeps track of pool
 of states that are about to be (possibly) resolved. This pool can have
-:ref:`restricted width <beam_width>` which limits number of states kept in
-memory and limits number of states considered during resolution.
+:ref:`restricted width <beam_width>` which limits the number of states
+kept in memory and limits number of states considered during resolution.
 
 It's possible to request a history plot for the beam size and the highest rated
 stack score for introspection purposes using the ``--plot`` option or by
@@ -215,24 +218,27 @@ of non-final states).
   explored and consumption of too much CPU time (and actual time) to produce
   software stacks. See :ref:`the section discussion beam width <beam_width>`.
 
+.. _pipeline_configuration_creation:
 Pipeline configuration creation
 ===============================
 
-Each pipeline unit provides a class method called `should_include` which is
+Each pipeline unit provides a class method called ``should_include`` which is
 executed on the :class:`pipeline configuration creation
 <thoth.adviser.pipeline_config.PipelineConfig>` (that states a list of boots,
 pseudonyms, sieves, steps, strides and wraps to be included in the pipeline).
-The class method returns a dictionary stating unit configuration if the given
-unit should be used (an empty dictionary if no configuration changes to the
-default unit configuration are done), a special value of `None` indicates the
-given pipeline unit should not be added to the pipeline configuration.
+Similarly, prescription pipeline units provide ``should_include`` directive
+that is mapped to ``should_include`` class method under the hood.  The class
+method returns a dictionary stating unit configuration if the given unit should
+be used (an empty dictionary if no configuration changes to the default unit
+configuration are done), a special value of ``None`` indicates the given
+pipeline unit should not be added to the pipeline configuration.
 
 
 .. image:: _static/pipeline_builder.gif
    :target: _static/pipeline_builder.gif
    :alt: Pipeline builder building the pipeline configuration.
 
-The `should_include` unit class method is in fact called multiple times during
+The ``should_include`` unit class method is in fact called multiple times during
 the pipeline configuration construction. The pipeline builder iterates over all
 the pipeline units available in adviser implementation and asks if they
 should be included in the pipeline configuration until no change to the
@@ -263,7 +269,7 @@ TensorFlow application:
            # units are present in the pipeline configuration.
            return None
 
-        if context.library_usage and "tf.nn.conv2d" in context.library_usage.get("tensorflow", {}):
+        if context.library_usage and "tensorflow.nn.conv2d" in context.library_usage.get("tensorflow", {}):
            # As an example - adjust parameter `score_factor' of this pipeline
            # unit to 2.0, which will override the default one.
            return {"score_factor": 2.0}
@@ -277,10 +283,12 @@ and so on respecting the relative order of sieves in the pipeline configuration
 (the order in which they were included). This logic applies to all pipeline
 unit types - :ref:`boots <boots>`, :ref:`pseudonymns <pseudonyms>`,
 :ref:`sieves <sieves>`, :ref:`steps <steps>`, :ref:`strides <strides>` and
-:ref:`wraps <wraps>`.
+:ref:`wraps <wraps>`. In case of prescription pipeline units, use
+``should_include.dependencies`` to respect dependencies on other units. See
+:ref:`relevant documentation for more info <prescription_should_include>`.
 
 Moreover, pipeline units can be specific to a package. This was introduced as
-an optimization to group these pipeline units based on packages they operate on
+an optimization to group pipeline units based on packages they operate on
 not to call them ineffectively on packages that are not relevant in the
 resolution process.  Note pipeline units can be called thousand times during
 the resolution process so this optimization matters a lot.

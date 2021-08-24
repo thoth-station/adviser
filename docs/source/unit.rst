@@ -3,6 +3,13 @@
 A pipeline unit
 ---------------
 
+
+.. note::
+
+  This documentation section discusses about Python unit interface used in
+  resolver.  You can use higher level abstraction in a form of
+  :ref:`prescriptions <prescription>` in most cases.
+
 All units are derived from :class:`Unit <thoth.adviser.unit.Unit>` that
 provides a common base for implemented units of any type. The base class also
 provides access to the input pipeline vectors and other properties that are
@@ -17,13 +24,13 @@ Registering a pipeline unit to pipeline
 =======================================
 
 If the pipeline configuration is not explicitly supplied, Thoth's adviser
-dynamically creates pipeline configuration. This creation is done in a loop
-where each pipeline unit class of a type (:ref:`boot <boots>`, :ref:`pseudonym
-<pseudonyms>`, :ref:`sieve <sieves>`, :ref:`step <steps>`, :ref:`stride
-<strides>` and :ref:`wrap <wraps>`) is asked for inclusion into the pipeline
-configuration - each pipeline unit implementation is responsible for providing
-logic that states when the given pipeline unit should be registered into the
-pipeline.
+dynamically creates pipeline configuration (that is always the case in a
+deployment).  This creation is done in a loop where each pipeline unit class of
+a type (:ref:`boot <boots>`, :ref:`pseudonym <pseudonyms>`, :ref:`sieve
+<sieves>`, :ref:`step <steps>`, :ref:`stride <strides>` and :ref:`wrap
+<wraps>`) is asked for inclusion into the pipeline configuration - each
+pipeline unit implementation is responsible for providing logic that states
+when the given pipeline unit should be registered into the pipeline.
 
 .. image:: _static/pipeline_builder.gif
    :target: _static/pipeline_builder.gif
@@ -61,6 +68,9 @@ in a dictionary available as a class attribute in
 ``Unit.CONFIGURATION_DEFAULT``.  See :ref:`unit configuration section
 <unit_configuration>`.
 
+When prescription pipeline units are called, directive ``should_include`` maps
+to the ``should_include`` class method discussed above.
+
 The pipeline configuration creation is done in multiple rounds so
 :class:`PipelineBuilderContext
 <thoth.adviser.pipeline_builder.PipelineBuilderContext>`, besides other
@@ -86,17 +96,45 @@ defined by providing :py:attr:`Unit.CONFIGURATION_SCHEMA
 configuration type - this schema is used to verify unit configuration
 correctness on unit instantiation.
 
-Note units of type :ref:`pseudonym <pseudonyms>` and have to provide
-"``package_name``" configuration in the unit configuration to state on which
-package they operate on. Other pipeline units can default to ``None``. See unit
-specific documentation for more info.
+Note units provide "``package_name``" configuration in the unit configuration
+to state on which package they operate on (this option can be mandatory for
+some of the units, such as pseudonyms). This configuration is used in resolver
+internally to optimize calls to pipeline units. A ``None`` value lets pipeline
+units work on any package. See unit specific documentation for more info.
 
 Pipeline unit configuration is then accessible via :func:`Unit.configuration
 <thoth.adviser.unit.Unit.configuration>` property on a unit instance which
-returns a dictionary with configuration - the default one updated with the one
+returns a dictionary with configuration - the default updated with the one
 returned by :func:`Unit.should_include
 <thoth.adviser.unit.Unit.should_include>` class method on the pipeline unit
 registration.
+
+Debugging a unit run in cluster
+===============================
+
+Adviser constructs the resolution pipeline dynamically on each request and runs
+units during the resolution. If you wish to see if a unit was registered to the
+resolution pipeline and run, you can run the adviser in debug mode by providing
+``--debug`` flag to ``thamos advise`` command. This will cause that the adviser
+will run in a much more verbose mode and will report pipeline configuration and
+all the actions that are done during the resolution.
+
+Note that running adviser in a debug mode adds additional overhead to the
+recommendation engine and slows it down. Results computed for two identical
+requests where one is run in a debug mode might (and most often will) differ as
+resolver will not be able to explore the state space given the time constraints
+in the recommendation engine. Nevertheless, the debug mode gives additional
+hints on pipeline configuration construction and actions done that might be
+helpful in many cases.
+
+If you wish to avoid the overhead issue described, it might be a good idea to
+experiment with requirements (and possibly constraints as well) to narrow down
+to the issue one wants to debug. An example can be a failure when adviser was
+not able to find a resolution that would satisfy requirements. In such a case,
+it might be good to generate a lock file with expected pinned set of packages
+using other tools (e.g. Pipenv, pip-tools) and submit the lock file to the
+recommender system. The logs produced during the resolution and stack level
+justifications might give hints why the given resolution was rejected.
 
 Justifications in the recommended software stacks
 =================================================
@@ -163,12 +201,12 @@ raise :class:`SkipPackage <thoth.adviser.exceptions.SkipPackage>` to exclude
 the given package from an application stack completely. See :ref:`sieves
 <sieves>` and :ref:`steps <steps>` section for more info.
 
-Pipeline units of type :ref:`steps <steps>` can raise :class:`SkipPackage
+Pipeline units of type :ref:`steps <steps>` can raise :class:`NotAcceptable
 <thoth.adviser.exceptions.NotAcceptable>` signalizing the given step is not
 acceptable (corresponds to "not-acceptable" action taken in the :ref:`Markov
 Decision Process <introduction>`).
 
-Raising any other exception in pipeline units causes resolver failure.
+Raising any other exception in pipeline units causes undefined behavior.
 
 All pipeline units should be atomic pieces and `they should do one thing and do
 it well <https://en.wikipedia.org/wiki/Unix_philosophy>`_. They were designed
@@ -204,9 +242,7 @@ It's good to note how pipeline units should be listed in ``__all__``:
    ``__all__`` listing.
 
 An example of a pipeline unit that is considered expensive is a pipeline unit
-that performs a knowledge graph query (the more queries or more expensive
-queries, the more pipeline unit is expensive). Note the overhead needed to
-query the knowledge base.
+that performs a knowledge graph query
 
 Which pipeline unit type should be chosen?
 ==========================================
@@ -223,9 +259,9 @@ most expensive one, it also provides the most information for a pipeline unit
 developer - which package in which specific version is about to be added to a
 partially resolved state and what the resolver state looks like. These units
 are the only ones that can affect the final unit score. Make sure these units
-provide a package to which they correspond if they are specific to packages -
-this enables optimization which performs the unit call only if the given unit
-should be called.
+provide a package to which they correspond if they are specific to packages
+(the ``package_name`` configuration) - this enables optimization which performs
+the unit call only if the given unit should be called.
 
 The second most expensive pipeline units are :ref:`sieves <sieves>`. They do
 not provide access to resolver's internal state, but are called each time there
