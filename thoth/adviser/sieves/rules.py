@@ -90,7 +90,7 @@ class SolverRulesSieve(Sieve):
                     for solver_rule in solver_rules:
                         self._messages_logged.add(package_tuple)
                         message = f"Removing package {package_tuple} based on solver rule configured: {solver_rule}"
-                        _LOGGER.warning("%s - see %s", message, self._JUSTIFICATION_LINK)
+                        _LOGGER.debug("%s - see %s", message, self._JUSTIFICATION_LINK)
                         self.context.stack_info.append(
                             {
                                 "type": "WARNING",
