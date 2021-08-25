@@ -84,6 +84,14 @@ class SolvedSoftwareEnvironmentBoot(Boot):
             configurations,
             key=lambda i: (i["os_name"], i["os_version"], i["python_version"]),
         ):
+            self.context.stack_info.append(
+                {
+                    "message": f"Consider using {conf['os_name']!r} in version {conf['os_version']!r} "
+                    f"with Python {conf['python_version']}",
+                    "type": "ERROR",
+                    "link": self._JUSTIFICATION_LINK,
+                }
+            )
             _LOGGER.warning("{:<16} {:<16} {:<8}".format(conf["os_name"], conf["os_version"], conf["python_version"]))
 
         raise NotAcceptable(msg)
