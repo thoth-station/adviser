@@ -1,4 +1,17 @@
 
+## Release 0.41.0 (2021-08-25T20:45:35)
+### Features
+* Fix indentation issue
+* Document injecting dependencies into the dependency graph
+* Revisit documentation, document the current state of resolver
+* Suggest alternatives to users if they requested unsolved environment
+* Introduce a prescription for adding a package to the dependency graph
+### Improvements
+* Reduce size of the resolution log
+### Other
+* Fix duplicate entries when user stack is scored
+* Reuse code from the parent pipeline step unit
+
 ## Release 0.40.0 (2021-08-19T21:20:28)
 ### Features
 * Remove Python implementation of pseudonym available in prescriptions
