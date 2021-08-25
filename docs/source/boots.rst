@@ -3,6 +3,11 @@
 Boot pipeline unit type
 -----------------------
 
+.. note::
+
+  💊 :ref:`Check boot prescription pipeline unit <prescription_boots>` for
+  a higher-level abstraction.
+
 A very first :ref:`pipeline unit <unit>` is called ":class:`boot
 <thoth.adviser.boot.Boot>`". As the name suggests it is started as a first
 pipeline unit in the resolution pipeline. It's main purpose is to check input,

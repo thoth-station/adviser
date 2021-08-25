@@ -3,6 +3,10 @@
 Random walk based dependency graph sampling
 -------------------------------------------
 
+.. note::
+
+  Check :ref:`high level predictor docs <predictor>` for predictor basics.
+
 This predictor implements sampling of a dependency graph based on `Random walk
 method <https://en.wikipedia.org/wiki/Random_walk>`_. You can see this method
 as a random rays into dependency graph that resolve final states (fully pinned
@@ -33,7 +37,7 @@ The figure bellow shows random walk performed during resolution of a
 software stack in a state space with random score assigned to packages. x-axis
 shows resolver iterations and y-axis corresponds to scores computed. As can be
 seen, the predictor does not learn state space characteristics to resolve
-software stacks and randomly comes up with software stacks.
+software stacks and randomly comes up with software stacks with any quality.
 
 .. image:: ../_static/random_walk.png
    :target: ../_static/random_walk.png

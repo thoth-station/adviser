@@ -204,8 +204,8 @@ To guarantee application observability, there were created `Grafana
 Argo Workflows and Kafka
 ########################
 
-The whole Thoth deployment relies on Argo Workflows and `Kafka
-<https://kafka.apache.org/>`__. `kafdrop
+The whole Thoth deployment relies on `Argo Workflows <https://argoproj.github.io/>`__
+and `Kafka <https://kafka.apache.org/>`__. `kafdrop
 <https://github.com/obsidiandynamics/kafdrop>`__ can be used as a Kafka Web UI
 (check `thoth-messaging repo <https://github.com/thoth-station/messaging/>`__)
 and Argo Workflows provides `Argo UI <https://github.com/argoproj/argo-ui>`__

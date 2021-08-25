@@ -8,8 +8,8 @@ why the given recommendation was produced. These snippets are called
 "justifications" and are a textual form to justify actions taken by the
 recommendation engine.
 
-The whole listing of justifications that can be produced by the recommendation
-engine is available at `thoth-station.ninja/justifications
+Some of the justifications that can be produced by the recommendation
+engine are available at `thoth-station.ninja/justifications
 <https://thoth-station.ninja/justifications>`__. These are documents linked
 from the :ref:`pipeline units <units>` present in the :ref:`pipeline
 configuration <pipeline>` during the software stack resolution. Some of the
@@ -66,11 +66,8 @@ Justifications for recommended software stack
 #############################################
 
 The very first use of justification schema uses :ref:`step pipeline units
-<steps>`. These units can return justification as part of their results.  These
-justifications are justifications specific to the software stack resolved and
-recommended. Thus it will show up of the resolved software stack is recommended
-to the user at the end (that's not always the case if a better alternative is
-found).
+<steps>`. These units can return justification as part of their results and are
+specific to the software stack resolved.
 
 .. code-block:: python
 

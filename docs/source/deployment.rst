@@ -1,20 +1,20 @@
 .. _deployment:
 
-Configuring and setting up adviser in a cluster
------------------------------------------------
+Configuring and setting up resolver in a cluster
+------------------------------------------------
 
 In the upcoming sections one can find information needed when configuring a
-cluster deployment that adviser runs in.
+cluster deployment that resolver runs in.
 
 Adviser provides hyperparameters that can be tweaked to gain more performance
 or obtain better results when recommending a software stack. The upcoming
 sections act as a reference guide on how to act in different scenarios when
-certain issues are spotted in the cluster or if you wish to fine-tune adviser.
+certain issues are spotted in the cluster or if you wish to fine-tune resolver.
 
 .. note::
 
   As adviser shares core components with Dependency Monkey, most of the details
-  stated below also apply for Dependency Monkey.
+  stated below also apply for Dependency Monkey as well as for resolver (adviser).
 
 Pre-requisities to run adviser
 ==============================
@@ -179,6 +179,7 @@ added to management-api:
 
 The example above will block all the ``setuptools<20.0.0`` coming from PyPI.
 If ``index_url`` is omitted, the rule is not specific to any package index.
+Similarly, if ``version_specifier`` is not provided, all versions match.
 
 Adviser automatically removes packages that have rules assigned during the
 resolution process in case rules were added after the package was analyzed.

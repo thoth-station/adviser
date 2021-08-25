@@ -3,6 +3,11 @@
 Stride pipeline unit type
 -------------------------
 
+.. note::
+
+  💊 :ref:`Check stride prescription pipeline unit <prescription_strides>` for
+  a higher-level abstraction.
+
 Once there are no more unresolved dependencies in the resolver state (no more
 :ref:`steps <steps>` to be performed), such state becomes a "final state" (see
 :ref:`introduction` for theoretical background). Pipeline units called

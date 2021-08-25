@@ -63,13 +63,34 @@ Pipeline units
    :maxdepth: 1
 
    unit
+
+Pipeline unit types
+###################
+
+.. toctree::
+   :maxdepth: 1
+
    boots
    pseudonyms
    sieves
    steps
    strides
    wraps
-   prescription
+
+Prescriptions
+#############
+
+.. toctree::
+   :maxdepth: 1
+
+   Introduction to prescriptions <prescription>
+   prescription/should_include
+   prescription/boots
+   prescription/pseudonyms
+   prescription/sieves
+   prescription/steps
+   prescription/strides
+   prescription/wraps
 
 
 Predictors
@@ -78,14 +99,14 @@ Predictors
 .. toctree::
    :maxdepth: 1
 
-   predictors/sampling
-   predictors/random_walk
-   predictors/latest
-   predictors/hill_climbing
+   Random state space sampling <predictors/sampling>
+   Random walk in dependency graph <predictors/random_walk>
+   Approximating latest <predictors/latest>
+   Hill climbing <predictors/hill_climbing>
    predictors/annealing
    predictors/reinforcement_learning
-   predictors/mcts
-   predictors/temporal_difference_learning
+   Monte Carlo Tree Search <predictors/mcts>
+   Temporal Difference Learning <predictors/temporal_difference_learning>
    predictors/neural_network
    predictors/package_combinations
 

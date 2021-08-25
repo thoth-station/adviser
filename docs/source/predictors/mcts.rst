@@ -1,7 +1,11 @@
 .. _mcts:
 
-Monte Carlo Tree Search (MCTS)
-------------------------------
+Predictor based on Monte Carlo Tree Search (MCTS)
+-------------------------------------------------
+
+.. note::
+
+  Check :ref:`high level predictor docs <predictor>` for predictor basics.
 
 This method is also many times referred as "Monte Carlo learning".
 

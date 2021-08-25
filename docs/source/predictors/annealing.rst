@@ -1,7 +1,11 @@
 .. _annealing:
 
-Adaptive simulated annealing
-----------------------------
+Predictor based on adaptive simulated annealing
+-----------------------------------------------
+
+.. note::
+
+  Check :ref:`high level predictor docs <predictor>` for predictor basics.
 
 See `Wikipedia
 <https://en.wikipedia.org/wiki/Adaptive_simulated_annealing>`_ and also

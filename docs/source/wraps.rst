@@ -3,6 +3,11 @@
 Wrap pipeline unit type
 -----------------------
 
+.. note::
+
+  💊 :ref:`Check wrap prescription pipeline unit <prescription_wraps>` for
+  a higher-level abstraction.
+
 The last pipeline unit type is named ":class:`wrap <thoth.adviser.wrap.Wrap>`".
 This pipeline unit is called after a final state is accepted by :ref:`strides
 <strides>`.

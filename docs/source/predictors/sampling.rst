@@ -1,7 +1,11 @@
 .. _sampling:
 
-Random state space sampling
----------------------------
+Random state space sampling predictor
+-------------------------------------
+
+.. note::
+
+  Check :ref:`high level predictor docs <predictor>` for predictor basics.
 
 This simple predictor, named :class:`Sampling
 <thoth.adviser.predictors.Sampling>`, performs a random sampling of

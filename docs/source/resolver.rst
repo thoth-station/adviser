@@ -12,45 +12,25 @@ reasons Thoth builds its knowledge base - Thoth pre-computes dependencies in
 the Python ecosystem so that resolving can be done offline without interacting
 with the outside world.
 
-Thoth's resolver performs steps (:ref:`corresponding to actions in a Markov
-Decision Process <introduction>`) to resolve final states out of initial states
-by running pipeline :ref:`sieves <sieves>` and :ref:`steps <steps>`.
-Internally, there are computed all the combinations that can occur and there
-are produced new states that are added to a pool of states, called :ref:`beam
-<beam_width>`.  Resolver tightly cooperates with :ref:`predictor <predictor>`
-that guides resolver to resolve desired software stacks.
+Thoth's resolver models resolution process as a :ref:`Markov Decision
+Process - see introduction section for more info <introduction>`.
 
 .. image:: _static/pipeline.gif
    :target: _static/pipeline.gif
    :alt: Resolver and predictor in action.
 
-:ref:`Thoth's resolver respects Python ecosystem <compatibility>` to resolve
-software stacks as done by pip or Pipenv. This is achieved in a different way
-to also include observations about Python packages from Thoth's knowledge base.
-Instead of implementing `3SAT
-<https://en.wikipedia.org/wiki/Boolean_satisfiability_problem>`__ or
-`backtracking algorithm <https://en.wikipedia.org/wiki/Backtracking>`__ the
-resolver operates directly on dependency graphs that
-are lazily expanded by expanding not-yet resolved dependencies in resolver
-states. The whole resolution is treated as a `Markov Decision Process (MDP)
-<https://en.wikipedia.org/wiki/Markov_decision_process>`_ and the expansion of
-dependencies is seen as a step in the MDP. See :ref:`Introduction section
-<introduction>` on more info and intuition behind MDP in the resolver
-implementation.
-
-Dependencies of not-yet resolved packages (unresolved dependencies) are
-resolved based on pre-computed dependency information stored in the Thoth's
-knowledge base. This information is aggregated by Thoth's `solvers
+Dependencies are are resolved based on pre-computed dependency information stored
+in the Thoth's knowledge base. This information is aggregated by Thoth's `solvers
 <https://github.com/thoth-station/solver>`_ that are run for different software
 environments. An example can be a solver for Fedora:33 running Python3.9 or
 UBI:8 running Python3.8. These software environments can be then used as base
-software environments for running Python applications (container images, also
-suitable as base for OpenShift's s2i build process - see `s2i base images
-provided by Thoth <https://github.com/thoth-station/s2i-thoth>`_ that are
-analyzed by Thoth itself and Thoth has information to drive recommendations for
-these container images used in an s2i build).
+software environments for running Python applications. These container images are
+also suitable as a base for running Python applications
+- see `s2i base images provided by Thoth <https://github.com/thoth-station/s2i-thoth>`_
+that are analyzed by Thoth itself and thus can provide recommendations considering
+the base image used.
 
-The resolver has two main purposes:
+Thoth's resolver has two main purposes:
 
 * resolve software stacks for Dependency Monkey runs and verify generated
   software stacks on `Amun <https://github.com/thoth-station/amun-api>`_
