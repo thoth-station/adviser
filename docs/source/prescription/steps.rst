@@ -61,8 +61,9 @@ not semantically valid (not all options can be supplied at the same time):
   For a complete schema `check the schema.py file in adviser's
   implementation <https://github.com/thoth-station/adviser/blob/master/thoth/adviser/prescription/v1/schema.py>`__.
 
+.. _step_match:
 Step ``match``
-##################
+##############
 
 Match the given step performed in the resolution process. A step is described
 by state stating required resolved dependencies so far and package that is
@@ -294,7 +295,7 @@ skipping the matched package, use :ref:`SkipPackage sieve <skip_package_sieve>`
 instead.
 
 Running this pipeline unit will make sure that the matched ``package_version``
-and all its dependencies will be removed from the dependendency graph. In other
+and all its dependencies will be removed from the dependency graph. In other
 words, sub-graph introduced by the matched ``package_version`` will be
 completely removed.
 
@@ -338,3 +339,87 @@ However, it does not allow declaring:
 * ``run.score``
 * ``run.justification``
 * ``run.eager_stop_pipeline``
+
+
+AddPackage step prescription pipeline unit
+------------------------------------------
+
+This pipeline unit allows adding packages to the dependency graph even though they were not stated in requirements.
+The unit is suitable for fixing underpinning issues.
+
+.. note::
+
+  *Example:*
+
+  A pipeline unit that adds pandas package to the stack if SciPy was introduced
+  by the given TensorFlow version and Matplotlib is already resolved.
+
+  .. code-block:: yaml
+
+    name: AddPackageStepUnit
+    type: step.AddPackage
+    should_include:
+      adviser_pipeline: true
+      # See should_include section for more options.
+    match:
+      package_version:
+        name: scipy
+        version: '~1.7.1'
+        index_url: 'https://pypi.org/simple'
+      state:
+        package_version_from:
+        - name: tensorflow
+          version: '>=2.1,<=2.3'
+          index_url: https://pypi.org/simple
+          develop: false
+        resolved_dependencies:
+        - name: matplotlib
+    run:
+      stack_info:
+      - type: INFO
+        message: Injecting Pandas to the dependency graph
+        link: 'https://thoth-station.ninja'
+      log:
+        type: INFO
+        message: Injecting Pandas to the dependency graph
+      package_version:
+        name: pandas
+        locked_version: ==1.3.2
+        index_url: 'https://pypi.org/simple'
+        develop: false
+
+AddPackageStep ``match``
+########################
+
+See :ref:`Step match <step_match>` that has shared semantics.
+
+Step ``run.stack_info``
+#######################
+
+See :ref:`boot's stack info <boot_stack_info>` which semantics is shared with this unit.
+
+Note the stack info is added only once even if the pipeline unit is
+run multiple times during the resolution process.
+
+Step ``run.log``
+################
+
+Print the given message to the resolution log if the pipeline unit is included and run.
+
+See :ref:`boot's log <boot_run_log>` that has shared semantics.
+
+Step ``run.package_version``
+############################
+
+Specification of a package that should be added to the dependency graph. All the fields are mandatory:
+
+* ``name`` - name of the package
+* ``locked_version`` - locked package version (must start with ``==``)
+* ``index_url`` - Python package index URL from where the package is supposed to be installed
+* ``develop`` - add the given package to default or development dependencies of the project
+
+Note the given package in the specified version has to be already analyzed by
+the system so that resolver can inject this dependency and possibly all its
+dependencies into the dependency graph. The Python package index has to be also
+know and enabled on the deployment side. If these conditions are not met, the
+pipeline unit will not register the requested package to the dependency graph.
