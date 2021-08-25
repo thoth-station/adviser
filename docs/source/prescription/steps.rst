@@ -52,9 +52,9 @@ not semantically valid (not all options can be supplied at the same time):
       type: WARNING
 
     stack_info:                                     # Information printed to the recommended stack report.
-      - type: WARNING
-        message: Hello, world!
-        link: 'https://thoth-station.ninja'         # A link to justifications or a link to a web page.
+    - type: WARNING
+      message: Hello, world!
+      link: 'https://thoth-station.ninja'           # A link to justifications or a link to a web page.
 
 .. note::
 
