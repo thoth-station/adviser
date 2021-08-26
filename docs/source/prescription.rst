@@ -172,3 +172,18 @@ Each prescription pipeline unit can be of a base type ``boot``, ``pseudonym``,
 types. The derived types provide certain additional functionality in opposite
 to the base types. See corresponding prescription pipeline unit documentation
 for available types.
+
+``should_include``
+##################
+
+See :ref:`the following documentation <prescription_should_include>` for more info.
+
+``match``
+#########
+
+This section is specific to a pipeline unit type used.
+
+``run``
+#######
+
+This section is specific to a pipeline unit type used.
