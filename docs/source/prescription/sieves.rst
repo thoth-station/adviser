@@ -31,9 +31,9 @@ info.
       message: Some text printed to log on pipeline unit run
       type: WARNING
     stack_info:                                     # Information printed to the recommended stack report.
-      - type: WARNING
-        message: Hello, world
-        link: https://thoth-station.ninja           # A link to justifications or a link to a web page.
+    - type: WARNING
+      message: Hello, world
+      link: https://thoth-station.ninja           # A link to justifications or a link to a web page.
 
 .. note::
 
@@ -108,9 +108,9 @@ the resolution pipeline:
         name: pansas
     run:
       stack_info:
-        - type: WARNING
-          message: "Filtering out known typo-squatted packages"
-          link: "https://pypi.org/simple"
+      - type: WARNING
+        message: "Filtering out known typo-squatted packages"
+        link: "https://pypi.org/simple"
 
 Sieve ``run.log``
 #################

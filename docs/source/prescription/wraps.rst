@@ -1,7 +1,7 @@
 .. _prescription_wraps:
 
-Wrap prescription prescription pipeline unit
---------------------------------------------
+Wrap prescription pipeline unit
+-------------------------------
 
 Declaring :ref:`pipeline units of type wrap <wraps>`.
 
