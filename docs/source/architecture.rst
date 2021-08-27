@@ -128,6 +128,11 @@ non-responsive).
   responsible for syncing data in a JSON format persisted on Ceph to the Thoth's
   knowledge graph database
 
+* `prescriptions-refresh-job
+  <https://github.com/thoth-station/prescriptions-refresh-job>`__ - a periodic
+  job responsible for keeping `Thoth's prescriptions
+  <https://github.com/thoth-station/prescriptions>`__ up to date
+
 All the components are scheduled using `Argo workflows
 <https://argoproj.github.io/argo-workflows/>`__. Additional logic used during
 executing workflows is taken from `thoth-station/workflow-helpers repository
