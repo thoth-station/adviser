@@ -3,11 +3,11 @@
 Declarative prescriptions for resolver
 --------------------------------------
 
-The implementation of the recommendation engine allows to declaratively specify
+The implementation of the resolver allows to declaratively specify
 :ref:`pipeline units <unit>` that should be included in the :ref:`resolver
-pipeline <pipeline>` without actually implementing any code.  The document
-below describes core mechanics behind creating such "prescriptions" for the
-resolver.
+pipeline <pipeline>` during the resolution process without actually implementing
+any code.  The document below describes core mechanics behind creating such
+"prescriptions" for the resolver.
 
 .. note::
 
