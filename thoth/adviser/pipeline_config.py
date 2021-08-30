@@ -147,11 +147,7 @@ class PipelineConfig:
             try:
                 unit.pre_run()
             except Exception as exc:
-                raise PipelineUnitError(
-                    "Failed to run pre_run method on unit %r: %s",
-                    unit.name,
-                    str(exc),
-                ) from exc
+                raise PipelineUnitError(f"Failed to run pre_run method on unit {unit.name!r}: {str(exc)}") from exc
 
     def call_post_run(self) -> None:
         """Call post-run method on all units registered in this configuration."""
@@ -159,11 +155,7 @@ class PipelineConfig:
             try:
                 unit.post_run()
             except Exception as exc:
-                raise PipelineUnitError(
-                    "Failed to run post_run method on unit %r: %s",
-                    unit.name,
-                    str(exc),
-                ) from exc
+                raise PipelineUnitError(f"Failed to run post_run method on unit {unit.name!r}: {str(exc)}") from exc
 
     def call_post_run_report(self, report):
         # type:('PipelineConfig', Union[Report, DependencyMonkeyReport]) -> None
@@ -173,7 +165,5 @@ class PipelineConfig:
                 unit.post_run_report(report)
             except Exception as exc:
                 raise PipelineUnitError(
-                    "Failed to run pre_run_report method on unit %r: %s",
-                    unit.name,
-                    str(exc),
+                    f"Failed to run pre_run_report method on unit {unit.name!r}: {str(exc)}"
                 ) from exc

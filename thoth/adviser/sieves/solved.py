@@ -86,7 +86,7 @@ class SolvedSieve(Sieve):
                 _LOGGER.debug(
                     "Removing package %r as it was not solved: %s",
                     package_tuple,
-                    str(exc),
+                    exc,
                 )
                 continue
 
