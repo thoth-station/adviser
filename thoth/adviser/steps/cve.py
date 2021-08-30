@@ -89,7 +89,7 @@ class CvePenalizationStep(Step):
                 package_version=package_version.locked_version,
             )
         except NotFoundError as exc:
-            _LOGGER.warning("Package %r in version %r not found: %r", str(exc))
+            _LOGGER.warning("Package %r in version %r not found: %r", exc)
             return None
 
         if cve_records:

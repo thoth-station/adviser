@@ -293,7 +293,7 @@ class Resolver:
                         log_level,
                         "Sieve %r removed packages %r: %s",
                         sieve.name,
-                        str(exc),
+                        exc,
                     )
                     result = []  # type: ignore
                     break
@@ -365,7 +365,7 @@ class Resolver:
                     "Step %r discarded addition of package %r: %s",
                     step.name,
                     package_version_tuple,
-                    str(exc),
+                    exc,
                     level=log_level,
                 )
                 skip_package = True
@@ -378,7 +378,7 @@ class Resolver:
                     "Step %r discarded addition of package %r: %s",
                     step.name,
                     package_version_tuple,
-                    str(exc),
+                    exc,
                     level=log_level,
                 )
                 if not user_stack_scoring:
@@ -482,7 +482,7 @@ class Resolver:
                     "Stride %r removed final state %r: %s",
                     stride.name,
                     state,
-                    str(exc),
+                    exc,
                 )
                 return False
             except Exception as exc:
@@ -588,7 +588,7 @@ class Resolver:
                 package_version = list(self._run_sieves([package_version], log_level=logging.INFO))
             except SkipPackage as exc:
                 skipped_packages.append(package_version)
-                _LOGGER.debug("Package %r skipped by sieves: %s", package_version.name, str(exc))
+                _LOGGER.debug("Package %r skipped by sieves: %s", package_version.name, exc)
                 continue
 
             if not package_version:
@@ -729,7 +729,7 @@ class Resolver:
                 package_versions = list(self._run_sieves(package_versions))
             except SkipPackage as exc:
                 skipped_packages.append(direct_dependency_name)
-                _LOGGER.debug("Package %r skipped by sieves: %s", direct_dependency_name, str(exc))
+                _LOGGER.debug("Package %r skipped by sieves: %s", direct_dependency_name, exc)
                 continue
 
             if not package_versions:
@@ -1084,7 +1084,7 @@ class Resolver:
             except SkipPackage as exc:
                 # This will probably happen occasionally. Let's maintain a separate list for this.
                 skipped_packages.append(dependency_name)
-                _LOGGER.debug("Package %r skipped by sieves: %s", dependency_name, str(exc))
+                _LOGGER.debug("Package %r skipped by sieves: %s", dependency_name, exc)
                 continue
 
             if not package_versions:
@@ -1137,7 +1137,7 @@ class Resolver:
             try:
                 user_stack = self._maybe_score_user_lock_file(with_devel=with_devel)
             except UserLockFileError as exc:
-                _LOGGER.warning("Failed to score user's lock file: %s", str(exc))
+                _LOGGER.warning("Failed to score user's lock file: %s", exc)
             except Exception:
                 _LOGGER.exception("Failed to score supplied user stack, the error is not fatal")
             else:
@@ -1273,7 +1273,7 @@ class Resolver:
                 yield final_state
                 del final_state
         except EagerStopPipeline as exc:
-            _LOGGER.info("Stopping pipeline eagerly as per request: %s", str(exc))
+            _LOGGER.info("Stopping pipeline eagerly as per request: %s", exc)
 
         duration = time.monotonic() - start_time
         _LOGGER.info(

@@ -101,7 +101,7 @@ class DependencyMonkey:
             try:
                 response: Optional[str] = output_func(count, product.project)
             except Exception as exc:
-                _LOGGER.exception("Failed to submit produced project: %s", str(exc))
+                _LOGGER.exception("Failed to submit produced project: %s", exc)
                 report.skipped += 1
                 continue
 

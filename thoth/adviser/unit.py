@@ -161,7 +161,7 @@ class Unit(metaclass=abc.ABCMeta):
                 _LOGGER.exception(
                     "Failed to validate schema for pipeline unit %r: %s",
                     self.name,
-                    str(exc),
+                    exc,
                 )
                 raise PipelineUnitConfigurationSchemaError(str(exc))
 

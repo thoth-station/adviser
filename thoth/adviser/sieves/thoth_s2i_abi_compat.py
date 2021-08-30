@@ -123,6 +123,6 @@ class ThothS2IAbiCompatibilitySieve(Sieve):
                     message = f"Package {package_tuple} was removed due to missing ABI symbols in the environment"
                     _LOGGER.warning("%s - see %s", message, self._LINK)
                     self._messages_logged.add(package_tuple)
-                    _LOGGER.debug("The following symbols are not present: %r", str(missing_symbols))
+                    _LOGGER.debug("The following symbols are not present: %r", missing_symbols)
 
                 continue
