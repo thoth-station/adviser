@@ -418,6 +418,11 @@ black = true
             justification=[{"type": "INFO", "message": "Foo bar", "link": "https://thoth-station.ninja"}],
         )
 
+        # Make sure tested packages are not direct dependencies. In such cases the behaviour is
+        # different, see other tests.
+        context.project.pipfile.packages.packages.pop("tensorflow", None)
+        context.project.pipfile.packages.packages.pop("numpy", None)
+
         context.graph.should_receive("get_python_package_hashes_sha256").with_args(
             "numpy", "1.0.0", "https://pypi.org/simple"
         ).and_return(["000"]).once()
@@ -479,7 +484,7 @@ black = true
                 "constraints": [],
                 "requirements": {
                     "dev-packages": {},
-                    "packages": {"flask": "*", "tensorflow": "==1.9.0"},
+                    "packages": {"flask": "*"},
                     "requires": {"python_version": "3.6"},
                     "source": [
                         {
@@ -500,7 +505,7 @@ black = true
                 },
                 "requirements_locked": {
                     "_meta": {
-                        "hash": {"sha256": "4628b328465fa6946ca9abf9c3576fb502436d0a40300d798058677de0f6128a"},
+                        "hash": {"sha256": "2e49395dfa87159358e581bd22e656c27c0dab04894d1b137a14f85bb387ea51"},
                         "pipfile-spec": 6,
                         "requires": {"python_version": "3.6"},
                         "sources": [
@@ -552,6 +557,166 @@ black = true
         expected["project"]["requirements_locked"]["default"]["numpy"]["markers"] = "python_version >= '3' or 1"
         assert product.to_dict() == expected
 
+    def test_environment_markers_direct_dependency(self, context: Context) -> None:
+        """Test handling environment markers for direct dependencies."""
+        state = State(
+            score=0.0,
+            resolved_dependencies={
+                "numpy": ("numpy", "1.0.0", "https://pypi.org/simple"),
+                "tensorflow": ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+            },
+            unresolved_dependencies={},
+            justification=[{"type": "INFO", "message": "Foo bar", "link": "https://thoth-station.ninja"}],
+        )
+
+        pypi = Source("https://pypi.org/simple")
+
+        # Let's assume tensorflow is our direct dependency with an environment marker set. It sets also an environment
+        # marker for numpy.
+        context.project.pipfile.packages.packages.pop("tensorflow", None)
+        tf_package_version_direct = PackageVersion(
+            name="tensorflow", version=">1.0.0", index=pypi, develop=False, markers="python_version >= '3.6'"
+        )
+        context.project.pipfile.add_package_version(tf_package_version_direct)
+        # Just to make sure numpy is not in the direct dependency listing.
+        context.project.pipfile.packages.packages.pop("numpy", None)
+
+        pv_numpy_locked = PackageVersion(name="numpy", version="==1.0.0", index=pypi, develop=False)
+        pv_tensorflow_locked = PackageVersion(name="tensorflow", version="==2.0.0", index=pypi, develop=False)
+
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            *pv_numpy_locked.to_tuple()
+        ).and_return(["000"]).once()
+
+        context.graph.should_receive("get_python_package_hashes_sha256").with_args(
+            *pv_tensorflow_locked.to_tuple()
+        ).and_return(["111"]).once()
+
+        context.should_receive("get_package_version").with_args(
+            ("numpy", "1.0.0", "https://pypi.org/simple"), graceful=False
+        ).and_return(pv_numpy_locked).once()
+
+        context.should_receive("get_package_version").with_args(
+            ("tensorflow", "2.0.0", "https://pypi.org/simple"), graceful=False
+        ).and_return(pv_tensorflow_locked).once()
+
+        context.dependents = {
+            "numpy": {
+                ("numpy", "1.0.0", "https://pypi.org/simple"): {
+                    (
+                        ("tensorflow", "2.0.0", "https://pypi.org/simple"),
+                        "fedora",
+                        "31",
+                        "3.7",
+                    )
+                }
+            },
+            "tensorflow": {("tensorflow", "2.0.0", "https://pypi.org/simple"): set()},
+        }
+
+        context.graph.should_receive("get_python_environment_marker").with_args(
+            "tensorflow",
+            "2.0.0",
+            "https://pypi.org/simple",
+            dependency_name="numpy",
+            dependency_version="1.0.0",
+            os_name="fedora",
+            os_version="31",
+            python_version="3.7",
+        ).and_return("python_version >= '3.7'").once()
+
+        product = Product.from_final_state(context=context, state=state)
+        expected = {
+            "advised_manifest_changes": [],
+            "advised_runtime_environment": None,
+            "justification": [
+                {
+                    "link": "https://thoth-station.ninja",
+                    "message": "Foo bar",
+                    "type": "INFO",
+                }
+            ],
+            "dependency_graph": {"edges": [], "nodes": ["numpy", "tensorflow"]},
+            "project": {
+                "constraints": [],
+                "requirements": {
+                    "dev-packages": {},
+                    "packages": {
+                        "flask": "*",
+                        "tensorflow": {
+                            "index": "pypi-org-simple",
+                            "markers": "python_version >= '3.6'",
+                            "version": ">1.0.0",
+                        },
+                    },
+                    "requires": {"python_version": "3.6"},
+                    "source": [
+                        {
+                            "name": "pypi",
+                            "url": "https://pypi.org/simple",
+                            "verify_ssl": True,
+                        },
+                        {
+                            "name": "pypi-org-simple",
+                            "url": "https://pypi.org/simple",
+                            "verify_ssl": True,
+                        },
+                    ],
+                    "thoth": {
+                        "allow_prereleases": {},
+                        "disable_index_adjustment": False,
+                    },
+                },
+                "requirements_locked": {
+                    "_meta": {
+                        "hash": {"sha256": "382cd84046246d08cf670a07c61628958dec76e05d2473bf936866fc54619f9a"},
+                        "pipfile-spec": 6,
+                        "requires": {"python_version": "3.6"},
+                        "sources": [
+                            {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True},
+                            {
+                                "name": "pypi-org-simple",
+                                "url": "https://pypi.org/simple",
+                                "verify_ssl": True,
+                            },
+                        ],
+                    },
+                    "default": {
+                        "numpy": {
+                            "hashes": ["sha256:000"],
+                            "index": "pypi-org-simple",
+                            "markers": "python_version >= '3.7'",
+                            "version": "==1.0.0",
+                        },
+                        "tensorflow": {
+                            "hashes": ["sha256:111"],
+                            "index": "pypi-org-simple",
+                            "markers": "python_version >= '3.6'",
+                            "version": "==2.0.0",
+                        },
+                    },
+                    "develop": {},
+                },
+                "runtime_environment": {
+                    "base_image": None,
+                    "cuda_version": None,
+                    "cudnn_version": None,
+                    "hardware": {"cpu_family": None, "cpu_model": None, "gpu_model": None},
+                    "name": None,
+                    "operating_system": {"name": None, "version": None},
+                    "openblas_version": None,
+                    "openmpi_version": None,
+                    "mkl_version": None,
+                    "python_version": None,
+                    "recommendation_type": None,
+                    "platform": None,
+                },
+            },
+            "score": 0.0,
+        }
+
+        assert product.to_dict() == expected
+
     def test_environment_markers_shared(self, context: Context) -> None:
         """Test handling of environment markers when multiple dependencies share one."""
         state = State(
@@ -564,6 +729,12 @@ black = true
             unresolved_dependencies={},
             justification=[{"type": "INFO", "message": "Foo bar", "link": "https://thoth-station.ninja"}],
         )
+
+        # Make sure tested packages are not direct dependencies. In such cases the behaviour is
+        # different, see other tests.
+        context.project.pipfile.packages.packages.pop("pandas", None)
+        context.project.pipfile.packages.packages.pop("numpy", None)
+        context.project.pipfile.packages.packages.pop("tensorflow", None)
 
         context.graph.should_receive("get_python_package_hashes_sha256").with_args(
             "numpy", "1.0.0", "https://pypi.org/simple"
@@ -653,7 +824,7 @@ black = true
                 "constraints": [],
                 "requirements": {
                     "dev-packages": {},
-                    "packages": {"flask": "*", "tensorflow": "==1.9.0"},
+                    "packages": {"flask": "*"},
                     "requires": {"python_version": "3.6"},
                     "source": [
                         {"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True},
@@ -666,7 +837,7 @@ black = true
                 },
                 "requirements_locked": {
                     "_meta": {
-                        "hash": {"sha256": "4628b328465fa6946ca9abf9c3576fb502436d0a40300d798058677de0f6128a"},
+                        "hash": {"sha256": "2e49395dfa87159358e581bd22e656c27c0dab04894d1b137a14f85bb387ea51"},
                         "pipfile-spec": 6,
                         "requires": {"python_version": "3.6"},
                         "sources": [
