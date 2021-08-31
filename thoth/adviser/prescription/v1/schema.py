@@ -51,7 +51,7 @@ def _with_not(entity: object) -> Schema:
 def _specifier_set(v: object) -> None:
     """Validate a specifier set."""
     if not isinstance(v, str):
-        raise Invalid(f"Value {v!r} is not valid version specifier (example: '<1.0>=0.5')")
+        raise Invalid(f"Value {v!r} is not valid version specifier (example: '<1.0,>=0.5')")
     try:
         SpecifierSet(v)
     except InvalidSpecifier as exc:
