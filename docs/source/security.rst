@@ -60,6 +60,18 @@ as a normalizer for security score. Having a single high-severity,
 high-confidence issue in a small Python project is much more concerning than if
 a single high-severity, high-confidence issue is found in a large project.
 
+Security Scorecards for Open Source Projects
+############################################
+
+`Open Source Security Foundation <https://openssf.org/>`__ provides `Security Scorecards
+for open-source projects <https://openssf.org/blog/2020/11/06/security-scorecards-for-open-source-projects/>`__.
+Thoth uses scorecards in recommendations to provide additional knowledge about Python packages to users.
+If you are interested, follow `scorecards checks available
+<https://github.com/ossf/scorecard/blob/main/docs/checks.md>`__.
+
+Security Scorecards used in Thoth are available
+`in thoth-station/prescriptions repository <https://github.com/thoth-station/prescriptions/>`__.
+
 Using security advises in OpenShift S2I
 #######################################
 
