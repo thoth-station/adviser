@@ -22,8 +22,8 @@ Contact us
 If you do not find required information or get in touch, feel free to contact
 us in `Google Chat room <https://chat.google.com/room/AAAAVjnVXFk>`__. If you
 are an external contributor, feel free to request access in `thoth-station/core
-repository <https://github.com/thoth-station/core>`__ by `opening an issue
-<https://github.com/thoth-station/core/issues/new/choose>`__.
+repository <https://github.com/thoth-station/support>`__ by `opening an issue
+<https://github.com/thoth-station/support/issues/new/choose>`__.
 
 Community meetings & Event Calendar
 ===================================
