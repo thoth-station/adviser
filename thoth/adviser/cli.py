@@ -21,6 +21,7 @@
 import json
 import logging
 import os
+import pickle
 import random
 import sys
 import time
@@ -921,7 +922,15 @@ def dependency_monkey(
     show_default=True,
     help="Show names of prescriptions that were validated.",
 )
-def validate_prescription(prescriptions: str, show_unit_names: bool) -> None:
+@click.option(
+    "--output",
+    envvar="THOTH_ADVISER_VALIDATE_PRESCRIPTION_OUTPUT",
+    type=str,
+    metavar="PRESCRIPTIONS.pickle",
+    required=False,
+    help="Serialize validated prescriptions into an output pickle file.",
+)
+def validate_prescription(prescriptions: str, show_unit_names: bool, output: str) -> None:
     """Validate the given prescription."""
     _LOGGER.info("Validating prescriptions in %r", prescriptions)
     prescription = Prescription.validate(prescriptions)
@@ -949,6 +958,11 @@ def validate_prescription(prescriptions: str, show_unit_names: bool) -> None:
         result["wraps"] = sorted(prescription.wraps_dict.keys())
 
     yaml.safe_dump(result, sys.stdout)
+
+    if output:
+        _LOGGER.info("Writing validated prescriptions to %r", output)
+        with open(output, "wb") as fp:
+            pickle.dump(prescription, fp)
 
 
 __name__ == "__main__" and cli()

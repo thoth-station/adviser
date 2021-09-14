@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Insert prescriptions into adviser container.
+
+sh /usr/libexec/s2i/assemble || exit 1
+
+set -ex
+
+pushd /opt/app-root/src/
+
+echo "Cloning prescriptions"
+git clone https://github.com/thoth-station/prescriptions.git
+pushd prescriptions
+git fetch
+# Get the last release of prescriptions and mark the release in the metadata file.
+tag=`git describe --tags --abbrev=0`
+git -c advice.detachedHead=false checkout "${tag}"
+sed -i "s/^  release:.*$/  release: \"${tag}\"/" prescriptions/_prescription_metadata.yaml
+thoth-adviser validate-prescriptions prescriptions/ --output ../prescriptions.pickle
+popd
+rm -rf prescriptions

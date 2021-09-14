@@ -19,6 +19,7 @@
 
 import logging
 import os
+import pickle
 import yaml
 from itertools import chain
 
@@ -282,22 +283,31 @@ class Prescription:
             prescription, prescription_name, prescription_release = queue.popleft()
 
             if os.path.isfile(prescription):
-                if not prescription.endswith((".yaml", ".yml")):
-                    _LOGGER.debug("Skipping file %r: not a YAML file", prescription)
-                    continue
+                if prescription.endswith((".yaml", ".yml")):
+                    _LOGGER.debug("Loading prescriptions from %r", prescription)
+                    with open(prescription, "r") as config_file:
+                        try:
+                            prescription_instance = cls.from_dict(
+                                yaml.load(config_file, Loader=yaml.CLoader),
+                                prescription_instance=prescription_instance,
+                                prescription_name=prescription_name,
+                                prescription_release=prescription_release,
+                            )
+                        except Exception:
+                            _LOGGER.error("Failed to load prescription from %r", prescription)
+                            raise
+                elif prescription.endswith(".pickle"):
+                    _LOGGER.debug("Loading prescriptions from %r", prescription)
+                    with open(prescription, "rb") as fp:
+                        prescription_instance = pickle.load(fp)
 
-                _LOGGER.debug("Loading prescriptions from %r", prescription)
-                with open(prescription, "r") as config_file:
-                    try:
-                        prescription_instance = cls.from_dict(
-                            yaml.load(config_file, Loader=yaml.CLoader),
-                            prescription_instance=prescription_instance,
-                            prescription_name=prescription_name,
-                            prescription_release=prescription_release,
+                    for prescription_info in prescription_instance.prescriptions:
+                        _LOGGER.info(
+                            "Loaded prescriptions %r in version %r", prescription_info[0], prescription_info[1]
                         )
-                    except Exception:
-                        _LOGGER.error("Failed to load prescription from %r", prescription)
-                        raise
+                else:
+                    _LOGGER.debug("Skipping file %r: not a YAML nor Pickle file", prescription)
+                    continue
 
             elif os.path.isdir(prescription):
                 prescription_metadata_file_path = os.path.join(prescription, cls._PRESCRIPTION_METADATA_FILE)
