@@ -1,4 +1,23 @@
 
+## Release 0.42.0 (2021-09-15T03:40:33)
+### Features
+* Add harshad as a maintainer
+* Create prescriptions pickle during the adviser build
+* Pickle prescriptions
+* Re-enable thoth-adviser releases to PyPI
+* Update landing_page.rst
+* Update landing_page.rst
+* Mention Security Scorecards in documentation
+* Fix example shown to users
+* Fix environment markers handling for direct dependencies
+* Make the prescription info more generic
+* State prescriptions-refresh-job in Thoth's architecture
+* Add missing links to the remaining docs
+### Bug Fixes
+* Minor fixes in documentation
+### Improvements
+* Make some logging more lazy
+
 ## Release 0.41.0 (2021-08-25T20:45:35)
 ### Features
 * Fix indentation issue
