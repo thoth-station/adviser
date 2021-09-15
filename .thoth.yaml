@@ -21,6 +21,7 @@ managers:
       maintainers:
         - goern
         - fridex
+        - harshad16
       assignees:
         - sesheta
       labels: [bot]
