@@ -1,4 +1,8 @@
 
+## Release 0.43.0 (2021-09-16T11:18:40)
+### Bug Fixes
+* Pin alembic to fix mypy issues
+
 ## Release 0.42.0 (2021-09-15T03:40:33)
 ### Features
 * Add harshad as a maintainer
