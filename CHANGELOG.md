@@ -1,4 +1,9 @@
 
+## Release 0.44.0 (2021-09-20T11:16:34)
+### Features
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+
 ## Release 0.43.0 (2021-09-16T11:18:40)
 ### Bug Fixes
 * Pin alembic to fix mypy issues
