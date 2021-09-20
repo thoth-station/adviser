@@ -8,9 +8,9 @@ serves the following purposes:
 
 1. Recommendation engine for `project Thoth <https://thoth-station.ninja>`__.
 
-2. A tool called "Dependency Monkey" that can generate all the possible
-   software stacks for a project respecting dependency resolution in the Python
-   ecosystem following programmable rules.
+2. A `tool called "Dependency Monkey" <https://developers.redhat.com/articles/2021/09/17/resolve-python-dependencies-thoth-dependency-monkey>`__
+   that can generate all the possible software stacks for a project respecting
+   dependency resolution in the Python ecosystem following programmable rules.
 
 3. Check provenance of installed Python artifacts based on package source
    indexes used.
@@ -163,6 +163,9 @@ hill-climbing, random walks in the dependency graph, ...).
 Dependency Monkey
 =================
 
+See `the following article for in-depth explanation with
+a video <https://developers.redhat.com/articles/2021/09/17/resolve-python-dependencies-thoth-dependency-monkey>`__.
+
 The primary use-case for Dependency Monkey is to generate software stacks that
 are subsequently validated and scored in the `Amun
 <https://github.com/thoth-station/amun-api>`__ service. Simply, when generating
@@ -183,6 +186,7 @@ for more info.
 
 **See also:**
 
+* `Resolve Python dependencies with Thoth Dependency Monkey <https://developers.redhat.com/articles/2021/09/17/resolve-python-dependencies-thoth-dependency-monkey>`__
 * `Developers Red Hat: AI software stack inspection with Thoth and TensorFlow <https://developers.redhat.com/blog/2020/09/30/ai-software-stack-inspection-with-thoth-and-tensorflow/?sc_cid=7013a000002gbzfAAA>`__
 * `dev.to: How to beat Python’s pip: Inspecting the quality of machine learning software <https://dev.to/fridex/how-to-beat-python-s-pip-inspecting-the-quality-of-machine-learning-software-1pkp>`__
 * `YouTube: Thoth Amun API: Inspecting the quality of software <https://www.youtube.com/watch?v=yeBjnZpdMwY>`__
