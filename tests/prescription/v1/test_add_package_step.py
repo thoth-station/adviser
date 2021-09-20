@@ -713,3 +713,97 @@ run:
         assert "daiquiri" not in state.unresolved_dependencies
         assert "daiquiri" in state.resolved_dependencies
         assert set(state.resolved_dependencies["daiquiri"]) == set(pv_tuple)
+
+    def test_run_package_version_add_package_multi(self, context: Context, state: State) -> None:
+        """Test running the unit multiple times with stack info and justification reported once."""
+        prescription_str = f"""
+name: AddPackageStep
+type: step.AddPackage
+should_include:
+  adviser_pipeline: true
+match:
+  package_version:
+    name: numpy
+run:
+  package_version:
+    name: daiquiri
+    locked_version: ==2.0.0
+    index_url: https://pypi.org/simple
+    develop: true
+  stack_info:
+  - type: INFO
+    message: "Hello, Thoth!"
+    link: https://thoth-station.ninja
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA(prescription)
+        AddPackageStepPrescription.set_prescription(prescription)
+
+        pypi = Source("https://pypi.org/simple")
+        package_version_np = PackageVersion(
+            name="numpy",
+            version="==1.19.1",
+            index=pypi,
+            develop=False,
+        )
+
+        context.stack_info.clear()
+
+        context.graph.should_receive("python_package_version_exists").with_args(
+            "daiquiri", "2.0.0", "https://pypi.org/simple", solver_name="solver-rhel-8-py38"
+        ).and_return(True).once()
+        context.graph.should_receive("is_python_package_index_enabled").with_args("https://pypi.org/simple").and_return(
+            True
+        ).once()
+
+        state.resolved_dependencies.clear()
+
+        runtime_env = context.project.runtime_environment
+        runtime_env.operating_system.name = "rhel"
+        runtime_env.operating_system.version = "8"
+        runtime_env.python_version = "3.8"
+
+        unit = AddPackageStepPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            assert unit.run(state, package_version_np) is None
+
+        assert "daiquiri" in state.unresolved_dependencies
+        assert set(state.unresolved_dependencies["daiquiri"].values()) == {
+            ("daiquiri", "2.0.0", "https://pypi.org/simple")
+        }
+
+        assert context.stack_info == [
+            {"type": "INFO", "message": "Hello, Thoth!", "link": "https://thoth-station.ninja"}
+        ]
+
+        package_version_np2 = PackageVersion(
+            name="numpy",
+            version="==2.0.0",
+            index=pypi,
+            develop=False,
+        )
+
+        context.graph.should_receive("python_package_version_exists").with_args(
+            "daiquiri", "2.0.0", "https://pypi.org/simple", solver_name="solver-rhel-8-py38"
+        ).and_return(True).once()
+        context.graph.should_receive("is_python_package_index_enabled").with_args("https://pypi.org/simple").and_return(
+            True
+        ).once()
+
+        state.resolved_dependencies.clear()
+
+        runtime_env = context.project.runtime_environment
+        runtime_env.operating_system.name = "rhel"
+        runtime_env.operating_system.version = "8"
+        runtime_env.python_version = "3.8"
+
+        with unit.assigned_context(context):
+            assert unit.run(state, package_version_np2) is None
+
+        assert set(state.unresolved_dependencies["daiquiri"].values()) == {
+            ("daiquiri", "2.0.0", "https://pypi.org/simple")
+        }
+        assert context.stack_info == [
+            {"type": "INFO", "message": "Hello, Thoth!", "link": "https://thoth-station.ninja"}
+        ]

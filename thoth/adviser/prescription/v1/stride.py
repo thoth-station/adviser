@@ -45,6 +45,7 @@ class StridePrescription(UnitPrescription):
             Required("package_name"): SchemaAny(str, None),
             Required("match"): PRESCRIPTION_STRIDE_MATCH_ENTRY_SCHEMA,
             Required("run"): PRESCRIPTION_STRIDE_RUN_SCHEMA,
+            Required("prescription"): Schema({"run": bool}),
         }
     )
 
@@ -69,4 +70,7 @@ class StridePrescription(UnitPrescription):
         if not self._run_state(state):
             return None
 
-        self._run_base()
+        try:
+            self._run_base()
+        finally:
+            self._configuration["prescription"]["run"] = True

@@ -50,10 +50,9 @@ class SkipPackageSievePrescription(UnitPrescription):
             Required("package_name"): SchemaAny(str, None),
             Required("run"): SchemaAny(PRESCRIPTION_SKIP_PACKAGE_SIEVE_RUN_ENTRY_SCHEMA, None),
             Required("match"): PRESCRIPTION_SKIP_PACKAGE_SIEVE_MATCH_ENTRY_SCHEMA,
+            Required("prescription"): Schema({"run": bool}),
         }
     )
-
-    _logged = attr.ib(type=bool, kw_only=True, init=False, default=False)
 
     @staticmethod
     def is_sieve_unit_type() -> bool:
@@ -65,14 +64,21 @@ class SkipPackageSievePrescription(UnitPrescription):
         """Check if the given pipeline unit should be included in the given pipeline configuration."""
         if cls._should_include_base(builder_context):
             prescription: Dict[str, Any] = cls._PRESCRIPTION  # type: ignore
+            prescription_conf = {"run": False}
             if isinstance(prescription["match"], list):
                 for item in prescription["match"]:
-                    yield {"package_name": item["package_name"], "run": prescription.get("run"), "match": item}
+                    yield {
+                        "package_name": item["package_name"],
+                        "run": prescription.get("run"),
+                        "match": item,
+                        "prescription": prescription_conf,
+                    }
             else:
                 yield {
                     "package_name": prescription["match"]["package_name"],
                     "run": prescription.get("run"),
                     "match": prescription["match"],
+                    "prescription": prescription_conf,
                 }
             return None
 
@@ -81,14 +87,14 @@ class SkipPackageSievePrescription(UnitPrescription):
 
     def pre_run(self) -> None:
         """Initialize this unit before each run."""
-        self._logged = False
         super().pre_run()
 
     def run(self, _: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Run main entry-point for sieves to filter and score packages."""
-        if not self._logged:
-            self._logged = True
+        prescription_conf = self._configuration["prescription"]
+        if not prescription_conf["run"]:
             self._run_log()
             self._run_stack_info()
+            prescription_conf["run"] = True
 
         raise SkipPackage

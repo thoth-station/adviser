@@ -45,6 +45,7 @@ class AddPackageStepPrescription(StepPrescription):
             Required("match"): PRESCRIPTION_ADD_PACKAGE_STEP_MATCH_ENTRY_SCHEMA,
             Required("multi_package_resolution"): bool,
             Required("run"): SchemaAny(PRESCRIPTION_ADD_PACKAGE_STEP_RUN_SCHEMA, None),
+            Required("prescription"): Schema({"run": bool}),
         }
     )
 
@@ -128,7 +129,10 @@ class AddPackageStepPrescription(StepPrescription):
             )
             return None
 
-        self._run_base()
+        try:
+            self._run_base()
+        finally:
+            self._configuration["prescription"]["run"] = True
 
         pv = PackageVersion(
             name=add_package_version_name,

@@ -58,6 +58,7 @@ class StepPrescription(UnitPrescription):
             Required("match"): PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA,
             Required("multi_package_resolution"): bool,
             Required("run"): PRESCRIPTION_STEP_RUN_SCHEMA,
+            Required("prescription"): Schema({"run": bool}),
         }
     )
 
@@ -78,6 +79,7 @@ class StepPrescription(UnitPrescription):
         """Yield for every entry stated in the match field."""
         match = unit_prescription["match"]
         run = unit_prescription["run"]
+        prescription_conf = {"run": False}
         if isinstance(match, list):
             for item in match:
                 yield {
@@ -85,6 +87,7 @@ class StepPrescription(UnitPrescription):
                     "multi_package_resolution": run.get("multi_package_resolution", False),
                     "match": item,
                     "run": run,
+                    "prescription": prescription_conf,
                 }
         else:
             yield {
@@ -92,6 +95,7 @@ class StepPrescription(UnitPrescription):
                 "multi_package_resolution": run.get("multi_package_resolution", False),
                 "match": match,
                 "run": run,
+                "prescription": prescription_conf,
             }
 
     @classmethod
@@ -133,9 +137,17 @@ class StepPrescription(UnitPrescription):
         if not self._run_state_with_initiator(state, package_version):
             return None
 
-        self._run_base()
+        prescription_conf = self._configuration["prescription"]
 
-        score = self.run_prescription.get("score")
-        justification = self.run_prescription.get("justification")
+        try:
+            self._run_base()
 
-        return score, justification
+            score = self.run_prescription.get("score")
+            if not prescription_conf["run"]:
+                justification = self.run_prescription.get("justification")
+                return score, justification
+
+            # Provide justification just once per prescription.
+            return score, None
+        finally:
+            prescription_conf["run"] = True

@@ -50,10 +50,10 @@ class SievePrescription(UnitPrescription):
             Required("package_name"): SchemaAny(str, None),
             Required("match"): PRESCRIPTION_SIEVE_MATCH_ENTRY_SCHEMA,
             Required("run"): SchemaAny(PRESCRIPTION_SIEVE_RUN_SCHEMA, None),
+            Required("prescription"): Schema({"run": bool}),
         }
     )
 
-    _logged = attr.ib(type=bool, kw_only=True, init=False, default=False)
     _specifier = attr.ib(type=Optional[SpecifierSet], kw_only=True, init=False, default=None)
     _index_url = attr.ib(type=Optional[str], kw_only=True, init=False, default=None)
     _develop = attr.ib(type=Optional[str], kw_only=True, init=False, default=None)
@@ -83,22 +83,23 @@ class SievePrescription(UnitPrescription):
             self._specifier.prereleases = True
 
         self._index_url = package_version.get("index_url")
-        self._logged = False
         self._develop = package_version.get("develop")
         super().pre_run()
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Run main entry-point for sieves to filter and score packages."""
+        prescription_conf = self._configuration["prescription"]
         for package_version in package_versions:
             if (
                 (not self._specifier or package_version.locked_version in self._specifier)
                 and self._index_url_check(self._index_url, package_version.index.url)
                 and (self._develop is None or self._develop == package_version.develop)
             ):
-                if not self._logged:
-                    self._logged = True
+
+                if not prescription_conf["run"]:
                     self._run_log()
                     self._run_stack_info()
+                    prescription_conf["run"] = True
 
                 continue
 

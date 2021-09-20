@@ -200,6 +200,7 @@ run:
                         ],
                     },
                 },
+                "prescription": {"run": False},
                 "run": {
                     "justification": [
                         {
@@ -254,6 +255,7 @@ run:
                         ],
                     },
                 },
+                "prescription": {"run": False},
                 "run": {
                     "justification": [
                         {
@@ -275,6 +277,7 @@ run:
                         ],
                     },
                 },
+                "prescription": {"run": False},
                 "run": {
                     "justification": [
                         {
@@ -296,6 +299,7 @@ run:
                         ],
                     },
                 },
+                "prescription": {"run": False},
                 "run": {
                     "justification": [
                         {
@@ -332,6 +336,7 @@ run:
             {
                 "package_name": None,
                 "match": {},
+                "prescription": {"run": False},
                 "run": {
                     "justification": [
                         {
@@ -394,6 +399,10 @@ run:
       value:
         name: OMP_NUM_THREADS
         value: "1"
+  stack_info:
+  - type: INFO
+    message: Added advised changes
+    link: https://thoth-station.ninja
 """
         prescription = yaml.safe_load(prescription_str)
         PRESCRIPTION_WRAP_SCHEMA(prescription)
@@ -407,6 +416,8 @@ run:
         unit.pre_run()
         with unit.assigned_context(context):
             assert unit.run(state) is None
+            # Run one more time to verify stack info and advised manifest changes are added just once.
+            assert unit.run(state) is None
 
         assert state.advised_manifest_changes == [
             {
@@ -418,6 +429,9 @@ run:
                     "value": {"name": "OMP_NUM_THREADS", "value": "1"},
                 },
             }
+        ]
+        assert context.stack_info == [
+            {"type": "INFO", "message": "Added advised changes", "link": "https://thoth-station.ninja"}
         ]
 
     @pytest.mark.parametrize("develop", [True, False])
@@ -458,6 +472,8 @@ run:
         unit = WrapPrescription()
         unit.pre_run()
         with unit.assigned_context(context):
+            assert unit.run(state) is None
+            # Run one more time to verify justification is added only once.
             assert unit.run(state) is None
 
         assert state.justification == unit.run_prescription["justification"]

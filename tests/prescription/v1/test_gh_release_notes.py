@@ -203,6 +203,8 @@ run:
 
         unit.pre_run()
         with unit.assigned_context(context):
+            # Run twice to verify the justification is added just once.
+            assert unit.run(state) is None
             assert unit.run(state) is None
 
         self.verify_justification_schema(state.justification)
@@ -326,13 +328,17 @@ run:
 """
         units = list(self._instantiate_gh_release_notes_wrap(prescription_str))
         assert len(units) == 2
+        assert units[0].configuration["prescription"] is units[1].configuration["prescription"]
+
         assert units[0].configuration == {
             "package_name": "requests-fork",
             "package_version": {"index_url": "https://pypi.org/simple", "name": "requests-fork"},
             "release_notes": {"organization": "psf", "repository": "requests"},
+            "prescription": {"run": False},
         }
         assert units[1].configuration == {
             "package_name": "requests",
             "package_version": {"name": "requests"},
             "release_notes": {"organization": "psf", "repository": "requests"},
+            "prescription": {"run": False},
         }

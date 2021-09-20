@@ -47,6 +47,7 @@ class WrapPrescription(UnitPrescription):
             Required("package_name"): SchemaAny(str, None),
             Optional("match"): PRESCRIPTION_WRAP_MATCH_ENTRY_SCHEMA,
             Required("run"): PRESCRIPTION_WRAP_RUN_SCHEMA,
+            Required("prescription"): Schema({"run": bool}),
         }
     )
 
@@ -76,12 +77,18 @@ class WrapPrescription(UnitPrescription):
         if not self._run_state(state):
             return None
 
-        justification = self.run_prescription.get("justification")
-        if justification:
-            state.add_justification(justification)
+        prescription_conf = self._configuration["prescription"]
 
-        advised_manifest_changes = self.run_prescription.get("advised_manifest_changes")
-        if advised_manifest_changes:
-            state.advised_manifest_changes.append(advised_manifest_changes)
+        if not prescription_conf["run"]:
+            justification = self.run_prescription.get("justification")
+            if justification:
+                state.add_justification(justification)
 
-        self._run_base()
+            advised_manifest_changes = self.run_prescription.get("advised_manifest_changes")
+            if advised_manifest_changes:
+                state.advised_manifest_changes.append(advised_manifest_changes)
+
+        try:
+            self._run_base()
+        finally:
+            prescription_conf["run"] = True

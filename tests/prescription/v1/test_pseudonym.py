@@ -83,6 +83,67 @@ run:
         ).and_return([("flask", "1.2.0", "https://pypi.org/simple")]).once()
         self.check_run_stack_info(context, PseudonymPrescription, package_version=package_version)
 
+    def test_run_stack_info_multi_call(self, context: Context) -> None:
+        """Make sure the stack info is added just once on multiple calls."""
+        prescription_str = """
+name: PseudonymUnit
+type: pseudonym
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: flask
+    version: '>1.0,<=1.1.0'
+    index_url: 'https://pypi.org/simple'
+run:
+  yield:
+    package_version:
+      name: flask
+      locked_version: ==1.2.0
+      index_url: 'https://pypi.org/simple'
+
+  stack_info:
+    - type: WARNING
+      message: Some stack warning message
+      link: https://thoth-station.ninja
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_PSEUDONYM_SCHEMA(prescription)
+        PseudonymPrescription.set_prescription(prescription)
+        package_version = PackageVersion(
+            name="flask",
+            version="==1.1.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
+
+        context.graph.should_receive("get_solved_python_package_versions_all").with_args(
+            package_name="flask",
+            package_version="1.2.0",
+            index_url="https://pypi.org/simple",
+            count=None,
+            os_name=context.project.runtime_environment.operating_system.name,
+            os_version=context.project.runtime_environment.operating_system.version,
+            python_version=context.project.runtime_environment.python_version,
+            distinct=True,
+            is_missing=False,
+        ).and_return([("flask", "1.2.0", "https://pypi.org/simple")]).twice()
+
+        assert not context.stack_info
+
+        unit = PseudonymPrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            result = list(unit.run(package_version))
+            assert result == [("flask", "1.2.0", "https://pypi.org/simple")]
+            result = list(unit.run(package_version))
+            assert result == [("flask", "1.2.0", "https://pypi.org/simple")]
+
+        assert self.verify_justification_schema(context.stack_info)
+        assert len(context.stack_info) == 1, "Only one stack info should be included"
+        assert context.stack_info == unit.run_prescription["stack_info"]
+
     @pytest.mark.parametrize("log_level", ["INFO", "ERROR", "WARNING"])
     def test_run_log(self, caplog, context: Context, log_level: str) -> None:
         """Check logging messages."""
@@ -221,6 +282,7 @@ run:
                         "index_url": "https://pypi.org/simple",
                     },
                 },
+                "prescription": {"run": False},
                 "run": {
                     "yield": {
                         "package_version": {
@@ -263,7 +325,15 @@ run:
         PseudonymPrescription.set_prescription(prescription)
 
         builder_context = flexmock()
-        assert list(PseudonymPrescription.should_include(builder_context)) == [
+        result = list(PseudonymPrescription.should_include(builder_context))
+        assert len(result) == 4
+
+        prescription_conf = result[0]["prescription"]
+        assert prescription_conf == {"run": False}
+        for item in result:
+            assert item["prescription"] is prescription_conf
+
+        assert result == [
             {
                 "package_name": "tensorflow-cpu",
                 "match": {
@@ -271,6 +341,7 @@ run:
                         "name": "tensorflow-cpu",
                     }
                 },
+                "prescription": {"run": False},
                 "run": {
                     "yield": {
                         "package_version": {
@@ -288,6 +359,7 @@ run:
                         "name": "tensorflow-gpu",
                     }
                 },
+                "prescription": {"run": False},
                 "run": {
                     "yield": {
                         "package_version": {
@@ -305,6 +377,7 @@ run:
                         "name": "intel-tensorflow",
                     }
                 },
+                "prescription": {"run": False},
                 "run": {
                     "yield": {
                         "package_version": {
@@ -322,6 +395,7 @@ run:
                         "name": "tensorflow",
                     }
                 },
+                "prescription": {"run": False},
                 "run": {
                     "yield": {
                         "package_version": {

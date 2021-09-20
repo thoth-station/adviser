@@ -45,6 +45,7 @@ class SkipPackageStepPrescription(StepPrescription):
             Required("match"): PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA,
             Required("multi_package_resolution"): bool,
             Required("run"): SchemaAny(PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA, None),
+            Required("prescription"): Schema({"run": bool}),
         }
     )
 
@@ -62,6 +63,9 @@ class SkipPackageStepPrescription(StepPrescription):
         if not self._run_state_with_initiator(state, package_version):
             return None
 
-        self._run_base()
+        try:
+            self._run_base()
+        finally:
+            self._configuration["prescription"]["run"] = True
 
         raise SkipPackage
