@@ -68,6 +68,7 @@ class PipelineBuilderContext:
     cli_parameters = attr.ib(type=Dict[str, Any], kw_only=True, default=attr.Factory(dict))
     prescription = attr.ib(type=Optional["Prescription"], kw_only=True, default=None)
     iteration = attr.ib(type=int, kw_only=True, default=0)
+    authenticated = attr.ib(type=bool, kw_only=True)
 
     _boots = attr.ib(type=Dict[Optional[str], List["BootType"]], factory=dict, kw_only=True)
     _pseudonyms = attr.ib(type=Dict[str, List["PseudonymType"]], factory=dict, kw_only=True)
@@ -81,6 +82,12 @@ class PipelineBuilderContext:
     _steps_included = attr.ib(type=Dict[str, List["StepType"]], factory=dict, kw_only=True)
     _strides_included = attr.ib(type=Dict[str, List["StrideType"]], factory=dict, kw_only=True)
     _wraps_included = attr.ib(type=Dict[str, List["WrapType"]], factory=dict, kw_only=True)
+
+    @authenticated.default
+    def _authenticated_default(self) -> bool:
+        """Check if adviser is running in an authenticated mode."""
+        env_authenticated = os.getenv("THOTH_AUTHENTICATED_ADVISE")
+        return bool(int(env_authenticated)) if env_authenticated is not None else False
 
     @property
     def boots(self) -> List["BootType"]:

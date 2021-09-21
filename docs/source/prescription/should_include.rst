@@ -89,6 +89,23 @@ the logic.
 If ``dependency_monkey_pipeline`` is set to ``false``, this configuration
 option has no effect.
 
+``should_include.authenticated``
+================================
+
+Configure inclusion of the given pipeline unit based on authenticated requests
+to the recommendation engine.
+
+Possible values:
+
+* ``null`` - default, the pipeline unit will be registered regardless
+  of authentication
+
+* ``false`` - the pipeline unit will be registered only if *unauthenticated*
+  request is done to the recommendation engine
+
+* ``true`` - the pipeline unit will be registered only if *authenticated*
+  request is done to the recommendation engine
+
 ``should_include.library_usage``
 ================================
 
