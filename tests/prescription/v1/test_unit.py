@@ -214,6 +214,43 @@ class TestUnitPrescription(AdviserTestCase):
         assert UnitPrescription._should_include_base(builder_context) == include
 
     @pytest.mark.parametrize(
+        "authenticated,env_authenticated,include",
+        [
+            (True, True, True),
+            (True, False, False),
+            (False, False, True),
+            (False, True, False),
+            (None, False, True),
+            (None, True, True),
+        ],
+    )
+    def test_should_include_authentication(
+        self,
+        builder_context: PipelineBuilderContext,
+        authenticated: Optional[bool],
+        env_authenticated: bool,
+        include: bool,
+    ) -> None:
+        """Test including a pipeline unit based on authentication."""
+        should_include_dict = {"adviser_pipeline": True}
+        if authenticated is not None:
+            should_include_dict["authenticated"] = authenticated
+
+        builder_context.recommendation_type = RecommendationType.LATEST
+        builder_context.decision_type = None
+
+        assert builder_context.is_adviser_pipeline()
+        builder_context.authenticated = env_authenticated
+
+        PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(should_include_dict)
+        UnitPrescription._PRESCRIPTION = {
+            "name": "SomePrescriptionUnitName",
+            "should_include": should_include_dict,
+        }
+        builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
+        assert UnitPrescription._should_include_base(builder_context) == include
+
+    @pytest.mark.parametrize(
         "decision_type,allowed_decision_types,include",
         [
             (DecisionType.RANDOM, None, True),

@@ -182,6 +182,7 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
         ),
         Optional("runtime_environments"): PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA,
         Optional("library_usage"): _library_usage,
+        Optional("authenticated"): bool,
     }
 )
 

@@ -18,8 +18,8 @@
 """A base class for prescription based pipeline units."""
 
 import abc
-import re
 import logging
+import re
 from typing import Any
 from typing import Dict
 from typing import Generator
@@ -297,6 +297,14 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                     builder_context.decision_type.name,
                 )
                 return False
+
+        authenticated = should_include_dict.get("authenticated")
+        if authenticated is not None and authenticated is not builder_context.authenticated:
+            _LOGGER.debug(
+                "%s: Not registering as authentication requirements are not met",
+                unit_name,
+            )
+            return False
 
         labels_expected = should_include_dict.get("labels", {})
         if labels_expected:
