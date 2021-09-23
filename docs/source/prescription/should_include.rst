@@ -8,8 +8,8 @@ be registered in the resolution process. This ``should_include`` part
 is agnostic to the pipeline unit type (separation of the actual pipeline
 unit logic).
 
-.. image:: ../_static/pipeline_builder.gif
-   :target: ../_static/pipeline_builder.gif
+.. image:: https://thoth-station.ninja/assets/adviser/pipeline_builder.gif
+   :target: https://thoth-station.ninja/assets/adviser/pipeline_builder.gif
    :alt: Pipeline builder building the pipeline configuration.
 
 .. note::
