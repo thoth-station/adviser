@@ -217,6 +217,7 @@ run:
                         ]
                     },
                 },
+                "prescription": {"run": False},
                 "run": {
                     "stack_info": [
                         {
@@ -268,6 +269,7 @@ run:
                         ]
                     },
                 },
+                "prescription": {"run": False},
                 "run": {
                     "stack_info": [
                         {
@@ -289,6 +291,7 @@ run:
                         ]
                     },
                 },
+                "prescription": {"run": False},
                 "run": {
                     "stack_info": [
                         {
@@ -366,6 +369,9 @@ run:
         unit = StridePrescription()
         unit.pre_run()
         with unit.assigned_context(context):
+            assert unit.run(state) is None
+
+            # Run one more time to verify the stack info is added just once.
             assert unit.run(state) is None
 
         assert context.stack_info == [

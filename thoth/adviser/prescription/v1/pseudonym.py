@@ -51,6 +51,7 @@ class PseudonymPrescription(UnitPrescription):
             Required("package_name"): str,
             Required("match"): PRESCRIPTION_PSEUDONYM_MATCH_ENTRY_SCHEMA,
             Required("run"): PRESCRIPTION_PSEUDONYM_RUN_SCHEMA,
+            Required("prescription"): Schema({"run": bool}),
         }
     )
 
@@ -116,10 +117,11 @@ class PseudonymPrescription(UnitPrescription):
             is_missing=False,
         )
 
-        if pseudonyms and not self._logged:
-            self._logged = True
+        prescription_conf = self._configuration["prescription"]
+        if pseudonyms and not prescription_conf["run"]:
             self._run_stack_info()
             self._run_log()
+            prescription_conf["run"] = True
 
         for pseudonym in pseudonyms:
             _LOGGER.info(

@@ -64,6 +64,49 @@ run:
 
         self.check_run_stack_info(context, SievePrescription, package_versions=(pv for pv in [package_version]))
 
+    def test_run_stack_info_run_multi(self, context: Context) -> None:
+        """Check assigning stack info only once on multiple calls."""
+        prescription_str = """
+name: SieveUnit
+type: sieve
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+  package_version:
+    name: flask
+    version: '>1.0,<=1.1.0'
+    index_url: 'https://pypi.org/simple'
+run:
+  stack_info:
+    - type: WARNING
+      message: Some stack warning message printed by a sieve
+      link: https://thoth-station.ninja
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_SIEVE_SCHEMA(prescription)
+        SievePrescription.set_prescription(prescription)
+        package_version = PackageVersion(
+            name="flask",
+            version="==1.1.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
+
+        assert not context.stack_info
+
+        unit = SievePrescription()
+        unit.pre_run()
+        with unit.assigned_context(context):
+            result = list(unit.run((pv for pv in (package_version,))))
+            assert not result
+            result = list(unit.run((pv for pv in (package_version,))))
+            assert not result
+
+        assert self.verify_justification_schema(context.stack_info)
+        assert len(context.stack_info) == 1, "Stack information should be added only once"
+        assert context.stack_info == unit.run_prescription["stack_info"]
+
     @pytest.mark.parametrize("log_level", ["INFO", "ERROR", "WARNING"])
     def test_run_log(self, caplog, context: Context, log_level: str) -> None:
         """Check logging messages."""
@@ -170,6 +213,7 @@ match:
                     },
                 },
                 "run": {},
+                "prescription": {"run": False},
             },
         ]
 
@@ -194,7 +238,10 @@ match:
         SievePrescription.set_prescription(prescription)
 
         builder_context = flexmock()
-        assert list(SievePrescription.should_include(builder_context)) == [
+        result = list(SievePrescription.should_include(builder_context))
+        assert len(result) == 2
+
+        assert result == [
             {
                 "package_name": "flask",
                 "match": {
@@ -204,6 +251,7 @@ match:
                     },
                 },
                 "run": {},
+                "prescription": {"run": False},
             },
             {
                 "package_name": "numpy",
@@ -212,6 +260,7 @@ match:
                         "name": "numpy",
                     },
                 },
+                "prescription": {"run": False},
                 "run": {},
             },
         ]
@@ -242,6 +291,7 @@ match:
                         "index_url": "https://pypi.org/simple",
                     }
                 },
+                "prescription": {"run": False},
                 "run": {},
             }
         ]

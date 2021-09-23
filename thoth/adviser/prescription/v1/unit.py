@@ -81,6 +81,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             Required("package_name"): str,
             Required("match"): object,
             Required("run"): object,
+            Required("prescription"): Schema({"run": bool}),
         }
     )
 
@@ -118,6 +119,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             "package_name": None,
             "match": self._PRESCRIPTION.get("match", {}),
             "run": self._PRESCRIPTION.get("run", {}),
+            "prescription": {"run": False},
         }
 
     @classmethod
@@ -774,7 +776,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
     def pre_run(self) -> None:
         """Prepare this pipeline unit before running it."""
         self._prepare_justification_link(self.run_prescription.get("stack_info", []))
-        self._stack_info_run = False
+        self._configuration["prescription"]["run"] = False
         super().pre_run()
 
     @staticmethod
@@ -782,20 +784,28 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         """Yield for every entry stated in the match field."""
         match = unit_prescription.get("match", {})
         run = unit_prescription.get("run", {})
+        prescription_conf = {"run": False}
         if isinstance(match, list):
             for item in match:
                 yield {
                     "package_name": item["package_version"].get("name") if item else None,
                     "match": item,
                     "run": run,
+                    "prescription": prescription_conf,
                 }
         else:
-            yield {"package_name": match["package_version"].get("name") if match else None, "match": match, "run": run}
+            yield {
+                "package_name": match["package_version"].get("name") if match else None,
+                "match": match,
+                "run": run,
+                "prescription": prescription_conf,
+            }
 
     @staticmethod
     def _yield_should_include_with_state(unit_prescription: Dict[str, Any]) -> Generator[Dict[str, Any], None, None]:
         """Yield for every entry stated in the match field."""
         match = unit_prescription.get("match", {})
+        prescription_conf = {"run": False}
         if isinstance(match, list):
             for item in match:
                 match_resolved = item.get("state", {}).get("resolved_dependencies")
@@ -804,6 +814,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                     "package_name": match_resolved[0].get("name") if match_resolved else None,
                     "match": item,
                     "run": unit_prescription["run"],
+                    "prescription": prescription_conf,
                 }
         else:
             match_resolved = match.get("state", {}).get("resolved_dependencies") if match else None
@@ -811,21 +822,25 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
                 "package_name": match_resolved[0].get("name") if match_resolved else None,
                 "match": match,
                 "run": unit_prescription["run"],
+                "prescription": prescription_conf,
             }
 
     def _run_log(self) -> None:
         """Log message specified in the run prescription."""
+        if self._configuration["prescription"]["run"]:
+            # Noop. The prescription was already run.
+            return
+
         log = self.run_prescription.get("log")
         if log:
             _LOGGER.log(level=getattr(logging, log["type"]), msg=f"{self.name}: {log['message']}")
 
     def _run_stack_info(self) -> None:
         """Add stack info if any prescribed."""
-        if self._stack_info_run:
-            # Stack info already reported.
-            return None
+        if self._configuration["prescription"]["run"]:
+            # Noop. The prescription was already run.
+            return
 
-        self._stack_info_run = True
         stack_info = self.run_prescription.get("stack_info")
         if stack_info:
             self.context.stack_info.extend(stack_info)

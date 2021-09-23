@@ -162,6 +162,7 @@ run:
                 "match": {
                     "package_name": "flask",
                 },
+                "prescription": {"run": False},
                 "run": {
                     "stack_info": [
                         {
@@ -174,7 +175,7 @@ run:
             }
         ]
 
-    def test_should_include_mutli(self) -> None:
+    def test_should_include_multi(self) -> None:
         """Test including this pipeline unit multiple times."""
         prescription_str = """
 name: BootUnit
@@ -197,11 +198,16 @@ run:
         BootPrescription.set_prescription(prescription)
 
         builder_context = flexmock()
-        assert list(BootPrescription.should_include(builder_context)) == [
+        result = list(BootPrescription.should_include(builder_context))
+        assert len(result) == 2
+        assert result == [
             {
                 "package_name": "flask",
                 "match": {
                     "package_name": "flask",
+                },
+                "prescription": {
+                    "run": False,
                 },
                 "run": {
                     "stack_info": [
@@ -218,6 +224,9 @@ run:
                 "match": {
                     "package_name": "pandas",
                 },
+                "prescription": {
+                    "run": False,
+                },
                 "run": {
                     "stack_info": [
                         {
@@ -229,6 +238,7 @@ run:
                 },
             },
         ]
+        assert result[0]["prescription"] is result[1]["prescription"]
 
     def test_should_include_no_package_name(self) -> None:
         """Test including this pipeline unit without package name."""
@@ -254,6 +264,7 @@ run:
             {
                 "match": {},
                 "package_name": None,
+                "prescription": {"run": False},
                 "run": {
                     "stack_info": [
                         {
@@ -287,3 +298,37 @@ run:
 
         builder_context = flexmock()
         assert list(BootPrescription.should_include(builder_context)) == []
+
+    def test_should_include_multi_run(self, context: Context) -> None:
+        """Test including this pipeline unit multiple times."""
+        prescription_str = """
+name: BootUnit
+type: boot
+should_include:
+  times: 1
+  adviser_pipeline: true
+match:
+- package_name: flask
+- package_name: pandas
+run:
+  stack_info:
+  - type: INFO
+    message: "Hello, Thoth!"
+    link: https://thoth-station.ninja
+"""
+        prescription = yaml.safe_load(prescription_str)
+        PRESCRIPTION_BOOT_SCHEMA(prescription)
+        BootPrescription.set_prescription(prescription)
+        unit = BootPrescription()
+
+        assert "flask" in (pv.name for pv in context.project.iter_dependencies())
+
+        unit.pre_run()
+        with unit.assigned_context(context):
+            # Run twice.
+            unit.run()
+            unit.run()
+
+        assert context.stack_info == [
+            {"type": "INFO", "message": "Hello, Thoth!", "link": "https://thoth-station.ninja"}
+        ]

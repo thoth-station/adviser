@@ -45,6 +45,7 @@ class BootPrescription(UnitPrescription):
             Required("package_name"): SchemaAny(str, None),
             Required("match"): SchemaAny(PRESCRIPTION_BOOT_MATCH_ENTRY_SCHEMA, None),
             Required("run"): PRESCRIPTION_BOOT_RUN_SCHEMA,
+            Required("prescription"): Schema({"run": bool}),
         }
     )
 
@@ -58,11 +59,22 @@ class BootPrescription(UnitPrescription):
         """Yield for every entry stated in the match field."""
         match = unit_prescription.get("match", {})
         run = unit_prescription.get("run", {})
+        prescription_conf = {"run": False}
         if isinstance(match, list):
             for item in match:
-                yield {"package_name": item.get("package_name"), "match": item, "run": run}
+                yield {
+                    "package_name": item.get("package_name"),
+                    "match": item,
+                    "run": run,
+                    "prescription": prescription_conf,
+                }
         else:
-            yield {"package_name": match.get("package_name") if match else None, "match": match, "run": run}
+            yield {
+                "package_name": match.get("package_name") if match else None,
+                "match": match,
+                "run": run,
+                "prescription": prescription_conf,
+            }
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
@@ -77,4 +89,7 @@ class BootPrescription(UnitPrescription):
 
     def run(self) -> None:
         """Run main entry-point for boot units."""
-        super()._run_base()
+        try:
+            super()._run_base()
+        finally:
+            self._configuration["prescription"]["run"] = True

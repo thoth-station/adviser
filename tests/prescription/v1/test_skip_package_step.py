@@ -209,6 +209,11 @@ match:
       version: "{resolved_version}"
       develop: {resolved_develop}
       index_url: {resolved_index}
+run:
+  stack_info:
+  - type: WARNING
+    message: A warning message
+    link: https://thoth-station.ninja
 """
         prescription = yaml.safe_load(prescription_str)
         PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA(prescription)
@@ -254,11 +259,26 @@ match:
             python_version=runtime_env.python_version,
         )
 
+        context.stack_info.clear()
+
         unit = SkipPackageStepPrescription()
         unit.pre_run()
         with unit.assigned_context(context):
             if pipeline_run:
                 with pytest.raises(SkipPackage):
                     unit.run(state, package_version)
+
+                # Run one more time to verify the stack info is added just once.
+                with pytest.raises(SkipPackage):
+                    unit.run(state, package_version)
             else:
                 assert unit.run(state, package_version) is None
+
+        if pipeline_run:
+            assert self.verify_justification_schema(context.stack_info)
+            assert len(context.stack_info) == 1
+            assert context.stack_info == [
+                {"type": "WARNING", "link": "https://thoth-station.ninja", "message": "A warning message"}
+            ]
+        else:
+            assert not context.stack_info

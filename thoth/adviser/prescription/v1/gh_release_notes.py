@@ -52,6 +52,7 @@ class GHReleaseNotesWrapPrescription(UnitPrescription):
             Required("package_name"): str,
             Required("release_notes"): PRESCRIPTION_GH_RELEASE_NOTES_WRAP_RUN_ENTRY_SCHEMA,
             Required("package_version"): PACKAGE_VERSION_REQUIRED_NAME_SCHEMA,
+            Required("prescription"): Schema({"run": bool}),
         }
     )
 
@@ -75,6 +76,7 @@ class GHReleaseNotesWrapPrescription(UnitPrescription):
     def _yield_from_resolved_dependencies(
         run_prescription: Dict[str, Any],
         resolved_dependencies_prescription: Union[Dict[str, Any], List[Dict[str, Any]]],
+        prescription_conf: Dict[str, Any],
     ) -> Generator[Dict[str, Any], None, None]:
         """Yield configuration based on resolved dependencies prescribed."""
         if isinstance(resolved_dependencies_prescription, list):
@@ -83,12 +85,14 @@ class GHReleaseNotesWrapPrescription(UnitPrescription):
                     "package_name": item["name"],
                     "release_notes": run_prescription["release_notes"],
                     "package_version": item,
+                    "prescription": prescription_conf,
                 }
         else:
             yield {
                 "package_name": resolved_dependencies_prescription["name"],
                 "release_notes": run_prescription["release_notes"],
                 "package_version": resolved_dependencies_prescription,
+                "prescription": prescription_conf,
             }
 
     @classmethod
@@ -97,13 +101,18 @@ class GHReleaseNotesWrapPrescription(UnitPrescription):
         if not builder_context.is_included(cls):
             prescription: Dict[str, Any] = cls._PRESCRIPTION  # type: ignore
 
+            prescription_conf = {"run": False}
             match = prescription["match"]
             run = prescription["run"]
             if isinstance(match, list):
                 for item in match:
-                    yield from cls._yield_from_resolved_dependencies(run, item["state"]["resolved_dependencies"])
+                    yield from cls._yield_from_resolved_dependencies(
+                        run, item["state"]["resolved_dependencies"], prescription_conf
+                    )
             else:
-                yield from cls._yield_from_resolved_dependencies(run, match["state"]["resolved_dependencies"])
+                yield from cls._yield_from_resolved_dependencies(
+                    run, match["state"]["resolved_dependencies"], prescription_conf
+                )
                 return None
 
         yield from ()
@@ -137,6 +146,13 @@ class GHReleaseNotesWrapPrescription(UnitPrescription):
             index_url = conf_package_version.get("index_url")
             if not self._index_url_check(index_url, resolved_package_tuple[2]):
                 continue
+
+            if self._configuration["prescription"]["run"]:
+                # Can happen if prescription states criteria that match multiple times. We add
+                # justification only once in such cases.
+                continue
+
+            self._configuration["prescription"]["run"] = True
 
             release_notes_conf = self.configuration["release_notes"]
             justification_addition.append(

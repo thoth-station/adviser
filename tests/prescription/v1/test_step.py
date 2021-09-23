@@ -182,11 +182,17 @@ run:
         unit.pre_run()
         with unit.assigned_context(context):
             result = unit.run(state, package_version)
+            assert isinstance(result, tuple)
+            assert len(result) == 2
+            assert result[0] == -0.1
+            assert result[1] == unit.run_prescription["justification"]
 
-        assert isinstance(result, tuple)
-        assert len(result) == 2
-        assert result[0] == -0.1
-        assert result[1] == unit.run_prescription["justification"]
+            # Run one more time to make sure justification is added only once.
+            result = unit.run(state, package_version)
+            assert isinstance(result, tuple)
+            assert len(result) == 2
+            assert result[0] == -0.1
+            assert result[1] is None
 
     def test_run_state(self, context: Context, state: State) -> None:
         """Test running the prescription if state matches."""
@@ -291,10 +297,14 @@ run:
         StepPrescription.set_prescription(prescription)
 
         builder_context = flexmock()
-        assert list(StepPrescription.should_include(builder_context)) == [
+        result = list(StepPrescription.should_include(builder_context))
+        assert result == [
             {
                 "package_name": "numpy",
                 "multi_package_resolution": True,
+                "prescription": {
+                    "run": False,
+                },
                 "match": {
                     "package_version": {
                         "name": "numpy",
@@ -332,6 +342,9 @@ run:
         assert list(StepPrescription.should_include(builder_context)) == [
             {
                 "package_name": None,
+                "prescription": {
+                    "run": False,
+                },
                 "match": {
                     "package_version": {
                         "index_url": "https://thoth-station.ninja",
@@ -366,10 +379,14 @@ run:
         StepPrescription.set_prescription(prescription)
 
         builder_context = flexmock()
-        assert list(StepPrescription.should_include(builder_context)) == [
+        result = list(StepPrescription.should_include(builder_context))
+        assert result == [
             {
                 "package_name": None,
                 "multi_package_resolution": False,
+                "prescription": {
+                    "run": False,
+                },
                 "match": {
                     "package_version": {
                         "index_url": "https://thoth-station.ninja",
@@ -382,6 +399,9 @@ run:
             {
                 "package_name": "flask",
                 "multi_package_resolution": False,
+                "prescription": {
+                    "run": False,
+                },
                 "match": {
                     "package_version": {
                         "name": "flask",
@@ -392,6 +412,7 @@ run:
                 },
             },
         ]
+        assert result[0]["prescription"] is result[1]["prescription"]
 
     def test_no_should_include(self) -> None:
         """Test not including this pipeline."""
@@ -437,6 +458,10 @@ match:
           not: 'https://pypi.org/simple'
 run:
   score: 0.5
+  stack_info:
+  - type: WARNING
+    message: Hello, Thoth!
+    link: https://thoth-station.ninja
 """
         prescription = yaml.safe_load(prescription_str)
         PRESCRIPTION_STEP_SCHEMA(prescription)
@@ -454,10 +479,23 @@ run:
         unit.pre_run()
         with unit.assigned_context(context):
             result = unit.run(state, package_version)
+            assert isinstance(result, tuple)
+            assert result[0] == 0.5
+            assert result[1] is None
 
-        assert isinstance(result, tuple)
-        assert result[0] == 0.5
-        assert result[1] is None
+            self.verify_justification_schema(context.stack_info)
+            assert context.stack_info == [
+                {"type": "WARNING", "message": "Hello, Thoth!", "link": "https://thoth-station.ninja"}
+            ]
+
+            # Run one more time to make sure stack info is added just once.
+            result = unit.run(state, package_version)
+            assert isinstance(result, tuple)
+            assert result[0] == 0.5
+            assert result[1] is None
+            assert context.stack_info == [
+                {"type": "WARNING", "message": "Hello, Thoth!", "link": "https://thoth-station.ninja"}
+            ]
 
     def test_run_state_not_index_url_not_match(self, context: Context, state: State) -> None:
         """Test running the prescription if state matches."""
