@@ -1,4 +1,14 @@
 
+## Release 0.45.0 (2021-09-27T20:53:10)
+### Features
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Fix image not rendered in docs
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Configure inclusion of a pipeline unit based on authentication
+* Introduce prescription run to make sure each prescription reports once
+* Add a link to Red Hat developers article about DM
+
 ## Release 0.44.0 (2021-09-20T11:16:34)
 ### Features
 * :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
