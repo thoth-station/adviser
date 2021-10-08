@@ -36,8 +36,9 @@ from voluptuous import Required
 
 import attr
 
-from thoth.adviser.exceptions import NotAcceptable
+from thoth.adviser.cpu_db import CPUDatabase
 from thoth.adviser.exceptions import EagerStopPipeline
+from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.state import State
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
@@ -373,6 +374,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             # CPU/GPU
             cpu_families = hardware_dict.get("cpu_families")
             cpu_models = hardware_dict.get("cpu_models")
+            cpu_flags = hardware_dict.get("cpu_flags") or []
             gpu_models = hardware_dict.get("gpu_models")
             if cpu_families is not None and hw_used.cpu_family not in _ValueList(cpu_families):
                 _LOGGER.debug("%s: Not matching CPU family used (using %r)", unit_name, hw_used.cpu_family)
@@ -385,6 +387,48 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             if gpu_models is not None and hw_used.gpu_model not in _ValueList(gpu_models):
                 _LOGGER.debug("%s: Not matching GPU model used (using %r)", unit_name, hw_used.gpu_model)
                 return False
+
+            if cpu_flags:
+                if hw_used.cpu_family is None or hw_used.cpu_model is None:
+                    _LOGGER.debug(
+                        "%s: CPU family (%s) or CPU model (%s) not provided, cannot check CPU flags %r",
+                        unit_name,
+                        hw_used.cpu_family,
+                        hw_used.cpu_model,
+                        cpu_flags,
+                    )
+                    return False
+
+                if isinstance(cpu_flags, dict):
+                    for cpu_flag in cpu_flags["not"]:
+                        if CPUDatabase.provides_flag(hw_used.cpu_family, hw_used.cpu_model, cpu_flag):
+                            _LOGGER.debug(
+                                "%s: CPU flag %r is provided by CPU family %s and CPU model %s, not registering unit",
+                                unit_name,
+                                cpu_flag,
+                                hw_used.cpu_family,
+                                hw_used.cpu_model,
+                            )
+                            return False
+                else:
+                    for cpu_flag in cpu_flags:
+                        if not CPUDatabase.provides_flag(hw_used.cpu_family, hw_used.cpu_model, cpu_flag):
+                            _LOGGER.debug(
+                                "%s: Not matching CPU flag %r for CPU family %s and CPU model %s, not registering unit",
+                                unit_name,
+                                cpu_flag,
+                                hw_used.cpu_family,
+                                hw_used.cpu_model,
+                            )
+                            return False
+
+                _LOGGER.debug(
+                    "%s: Used CPU family %s and CPU model %s provides all CPU flags required %r",
+                    unit_name,
+                    hw_used.cpu_family,
+                    hw_used.cpu_model,
+                    cpu_flags,
+                )
 
         # Software present.
         runtime_used = builder_context.project.runtime_environment

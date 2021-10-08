@@ -33,6 +33,7 @@ from thoth.python import PackageVersion
 from packaging.specifiers import SpecifierSet
 from packaging.specifiers import InvalidSpecifier
 
+from thoth.adviser.cpu_db import CPUDatabase
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.enums import RecommendationType
 
@@ -108,6 +109,7 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA = Schema(
                     {
                         Optional("cpu_families"): _with_not(_NONEMPTY_LIST_OF_INTEGERS_WITH_NONE),
                         Optional("cpu_models"): _with_not(_NONEMPTY_LIST_OF_INTEGERS_WITH_NONE),
+                        Optional("cpu_flags"): _with_not(All(CPUDatabase.get_known_flags(), Length(min=1))),
                         Optional("gpu_models"): _with_not(_NONEMPTY_LIST_OF_NONEMPTY_STRINGS_WITH_NONE),
                     }
                 )

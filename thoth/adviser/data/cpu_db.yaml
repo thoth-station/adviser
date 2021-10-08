@@ -1,0 +1,45 @@
+---
+flags:
+  avx2:
+  # Intel
+  # See:
+  #   https://en.wikipedia.org/wiki/Advanced_Vector_Extensions#CPUs_with_AVX2
+  #   https://en.wikichip.org/wiki/intel/cpuid
+  # 6 0x5 Cascade Lake Intel
+  - [6, 0x5]
+  # 6 0x6 Broadwell, Cannon Lake
+  - [6, 0x6]
+  # 6 0xA Ice Lake
+  - [6, 0xA]
+  # 6 0xC Ice Lake, Tiger Lake
+  - [6, 0xC]
+  # 6 0xD Ice Lake
+  - [6, 0xD]
+  # 6 0xE Skylake, Kaby Lake, Coffee Lake, Ice Lake, Comet Lake, Whiskey Lake
+  - [6, 0xE]
+  # 6 0xF Haswell
+  - [6, 0xF]
+  # AMD
+  #   https://en.wikipedia.org/wiki/Advanced_Vector_Extensions#CPUs_with_AVX2
+  #   https://en.wikichip.org/wiki/amd/cpuid
+  # 23 0x1 Rome
+  - [23, 0x31]
+  # 23 0x1 Milan
+  - [25, 0x1]
+  avx512:
+  # See:
+  #   https://en.wikipedia.org/wiki/Advanced_Vector_Extensions#CPUs_with_AVX-512
+  #   https://en.wikipedia.org/wiki/AVX-512#VNNI
+  #   https://en.wikichip.org/wiki/intel/cpuid
+  # 6 0x5 Knights Mill, Skylake (Server) SP and X, Cascade Lake SP (VNNI)
+  - [6, 0x5]
+  # 6 0x6 Cannon Lake
+  - [6, 0x6]
+  # 6 0x7 Knights Landing, Rocket Lake (VNNI)
+  - [6, 0x7]
+  # 6 0xC Tiger Lake C (VNNI)
+  - [6, 0xC]
+  # 6 0xD Ice Lake Y (VNNI), Tiger Lake H (VNNI)
+  - [6, 0xD]
+  # 6 0xE Ice Lake U (VNNI)
+  - [6, 0xE]
