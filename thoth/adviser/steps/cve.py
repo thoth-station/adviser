@@ -65,12 +65,13 @@ class CvePenalizationStep(Step):
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Remove CVEs only for advised stacks."""
-        if (
-            builder_context.is_adviser_pipeline()
-            and builder_context.recommendation_type != RecommendationType.LATEST
-            and not builder_context.is_included(cls)
-        ):
-            yield {}
+        if builder_context.is_adviser_pipeline() and not builder_context.is_included(cls):
+            if builder_context.recommendation_type in (RecommendationType.LATEST, RecommendationType.TESTING):
+                # Report no cve penalization for latest and testing recommendation types.
+                yield {"cve_penalization": 0.0}
+            else:
+                yield {}
+
             return None
 
         yield from ()
@@ -115,22 +116,25 @@ class CvePenalizationStep(Step):
                         )
 
                 raise NotAcceptable
+            else:
+                justification = []
+                for cve_record in cve_records:
+                    message = f"Package  {package_version_tuple!r} has a CVE {cve_record['cve_id']!r}"
+                    justification.append(
+                        {
+                            "package_name": package_version.name,
+                            "link": self._JUSTIFICATION_LINK,
+                            "advisory": cve_record["details"],
+                            "message": message,
+                            "type": "WARNING",
+                        }
+                    )
 
-            penalization = len(cve_records) * self.configuration["cve_penalization"]
+                if self.context.recommendation_type not in (RecommendationType.LATEST, RecommendationType.TESTING):
+                    # Penalize only if not latest/testing.
+                    penalization = len(cve_records) * self.configuration["cve_penalization"]
+                    return max(penalization, -1.0), justification
 
-            justification = []
-            for cve_record in cve_records:
-                message = f"Package  {package_version_tuple!r} has a CVE {cve_record['cve_id']!r}"
-                justification.append(
-                    {
-                        "package_name": package_version.name,
-                        "link": self._JUSTIFICATION_LINK,
-                        "advisory": cve_record["details"],
-                        "message": message,
-                        "type": "WARNING",
-                    }
-                )
-
-            return max(penalization, -1.0), justification
+                return 0.0, justification
 
         return None
