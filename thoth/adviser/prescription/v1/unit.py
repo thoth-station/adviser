@@ -71,6 +71,75 @@ class _ValueList:
         return not self._list["not"].__contains__(item)
 
 
+class _ValueListBaseImage:
+    """A class that overrides `in` to transparently handle included and excluded base images."""
+
+    # Image name mapped to image tag; the "_not" flag specifies if images were declared as part of "not".
+    __slots__ = ["_images", "_not"]
+
+    def __init__(self, obj: Union[List[Optional[str]], Dict[str, List[Optional[str]]]]) -> None:
+        """Initialize self."""
+        self._images = {}
+
+        if isinstance(obj, dict):
+            image_listing = obj["not"]
+            self._not = True
+        else:
+            image_listing = obj
+            self._not = False
+
+        images = []
+        for item in image_listing:
+            if item is None:
+                self._images[None] = None
+                continue
+
+            images.append(item.rsplit(":", maxsplit=1))
+
+        for image in images:
+            tag_exp_set = self._images.get(image[0])
+            if tag_exp_set is None:
+                tag_exp_set = set()
+                self._images[image[0]] = tag_exp_set
+
+            if len(image) == 1:
+                tag_exp_set.add(re.compile(r".*"))  # Means any tag.
+                continue
+
+            tag = image[1]
+            if tag.endswith("*"):
+                tag_exp = f"{re.escape(tag[:-1])}.*"
+                tag_exp_set.add(re.compile(tag_exp))
+                continue
+
+            tag_exp = re.escape(tag)
+            tag_exp_set.add(re.compile(tag_exp))
+
+    def __contains__(self, item: Optional[str]) -> bool:
+        """Check if the given item (base image) is in the provided listing."""
+        if item is None:
+            # Match `None` image in the image listing.
+            if item in self._images:
+                return not self._not
+
+            return self._not
+
+        parts = item.rsplit(":", maxsplit=1)
+        if len(parts) == 1:  # No tag specified.
+            return parts[0] not in self._images if self._not else parts[0] in self._images
+
+        image, tag = parts
+        tag_expressions = self._images.get(image)
+        if not tag_expressions:
+            return self._not
+
+        for tag_exp in tag_expressions:
+            if tag_exp.fullmatch(tag):
+                return not self._not
+
+        return False
+
+
 @attr.s(slots=True)
 class UnitPrescription(Unit, metaclass=abc.ABCMeta):
     """A base class for implementing pipeline units based on prescription supplied."""
@@ -499,7 +568,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             return False
 
         base_images = runtime_environment_dict.get("base_images")
-        if base_images is not None and runtime_used.base_image not in _ValueList(base_images):
+        if base_images is not None and runtime_used.base_image not in _ValueListBaseImage(base_images):
             _LOGGER.debug("%s: Not matching base image used (using %r)", unit_name, runtime_used.base_image)
             return False
 
