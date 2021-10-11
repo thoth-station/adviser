@@ -103,17 +103,15 @@ class _ValueListBaseImage:
                 self._images[image[0]] = tag_exp_set
 
             if len(image) == 1:
-                tag_exp_set.add(re.compile(r".*"))  # Means any tag.
+                tag_exp_set.add(lambda x: x.startswith(""))  # Means any tag.
                 continue
 
             tag = image[1]
             if tag.endswith("*"):
-                tag_exp = f"{re.escape(tag[:-1])}.*"
-                tag_exp_set.add(re.compile(tag_exp))
+                tag_exp_set.add(lambda x: x.startswith(tag[:-1]))
                 continue
 
-            tag_exp = re.escape(tag)
-            tag_exp_set.add(re.compile(tag_exp))
+            tag_exp_set.add(lambda x: x == tag)
 
     def __contains__(self, item: Optional[str]) -> bool:
         """Check if the given item (base image) is in the provided listing."""
@@ -134,10 +132,10 @@ class _ValueListBaseImage:
             return self._not
 
         for tag_exp in tag_expressions:
-            if tag_exp.fullmatch(tag):
+            if tag_exp(tag):
                 return not self._not
 
-        return False
+        return self._not
 
 
 @attr.s(slots=True)
