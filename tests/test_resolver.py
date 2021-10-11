@@ -3078,3 +3078,53 @@ class TestResolver(AdviserTestCase):
             report_dict["products"][1]["project"]["requirements_locked"]["default"]["numpy"]["version"]
             == f"=={package_tuple2[1]}"
         ), "Order of resolved dependencies is not preserved"
+
+    def test_run_wraps_sort(self, resolver: Resolver) -> None:
+        """Make sure justifications are sorted if requested."""
+        state = State()
+        state.add_justification(
+            [
+                {
+                    "type": "INFO",
+                    "message": "Info about 'b'",
+                    "link": "https://foo/bar",
+                    "package_name": "b",
+                },
+                {
+                    "type": "INFO",
+                    "message": "Package 'a' in version '1.0.0'",
+                    "link": "https://foo/bar",
+                    "package_name": "a",
+                },
+                {
+                    "type": "WARNING",
+                    "message": "Some warning message printed not specific to any package",
+                    "link": "https://foo/bar",
+                },
+                {
+                    "type": "WARNING",
+                    "message": "Warning about 'a'",
+                    "link": "https://foo/bar",
+                    "package_name": "a",
+                },
+            ]
+        )
+
+        assert resolver._run_wraps(state, sort=True) is None
+
+        assert state.justification == [
+            {
+                "link": "https://foo/bar",
+                "message": "Some warning message printed not specific to any package",
+                "type": "WARNING",
+            },
+            {
+                "link": "https://foo/bar",
+                "message": "Package 'a' in version '1.0.0'",
+                "package_name": "a",
+                "type": "INFO",
+            },
+            {"link": "https://foo/bar", "message": "Warning about 'a'", "package_name": "a", "type": "WARNING"},
+            {"link": "https://foo/bar", "message": "Info about 'b'", "package_name": "b", "type": "INFO"},
+        ]
+        self.verify_justification_schema(state.justification)

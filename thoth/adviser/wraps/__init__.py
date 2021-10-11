@@ -20,7 +20,6 @@
 from .libraries_io import LibrariesIOWrap
 from .pulp_release import PulpReleaseWrap
 from .pypi_release import PyPIReleaseWrap
-from .sort_justifications import SortJustificationsWrap
 from .trove_classifiers import TroveClassifiersWrap
 
 
@@ -32,5 +31,4 @@ __all__ = [
     "PulpReleaseWrap",
     "LibrariesIOWrap",
     "TroveClassifiersWrap",
-    "SortJustificationsWrap",  # Keep this last.
 ]
