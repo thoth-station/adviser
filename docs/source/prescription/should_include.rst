@@ -310,6 +310,17 @@ the logic.
       - cpu_families:
           not: [1]
 
+      # Matching CPU flags - all flags must be available on the CPU to register the unit.
+      - cpu_flags: ["avx2", "avx512"]
+
+      # Do NOT register the unit if AVX2 or AVX512 are available.
+      - cpu_flags:
+         not: ["avx2", "avx512"]
+
+See `CPU database available in adviser's implementation
+<https://github.com/thoth-station/adviser/blob/master/thoth/adviser/data/cpu_db.yaml>`__
+for a full listing of CPUs available and flags they provide.
+
 ``should_include.runtime_environments.python_version``
 ######################################################
 

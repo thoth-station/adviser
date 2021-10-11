@@ -6,6 +6,7 @@ exclude *.toml
 exclude *.yaml
 exclude tests/wraps/pytorch/test_mkl_threads.txt
 exclude thoth/adviser/wraps/pytorch/mkl_threads.txt
+include thoth/adviser/data/cpu_db.yaml
 include LICENSE
 include mypy.ini
 include OWNERS

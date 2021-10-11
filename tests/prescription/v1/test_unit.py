@@ -397,6 +397,35 @@ class TestUnitPrescription(AdviserTestCase):
             ),
             # CPU/GPU.
             (
+                {"hardware": [{"cpu_flags": ["avx2"]}]},
+                {"hardware": {"cpu_family": 9999, "cpu_model": 8888}},
+                False,
+            ),
+            (
+                {"hardware": [{"cpu_flags": ["avx2"]}]},
+                {"hardware": {"cpu_family": 6, "cpu_model": int("0x5", base=16)}},
+                True,
+            ),
+            (
+                {"hardware": [{"cpu_flags": {"not": ["avx2"]}}]},
+                {"hardware": {"cpu_family": 6, "cpu_model": int("0x5", base=16)}},
+                False,
+            ),
+            (
+                {"hardware": [{"cpu_flags": ["avx2", "avx512"], "cpu_families": [4, 5, 6], "cpu_models": [4, 5, 6]}]},
+                {"hardware": {"cpu_family": 6, "cpu_model": int("0x5", base=16)}},
+                True,
+            ),
+            (
+                {
+                    "hardware": [
+                        {"cpu_flags": {"not": ["avx2", "avx512"]}, "cpu_families": [4, 5, 6], "cpu_models": [4, 5, 6]}
+                    ]
+                },
+                {"hardware": {"cpu_family": 6, "cpu_model": int("0x5", base=16)}},
+                False,
+            ),
+            (
                 {"hardware": [{"cpu_families": [1, 2, 3], "cpu_models": [9, 8, 7], "gpu_models": [None, "Some"]}]},
                 {"hardware": {"cpu_family": 1, "cpu_model": 7}},
                 True,
