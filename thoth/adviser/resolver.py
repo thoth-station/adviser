@@ -490,7 +490,7 @@ class Resolver:
 
         return True
 
-    def _run_wraps(self, state: State) -> None:
+    def _run_wraps(self, state: State, *, sort: bool = False) -> None:
         """Run all wraps bound to the current run context."""
         package_wraps = []
         for package_name in state.resolved_dependencies:
@@ -503,6 +503,9 @@ class Resolver:
                 wrap.run(state)
             except Exception as exc:
                 raise WrapError(f"Failed to run wrap {wrap.name!r} on a final state: {str(exc)}") from exc
+
+        if sort:
+            state.justification.sort(key=lambda i: (i.get("package_name", ""), i["type"], i["message"]))
 
     def _prepare_user_lock_file(self, *, with_devel: bool = True) -> None:
         """Perform operations on the user's lock file required before running the pipeline.
@@ -1302,7 +1305,7 @@ class Resolver:
         with Unit.assigned_context(self.context), self.predictor.assigned_context(self.context):
             for state in self._do_resolve_states(with_devel=with_devel, user_stack_scoring=user_stack_scoring):
                 # Always run wraps as raw products are computed.
-                self._run_wraps(state)
+                self._run_wraps(state, sort=True)
                 yield Product.from_final_state(context=self.context, state=state)
 
     def resolve(self, *, with_devel: bool = True, user_stack_scoring: bool = True) -> Report:
@@ -1337,7 +1340,7 @@ class Resolver:
                 raise CannotProduceStack(msg + f" - see {link}", stack_info=self.context.stack_info)
 
             for item in states:
-                self._run_wraps(item[1])
+                self._run_wraps(item[1], sort=True)
 
             report = Report(
                 products=[
