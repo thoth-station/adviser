@@ -611,6 +611,8 @@ class TestUnitPrescription(AdviserTestCase):
         "prescription_base_images,used_base_image,include",
         [
             ([None], None, True),
+            (["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0"], None, False),
+            ([None], "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0", False),
             (
                 ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0"],
                 "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
@@ -692,6 +694,8 @@ class TestUnitPrescription(AdviserTestCase):
             # Inverted matching.
             #
             ({"not": [None]}, None, False),
+            ({"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0"]}, None, True),
+            ({"not": [None]}, "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0", True),
             (
                 {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0"]},
                 "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
