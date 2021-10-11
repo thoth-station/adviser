@@ -480,7 +480,12 @@ application. These base images map to `Thoth's S2I container images
 the `AICoE-CI pipeline <https://github.com/AICoE/aicoe-ci>`__.
 
 Alternatively, the list can be wrapped with a "not" statement which inverts
-the logic.
+the logic (the given container image is *not* used).
+
+The container image tag can be omitted, in such cases, any tag is matched.
+
+Container image tags can be also specified by prefix, for example ``v1.*`` matches
+any tags that are prefixed with ``v1.`` (ex. ``v1.0.0``, ``v1.1.2``, etc).
 
 .. note::
 
@@ -500,6 +505,18 @@ the logic.
       not:
         - quay.io/thoth-station/s2i-thoth-ubi8-py38:v1.0.0
         - quay.io/thoth-station/s2i-thoth-ubi8-py36:v0.8.1
+
+    base_images:
+      # Match UBI8 Python 3.8 container environment (any tag) or UBI8 Python 3.6 container
+      # environment in tags 2.2.
+      not:
+        - quay.io/thoth-station/s2i-thoth-ubi8-py38
+        - quay.io/thoth-station/s2i-thoth-ubi8-py36:v2.2.*
+
+    base_images:
+      # Do not match UBI8 Python 3.8 container environment and in any v1 tag release.
+      not:
+        - quay.io/thoth-station/s2i-thoth-ubi8-py38:v1.*
 
 ``should_include.runtime_environments.abi``
 ###########################################
