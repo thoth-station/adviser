@@ -30,8 +30,10 @@ from thoth.adviser.enums import RecommendationType
 from thoth.adviser.enums import DecisionType
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.prescription.v1 import UnitPrescription
-from thoth.adviser.prescription.v1.schema import PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA
-from thoth.adviser.prescription.v1.schema import PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA
+from thoth.adviser.prescription.v1.schema import (
+    PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA,
+    PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA,
+)
 from thoth.common import get_justification_link as jl
 from thoth.common import RuntimeEnvironment
 
@@ -600,6 +602,203 @@ class TestUnitPrescription(AdviserTestCase):
                 "runtime_environments": prescription_runtime_environments,
             },
         }
+        builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
+
+        assert builder_context.is_adviser_pipeline()
+        assert UnitPrescription._should_include_base(builder_context) == include
+
+    @pytest.mark.parametrize(
+        "prescription_base_images,used_base_image,include",
+        [
+            ([None], None, True),
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                True,
+            ),
+            # No tag specified in the prescription.
+            (["quay.io/thoth-station/s2i-thoth-ubi8-py36"], "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0", True),
+            # Tag for any specified.
+            (["quay.io/thoth-station/s2i-thoth-ubi8-py36:*"], "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0", True),
+            # Matching desired releases.
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0*"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                True,
+            ),
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.*"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                True,
+            ),
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0*"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                True,
+            ),
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.*"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                True,
+            ),
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1*"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                True,
+            ),
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v*"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                True,
+            ),
+            # Not matching tag.
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.1",
+                False,
+            ),
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0*"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.1",
+                False,
+            ),
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.*"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.1.0",
+                False,
+            ),
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.*"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v2.0",
+                False,
+            ),
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1*"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v2.0",
+                False,
+            ),
+            # Not matching image.
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py39:v1.0"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0",
+                False,
+            ),
+            (
+                ["quay.io/thoth-station/s2i-thoth-ubi8-py39:v1.*"],
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0",
+                False,
+            ),
+            #
+            # Inverted matching.
+            #
+            ({"not": [None]}, None, False),
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                False,
+            ),
+            # No tag specified in the prescription.
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                False,
+            ),
+            # Tag for any specified.
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:*"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                False,
+            ),
+            # Matching desired releases.
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0*"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                False,
+            ),
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.*"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                False,
+            ),
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0*"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                False,
+            ),
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.*"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                False,
+            ),
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1*"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                False,
+            ),
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v*"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0",
+                False,
+            ),
+            # Not matching tag.
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.1",
+                True,
+            ),
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.0*"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.1",
+                True,
+            ),
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0.*"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.1.0",
+                True,
+            ),
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.*"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v2.0",
+                True,
+            ),
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py36:v1*"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v2.0",
+                True,
+            ),
+            # Not matching image.
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py39:v1.0"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0",
+                True,
+            ),
+            (
+                {"not": ["quay.io/thoth-station/s2i-thoth-ubi8-py39:v1.*"]},
+                "quay.io/thoth-station/s2i-thoth-ubi8-py36:v1.0",
+                True,
+            ),
+        ],
+    )
+    def test_should_include_base_images(
+        self,
+        builder_context: PipelineBuilderContext,
+        prescription_base_images: Union[List[Optional[str]], Dict[str, List[Optional[str]]]],
+        used_base_image: Optional[str],
+        include: bool,
+    ) -> None:
+        """Test more sophisticated expressions specifying inclusion base on base images."""
+        UnitPrescription._PRESCRIPTION = {
+            "name": "FooBarName",
+            "should_include": {
+                "adviser_pipeline": True,
+                "runtime_environments": {
+                    "base_images": prescription_base_images,
+                },
+            },
+        }
+        PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA(UnitPrescription._PRESCRIPTION["should_include"])
+        builder_context.project.runtime_environment.base_image = used_base_image
+
         builder_context.should_receive("is_included").with_args(UnitPrescription).and_return(False).once()
 
         assert builder_context.is_adviser_pipeline()
