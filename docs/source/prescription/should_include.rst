@@ -163,50 +163,50 @@ any pipeline unit.
 ``should_include.dependencies.boots``
 #####################################
 
-A list of :ref:`boot pipeline units <boots>` that need to be present in the
-resolution process. Referenced by respective unit name and optional
-prescription name for referencing units from prescriptions (see above for more
-info).
+A list of :ref:`boot pipeline units <prescription_boots>` that need to be
+present in the resolution process. Referenced by respective unit name and
+optional prescription name for referencing units from prescriptions (see above
+for more info).
 
 ``should_include.dependencies.pseudonyms``
 ##########################################
 
-A list of :ref:`pseudonym pipeline units <pseudonyms>` that need to be present
-in the resolution process.  Referenced by respective unit name and optional
-prescription name for referencing units from prescriptions (see above for more
-info).
+A list of :ref:`pseudonym pipeline units <prescription_pseudonyms>` that need
+to be present in the resolution process.  Referenced by respective unit name
+and optional prescription name for referencing units from prescriptions (see
+above for more info).
 
 ``should_include.dependencies.sieves``
 ######################################
 
-A list of :ref:`sieve pipeline units <sieves>` that need to be present in the
-resolution process.  Referenced by respective unit name and optional
-prescription name for referencing units from prescriptions (see above for more
-info).
+A list of :ref:`sieve pipeline units <prescription_sieves>` that need to be
+present in the resolution process.  Referenced by respective unit name and
+optional prescription name for referencing units from prescriptions (see above
+for more info).
 
 ``should_include.dependencies.steps``
 #####################################
 
-A list of :ref:`step pipeline units <steps>` that need to be present in the
-resolution process.  Referenced by respective unit name and optional
-prescription name for referencing units from prescriptions (see above for more
-info).
+A list of :ref:`step pipeline units <prescription_steps>` that need to be
+present in the resolution process.  Referenced by respective unit name and
+optional prescription name for referencing units from prescriptions (see above
+for more info).
 
 ``should_include.dependencies.strides``
 #######################################
 
-A list of :ref:`stride pipeline units <strides>` that need to be present in the
-resolution process.  Referenced by respective unit name and optional
-prescription name for referencing units from prescriptions (see above for more
-info).
+A list of :ref:`stride pipeline units <prescription_strides>` that need to be
+present in the resolution process.  Referenced by respective unit name and
+optional prescription name for referencing units from prescriptions (see above
+for more info).
 
 ``should_include.dependencies.wraps``
 #####################################
 
-A list of :ref:`wrap pipeline units <wraps>` that need to be present in the
-resolution process.  Referenced by respective unit name and optional
-prescription name for referencing units from prescriptions (see above for more
-info).
+A list of :ref:`wrap pipeline units <prescription_wraps>` that need to be
+present in the resolution process.  Referenced by respective unit name and
+optional prescription name for referencing units from prescriptions (see above
+for more info).
 
 ``should_include.labels``
 =========================
