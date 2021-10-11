@@ -21,10 +21,12 @@ import abc
 import logging
 import re
 from typing import Any
+from typing import Callable
 from typing import Dict
 from typing import Generator
 from typing import List
 from typing import Optional
+from typing import Set
 from typing import Tuple
 from typing import Type
 from typing import TYPE_CHECKING
@@ -47,7 +49,6 @@ from .unit_cache import should_include_cache
 from ...unit import Unit
 
 if TYPE_CHECKING:
-    from typing import Callable
     from ...pipeline_builder import PipelineBuilderContext
 
 
@@ -79,7 +80,7 @@ class _ValueListBaseImage:
 
     def __init__(self, obj: Union[List[Optional[str]], Dict[str, List[Optional[str]]]]) -> None:
         """Initialize self."""
-        self._images = {}
+        self._images: Dict[Optional[str], Optional[Set[Callable[[str], bool]]]] = {}
 
         if isinstance(obj, dict):
             image_listing = obj["not"]
