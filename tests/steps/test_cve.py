@@ -55,7 +55,20 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
         builder_context.recommendation_type = RecommendationType.SECURITY
         self.verify_multiple_should_include(builder_context)
 
-    def test_cve_penalization(self) -> None:
+    @pytest.mark.parametrize("recommendation_type", RecommendationType.__members__.values())
+    def test_should_include_recommendation_type(
+        self, builder_context: PipelineBuilderContext, recommendation_type: RecommendationType
+    ):
+        """Check inclusion for various recommendation types."""
+        builder_context.recommendation_type = recommendation_type
+        builder_context.decision_type = None
+        if recommendation_type in (RecommendationType.LATEST, RecommendationType.TESTING):
+            assert list(self.UNIT_TESTED.should_include(builder_context)) == [{"cve_penalization": 0.0}]
+        else:
+            assert list(self.UNIT_TESTED.should_include(builder_context)) == [{}]
+
+    @pytest.mark.parametrize("recommendation_type", [RecommendationType.PERFORMANCE, RecommendationType.STABLE])
+    def test_cve_penalization(self, recommendation_type: RecommendationType) -> None:
         """Make sure a CVE affects stack score."""
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("get_python_cve_records_all").with_args(
@@ -69,7 +82,7 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
             develop=False,
         )
 
-        context = flexmock(graph=GraphDatabase(), recommendation_type=RecommendationType.TESTING)
+        context = flexmock(graph=GraphDatabase(), recommendation_type=recommendation_type)
         with CvePenalizationStep.assigned_context(context):
             step = CvePenalizationStep()
             result = step.run(None, package_version)
@@ -78,6 +91,44 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
         assert isinstance(result, tuple) and len(result) == 2
         assert isinstance(result[0], float)
         assert result[0] == 1 * CvePenalizationStep.CONFIGURATION_DEFAULT["cve_penalization"]
+        assert isinstance(result[1], list)
+        assert result[1] == [
+            {
+                "link": "https://thoth-station.ninja/j/cve",
+                "message": "Package  ('flask', '0.12.0', 'https://pypi.org/simple') has a CVE 'CVE-ID'",
+                "advisory": "flask version Before 0.12.3 contains a CWE-20: Improper Input Validation "
+                "vulnerability in flask that can result in Large amount of memory usage "
+                "possibly leading to denial of service.",
+                "package_name": "flask",
+                "type": "WARNING",
+            }
+        ]
+        assert self.verify_justification_schema(result[1])
+
+    @pytest.mark.parametrize("recommendation_type", [RecommendationType.LATEST, RecommendationType.TESTING])
+    def test_cve_no_penalization(self, recommendation_type: RecommendationType) -> None:
+        """Make sure score penalization is not done for testing and latest recommendation types."""
+        flexmock(GraphDatabase)
+        GraphDatabase.should_receive("get_python_cve_records_all").with_args(
+            package_name="flask", package_version="0.12.0"
+        ).and_return([self._FLASK_CVE]).once()
+
+        package_version = PackageVersion(
+            name="flask",
+            version="==0.12.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
+
+        context = flexmock(graph=GraphDatabase(), recommendation_type=recommendation_type, stack_info=[])
+        with CvePenalizationStep.assigned_context(context):
+            step = CvePenalizationStep()
+            result = step.run(None, package_version)
+
+        assert result is not None
+        assert isinstance(result, tuple) and len(result) == 2
+        assert isinstance(result[0], float)
+        assert result[0] == 0.0
         assert isinstance(result[1], list)
         assert result[1] == [
             {
