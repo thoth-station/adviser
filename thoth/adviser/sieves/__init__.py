@@ -28,7 +28,6 @@ from .locked import CutLockedSieve
 from .prereleases import CutPreReleasesSieve
 from .rules import SolverRulesSieve
 from .solved import SolvedSieve
-from .tensorflow import TensorFlow240AVX2IllegalInstructionSieve
 from .tensorflow import TensorFlowAPISieve
 from .thoth_s2i_abi_compat import ThothS2IAbiCompatibilitySieve
 from .thoth_s2i_packages import ThothS2IPackagesSieve
@@ -54,6 +53,5 @@ __all__ = [
     "ThothS2IPackagesSieve",
     "ThothS2IAbiCompatibilitySieve",
     "FilterIndexSieve",
-    "TensorFlow240AVX2IllegalInstructionSieve",
     "TensorFlowAPISieve",
 ]

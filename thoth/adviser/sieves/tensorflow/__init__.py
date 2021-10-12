@@ -17,11 +17,9 @@
 
 """Implementation of sieves used, specific for TensorFlow."""
 
-from .tf_240_avx2 import TensorFlow240AVX2IllegalInstructionSieve
 from .tf_api import TensorFlowAPISieve
 
 
 __all__ = [
-    "TensorFlow240AVX2IllegalInstructionSieve",
     "TensorFlowAPISieve",
 ]
