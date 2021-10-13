@@ -25,6 +25,7 @@ from .filter_index import FilterIndexSieve
 from .index_enabled import PackageIndexSieve
 from .legacy_version import LegacyVersionSieve
 from .locked import CutLockedSieve
+from .package_combinations import PackageCombinationsSieve
 from .prereleases import CutPreReleasesSieve
 from .rules import SolverRulesSieve
 from .solved import SolvedSieve
@@ -44,6 +45,7 @@ __all__ = [
     "ConstraintsSieve",
     "SelectiveCutPreReleasesSieve",
     "FilterConfiguredIndexSieve",
+    "PackageCombinationsSieve",
     "PackageIndexConfigurationSieve",
     "CutLockedSieve",
     "PackageIndexSieve",
