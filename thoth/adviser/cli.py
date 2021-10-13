@@ -44,6 +44,9 @@ from thoth.python import Pipfile
 from thoth.python import PipfileLock
 from thoth.python import Project
 from thoth.python.exceptions import UnsupportedConfigurationError
+from prometheus_client import CollectorRegistry
+from prometheus_client import Gauge
+from prometheus_client import push_to_gateway
 
 from thoth.adviser.dependency_monkey import DependencyMonkey
 from thoth.adviser.digests_fetcher import GraphDigestsFetcher
@@ -63,6 +66,28 @@ import thoth.adviser.predictors as predictors
 init_logging()
 
 _LOGGER = logging.getLogger("thoth.adviser")
+
+
+prometheus_registry = CollectorRegistry()
+
+_THOTH_DEPLOYMENT_NAME = os.getenv("THOTH_DEPLOYMENT_NAME")
+_THOTH_METRICS_PUSHGATEWAY_URL = os.getenv("PROMETHEUS_PUSHGATEWAY_URL")
+
+
+_METRIC_INFO = Gauge(
+    "thoth_adviser_info",
+    "Thoth adviser information",
+    ["env", "version"],
+    registry=prometheus_registry,
+)
+
+
+_METRIC_DATABASE_SCHEMA_SCRIPT = Gauge(
+    "thoth_database_schema_revision_script",
+    "Thoth database schema revision from script",
+    ["component", "revision", "env"],
+    registry=prometheus_registry,
+)
 
 
 @attr.s(slots=True)
@@ -621,6 +646,19 @@ def advise(
         user_stack_scoring=user_stack_scoring,
         verbose=click_ctx.parent.params.get("verbose", False),
     )
+
+    # Push metrics.
+    if _THOTH_METRICS_PUSHGATEWAY_URL:
+        _METRIC_INFO.labels(_THOTH_DEPLOYMENT_NAME, analyzer_version).inc()
+        _METRIC_DATABASE_SCHEMA_SCRIPT.labels(
+            analyzer_name, resolver.graph.get_script_alembic_version_head(), _THOTH_DEPLOYMENT_NAME
+        ).inc()
+
+        try:
+            _LOGGER.debug("Submitting metrics to Prometheus pushgateway %s", _THOTH_METRICS_PUSHGATEWAY_URL)
+            push_to_gateway(_THOTH_METRICS_PUSHGATEWAY_URL, job="adviser", registry=prometheus_registry)
+        except Exception:
+            _LOGGER.exception("An error occurred when pushing metrics")
 
     click_ctx.exit(int(exit_code != 0))
 
