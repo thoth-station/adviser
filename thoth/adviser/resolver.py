@@ -38,9 +38,6 @@ import weakref
 import heapq
 
 import attr
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.python import Project
@@ -75,6 +72,7 @@ from .unit import Unit
 from .utils import log_once
 
 if TYPE_CHECKING:
+    import matplotlib
     from .prescription import Prescription  # noqa: F401
 
 
@@ -1359,10 +1357,13 @@ class Resolver:
 
             return report
 
-    def plot(self) -> matplotlib.figure.Figure:
+    def plot(self) -> "matplotlib.figure.Figure":
         """Plot history captured during the resolution process."""
         if not self._history:
             raise NoHistoryKept("No history datapoints kept")
+
+        import matplotlib.pyplot as plt
+        from matplotlib.font_manager import FontProperties
 
         x = [i for i in range(len(self._history))]
         y1 = self._history

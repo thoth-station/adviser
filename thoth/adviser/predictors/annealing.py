@@ -21,20 +21,20 @@ from typing import Any
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import TYPE_CHECKING
 import logging
 import random
 import math
 
 import attr
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
 
 from ..context import Context
 from ..exceptions import NoHistoryKept
 from ..predictor import Predictor
 from ..state import State
 
+if TYPE_CHECKING:
+    import matplotlib
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -141,13 +141,15 @@ class AdaptiveSimulatedAnnealing(Predictor):
         for sp in ax.spines.values():
             sp.set_visible(False)
 
-    def plot(self) -> matplotlib.figure.Figure:
+    def plot(self) -> "matplotlib.figure.Figure":
         """Plot temperature history of adaptive simulated annealing."""
         # Code adjusted based on:
         #    https://matplotlib.org/3.1.1/gallery/ticks_and_spines/multiple_yaxis_with_spines.html
-
         if self._temperature_history is None:
             raise NoHistoryKept("No history datapoints kept")
+
+        import matplotlib.pyplot as plt
+        from matplotlib.font_manager import FontProperties
 
         x = [i for i in range(len(self._temperature_history))]
         # Top rated candidate was chosen.
