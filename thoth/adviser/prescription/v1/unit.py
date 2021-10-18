@@ -80,7 +80,7 @@ class _ValueListBaseImage:
 
     def __init__(self, obj: Union[List[Optional[str]], Dict[str, List[Optional[str]]]]) -> None:
         """Initialize self."""
-        self._images: Dict[Optional[str], Optional[Set[Callable[[str], bool]]]] = {}
+        self._images: Dict[Optional[str], Set[str]] = {}
 
         if isinstance(obj, dict):
             image_listing = obj["not"]
@@ -92,7 +92,7 @@ class _ValueListBaseImage:
         images = []
         for item in image_listing:
             if item is None:
-                self._images[None] = None
+                self._images[None] = {"*"}
                 continue
 
             images.append(item.rsplit(":", maxsplit=1))
@@ -104,15 +104,11 @@ class _ValueListBaseImage:
                 self._images[image[0]] = tag_exp_set
 
             if len(image) == 1:
-                tag_exp_set.add(lambda x: x.startswith(""))  # Means any tag.
+                tag_exp_set.add("*")  # Means any tag.
                 continue
 
             tag = image[1]
-            if tag.endswith("*"):
-                tag_exp_set.add(lambda x: x.startswith(tag[:-1]))
-                continue
-
-            tag_exp_set.add(lambda x: x == tag)
+            tag_exp_set.add(tag)
 
     def __contains__(self, item: Optional[str]) -> bool:
         """Check if the given item (base image) is in the provided listing."""
@@ -133,7 +129,10 @@ class _ValueListBaseImage:
             return self._not
 
         for tag_exp in tag_expressions:
-            if tag_exp(tag):
+            if tag_exp.endswith("*"):
+                if tag.startswith(tag_exp[:-1]):
+                    return not self._not
+            elif tag_exp == tag:
                 return not self._not
 
         return self._not
