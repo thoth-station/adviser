@@ -145,9 +145,9 @@ class UnresolvedDependencies(AdviserRunException):  # noqa: N818
         """Convert unresolved dependencies exception to the user."""
         return {
             "ERROR": "No dependencies found for "
-            f"{', '.join(f'{dep!r}' for dep in self.unresolved)}  - these "
-            "dependencies were not yet solved in Thoth "
-            "cannot resolve all direct dependencies",
+            f"{', '.join(f'{dep!r}' for dep in self.unresolved)}: these "
+            "dependencies were not yet analyzed in Thoth - "
+            "visit https://tinyurl.com/thoth-unresolved to request analyses",
             "_ERROR_DETAILS": {
                 "unresolved": self.unresolved,
             },

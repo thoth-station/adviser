@@ -111,8 +111,7 @@ def subprocess_run(
             result_dict.update(dict(error=False, error_msg=None, report=report.to_dict(verbose=verbose)))
         except UnresolvedDependencies as exc:
             _LOGGER.error(
-                "Resolver failed due to unsolved dependencies for packages %s; these dependencies will be "
-                "automatically marked for solving by the system for future resolutions",
+                "Resolver failed due to unsolved dependencies for packages %s",
                 ", ".join(exc.unresolved),
             )
             return_code = 2  # If forked, do not overwrite results by parent process.

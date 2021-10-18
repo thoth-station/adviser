@@ -697,6 +697,15 @@ class Resolver:
                 )
                 _LOGGER.warning("%s - see %s", error_msg, jl("unresolved"))
 
+            self.context.stack_info.append(
+                {
+                    "message": "Visit thoth-station/support repository and request analyses of unresolved packages "
+                    "to have them available in recommendations",
+                    "link": "https://tinyurl.com/thoth-unresolved",
+                    "type": "INFO",
+                }
+            )
+
             raise UnresolvedDependencies(
                 "Unable to resolve all direct dependencies", unresolved=unresolved, stack_info=self.context.stack_info
             )
