@@ -95,7 +95,7 @@ flask = "*"
                 "1.1.2",
                 "https://pypi.org/simple",
             )
-            .and_return(["foo"])
+            .and_return([(1, "<2.0.0", None, "foo")])
         )
         (
             GraphDatabase.should_receive("get_python_package_version_solver_rules_all")
@@ -103,7 +103,7 @@ flask = "*"
                 "flask",
                 "1.1.2",
             )
-            .and_return(["bar"])
+            .and_return([(2, None, "https://pypi.org/simple", "bar")])
         )
 
         context.graph = GraphDatabase()
@@ -119,14 +119,14 @@ flask = "*"
         assert context.stack_info == [
             {
                 "link": "https://thoth-station.ninja/j/rules",
-                "message": "Removing package ('flask', '1.1.2', 'https://pypi.org/simple') based on solver "
-                "rule configured: foo",
+                "message": "Removing package 'flask' in versions '<2.0.0' from all registered "
+                "indexes based on rule: foo",
                 "type": "WARNING",
             },
             {
                 "link": "https://thoth-station.ninja/j/rules",
-                "message": "Removing package ('flask', '1.1.2', 'https://pypi.org/simple') based on solver "
-                "rule configured: bar",
+                "message": "Removing package 'flask' in all versions "
+                "from index 'https://pypi.org/simple' based on rule: bar",
                 "type": "WARNING",
             },
         ]
