@@ -22,14 +22,14 @@ import logging
 import attr
 from typing import List
 from typing import Tuple
-
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
+from typing import TYPE_CHECKING
 
 from ..predictor import Predictor
 from ..state import State
 from ..exceptions import NoHistoryKept
+
+if TYPE_CHECKING:
+    import matplotlib
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -65,10 +65,13 @@ class RandomWalk(Predictor):
         """Initialize before the random walk run."""
         self._history = []
 
-    def plot(self) -> matplotlib.figure.Figure:
+    def plot(self) -> "matplotlib.figure.Figure":
         """Plot score of the highest rated stack during sampling."""
         if not self._history:
             raise NoHistoryKept("No history datapoints kept")
+
+        import matplotlib.pyplot as plt
+        from matplotlib.font_manager import FontProperties
 
         x = [i for i in range(len(self._history))]
         y1 = [i[0] for i in self._history]

@@ -23,18 +23,19 @@ from typing import List
 from typing import Tuple
 from typing import Generator
 from typing import Optional
+from typing import TYPE_CHECKING
 import logging
 
 from fext import ExtHeapQueue
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
 
 import attr
 
 from .exceptions import NoHistoryKept
 from .state import State
 from .utils import should_keep_history
+
+if TYPE_CHECKING:
+    import matplotlib
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -112,10 +113,13 @@ class Beam:
         for sp in ax.spines.values():
             sp.set_visible(False)
 
-    def plot(self) -> matplotlib.figure.Figure:
+    def plot(self) -> "matplotlib.figure.Figure":
         """Plot temperature history of adaptive simulated annealing."""
         if not self._beam_history:
             raise NoHistoryKept("No history datapoints kept for beam")
+
+        import matplotlib.pyplot as plt
+        from matplotlib.font_manager import FontProperties
 
         x = [i for i in range(len(self._beam_history))]
         # Beam size over time.

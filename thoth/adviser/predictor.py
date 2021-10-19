@@ -26,13 +26,16 @@ from typing import Any
 from typing import Tuple
 from typing import Optional
 from typing import Generator
-
-import matplotlib.figure
+from typing import TYPE_CHECKING
 
 from .context import Context
 from .report import Report
 from .state import State
 from .utils import should_keep_history
+
+if TYPE_CHECKING:
+    import matplotlib.figure
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -113,7 +116,7 @@ class Predictor:
         """
         # noop
 
-    def plot(self) -> matplotlib.figure.Figure:
+    def plot(self) -> "matplotlib.figure.Figure":
         """Plot information about predictor."""
         _LOGGER.error(
             "Cannot plot predictor history as plotting is not implemented for predictor %r, error is not fatal",

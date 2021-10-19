@@ -24,11 +24,11 @@ import logging
 from typing import Any
 from typing import Dict
 from typing import Optional
+from typing import TYPE_CHECKING
 from functools import partial
 
 import attr
 import amun
-import matplotlib
 from thoth.python import Project
 
 from .beam import Beam
@@ -36,6 +36,9 @@ from .dm_report import DependencyMonkeyReport
 from .predictor import Predictor
 from .resolver import Resolver
 from .enums import DecisionType
+
+if TYPE_CHECKING:
+    import matplotlib
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -61,7 +64,7 @@ class DependencyMonkey:
         """Get beam instance used in the resolver."""
         return self.resolver.beam
 
-    def plot(self) -> matplotlib.figure.Figure:
+    def plot(self) -> "matplotlib.figure.Figure":
         """Plot info from Dependency Monkey run."""
         return self.resolver.plot()
 
