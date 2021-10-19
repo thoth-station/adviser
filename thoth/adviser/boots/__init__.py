@@ -24,6 +24,7 @@ from .pipfile_hash import PipfileHashBoot
 from .platform import PlatformBoot
 from .prescription_release import PrescriptionReleaseBoot
 from .python_version import PythonVersionBoot
+from .environment_info import EnvironmentInfoBoot
 from .rhel_version import RHELVersionBoot
 from .solved_software_environment import SolvedSoftwareEnvironmentBoot
 from .solvers_configured import SolversConfiguredBoot
@@ -46,6 +47,7 @@ __all__ = [
     "ThothS2IInfoBoot",
     "UbiBoot",
     "PythonVersionBoot",
+    "EnvironmentInfoBoot",
     "SolvedSoftwareEnvironmentBoot",
     "SolversConfiguredBoot",  # Should be placed after SolvedSoftwareEnvironmentBoot.
     "RHELVersionBoot",
