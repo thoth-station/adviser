@@ -24,6 +24,7 @@ from thoth.adviser.enums import RecommendationType
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.sieves import SolvedSieve
 from thoth.adviser.context import Context
+from thoth.common import get_justification_link as jl
 from thoth.common import RuntimeEnvironment
 from thoth.python import Source
 from thoth.python import PackageVersion
@@ -118,8 +119,19 @@ tensorflow = "*"
 
         with SolvedSieve.assigned_context(context):
             assert list(sieve.run(p for p in [package_version])) == []
+            sieve.post_run()
 
         assert context.stack_info, "No stack info provided by the pipeline unit"
+        assert context.stack_info == [
+            {
+                "link": jl("install_error"),
+                "message": "The following versions of 'tensorflow' from "
+                "'https://pypi.org/simple' were removed due to installation "
+                "issues in the target environment: 2.0.0",
+                "type": "WARNING",
+            }
+        ]
+
         assert self.verify_justification_schema(context.stack_info) is True
 
     def test_acceptable_with_error(self) -> None:

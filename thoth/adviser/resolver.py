@@ -1284,6 +1284,10 @@ class Resolver:
                 del final_state
         except EagerStopPipeline as exc:
             _LOGGER.info("Stopping pipeline eagerly as per request: %s", exc)
+        except Exception:
+            self.predictor.post_run()
+            self.pipeline.call_post_run()
+            raise
 
         duration = time.monotonic() - start_time
         _LOGGER.info(
