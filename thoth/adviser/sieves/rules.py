@@ -48,7 +48,8 @@ class SolverRulesSieve(Sieve):
     CONFIGURATION_SCHEMA: Schema = Schema({Required("package_name"): SchemaAny(str, None)})
     _JUSTIFICATION_LINK = jl("rules")
 
-    _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
+    _rules_logged = attr.ib(type=Set[int], factory=set, init=False)
+    _messages_logged = attr.ib(type=Set[Tuple[int, str, str, str]], factory=set, init=False)
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
@@ -62,6 +63,7 @@ class SolverRulesSieve(Sieve):
 
     def pre_run(self) -> None:
         """Initialize this pipeline unit before each run."""
+        self._rules_logged.clear()
         self._messages_logged.clear()
         super().pre_run()
 
@@ -85,20 +87,40 @@ class SolverRulesSieve(Sieve):
                 )
             )
 
-            if solver_rules:
-                if package_tuple not in self._messages_logged:
-                    for solver_rule in solver_rules:
-                        self._messages_logged.add(package_tuple)
-                        message = f"Removing package {package_tuple} based on solver rule configured: {solver_rule}"
-                        _LOGGER.debug("%s - see %s", message, self._JUSTIFICATION_LINK)
-                        self.context.stack_info.append(
-                            {
-                                "type": "WARNING",
-                                "message": message,
-                                "link": self._JUSTIFICATION_LINK,
-                            }
-                        )
-
+            if not solver_rules:
+                yield package_version
                 continue
 
-            yield package_version
+            for solver_rule in solver_rules:
+                rule_id, version_range, index_url, description = solver_rule
+
+                message_logged_entry: Tuple[int, str, str, str] = (
+                    rule_id,
+                    package_tuple[0],
+                    package_tuple[1],
+                    package_tuple[2],
+                )
+                if message_logged_entry not in self._messages_logged:
+                    self._messages_logged.add(message_logged_entry)
+                    _LOGGER.warning(
+                        "Removing package %r based on solver rule configured: %s",
+                        package_tuple,
+                        description,
+                    )
+
+                if rule_id in self._rules_logged:
+                    continue
+
+                self._rules_logged.add(rule_id)
+
+                message = f"Removing package {package_tuple[0]!r}"
+                message += f" in versions {version_range!r}" if version_range else " in all versions"
+                message += f" from index {index_url!r}" if index_url else " from all registered indexes"
+                message += f" based on rule: {description}"
+                self.context.stack_info.append(
+                    {
+                        "type": "WARNING",
+                        "message": message,
+                        "link": self._JUSTIFICATION_LINK,
+                    }
+                )
