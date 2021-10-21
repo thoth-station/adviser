@@ -18,8 +18,13 @@
 """A sieve for filtering out build time/installation errors of Python packages."""
 
 import logging
+import operator
+from collections import defaultdict
+from functools import partial
 from typing import Any
 from typing import Dict
+from typing import DefaultDict
+from typing import List
 from typing import Generator
 from typing import Set
 from typing import Tuple
@@ -41,6 +46,11 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+def _default_dict_factory() -> DefaultDict[str, DefaultDict[str, List[str]]]:
+    """Instantiate default dictionary mapping package name -> index URL -> list of versions."""
+    return defaultdict(partial(defaultdict, list))  # type: ignore
+
+
 @attr.s(slots=True)
 class SolvedSieve(Sieve):
     """Filter out build time/installation errors of Python packages."""
@@ -52,6 +62,10 @@ class SolvedSieve(Sieve):
     _JUSTIFICATION_LINK = jl("install_error")
 
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
+    _packages_filtered = attr.ib(
+        factory=_default_dict_factory,
+        init=False,
+    )
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
@@ -66,7 +80,21 @@ class SolvedSieve(Sieve):
     def pre_run(self) -> None:
         """Initialize this pipeline unit before each run."""
         self._messages_logged.clear()
+        self._packages_filtered.clear()
         super().pre_run()
+
+    def post_run(self) -> None:
+        """Post-run method for wrapping up the work."""
+        for package_name, package_items in sorted(self._packages_filtered.items(), key=operator.itemgetter(0)):
+            for index_url, version in sorted(package_items.items(), key=operator.itemgetter(0)):
+                self.context.stack_info.append(
+                    {
+                        "type": "WARNING",
+                        "message": f"The following versions of {package_name!r} from {index_url!r} were "
+                        "removed due to installation issues in the target environment: " + ", ".join(version),
+                        "link": self._JUSTIFICATION_LINK,
+                    }
+                )
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages based on build time/installation issues.."""
@@ -96,14 +124,8 @@ class SolvedSieve(Sieve):
                     message = (
                         f"Removing package {package_tuple} due to installation time error in the software environment"
                     )
-                    _LOGGER.debug("%s - see %s", message, self._JUSTIFICATION_LINK)
-                    self.context.stack_info.append(
-                        {
-                            "type": "WARNING",
-                            "message": message,
-                            "link": self._JUSTIFICATION_LINK,
-                        }
-                    )
+                    _LOGGER.warning("%s - see %s", message, self._JUSTIFICATION_LINK)
+                    self._packages_filtered[package_tuple[0]][package_tuple[2]].append(package_tuple[1])
                 continue
 
             yield package_version
