@@ -30,6 +30,7 @@ termial-random = "*"
 thoth-common = "*"
 orjson = "*"
 alembic = "==1.6.5"
+prometheus-client = "*"
 
 [requires]
 python_version = "3.8"
