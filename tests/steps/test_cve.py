@@ -143,7 +143,8 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
         ]
         assert self.verify_justification_schema(result[1])
 
-    def test_no_cve_record(self) -> None:
+    @pytest.mark.parametrize("recommendation_type", RecommendationType.__members__.values())
+    def test_no_cve_record(self, recommendation_type: RecommendationType) -> None:
         """Make sure no CVEs do not affect CVE scoring."""
         flexmock(GraphDatabase)
         GraphDatabase.should_receive("get_python_cve_records_all").with_args(
@@ -157,12 +158,22 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
             develop=False,
         )
 
-        context = flexmock(graph=GraphDatabase())
+        context = flexmock(graph=GraphDatabase(), recommendation_type=recommendation_type)
         with CvePenalizationStep.assigned_context(context):
             step = CvePenalizationStep()
             result = step.run(None, package_version)
 
-        assert result is None
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+        assert result[0] == 0.0
+        assert result[1] == [
+            {
+                "link": "https://thoth-station.ninja/j/no_cve",
+                "message": "No known CVE known for 'flask' in version '0.12.0'",
+                "package_name": "flask",
+                "type": "INFO",
+            }
+        ]
 
     def test_cve_not_acceptable(self) -> None:
         """Test raising an exception if a secure software stack should be resolved."""

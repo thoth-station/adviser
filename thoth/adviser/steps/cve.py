@@ -59,6 +59,7 @@ class CvePenalizationStep(Step):
         }
     )
     _JUSTIFICATION_LINK = jl("cve")
+    _JUSTIFICATION_LINK_NO_CVE = jl("no_cve")
 
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
 
@@ -136,5 +137,14 @@ class CvePenalizationStep(Step):
                     return max(penalization, -1.0), justification
 
                 return 0.0, justification
-
-        return None
+        else:
+            justification = [
+                {
+                    "package_name": package_version.name,
+                    "link": self._JUSTIFICATION_LINK_NO_CVE,
+                    "type": "INFO",
+                    "message": f"No known CVE known for {package_version.name!r} in "
+                    f"version {package_version.locked_version!r}",
+                }
+            ]
+            return 0.0, justification
