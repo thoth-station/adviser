@@ -1245,11 +1245,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:720976322eb058fef40c84d95b4ccf58fe74dd93f0fadae4fef26adae8935e60",
-                "sha256:d28b9a48d25a3d8aee70905ec8cafcbf7db5dc9f128f1b5fdd1766fe4cc59303"
+                "sha256:10703933a77e6164b91a30426bdbe0a6d21e3a6a62367fdbec8ab745e89bac20",
+                "sha256:bf7ef7169a92f87bdbd2f1c8abc5c95eb0d4a3f99a4e48ae913aa0f377250225"
             ],
             "index": "pypi",
-            "version": "==0.57.2"
+            "version": "==0.57.3"
         },
         "timestamp": {
             "hashes": [
