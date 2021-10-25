@@ -35,7 +35,6 @@ from thoth.storages.exceptions import NotFoundError
 from voluptuous import Required
 from voluptuous import Schema
 
-from ..exceptions import NotAcceptable
 from ..enums import RecommendationType
 from ..step import Step
 from ..state import State
@@ -66,7 +65,11 @@ class CvePenalizationStep(Step):
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
         """Remove CVEs only for advised stacks."""
-        if builder_context.is_adviser_pipeline() and not builder_context.is_included(cls):
+        if (
+            builder_context.is_adviser_pipeline()
+            and not builder_context.is_included(cls)
+            and builder_context.recommendation_type != RecommendationType.SECURITY
+        ):
             if builder_context.recommendation_type in (RecommendationType.LATEST, RecommendationType.TESTING):
                 # Report no cve penalization for latest and testing recommendation types.
                 yield {"cve_penalization": 0.0}
@@ -98,45 +101,25 @@ class CvePenalizationStep(Step):
             package_version_tuple = package_version.to_tuple()
             _LOGGER.debug("Found a CVEs for %r: %r", package_version_tuple, cve_records)
 
-            if self.context.recommendation_type == RecommendationType.SECURITY:
-                if package_version_tuple not in self._messages_logged:
-                    self._messages_logged.add(package_version_tuple)
-                    for cve_record in cve_records:
-                        message = (
-                            f"Skipping including package {package_version_tuple!r} as a CVE "
-                            f"{cve_record['cve_id']!r} was found"
-                        )
-                        _LOGGER.warning(
-                            "%s: %s",
-                            message,
-                            cve_record["details"],
-                        )
+            justification = []
+            for cve_record in cve_records:
+                message = f"Package  {package_version_tuple!r} has a CVE {cve_record['cve_id']!r}"
+                justification.append(
+                    {
+                        "package_name": package_version.name,
+                        "link": self._JUSTIFICATION_LINK,
+                        "advisory": cve_record["details"],
+                        "message": message,
+                        "type": "WARNING",
+                    }
+                )
 
-                        self.context.stack_info.append(
-                            {"type": "WARNING", "message": message, "link": self._JUSTIFICATION_LINK}
-                        )
+            if self.context.recommendation_type not in (RecommendationType.LATEST, RecommendationType.TESTING):
+                # Penalize only if not latest/testing.
+                penalization = len(cve_records) * self.configuration["cve_penalization"]
+                return max(penalization, -1.0), justification
 
-                raise NotAcceptable
-            else:
-                justification = []
-                for cve_record in cve_records:
-                    message = f"Package  {package_version_tuple!r} has a CVE {cve_record['cve_id']!r}"
-                    justification.append(
-                        {
-                            "package_name": package_version.name,
-                            "link": self._JUSTIFICATION_LINK,
-                            "advisory": cve_record["details"],
-                            "message": message,
-                            "type": "WARNING",
-                        }
-                    )
-
-                if self.context.recommendation_type not in (RecommendationType.LATEST, RecommendationType.TESTING):
-                    # Penalize only if not latest/testing.
-                    penalization = len(cve_records) * self.configuration["cve_penalization"]
-                    return max(penalization, -1.0), justification
-
-                return 0.0, justification
+            return 0.0, justification
         else:
             justification = [
                 {
