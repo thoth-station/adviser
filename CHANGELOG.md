@@ -1,4 +1,33 @@
 
+## Release 0.46.0 (2021-10-25T10:41:49)
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Push metrics related to alembic version to Prometheus
+* Provide information about resulution in stack information
+* Group installation issues reported in the stack info
+* Reduce number of messages reported for solver rules
+* Add TensorFlow==2.7.0 symbols
+* Point users to support repository to request analyses of packages
+* Provide information about when no CVEs are found
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Use local import for matplotlib
+* Introduce a unit for computing all the package combinations available
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Simplify tags handling and fix for multiple same tags
+* Remove Python pipeline unit translated to prescription
+* Fix reported typing errors
+* Add tests specific to None values for base images
+* Document matching base images based on tags
+* Add tests related to advanced base image matching
+* Use lambad functions instead of regular expressions in base images match
+* Add possibility to match base images based on tags
+* Make sure the justification sorting happens at the end
+* Add missing CPU database to package
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Introduce a database with known CPUs and CPU flags
+* Report CVEs when resolving latest and testing recommendation types
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Fix links to prescription units
+
 ## Release 0.45.0 (2021-09-27T20:53:10)
 ### Features
 * :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
