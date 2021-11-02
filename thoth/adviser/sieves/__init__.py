@@ -17,6 +17,7 @@
 
 """Implementation of sieves used in adviser pipeline."""
 
+from .cve import CveSieve
 from .constraints import ConstraintsSieve
 from .experimental_filter_conf_index import FilterConfiguredIndexSieve
 from .experimental_package_index import PackageIndexConfigurationSieve
@@ -45,6 +46,7 @@ __all__ = [
     "ConstraintsSieve",
     "SelectiveCutPreReleasesSieve",
     "FilterConfiguredIndexSieve",
+    "CveSieve",
     "PackageCombinationsSieve",
     "PackageIndexConfigurationSieve",
     "CutLockedSieve",

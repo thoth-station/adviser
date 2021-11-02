@@ -21,7 +21,6 @@ import flexmock
 import pytest
 
 from thoth.adviser.enums import RecommendationType
-from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.steps import CvePenalizationStep
 from thoth.python import PackageVersion
@@ -52,10 +51,25 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
 
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
-        builder_context.recommendation_type = RecommendationType.SECURITY
+        builder_context.recommendation_type = RecommendationType.LATEST
         self.verify_multiple_should_include(builder_context)
 
-    @pytest.mark.parametrize("recommendation_type", RecommendationType.__members__.values())
+    @pytest.mark.parametrize("recommendation_type", [RecommendationType.SECURITY])
+    def test_no_include(self, builder_context: PipelineBuilderContext, recommendation_type: RecommendationType):
+        """Check not including the given pipeline unit for recommendation type SECURITY."""
+        builder_context.recommendation_type = recommendation_type
+        builder_context.decision_type = None
+        assert list(self.UNIT_TESTED.should_include(builder_context)) == []
+
+    @pytest.mark.parametrize(
+        "recommendation_type",
+        [
+            RecommendationType.LATEST,
+            RecommendationType.TESTING,
+            RecommendationType.STABLE,
+            RecommendationType.PERFORMANCE,
+        ],
+    )
     def test_should_include_recommendation_type(
         self, builder_context: PipelineBuilderContext, recommendation_type: RecommendationType
     ):
@@ -174,30 +188,3 @@ class TestCvePenalizationStep(AdviserUnitTestCase):
                 "type": "INFO",
             }
         ]
-
-    def test_cve_not_acceptable(self) -> None:
-        """Test raising an exception if a secure software stack should be resolved."""
-        flexmock(GraphDatabase)
-        GraphDatabase.should_receive("get_python_cve_records_all").with_args(
-            package_name="flask", package_version="0.12.0"
-        ).and_return([self._FLASK_CVE]).once()
-
-        package_version = PackageVersion(
-            name="flask",
-            version="==0.12.0",
-            index=Source("https://pypi.org/simple"),
-            develop=False,
-        )
-
-        context = flexmock(graph=GraphDatabase(), recommendation_type=RecommendationType.SECURITY, stack_info=[])
-        step = CvePenalizationStep()
-        with CvePenalizationStep.assigned_context(context):
-            assert not step._messages_logged
-            with pytest.raises(NotAcceptable):
-                step.run(None, package_version)
-
-        assert len(step._messages_logged) == 1
-        assert ("flask", "0.12.0", "https://pypi.org/simple") in step._messages_logged
-        assert len(context.stack_info) == 1
-        assert set(context.stack_info[0].keys()) == {"message", "link", "type"}
-        assert self.verify_justification_schema(context.stack_info)
