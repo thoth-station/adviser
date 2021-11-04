@@ -107,7 +107,7 @@ class CvePenalizationStep(Step):
                 justification.append(
                     {
                         "package_name": package_version.name,
-                        "link": self._JUSTIFICATION_LINK,
+                        "link": cve_record.get("link") or self._JUSTIFICATION_LINK,
                         "advisory": cve_record["details"],
                         "message": message,
                         "type": "WARNING",
