@@ -47,6 +47,7 @@ class ThothS2IAbiCompatibilitySieve(Sieve):
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
 
     _LINK = jl("abi_missing")
+    _LINK_NO_ABI = jl("no_abi")
     _LINK_BAD_IMAGE = jl("bad_base_image")
 
     @classmethod
@@ -89,6 +90,11 @@ class ThothS2IAbiCompatibilitySieve(Sieve):
                 is_external=False,
             )
         )
+        if not self.image_symbols:
+            message = f"No ABI symbols found for {thoth_s2i_image_name!r} in version {thoth_s2i_image_version!r}"
+            _LOGGER.warning("%s - see %s", message, self._LINK_NO_ABI)
+            self.context.stack_info.append({"type": "WARNING", "message": message, "link": self._LINK_NO_ABI})
+
         self._messages_logged.clear()
         _LOGGER.debug("Analyzed image has the following symbols: %r", self.image_symbols)
         super().pre_run()
@@ -96,8 +102,9 @@ class ThothS2IAbiCompatibilitySieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """If package requires non-present symbols remove it."""
         if not self.image_symbols:
-            # No image symbols or the version was not provided.
-            return
+            # No image symbols or the version was not provided, the warning is produced in pre_run method.
+            yield from package_versions
+            return None
 
         for pkg_vers in package_versions:
             package_symbols = set(

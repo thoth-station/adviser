@@ -26,6 +26,7 @@ from thoth.adviser.context import Context
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from thoth.adviser.sieves import ThothS2IAbiCompatibilitySieve
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages import GraphDatabase
@@ -132,3 +133,51 @@ class TestThothS2IAbiCompatibilitySieve(AdviserUnitTestCase):
             unit.pre_run()
 
         assert unit.unit_run is False
+
+    def test_pre_run_no_symbols_warning(self, context: Context) -> None:
+        """Make sure the pre_run method produces a warning for users."""
+        context.graph.should_receive("get_thoth_s2i_analyzed_image_symbols_all").with_args(
+            thoth_s2i_image_name="quay.io/thoth-station/s2i-thoth-ubi8-py38",
+            thoth_s2i_image_version="1.0.0",
+            is_external=False,
+        ).and_return(set()).once()
+
+        context.project.runtime_environment.base_image = "quay.io/thoth-station/s2i-thoth-ubi8-py38:v1.0.0"
+
+        assert not context.stack_info
+
+        unit = self.UNIT_TESTED()
+        with unit.assigned_context(context):
+            unit.pre_run()
+
+        assert len(context.stack_info) == 1
+        assert self.verify_justification_schema(context.stack_info)
+        assert context.stack_info == [
+            {
+                "link": jl("no_abi"),
+                "message": "No ABI symbols found for " "'quay.io/thoth-station/s2i-thoth-ubi8-py38' in version '1.0.0'",
+                "type": "WARNING",
+            },
+        ]
+
+    def test_run_no_symbols(self, context: Context) -> None:
+        """Make sure that no information about symbols available in the image do not adjust the resolution process."""
+        context.graph.should_receive("get_thoth_s2i_analyzed_image_symbols_all").with_args(
+            thoth_s2i_image_name="quay.io/thoth-station/s2i-thoth-ubi8-py38",
+            thoth_s2i_image_version="1.0.0",
+            is_external=False,
+        ).and_return(set()).once()
+
+        pv = PackageVersion(
+            name="flask",
+            version="==1.0.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
+
+        context.project.runtime_environment.base_image = "quay.io/thoth-station/s2i-thoth-ubi8-py38:v1.0.0"
+
+        unit = self.UNIT_TESTED()
+        with unit.assigned_context(context):
+            unit.pre_run()
+            assert list(unit.run((pv for pv in (pv,)))) == [pv]
