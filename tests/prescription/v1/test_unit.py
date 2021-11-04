@@ -395,7 +395,7 @@ class TestUnitPrescription(AdviserTestCase):
             (
                 {"operating_systems": [{"name": "rhel"}]},
                 {"operating_system": {"name": "rhel", "version": "8"}},
-                False,
+                True,
             ),
             # CPU/GPU.
             (
