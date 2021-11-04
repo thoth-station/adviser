@@ -103,5 +103,9 @@ class CveSieve(Sieve):
                     )
                     _LOGGER.warning(message)
                     self.context.stack_info.append(
-                        {"type": "WARNING", "message": message, "link": self._JUSTIFICATION_LINK}
+                        {
+                            "type": "WARNING",
+                            "message": message,
+                            "link": cve_record.get("link") or self._JUSTIFICATION_LINK,
+                        }
                     )
