@@ -19,7 +19,7 @@
 
 from typing import Optional
 
-import flexmock
+from flexmock import flexmock
 import pytest
 
 from thoth.adviser.context import Context

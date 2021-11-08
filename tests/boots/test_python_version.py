@@ -17,7 +17,7 @@
 
 """Test boot for Python version assignment."""
 
-import flexmock
+from flexmock import flexmock
 
 from thoth.adviser.boots import PythonVersionBoot
 from thoth.adviser.enums import RecommendationType

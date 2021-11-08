@@ -25,7 +25,7 @@ import random
 import sys
 import json
 
-import flexmock
+from flexmock import flexmock
 import amun
 
 from thoth.adviser.enums import DecisionType

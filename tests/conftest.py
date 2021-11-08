@@ -20,7 +20,7 @@
 from typing import Callable
 
 import pytest
-import flexmock
+from flexmock import flexmock
 
 from thoth.adviser.context import Context
 from thoth.adviser.beam import Beam

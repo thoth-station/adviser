@@ -17,7 +17,7 @@
 
 """Tests related to filtering out unsolved packages and packages with build-time error (installation issues)."""
 
-import flexmock
+from flexmock import flexmock
 from typing import Tuple
 
 from thoth.adviser.enums import RecommendationType

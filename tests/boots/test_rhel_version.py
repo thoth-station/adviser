@@ -17,7 +17,7 @@
 
 """Test changes to RHEL version for major RHEL releases."""
 
-import flexmock
+from flexmock import flexmock
 
 from thoth.adviser.boots import RHELVersionBoot
 from thoth.adviser.pipeline_builder import PipelineBuilderContext

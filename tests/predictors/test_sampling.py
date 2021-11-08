@@ -19,7 +19,7 @@
 
 from typing import Callable
 
-import flexmock
+from flexmock import flexmock
 from hypothesis import given
 from hypothesis.strategies import integers
 

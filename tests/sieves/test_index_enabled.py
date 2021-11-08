@@ -17,7 +17,7 @@
 
 """Test filtering out packages based on enabled or disabled Python package index."""
 
-import flexmock
+from flexmock import flexmock
 
 from thoth.adviser.enums import RecommendationType
 from thoth.adviser.pipeline_builder import PipelineBuilderContext

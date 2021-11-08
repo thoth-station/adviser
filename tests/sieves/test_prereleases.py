@@ -17,7 +17,7 @@
 
 """Test removing pre-releases in direct dependencies."""
 
-import flexmock
+from flexmock import flexmock
 import pytest
 
 from thoth.adviser.sieves import CutPreReleasesSieve
