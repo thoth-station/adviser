@@ -19,7 +19,7 @@
 
 from typing import Generator
 
-import flexmock
+from flexmock import flexmock
 import pytest
 import yaml
 

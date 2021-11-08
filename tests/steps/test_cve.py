@@ -17,7 +17,7 @@
 
 """Test scoring (penalization) based on a CVE."""
 
-import flexmock
+from flexmock import flexmock
 import pytest
 
 from thoth.adviser.enums import RecommendationType

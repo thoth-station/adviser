@@ -17,7 +17,7 @@
 
 """Test adviser's context passed to pipeline units."""
 
-import flexmock
+from flexmock import flexmock
 
 from .base import AdviserTestCase
 

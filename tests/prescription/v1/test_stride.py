@@ -17,7 +17,7 @@
 
 """Test implementation of stride prescription v1."""
 
-import flexmock
+from flexmock import flexmock
 import pytest
 import yaml
 

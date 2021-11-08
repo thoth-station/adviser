@@ -18,7 +18,7 @@
 """Test resolution of software packages."""
 
 import pytest
-import flexmock
+from flexmock import flexmock
 
 import gc
 import math

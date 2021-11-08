@@ -17,7 +17,7 @@
 
 """Test pipeline configuration and its manipulation."""
 
-import flexmock
+from flexmock import flexmock
 
 from thoth.adviser.pipeline_config import PipelineConfig
 from thoth.adviser.report import Report

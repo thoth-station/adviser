@@ -23,7 +23,7 @@ import random
 from hypothesis import given
 from hypothesis.strategies import floats
 from hypothesis.strategies import integers
-import flexmock
+from flexmock import flexmock
 import pytest
 
 from thoth.adviser.context import Context

@@ -18,7 +18,7 @@
 """Test predictor and its core functionality."""
 
 import os
-import flexmock
+from flexmock import flexmock
 import pytest
 
 from .base import AdviserTestCase

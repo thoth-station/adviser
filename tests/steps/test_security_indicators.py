@@ -17,7 +17,7 @@
 
 """Test Security Indicator step."""
 
-import flexmock
+from flexmock import flexmock
 import pytest
 
 from thoth.adviser.enums import RecommendationType

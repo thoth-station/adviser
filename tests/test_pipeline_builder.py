@@ -21,7 +21,7 @@ import os
 from typing import Union
 from typing import Dict
 
-import flexmock
+from flexmock import flexmock
 import pytest
 from pathlib import Path
 import json

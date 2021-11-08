@@ -23,7 +23,7 @@ from typing import List
 from typing import Optional
 from typing import Union
 
-import flexmock
+from flexmock import flexmock
 import pytest
 
 from thoth.adviser.enums import RecommendationType

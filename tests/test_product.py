@@ -20,7 +20,7 @@
 
 import os
 import json
-import flexmock
+from flexmock import flexmock
 from itertools import chain
 
 from thoth.adviser.product import Product
