@@ -1,4 +1,14 @@
 
+## Release 0.47.0 (2021-11-08T11:12:21)
+* Provide information about last CVE update to users
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Provide a link to CVE based on info as present in PyPA/advisory-db
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Fix matching operating system in prescriptions
+* Fix ABI sieve filtering packages when no image analysis is available
+* Introduce a CVE sieve
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+
 ## Release 0.46.0 (2021-10-25T10:41:49)
 * :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
 * Push metrics related to alembic version to Prometheus
