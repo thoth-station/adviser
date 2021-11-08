@@ -17,6 +17,7 @@
 
 """Boot units implemented in adviser."""
 
+from .cve_timestamp import CveTimestampBoot
 from .fully_specified_environment import FullySpecifiedEnvironment
 from .gpu import GPUBoot
 from .labels import LabelsBoot
@@ -40,6 +41,7 @@ from .ubi import UbiBoot
 # can be mentioned here.
 __all__ = [
     # "MemTraceBoot",
+    "CveTimestampBoot",
     "LabelsBoot",
     "PipfileHashBoot",  # Should be placed before any changes to the input.
     "GPUBoot",  # Should be placed before any GPU specific pipeline unit.
