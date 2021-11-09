@@ -197,21 +197,6 @@ class State:
         except StopIteration as exc:
             raise ValueError(f"No unresolved dependency found in state: {self!r}") from exc
 
-    @staticmethod
-    def _termial_function(n: int) -> int:
-        r"""Compute termial function, with red hats off to Donald Knuth.
-
-        Termial function is:
-
-          \sum_{k=0}^n k
-
-        Let's use arithmetic progression to get termial of n.
-        """
-        if n < 0:
-            raise ValueError("Termial function used with negative number")
-
-        return int((1 + n) * (n / 2))
-
     def get_random_unresolved_dependency(
         self, dependency_name: Optional[str] = None, prefer_recent: bool = True
     ) -> Tuple[str, str, str]:
