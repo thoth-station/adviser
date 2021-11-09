@@ -72,6 +72,16 @@ If you are interested, follow `scorecards checks available
 Security Scorecards used in Thoth are available
 `in thoth-station/prescriptions repository <https://github.com/thoth-station/prescriptions/>`__.
 
+Quay security scans of container image
+######################################
+
+Another source of security information is security data from Quay [#quay]_
+security scanners. Quay scans container images for security vulnerabilities.
+Information about vulnerabilities in container images is automatically
+aggregated by Thoth's background data aggregation logic for container images
+provided by Thoth team. By using these container images, users get fine-grained
+control on vulnerabilities present also on container image level.
+
 Using security advises in OpenShift S2I
 #######################################
 
@@ -89,3 +99,4 @@ vulnerable.
 .. [#advisory-db] https://github.com/pypa/advisory-db
 .. [#bandit] https://bandit.readthedocs.io/en/latest/
 .. [#cloc] http://cloc.sourceforge.net/
+.. [#quay] https://quay.io/
