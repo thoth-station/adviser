@@ -71,6 +71,11 @@ class TestEnvironmentInfoBoot(AdviserUnitTestCase):
                 },
                 [
                     {
+                        "link": "https://thoth-station.ninja/recommendation-types/",
+                        "message": "Using recommendation type 'latest'",
+                        "type": "INFO",
+                    },
+                    {
                         "link": jl("env"),
                         "message": "Resolving for runtime environment named 'rhel-9'",
                         "type": "INFO",
@@ -82,11 +87,6 @@ class TestEnvironmentInfoBoot(AdviserUnitTestCase):
                     {
                         "link": jl("env"),
                         "message": "Resolving for Python version '3.6'",
-                        "type": "INFO",
-                    },
-                    {
-                        "link": "https://thoth-station.ninja/recommendation-types/",
-                        "message": "Using recommendation type 'latest'",
                         "type": "INFO",
                     },
                     {
@@ -128,6 +128,11 @@ class TestEnvironmentInfoBoot(AdviserUnitTestCase):
                 {},
                 [
                     {
+                        "link": "https://thoth-station.ninja/recommendation-types/",
+                        "message": "Using recommendation type 'latest'",
+                        "type": "INFO",
+                    },
+                    {
                         "link": jl("env"),
                         "message": "Resolving for runtime environment named 'UNKNOWN'",
                         "type": "INFO",
@@ -139,11 +144,6 @@ class TestEnvironmentInfoBoot(AdviserUnitTestCase):
                     {
                         "link": jl("env"),
                         "message": "Resolving for Python version '3.6'",
-                        "type": "INFO",
-                    },
-                    {
-                        "link": "https://thoth-station.ninja/recommendation-types/",
-                        "message": "Using recommendation type 'latest'",
                         "type": "INFO",
                     },
                     {"link": jl("env"), "message": "Using platform 'UNKNOWN'", "type": "INFO"},

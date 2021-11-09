@@ -62,6 +62,11 @@ class EnvironmentInfoBoot(Boot):
         self.context.stack_info.extend(
             [
                 {
+                    "message": f"Using recommendation type {recommendation_type!r}",
+                    "link": "https://thoth-station.ninja/recommendation-types/",
+                    "type": "INFO",
+                },
+                {
                     "message": f"Resolving for runtime environment named " f"{runtime_environment.name or 'UNKNOWN'!r}",
                     "link": self._JUSTIFICATION_LINK_ENV,
                     "type": "INFO",
@@ -75,11 +80,6 @@ class EnvironmentInfoBoot(Boot):
                 {
                     "message": f"Resolving for Python version {self.context.project.python_version!r}",
                     "link": self._JUSTIFICATION_LINK_ENV,
-                    "type": "INFO",
-                },
-                {
-                    "message": f"Using recommendation type {recommendation_type!r}",
-                    "link": "https://thoth-station.ninja/recommendation-types/",
                     "type": "INFO",
                 },
                 {
