@@ -488,6 +488,39 @@ PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA = Schema(
 
 
 #
+# Group step unit.
+#
+
+PRESCRIPTION_GROUP_STEP_RUN_SCHEMA = Schema(
+    {
+        Optional("score"): Optional(float),
+        Optional("justification"): All([JUSTIFICATION_SCHEMA], Length(min=1)),
+        Optional("not_acceptable"): _NONEMPTY_STRING,
+        Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
+        **_UNIT_RUN_SCHEMA_BASE_DICT,
+    }
+)
+
+
+PRESCRIPTION_GROUP_STEP_MATCH_SCHEMA = Schema(
+    {Required("group"): All([{Required("package_version"): PACKAGE_VERSION_REQUIRED_NAME_SCHEMA}], Length(min=2))}
+)
+
+
+PRESCRIPTION_GROUP_STEP_SCHEMA = Schema(
+    {
+        Required("match"): Any(
+            All([PRESCRIPTION_GROUP_STEP_MATCH_SCHEMA], Length(min=1)),
+            PRESCRIPTION_GROUP_STEP_MATCH_SCHEMA,
+        ),
+        Required("run"): PRESCRIPTION_GROUP_STEP_RUN_SCHEMA,
+        Required("type"): "step.Group",
+        **_UNIT_SCHEMA_BASE_DICT,
+    }
+)
+
+
+#
 # Stride unit.
 #
 
@@ -594,7 +627,12 @@ PRESCRIPTION_UNITS_SCHEMA = Schema(
         Optional("boots"): [PRESCRIPTION_BOOT_SCHEMA],
         Optional("sieves"): [Any(PRESCRIPTION_SIEVE_SCHEMA, PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA)],
         Optional("steps"): [
-            Any(PRESCRIPTION_STEP_SCHEMA, PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA, PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA)
+            Any(
+                PRESCRIPTION_STEP_SCHEMA,
+                PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA,
+                PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA,
+                PRESCRIPTION_GROUP_STEP_SCHEMA,
+            )
         ],
         Optional("pseudonyms"): [PRESCRIPTION_PSEUDONYM_SCHEMA],
         Optional("strides"): [PRESCRIPTION_STRIDE_SCHEMA],

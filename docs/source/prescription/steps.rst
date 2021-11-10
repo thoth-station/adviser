@@ -285,6 +285,77 @@ If the given pipeline unit is registered and matched, it will cause the whole
 resolution process to halt and report back results computed, if any. If no results
 are available, the resolution process will fail as no software stack is produced.
 
+
+.. _group_step:
+Group step prescription pipeline unit
+-------------------------------------
+
+A group step prescribes a step unit in the resolution process that can match based on
+dependencies that would be present in the resolved software stack together. Unlike step,
+group step is agnostic to order in which dependencies are resolved in the resolution process.
+
+.. code-block:: yaml
+
+  name: TensorFlow26Keras27Sieve
+  type: step.Group
+  should_include:
+    adviser_pipeline: true
+    # See should_include section for more options.
+  match:
+  # Run this prescription if keras>=2.7.0 is resolved together with tensorflow>2.6.0,<2.7.0
+  #   OR
+  # if keras>=2.7.0 is resolved together with tensorflow-cpu>2.6.0,<2.7.0
+  - group:
+    - package_version:
+        name: keras
+        version: ">=2.7.0"
+    - package_version:
+        name: tensorflow
+        version: ">=2.6.0,<2.7.0"
+  - group:
+    - package_version:
+        name: keras
+        version: ">=2.7.0"
+    - package_version:
+        name: tensorflow-cpu
+        version: ">=2.6.0,<2.7.0"
+  run:
+    stack_info:
+    - type: WARNING
+      message: >-
+        TensorFlow in versions >=2.6.0,<2.7.0 overpinned Keras dependency, compatible releases are ~=2.7.0
+      link: https://github.com/tensorflow/tensorflow/issues/52922
+    not_acceptable: >-
+      TensorFlow in versions >=2.6.0,<2.7.0 overpinned Keras dependency, compatible releases are ~=2.7.0
+
+GroupStep ``match.group[*].package_version``
+############################################
+
+Each entry in match' ``group`` requires two or more Python packages that need be present together
+in the resolution process. Each ``package_version`` is specified using:
+
+* ``name`` - required, name of the package
+* ``version`` - optional, version in a form of version specifier
+* ``index_url`` - optional, Python package index URL, can be negated using ``not``
+* ``develop`` - optional, if provided it additionally specifies if the
+  dependency should or should not be a development dependency
+
+GroupStep ``run``
+#################
+
+Group step's ``run`` entry can specify the following directives:
+
+* ``stack_info``
+* ``not_acceptable``
+* ``score``
+* ``justification``
+* ``eager_stop_pipeline``
+* ``log``
+
+The logic is shared with :ref:`step <prescription_steps>`. Mind missing ``multi_package_resolution``
+which configuration is implicit for this prescription.
+
+
 .. _skip_package_step:
 SkipPackage step prescription pipeline unit
 --------------------------------------------
@@ -393,23 +464,23 @@ AddPackageStep ``match``
 
 See :ref:`Step match <step_match>` that has shared semantics.
 
-Step ``run.stack_info``
-#######################
+AddPackageStep ``run.stack_info``
+#################################
 
 See :ref:`boot's stack info <boot_stack_info>` which semantics is shared with this unit.
 
 Note the stack info is added only once even if the pipeline unit is
 run multiple times during the resolution process.
 
-Step ``run.log``
-################
+AddPackageStep ``run.log``
+##########################
 
 Print the given message to the resolution log if the pipeline unit is included and run.
 
 See :ref:`boot's log <boot_run_log>` that has shared semantics.
 
-Step ``run.package_version``
-############################
+AddPackageStep ``run.package_version``
+######################################
 
 Specification of a package that should be added to the dependency graph. All the fields are mandatory:
 

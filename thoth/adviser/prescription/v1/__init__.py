@@ -20,6 +20,7 @@
 from .add_package_step import AddPackageStepPrescription
 from .boot import BootPrescription
 from .gh_release_notes import GHReleaseNotesWrapPrescription
+from .group import GroupStepPrescription
 from .pseudonym import PseudonymPrescription
 from .sieve import SievePrescription
 from .skip_package_sieve import SkipPackageSievePrescription
@@ -34,6 +35,7 @@ __all__ = [
     "AddPackageStepPrescription",
     "BootPrescription",
     "GHReleaseNotesWrapPrescription",
+    "GroupStepPrescription",
     "PseudonymPrescription",
     "SievePrescription",
     "SkipPackageSievePrescription",

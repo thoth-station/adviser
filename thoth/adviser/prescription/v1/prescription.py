@@ -39,17 +39,18 @@ import attr
 from ...exceptions import InternalError
 from ...exceptions import PrescriptionDuplicateUnitNameError
 from ...exceptions import PrescriptionSchemaError
+from .add_package_step import AddPackageStepPrescription
 from .boot import BootPrescription
+from .gh_release_notes import GHReleaseNotesWrapPrescription
+from .group import GroupStepPrescription
 from .pseudonym import PseudonymPrescription
+from .schema import PRESCRIPTION_SCHEMA
 from .sieve import SievePrescription
+from .skip_package_sieve import SkipPackageSievePrescription
+from .skip_package_step import SkipPackageStepPrescription
 from .step import StepPrescription
 from .stride import StridePrescription
 from .wrap import WrapPrescription
-from .gh_release_notes import GHReleaseNotesWrapPrescription
-from .skip_package_sieve import SkipPackageSievePrescription
-from .add_package_step import AddPackageStepPrescription
-from .skip_package_step import SkipPackageStepPrescription
-from .schema import PRESCRIPTION_SCHEMA
 
 if TYPE_CHECKING:
     from thoth.adviser.unit_types import UnitType  # noqa: F401
@@ -391,6 +392,9 @@ class Prescription:
             elif prescription["type"] == "step.AddPackage":
                 AddPackageStepPrescription.set_prescription(prescription)
                 yield AddPackageStepPrescription
+            elif prescription["type"] == "step.Group":
+                GroupStepPrescription.set_prescription(prescription)
+                yield GroupStepPrescription
             else:
                 raise ValueError(f"Unknown step pipeline unit type: {prescription['type']!r}")
 
