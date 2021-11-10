@@ -174,6 +174,10 @@ class Prescription:
         if any_error:
             raise PrescriptionSchemaError("Failed to validate prescription units, see logs reported for more info")
 
+        # Drop any metadata associated to save space.
+        for unit in prescription_instance.units:
+            unit.pop("metadata", None)
+
         return prescription_instance
 
     @classmethod
