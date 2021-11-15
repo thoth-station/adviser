@@ -63,7 +63,7 @@ class RandomWalk(Predictor):
 
     def pre_run(self) -> None:
         """Initialize before the random walk run."""
-        self._history = []
+        self._history.clear()
 
     def plot(self) -> "matplotlib.figure.Figure":
         """Plot score of the highest rated stack during sampling."""
