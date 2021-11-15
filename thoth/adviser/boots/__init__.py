@@ -22,7 +22,6 @@ from .fully_specified_environment import FullySpecifiedEnvironment
 from .gpu import GPUBoot
 from .labels import LabelsBoot
 from .pipfile_hash import PipfileHashBoot
-from .platform import PlatformBoot
 from .prescription_release import PrescriptionReleaseBoot
 from .python_version import PythonVersionBoot
 from .environment_info import EnvironmentInfoBoot
@@ -53,7 +52,6 @@ __all__ = [
     "SolvedSoftwareEnvironmentBoot",
     "SolversConfiguredBoot",  # Should be placed after SolvedSoftwareEnvironmentBoot.
     "RHELVersionBoot",
-    "PlatformBoot",
     "PrescriptionReleaseBoot",
     "FullySpecifiedEnvironment",
     "SolvedSoftwareEnvironmentBoot",
