@@ -40,28 +40,28 @@ class _ExtendedEnum(Enum):
 class RecommendationType(_ExtendedEnum):
     """Recommendation generation respecting constraints on package-version level observations."""
 
-    STABLE = auto()
-    TESTING = auto()
-    LATEST = auto()
-    PERFORMANCE = auto()
-    SECURITY = auto()
+    STABLE: int = auto()
+    TESTING: int = auto()
+    LATEST: int = auto()
+    PERFORMANCE: int = auto()
+    SECURITY: int = auto()
 
 
 class PythonRecommendationOutput(_ExtendedEnum):
     """Recommendation generation respecting constraints on package-version level observations."""
 
-    PIPENV = auto()
-    REQUIREMENTS = auto()
+    PIPENV: int = auto()
+    REQUIREMENTS: int = auto()
 
 
 class Ecosystem(_ExtendedEnum):
     """Ecosystem known to recommendation engine."""
 
-    PYTHON = auto()
+    PYTHON: int = auto()
 
 
 class DecisionType(_ExtendedEnum):
     """Type of decision used in Dependency Monkey for generating stacks."""
 
-    ALL = auto()
-    RANDOM = auto()
+    ALL: int = auto()
+    RANDOM: int = auto()

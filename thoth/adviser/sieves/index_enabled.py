@@ -56,27 +56,29 @@ class PackageIndexSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out package versions based on disabled Python package index."""
         for package_version in package_versions:
-            if package_version.index.url in self._cached_records:
-                is_enabled = self._cached_records[package_version.index.url]
+            package_tuple = package_version.to_strict_tuple_locked()
+            index_url = package_tuple[2]
+            if package_tuple[2] in self._cached_records:
+                is_enabled = self._cached_records[index_url]
             else:
                 try:
-                    is_enabled = self.context.graph.is_python_package_index_enabled(package_version.index.url)
+                    is_enabled = self.context.graph.is_python_package_index_enabled(index_url)
                 except NotFoundError:
                     # A special value of None marks non-existing index in thoth's knowledge base.
                     is_enabled = None
 
-            self._cached_records[package_version.index.url] = is_enabled
+            self._cached_records[index_url] = is_enabled
             if is_enabled is None:
                 _LOGGER.debug(
                     "Removing Python package version %r as used index is not registered",
-                    package_version.to_tuple(),
+                    package_tuple,
                 )
                 continue
 
             if not is_enabled:
                 _LOGGER.debug(
                     "Removing Python package version %r as used index is not enabled",
-                    package_version.to_tuple(),
+                    package_tuple,
                 )
                 continue
 

@@ -35,6 +35,7 @@ from ..state import State
 
 if TYPE_CHECKING:
     import matplotlib
+    from typing import Any
 
 _LOGGER = logging.getLogger(__name__)
 

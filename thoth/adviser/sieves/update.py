@@ -36,11 +36,11 @@ from typing import TYPE_CHECKING
 import attr
 import json
 from thoth.common import get_justification_link as jl
-from thoth.adviser.enums import RecommendationType
 from thoth.python import PackageVersion
 from voluptuous import Required
 from voluptuous import Schema
 
+from ..enums import RecommendationType
 from ..sieve import Sieve
 
 if TYPE_CHECKING:
@@ -94,7 +94,7 @@ class PackageUpdateSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages that are old releases."""
         for package_version in package_versions:
-            package_tuple = package_version.to_tuple()
+            package_tuple = package_version.to_strict_tuple()
 
             if package_tuple != self._package_update:
                 if package_tuple not in self._messages_logged:

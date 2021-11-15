@@ -20,18 +20,21 @@
 import os
 import logging
 import json
+import importlib
 from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import Type
 from typing import List
+from typing import Union
 from typing import Optional
+from typing import cast
 from typing import TYPE_CHECKING
 from itertools import chain
 
 import attr
 from thoth.python import Project
-from thoth.storages import GraphDatabase
+from thoth.storages.graph.postgres import GraphDatabase
 import yaml
 
 from .enums import DecisionType
@@ -40,16 +43,17 @@ from .exceptions import InternalError
 from .exceptions import UnknownPipelineUnitError
 from .exceptions import PipelineConfigurationError
 from .pipeline_config import PipelineConfig
+from .unit import Unit
 from .prescription import UnitPrescription
 
 if TYPE_CHECKING:
     from .prescription import Prescription  # noqa: F401
+    from .unit_types import UnitType
     from .unit_types import BootType
     from .unit_types import PseudonymType
     from .unit_types import SieveType
     from .unit_types import StepType
     from .unit_types import StrideType
-    from .unit_types import UnitType
     from .unit_types import WrapType
 
 _LOGGER = logging.getLogger(__name__)
@@ -241,6 +245,7 @@ class PipelineBuilderContext:
         package_name: Optional[str] = unit.configuration.get("package_name")
 
         if unit.is_boot_unit_type():
+            unit = cast(BootType, unit)
             self._boots_included.setdefault(unit.name, []).append(unit)
             self._boots.setdefault(package_name, []).append(unit)
             return
@@ -250,22 +255,27 @@ class PipelineBuilderContext:
                     f"Pipeline cannot be constructed as unit {unit.name!r} of type Pseudonym "
                     f"did not provide any package name configuration: {unit.configuration!r}"
                 )
+            unit = cast(PseudonymType, unit)
             self._pseudonyms_included.setdefault(unit.name, []).append(unit)
             self._pseudonyms.setdefault(package_name, []).append(unit)
             return
         elif unit.is_sieve_unit_type():
+            unit = cast(SieveType, unit)
             self._sieves_included.setdefault(unit.name, []).append(unit)
             self._sieves.setdefault(package_name, []).append(unit)
             return
         elif unit.is_step_unit_type():
+            unit = cast(StepType, unit)
             self._steps_included.setdefault(unit.name, []).append(unit)
             self._steps.setdefault(package_name, []).append(unit)
             return
         elif unit.is_stride_unit_type():
+            unit = cast(StrideType, unit)
             self._strides_included.setdefault(unit.name, []).append(unit)
             self._strides.setdefault(package_name, []).append(unit)
             return
         elif unit.is_wrap_unit_type():
+            unit = cast(WrapType, unit)
             self._wraps_included.setdefault(unit.name, []).append(unit)
             self._wraps.setdefault(package_name, []).append(unit)
             return
@@ -283,43 +293,43 @@ class PipelineBuilder:
         raise NotImplementedError("Cannot instantiate pipeline builder")
 
     @staticmethod
-    def _iter_units(ctx: PipelineBuilderContext) -> Generator["UnitType", None, None]:
+    def _iter_units(ctx: PipelineBuilderContext) -> Generator[Union[Type["Unit"], Type["UnitPrescription"]], None, None]:
         """Iterate over pipeline units available in this implementation."""
         # Imports placed here to simplify tests.
-        import thoth.adviser.boots
-        import thoth.adviser.pseudonyms
-        import thoth.adviser.sieves
-        import thoth.adviser.steps
-        import thoth.adviser.strides
-        import thoth.adviser.wraps
+        boots_module = importlib.import_module(".boots")
+        pseudonyms_module = importlib.import_module(".pseudonyms")
+        sieves_module = importlib.import_module(".sieves")
+        steps_module = importlib.import_module(".steps")
+        strides_module = importlib.import_module(".strides")
+        wraps_module = importlib.import_module(".wraps")
 
-        for boot_name in thoth.adviser.boots.__all__:
-            yield getattr(thoth.adviser.boots, boot_name)
+        for boot_name in getattr(boots_module, "__all__", []):
+            yield getattr(boots_module, boot_name)
         if ctx.prescription:
             yield from ctx.prescription.iter_boot_units()
 
-        for pseudonym_name in thoth.adviser.pseudonyms.__all__:
-            yield getattr(thoth.adviser.pseudonyms, pseudonym_name)
+        for pseudonym_name in getattr(pseudonyms_module, "__all__", []):
+            yield getattr(pseudonyms_module, pseudonym_name)
         if ctx.prescription:
             yield from ctx.prescription.iter_pseudonym_units()
 
-        for sieve_name in thoth.adviser.sieves.__all__:
-            yield getattr(thoth.adviser.sieves, sieve_name)
+        for sieve_name in getattr(sieves_module, "__all__", []):
+            yield getattr(sieves_module, sieve_name)
         if ctx.prescription:
             yield from ctx.prescription.iter_sieve_units()
 
-        for step_name in thoth.adviser.steps.__all__:
-            yield getattr(thoth.adviser.steps, step_name)
+        for step_name in getattr(steps_module, "__all__", []):
+            yield getattr(steps_module, step_name)
         if ctx.prescription:
             yield from ctx.prescription.iter_step_units()
 
-        for stride_name in thoth.adviser.strides.__all__:
-            yield getattr(thoth.adviser.strides, stride_name)
+        for stride_name in getattr(strides_module, "__all__", []):
+            yield getattr(strides_module, stride_name)
         if ctx.prescription:
             yield from ctx.prescription.iter_stride_units()
 
-        for wrap_name in thoth.adviser.wraps.__all__:
-            yield getattr(thoth.adviser.wraps, wrap_name)
+        for wrap_name in getattr(wraps_module, "__all__", []):
+            yield getattr(wraps_module, wrap_name)
         if ctx.prescription:
             yield from ctx.prescription.iter_wrap_units()
 
@@ -366,7 +376,7 @@ class PipelineBuilder:
                             unit_name,
                             unit_configuration,
                         )
-                        unit_instance = unit_class()  # type: ignore
+                        unit_instance = unit_class()
 
                         # Always perform update, even with an empty dict. Update triggers a schema check.
                         try:
@@ -427,22 +437,22 @@ class PipelineBuilder:
     def from_dict(cls, dict_: Dict[str, Any]) -> "PipelineConfig":
         """Instantiate pipeline configuration based on dictionary supplied."""
         # Imports placed here to simplify tests.
-        import thoth.adviser.boots
-        import thoth.adviser.pseudonyms
-        import thoth.adviser.sieves
-        import thoth.adviser.steps
-        import thoth.adviser.strides
-        import thoth.adviser.wraps
+        boots_module = importlib.import_module(".boots")
+        pseudonyms_module = importlib.import_module(".pseudonyms")
+        sieves_module = importlib.import_module(".sieves")
+        steps_module = importlib.import_module(".steps")
+        strides_module = importlib.import_module(".strides")
+        wraps_module = importlib.import_module(".wraps")
 
         boots: Dict[Optional[str], List["BootType"]] = {}
         for boot_entry in dict_.pop("boots", []) or []:
-            boot_unit: "BootType" = cls._do_instantiate_from_dict(thoth.adviser.boots, boot_entry)
+            boot_unit: "BootType" = cast(BootType, cls._do_instantiate_from_dict(boots_module, boot_entry))
             package_name = boot_unit.configuration.get("package_name")
             boots.setdefault(package_name, []).append(boot_unit)
 
         pseudonyms: Dict[str, List["PseudonymType"]] = {}
         for pseudonym_entry in dict_.pop("pseudonyms", []) or []:
-            unit: "PseudonymType" = cls._do_instantiate_from_dict(thoth.adviser.pseudonyms, pseudonym_entry)
+            unit: "PseudonymType" = cast(PseudonymType, cls._do_instantiate_from_dict(pseudonyms_module, pseudonym_entry))
 
             package_name = unit.configuration.get("package_name")
             if not package_name:
@@ -455,25 +465,25 @@ class PipelineBuilder:
 
         sieves: Dict[Optional[str], List["SieveType"]] = {}
         for sieve_entry in dict_.pop("sieves", []) or []:
-            sieve_unit: "SieveType" = cls._do_instantiate_from_dict(thoth.adviser.sieves, sieve_entry)
+            sieve_unit: "SieveType" = cast(SieveType, cls._do_instantiate_from_dict(sieves_module, sieve_entry))
             package_name = sieve_unit.configuration.get("package_name")
             sieves.setdefault(package_name, []).append(sieve_unit)
 
         steps: Dict[Optional[str], List["StepType"]] = {}
         for step_entry in dict_.pop("steps", []) or []:
-            step_unit: "StepType" = cls._do_instantiate_from_dict(thoth.adviser.steps, step_entry)
+            step_unit: "StepType" = cast(StepType, cls._do_instantiate_from_dict(steps_module, step_entry))
             package_name = step_unit.configuration.get("package_name")
             steps.setdefault(package_name, []).append(step_unit)
 
         strides: Dict[Optional[str], List["StrideType"]] = {}
         for stride_entry in dict_.pop("strides", []) or []:
-            stride_unit: "StrideType" = cls._do_instantiate_from_dict(thoth.adviser.strides, stride_entry)
+            stride_unit: "StrideType" = cast(StrideType, cls._do_instantiate_from_dict(strides_module, stride_entry))
             package_name = stride_unit.configuration.get("package_name")
             strides.setdefault(package_name, []).append(stride_unit)
 
         wraps: Dict[Optional[str], List["WrapType"]] = {}
         for wrap_entry in dict_.pop("wraps", []) or []:
-            wrap_unit: "WrapType" = cls._do_instantiate_from_dict(thoth.adviser.wraps, wrap_entry)
+            wrap_unit: "WrapType" = cast(WrapType, cls._do_instantiate_from_dict(wraps_module, wrap_entry))
             package_name = wrap_unit.configuration.get("package_name")
             wraps.setdefault(package_name, []).append(wrap_unit)
 

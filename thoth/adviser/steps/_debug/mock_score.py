@@ -42,7 +42,7 @@ from ...step import Step
 
 
 if TYPE_CHECKING:
-    from ..pipeline_builder import PipelineBuilderContext
+    from ...pipeline_builder import PipelineBuilderContext
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -103,7 +103,7 @@ class MockScoreStep(Step):
         # Using seed set to process on the adviser run affects this call - so adviser
         # with same seed set shared scores generated across runs.
         score = self._score_history.setdefault(
-            package_version.to_tuple(),
+            package_version.to_strict_tuple(),
             random.uniform(self.SCORE_MIN, self.SCORE_MAX)
             if random.random() <= self.configuration["assign_probability"]
             else 0.0,

@@ -117,25 +117,23 @@ class SecurityIndicatorStep(Step):
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Score package based on security indicators gathered, do not include if not analyzed."""
-        package_version_tuple = package_version.to_tuple_locked()
+        package_version_tuple = package_version.to_strict_tuple_locked()
         justification = []
         try:
             s_info = self.context.graph.get_si_aggregated_python_package_version(
-                package_name=package_version.name,
-                package_version=package_version.locked_version,
-                index_url=package_version.index.url,
+                *package_version_tuple
             )
             msg = (
-                f"Thoth has security info for {package_version.name}==={package_version.locked_version} "
-                f"on {package_version.index.url}"
+                f"Thoth has security info for {package_version_tuple[0]}==={package_version_tuple[1]} "
+                f"on {package_version_tuple[2]}"
             )
             justification.append(
                 {
                     "type": "INFO",
                     "message": msg,
                     "link": self._JUSTIFICATION_LINK_SECURITY,
-                    "package_name": package_version.name,
-                    "version_range": f"==={package_version.locked_version}",
+                    "package_name": package_version_tuple[0],
+                    "version_range": f"==={package_version_tuple[1]}",
                 }
             )
         except NotFoundError:
@@ -143,16 +141,16 @@ class SecurityIndicatorStep(Step):
                 if package_version_tuple not in self._logged_packages:
                     self._logged_packages.add(package_version_tuple)
                     msg = (
-                        f"No security info for {package_version.name}==={package_version.locked_version} "
-                        f"on {package_version.index.url}"
+                        f"No security info for {package_version_tuple[0]}==={package_version_tuple[1]} "
+                        f"on {package_version_tuple[2]}"
                     )
                     self.context.stack_info.append(
                         {
                             "type": "WARNING",
                             "message": msg,
                             "link": self._JUSTIFICATION_LINK_SECURITY,
-                            "package_name": package_version.name,
-                            "version_range": f"==={package_version.locked_version}",
+                            "package_name": package_version_tuple[0],
+                            "version_range": f"==={package_version_tuple[1]}",
                         }
                     )
                     _LOGGER.warning("%s - see %s", msg, self._JUSTIFICATION_LINK_SECURITY)
@@ -160,7 +158,7 @@ class SecurityIndicatorStep(Step):
             return (
                 0,
                 self._generate_justification(
-                    name=package_version.name, version=package_version.locked_version, index=package_version.index.url
+                    name=package_version_tuple[0], version=package_version_tuple[1], index=package_version_tuple[2]
                 ),
             )
 

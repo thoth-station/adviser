@@ -26,6 +26,8 @@ import attr
 from ..predictor import Predictor
 from ..state import State
 
+from typing import Any
+
 _LOGGER = logging.getLogger(__name__)
 
 

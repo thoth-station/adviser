@@ -55,18 +55,22 @@ class ConstraintsSieve(Sieve):
     @classmethod
     def default_environment(cls, builder_context: "PipelineBuilderContext") -> Dict[str, str]:
         """Get environment for markers based on runtime environment configuration supplied."""
+        python_version = builder_context.project.runtime_environment.python_version
+        if not python_version:
+            raise ValueError
+
         return {
             # Not present ones based on the default environment created by packaging:
             "platform_release": "",
             "platform_version": "",
-            "python_full_version": f"{builder_context.project.runtime_environment.python_version}.0",
+            "python_full_version": f"{python_version}.0",
             "implementation_name": "cpython",
             "os_name": "posix",
             "platform_machine": "x86_64",
             "platform_python_implementation": "CPython",
             "platform_system": "Linux",
-            "python_version": builder_context.project.runtime_environment.python_version,
-            "implementation_version": f"{builder_context.project.runtime_environment.python_version}.0",
+            "python_version": python_version,
+            "implementation_version": f"{python_version}.0",
             "sys_platform": "linux",
         }
 
@@ -120,7 +124,7 @@ class ConstraintsSieve(Sieve):
                 yield package_version
                 continue
 
-            package_tuple = package_version.to_tuple()
+            package_tuple = package_version.to_strict_tuple_locked()
             if package_tuple not in self.packages_seen:
                 self.packages_seen.add(package_tuple)
                 msg = f"Removing package {package_tuple} based on constraint {str(self.specifier_set)!r}"

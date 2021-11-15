@@ -89,16 +89,18 @@ class PseudonymPrescription(UnitPrescription):
 
     def run(self, package_version: PackageVersion) -> Generator[Tuple[str, str, str], None, None]:
         """Run main entry-point for pseudonyms to map packages to their counterparts."""
-        if (not self._index_url_check(self._index_url, package_version.index.url)) or (
-            self._specifier is not None and package_version.locked_version not in self._specifier
+        name, locked_version, index_url = package_version.to_strict_tuple_locked()
+        if (not self._index_url_check(self._index_url, index_url)) or (
+            self._specifier is not None and locked_version not in self._specifier
         ):
             yield from ()
             return None
 
         to_yield = self.run_prescription["yield"]
         to_yield_package_version = to_yield.get("package_version") or {}
+        pseudonym_package_version: Optional[str]
         if to_yield.get("yield_matched_version"):
-            pseudonym_package_version = package_version.locked_version
+            pseudonym_package_version = locked_version
         else:
             pseudonym_package_version = to_yield_package_version.get("locked_version")
             if pseudonym_package_version:
@@ -125,9 +127,11 @@ class PseudonymPrescription(UnitPrescription):
 
         for pseudonym in pseudonyms:
             _LOGGER.info(
-                "%s: Considering package %r as a pseudonym of %r",
+                "%s: Considering package %r as a pseudonym of %s in version %s from %s",
                 self.get_unit_name(),
                 pseudonym,
-                package_version.to_tuple(),
+                name,
+                locked_version,
+                index_url,
             )
             yield pseudonym[0], pseudonym[1], pseudonym[2]

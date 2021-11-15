@@ -28,6 +28,7 @@ from typing import Dict
 from typing import TYPE_CHECKING
 import logging
 
+import attr
 from thoth.python import PackageVersion
 from voluptuous import Required
 from voluptuous import Schema
@@ -44,6 +45,7 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+@attr.s(slots=True)
 class DropoutStep(Step):
     """A step that drops a state transition with a certain probability."""
 

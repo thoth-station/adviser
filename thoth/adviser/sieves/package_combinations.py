@@ -81,12 +81,13 @@ class PackageCombinationsSieve(Sieve):
                 continue
 
             seen_package_tuple = self._package_tuples_seen.get(package_version.name)
+            package_tuple = package_version.to_strict_tuple_locked()
             if seen_package_tuple is None:
-                self._package_tuples_seen[package_version.name] = package_version.to_tuple()
+                self._package_tuples_seen[package_version.name] = package_tuple
                 yield package_version
                 continue
 
-            if seen_package_tuple == package_version.to_tuple():
+            if seen_package_tuple == package_tuple:
                 # This version was already used in one of the previous runs.
                 yield package_version
                 continue

@@ -26,12 +26,13 @@ from itertools import chain
 from collections import OrderedDict
 from collections import deque
 from typing import Any
-from typing import List
-from typing import Tuple
 from typing import Dict
 from typing import Generator
+from typing import List
 from typing import Optional
+from typing import Tuple
 from typing import Type
+from typing import Union
 from typing import TYPE_CHECKING
 
 import attr
@@ -53,13 +54,13 @@ from .stride import StridePrescription
 from .wrap import WrapPrescription
 
 if TYPE_CHECKING:
-    from thoth.adviser.unit_types import UnitType  # noqa: F401
-    from thoth.adviser.unit_types import BootType  # noqa: F401
-    from thoth.adviser.unit_types import PseudonymType  # noqa: F401
-    from thoth.adviser.unit_types import SieveType  # noqa: F401
-    from thoth.adviser.unit_types import StepType  # noqa: F401
-    from thoth.adviser.unit_types import StrideType  # noqa: F401
-    from thoth.adviser.unit_types import WrapType  # noqa: F401
+    from ...unit_types import UnitType  # noqa: F401
+    from ...unit_types import BootType  # noqa: F401
+    from ...unit_types import PseudonymType  # noqa: F401
+    from ...unit_types import SieveType  # noqa: F401
+    from ...unit_types import StepType  # noqa: F401
+    from ...unit_types import StrideType  # noqa: F401
+    from ...unit_types import WrapType  # noqa: F401
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -352,23 +353,25 @@ class Prescription:
 
         return prescription_instance
 
-    @staticmethod
-    def _iter_units(unit_class: Type["UnitType"], units: Dict[str, Any]) -> Generator[Type["UnitType"], None, None]:
-        """Iterate over units registered."""
-        for prescription in units.values():
-            unit_class.set_prescription(prescription)
-
-            yield unit_class
-
-    def iter_boot_units(self) -> Generator[Type["BootType"], None, None]:
+    def iter_boot_units(self) -> Generator[Type[BootPrescription], None, None]:
         """Iterate over prescription boot units registered in the prescription supplied."""
-        return self._iter_units(BootPrescription, self.boots_dict)
+        for prescription in self.boots_dict.values():
+            if prescription["type"] == "boot":
+                BootPrescription.set_prescription(prescription)
+                yield BootPrescription
+            else:
+                raise ValueError(f"Unknown boot pipeline unit type: {prescription['type']!r}")
 
-    def iter_pseudonym_units(self) -> Generator[Type["PseudonymType"], None, None]:
+    def iter_pseudonym_units(self) -> Generator[Type[PseudonymPrescription], None, None]:
         """Iterate over prescription pseudonym units registered in the prescription supplied."""
-        return self._iter_units(PseudonymPrescription, self.pseudonyms_dict)
+        for prescription in self.pseudonyms_dict.values():
+            if prescription["type"] == "pseudonym":
+                PseudonymPrescription.set_prescription(prescription)
+                yield PseudonymPrescription
+            else:
+                raise ValueError(f"Unknown pseudonym pipeline unit type: {prescription['type']!r}")
 
-    def iter_sieve_units(self) -> Generator[Type["SieveType"], None, None]:
+    def iter_sieve_units(self) -> Generator[Union[Type[SievePrescription], Type[SkipPackageSievePrescription]], None, None]:
         """Iterate over prescription sieve units registered in the prescription supplied."""
         for prescription in self.sieves_dict.values():
             if prescription["type"] == "sieve":
@@ -380,7 +383,7 @@ class Prescription:
             else:
                 raise ValueError(f"Unknown sieve pipeline unit type: {prescription['type']!r}")
 
-    def iter_step_units(self) -> Generator[Type["StepType"], None, None]:
+    def iter_step_units(self) -> Generator[Union[Type[StepPrescription], Type[SkipPackageStepPrescription], Type[AddPackageStepPrescription], Type[GroupStepPrescription]], None, None]:
         """Iterate over prescription step units registered in the prescription supplied."""
         for prescription in self.steps_dict.values():
             if prescription["type"] == "step":
@@ -398,11 +401,16 @@ class Prescription:
             else:
                 raise ValueError(f"Unknown step pipeline unit type: {prescription['type']!r}")
 
-    def iter_stride_units(self) -> Generator[Type["StrideType"], None, None]:
+    def iter_stride_units(self) -> Generator[Type[StridePrescription], None, None]:
         """Iterate over prescription stride units registered in the prescription supplied."""
-        return self._iter_units(StridePrescription, self.strides_dict)
+        for prescription in self.pseudonyms_dict.values():
+            if prescription["type"] == "stride":
+                StridePrescription.set_prescription(prescription)
+                yield StridePrescription
+            else:
+                raise ValueError(f"Unknown stride pipeline unit type: {prescription['type']!r}")
 
-    def iter_wrap_units(self) -> Generator[Type["WrapType"], None, None]:
+    def iter_wrap_units(self) -> Generator[Union[Type[WrapPrescription], Type[GHReleaseNotesWrapPrescription]], None, None]:
         """Iterate over prescription stride units registered in the prescription supplied."""
         for prescription in self.wraps_dict.values():
             if prescription["type"] == "wrap":

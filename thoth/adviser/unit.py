@@ -118,6 +118,10 @@ class Unit(metaclass=abc.ABCMeta):
         finally:
             cls._CONTEXT = None
 
+    @classmethod
+    def set_prescription(cls, prescription: Dict[str, Any]) -> None:
+        ...
+
     def __attrs_post_init__(self) -> None:
         """Initialize post-init attributes."""
         # Initialize unit_run always to False so the pipeline unit JSON report can be reused across
@@ -172,21 +176,26 @@ class Unit(metaclass=abc.ABCMeta):
     @classmethod
     def is_aicoe_release(cls, package_version: PackageVersion) -> bool:
         """Check if the given package-version is AICoE release."""
-        return bool(package_version.index.url.startswith(cls._AICOE_PYTHON_PACKAGE_INDEX_URL))
+        index = package_version.index
+        if not index:
+            return False
+
+        return bool(index.url.startswith(cls._AICOE_PYTHON_PACKAGE_INDEX_URL))
 
     @classmethod
     def get_aicoe_configuration(cls, package_version: PackageVersion) -> Optional[Dict[str, Any]]:
         """Get AICoE specific configuration encoded in the AICoE index URL."""
-        if not package_version.index.url.startswith(cls._AICOE_PYTHON_PACKAGE_INDEX_URL):
+        index = package_version.index
+        if not index or not index.url.startswith(cls._AICOE_PYTHON_PACKAGE_INDEX_URL):
             return None
 
-        index_url = package_version.index.url[len(cls._AICOE_PYTHON_PACKAGE_INDEX_URL) :]
+        index_url = index.url[len(cls._AICOE_PYTHON_PACKAGE_INDEX_URL) :]
         conf_parts = index_url.strip("/").split("/")  # the last is always "simple"
 
         if len(conf_parts) == 3:
             # No OS specific release - e.g. manylinux compliant release.
             if not conf_parts[0].startswith("manylinux"):
-                _LOGGER.error("Failed to parse a platform tag, unknown AICoE Index URL: %r", package_version.index.url)
+                _LOGGER.error("Failed to parse a platform tag, unknown AICoE Index URL: %r", index.url)
                 return None
 
             return {
@@ -199,7 +208,7 @@ class Unit(metaclass=abc.ABCMeta):
             # TODO: We have dropped OS-specific builds, so this can go away in future releases...
             if conf_parts[0] != "os":
                 _LOGGER.error(
-                    "Failed to parse operating system specific URL of AICoE index: %r", package_version.index.url
+                    "Failed to parse operating system specific URL of AICoE index: %r", index.url
                 )
                 return None
 
@@ -212,7 +221,7 @@ class Unit(metaclass=abc.ABCMeta):
 
         _LOGGER.warning(
             "Failed to parse AICoE specific package source index configuration: %r",
-            package_version.index.url,
+            index.url,
         )
         return None
 

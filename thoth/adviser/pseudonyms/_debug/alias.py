@@ -33,7 +33,7 @@ from voluptuous import Schema
 from ...pseudonym import Pseudonym
 
 if TYPE_CHECKING:
-    from ..pipeline_builder import PipelineBuilderContext
+    from ...pipeline_builder import PipelineBuilderContext
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,14 +62,16 @@ class AliasPseudonym(Pseudonym):
 
     def run(self, package_version: PackageVersion) -> Generator[Tuple[str, str, str], None, None]:
         """Create alternatives to packages based on the configuration supplied."""
+        _, locked_version, index_url = package_version.to_strict_tuple_locked()
+
         if (
             self.configuration["package_version"] is not None
-            and self.configuration["package_version"] != package_version.locked_version
+            and self.configuration["package_version"] != locked_version
         ):
             yield from ()
             return
 
-        if self.configuration["index_url"] is not None and self.configuration["index_url"] != package_version.index.url:
+        if self.configuration["index_url"] is not None and self.configuration["index_url"] != index_url:
             yield from ()
             return
 

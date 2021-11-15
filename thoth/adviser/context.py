@@ -33,7 +33,7 @@ import attr
 from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.python import Project
-from thoth.storages import GraphDatabase
+from thoth.storages.graph.postgres import GraphDatabase
 
 from .beam import Beam
 from .exceptions import NotFound
@@ -131,9 +131,17 @@ class Context:
 
         return package_version
 
+    def get_package_version_strict(self, package_tuple: Tuple[str, str, str]) -> PackageVersion:
+        """Get the given package version registered to the context."""
+        package_version = self.package_versions.get(package_tuple)
+        if package_version is None:
+            raise NotFound(f"Package {package_tuple!r} not found in the pipeline context")
+
+        return package_version
+
     def register_package_version(self, package_version: PackageVersion) -> bool:
         """Register the given package version to the context."""
-        package_tuple = package_version.to_tuple()
+        package_tuple = package_version.to_strict_tuple()
         registered = self.package_versions.get(package_tuple)
         if registered:
             # If the given package is shared in develop and in the main part, make it main stack part.

@@ -22,7 +22,7 @@ from typing import List
 from typing import Dict
 
 import attr
-from thoth.storages import GraphDatabase
+from thoth.storages.graph.postgres import GraphDatabase
 from thoth.python import DigestsFetcherBase
 
 
@@ -30,7 +30,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class GraphDigestsFetcher(DigestsFetcherBase):  # type: ignore
+class GraphDigestsFetcher(DigestsFetcherBase):
     """Fetch digests from the graph database."""
 
     graph = attr.ib(type=GraphDatabase)

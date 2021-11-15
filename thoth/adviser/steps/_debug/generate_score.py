@@ -40,7 +40,7 @@ from ...step import Step
 
 
 if TYPE_CHECKING:
-    from ..pipeline_builder import PipelineBuilderContext
+    from ...pipeline_builder import PipelineBuilderContext
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -110,7 +110,7 @@ class GenerateScoreStep(Step):
         self, _: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Score the given package."""
-        package_tuple = package_version.to_tuple()
+        package_tuple = package_version.to_strict_tuple()
         score = self._history.get(package_tuple)
 
         if score is not None:

@@ -33,9 +33,9 @@ from thoth.python import PackageVersion
 from packaging.specifiers import SpecifierSet
 from packaging.specifiers import InvalidSpecifier
 
-from thoth.adviser.cpu_db import CPUDatabase
-from thoth.adviser.enums import DecisionType
-from thoth.adviser.enums import RecommendationType
+from ...cpu_db import CPUDatabase
+from ...enums import DecisionType
+from ...enums import RecommendationType
 
 
 _NONEMPTY_STRING = All(str, Length(min=1))

@@ -58,8 +58,15 @@ class PipfileHashBoot(Boot):
 
     def run(self) -> None:
         """Check for platform configured and adjust to the default one if not provided by user."""
-        pipfile_hash = self.context.project.pipfile_lock.meta.hash.get("sha256")
+        pipfile_lock = self.context.project.pipfile_lock
+        if not pipfile_lock or pipfile_lock.meta.hash is None:
+            raise ValueError
+
+        pipfile_hash = pipfile_lock.meta.hash["sha256"]
         computed_hash = self.context.project.pipfile.hash().get("sha256")
+
+        if computed_hash is None:
+            raise ValueError
 
         if pipfile_hash != computed_hash:
             msg = (

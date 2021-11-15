@@ -20,7 +20,6 @@
 import logging
 
 import attr
-from thoth.adviser.state import State
 from thoth.python import PackageVersion
 from thoth.python import Source
 from thoth.storages.exceptions import NotFoundError
@@ -31,6 +30,7 @@ from voluptuous import Required
 from .step import StepPrescription
 from .schema import PRESCRIPTION_ADD_PACKAGE_STEP_RUN_SCHEMA
 from .schema import PRESCRIPTION_ADD_PACKAGE_STEP_MATCH_ENTRY_SCHEMA
+from ...state import State
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,10 +51,11 @@ class AddPackageStepPrescription(StepPrescription):
 
     def run(self, state: State, package_version: PackageVersion) -> None:
         """Run main entry-point for steps to skip packages."""
-        if not self._index_url_check(self._index_url, package_version.index.url):
+        _, locked_version, index_url = package_version.to_strict_tuple_locked()
+        if not self._index_url_check(self._index_url, index_url):
             return None
 
-        if self._specifier and package_version.locked_version not in self._specifier:
+        if self._specifier and locked_version not in self._specifier:
             return None
 
         if self._develop is not None and package_version.develop != self._develop:
@@ -94,7 +95,11 @@ class AddPackageStepPrescription(StepPrescription):
             return None
 
         runtime_env = self.context.project.runtime_environment
-        py_ver = runtime_env.python_version.replace(".", "")
+        python_version = runtime_env.python_version
+        if python_version is None:
+            raise ValueError
+
+        py_ver = python_version.replace(".", "")
         # XXX: this could be moved to thoth-common
         solver_name = f"solver-{runtime_env.operating_system.name}-{runtime_env.operating_system.version}-py{py_ver}"
         if not self.context.graph.python_package_version_exists(

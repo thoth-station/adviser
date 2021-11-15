@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING
 from voluptuous import Required
 from voluptuous import Schema
 
+import attr
 from thoth.common import get_justification_link as jl
 
 from ..boot import Boot
@@ -32,6 +33,7 @@ if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
 
 
+@attr.s(slots=True)
 class ThothS2IInfoBoot(Boot):
     """A boot that adds information about Thoth s2i used."""
 

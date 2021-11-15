@@ -83,12 +83,11 @@ class SelectiveCutPreReleasesSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Cut-off pre-releases if project does not explicitly allows them."""
         for package_version in package_versions:
+            package_tuple = package_version.to_strict_tuple_locked()
             if (
-                not self.configuration["allow_prereleases"].get(package_version.name, False)
+                not self.configuration["allow_prereleases"].get(package_tuple[0], False)
                 and package_version.semantic_version.is_prerelease
             ):
-                package_tuple = package_version.to_tuple()
-
                 if package_tuple not in self.packages_seen:
                     self.packages_seen.add(package_tuple)
                     msg = f"Removing package {package_tuple} as pre-releases are disabled"

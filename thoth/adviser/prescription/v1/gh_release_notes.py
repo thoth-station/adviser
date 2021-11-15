@@ -29,13 +29,13 @@ from typing import Union
 from typing import TYPE_CHECKING
 from packaging.specifiers import SpecifierSet
 
-from thoth.adviser.state import State
 from voluptuous import Schema
 from voluptuous import Required
 
 from .unit import UnitPrescription
 from .schema import PRESCRIPTION_GH_RELEASE_NOTES_WRAP_RUN_ENTRY_SCHEMA
 from .schema import PACKAGE_VERSION_REQUIRED_NAME_SCHEMA
+from ...state import State
 
 if TYPE_CHECKING:
     from ...pipeline_builder import PipelineBuilderContext

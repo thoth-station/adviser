@@ -27,10 +27,10 @@ from voluptuous import Any as SchemaAny
 from voluptuous import Schema
 from voluptuous import Required
 
-from thoth.adviser.state import State
 from .unit import UnitPrescription
 from .schema import PRESCRIPTION_STRIDE_RUN_SCHEMA
 from .schema import PRESCRIPTION_STRIDE_MATCH_ENTRY_SCHEMA
+from ...state import State
 
 if TYPE_CHECKING:
     from ...pipeline_builder import PipelineBuilderContext

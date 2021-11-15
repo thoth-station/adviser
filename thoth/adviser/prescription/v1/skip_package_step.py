@@ -20,7 +20,6 @@
 import logging
 
 import attr
-from thoth.adviser.state import State
 from thoth.python import PackageVersion
 from voluptuous import Any as SchemaAny
 from voluptuous import Schema
@@ -31,6 +30,7 @@ from .schema import PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA
 from .schema import PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA
 
 from ...exceptions import SkipPackage
+from ...state import State
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,10 +51,11 @@ class SkipPackageStepPrescription(StepPrescription):
 
     def run(self, state: State, package_version: PackageVersion) -> None:
         """Run main entry-point for steps to skip packages."""
-        if not self._index_url_check(self._index_url, package_version.index.url):
+        _, locked_version, index_url = package_version.to_strict_tuple_locked()
+        if not self._index_url_check(self._index_url, index_url):
             return None
 
-        if self._specifier and package_version.locked_version not in self._specifier:
+        if self._specifier and locked_version not in self._specifier:
             return None
 
         if self._develop is not None and package_version.develop != self._develop:

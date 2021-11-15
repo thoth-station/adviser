@@ -20,15 +20,20 @@
 import os
 import yaml
 
+from typing import Dict
+from typing import FrozenSet
 from typing import List
+from typing import Tuple
 
 
 class _CPUDatabase:
     """A database of CPUs and CPU flags."""
 
-    _CPU_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "cpu_db.yaml")
+    _CPU_DB_PATH: str = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "cpu_db.yaml")
 
     __slots__ = ["_cpu_flags"]
+
+    _cpu_flags: Dict[str, FrozenSet[Tuple[int, int]]]
 
     def __init__(self) -> None:
         """Load and prepare the database."""
@@ -38,7 +43,7 @@ class _CPUDatabase:
             content = yaml.load(cpu_db, Loader=yaml.CLoader)
 
         for flag, cpus in content["flags"].items():
-            self._cpu_flags[flag] = frozenset(tuple(i) for i in cpus)
+            self._cpu_flags[flag] = frozenset((i[0], i[1]) for i in cpus)
 
     def provides_flag(self, cpu_model: int, cpu_family: int, flag: str) -> bool:
         """Check if the given CPU provides the given flag."""

@@ -83,9 +83,9 @@ class FilterConfiguredIndexSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Cut-off packages that are not coming from an allowed index."""
         for package_version in package_versions:
-            if package_version.index.url not in self.configuration["allowed_indexes"]:
-                package_tuple = package_version.to_tuple()
+            package_tuple = package_version.to_strict_tuple_locked()
 
+            if package_tuple[2] not in self.configuration["allowed_indexes"]:
                 if package_tuple not in self.packages_seen:
                     self.packages_seen.add(package_tuple)
                     msg = f"Removing package {package_tuple} as it does not use enabled index"

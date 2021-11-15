@@ -26,10 +26,12 @@ from typing import List
 from typing import Optional
 from typing import TYPE_CHECKING
 
+import attr
+from thoth.common import get_justification_link as jl
+
+from ..enums import RecommendationType
 from ..state import State
 from ..wrap import Wrap
-from thoth.adviser.enums import RecommendationType
-from thoth.common import get_justification_link as jl
 
 if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
@@ -78,6 +80,7 @@ class _DevelopmentStatusEnum(Enum):
         return None
 
 
+@attr.s(slots=True)
 class TroveClassifiersWrap(Wrap):
     """A wrap that provides information derived from Python trove classifiers."""
 
@@ -137,8 +140,11 @@ class TroveClassifiersWrap(Wrap):
             if development_status is None:
                 continue
 
-            recommendation_type: RecommendationType = self.context.recommendation_type
-            if self.context.recommendation_type not in (RecommendationType.TESTING, RecommendationType.LATEST):
+            recommendation_type = self.context.recommendation_type
+            if recommendation_type is None:
+                raise ValueError
+
+            if recommendation_type not in (RecommendationType.TESTING, RecommendationType.LATEST):
                 if development_status is not None and development_status.value < _DevelopmentStatusEnum.STABLE.value:
                     state.justification.append(
                         {
@@ -195,8 +201,16 @@ class TroveClassifiersWrap(Wrap):
         runtime_environment = self.context.project.runtime_environment
         operating_system = runtime_environment.operating_system
         os_name = operating_system.name
+        if os_name is None:
+            return
+
         os_version = operating_system.version
+        if os_version is None:
+            return
+
         python_version = runtime_environment.python_version
+        if python_version is None:
+            return
 
         for package_version_tuple in state.resolved_dependencies.values():
             package_name = package_version_tuple[0]

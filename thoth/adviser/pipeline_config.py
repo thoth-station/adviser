@@ -41,77 +41,82 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .unit import Unit
     from .report import Report
+    from .unit_types import BootType
+    from .unit_types import PseudonymType
+    from .unit_types import SieveType
+    from .unit_types import StepType
+    from .unit_types import StrideType
+    from .unit_types import WrapType
 
 
 @attr.s(slots=True)
 class PipelineConfig:
     """A configuration of a pipeline for dependency-monkey and for adviser."""
 
-    _boots = attr.ib(type=Dict[Optional[str], List[Boot]], factory=dict)
-    # Use a dict to have O(1) access when applying pseudonyms.
-    _pseudonyms = attr.ib(type=Dict[str, List[Pseudonym]], factory=dict)
-    _sieves = attr.ib(type=Dict[Optional[str], List[Sieve]], factory=dict)
-    _steps = attr.ib(type=Dict[Optional[str], List[Step]], factory=dict)
-    _strides = attr.ib(type=Dict[Optional[str], List[Stride]], factory=dict)
-    _wraps = attr.ib(type=Dict[Optional[str], List[Wrap]], factory=dict)
+    _boots = attr.ib(type=Dict[Optional[str], List["BootType"]], factory=dict, kw_only=True)
+    _pseudonyms = attr.ib(type=Dict[str, List["PseudonymType"]], factory=dict, kw_only=True)
+    _sieves = attr.ib(type=Dict[Optional[str], List["SieveType"]], factory=dict, kw_only=True)
+    _steps = attr.ib(type=Dict[Optional[str], List["StepType"]], factory=dict, kw_only=True)
+    _strides = attr.ib(type=Dict[Optional[str], List["StrideType"]], factory=dict, kw_only=True)
+    _wraps = attr.ib(type=Dict[Optional[str], List["WrapType"]], factory=dict, kw_only=True)
 
     @property
-    def boots(self) -> List[Boot]:
+    def boots(self) -> List["BootType"]:
         """Get all boots."""
         return list(chain(*self._boots.values()))
 
     @property
-    def boots_dict(self) -> Dict[Optional[str], List[Boot]]:
+    def boots_dict(self) -> Dict[Optional[str], List["BootType"]]:
         """Get boots as a dictionary mapping."""
         return self._boots
 
     @property
-    def pseudonyms(self) -> List[Pseudonym]:
+    def pseudonyms(self) -> List["PseudonymType"]:
         """Get all pseudonyms."""
         return list(chain(*self._pseudonyms.values()))
 
     @property
-    def pseudonyms_dict(self) -> Dict[str, List[Pseudonym]]:
+    def pseudonyms_dict(self) -> Dict[str, List["PseudonymType"]]:
         """Get pseudonyms as a dictionary mapping."""
         return self._pseudonyms
 
     @property
-    def sieves(self) -> List[Sieve]:
+    def sieves(self) -> List["SieveType"]:
         """Get all sieves."""
         return list(chain(*self._sieves.values()))
 
     @property
-    def sieves_dict(self) -> Dict[Optional[str], List[Sieve]]:
+    def sieves_dict(self) -> Dict[Optional[str], List["SieveType"]]:
         """Get sieves as a dictionary mapping."""
         return self._sieves
 
     @property
-    def steps(self) -> List[Step]:
+    def steps(self) -> List["StepType"]:
         """Get all steps."""
         return list(chain(*self._steps.values()))
 
     @property
-    def steps_dict(self) -> Dict[Optional[str], List[Step]]:
+    def steps_dict(self) -> Dict[Optional[str], List["StepType"]]:
         """Get steps as a dictionary mapping."""
         return self._steps
 
     @property
-    def strides(self) -> List[Stride]:
+    def strides(self) -> List["StrideType"]:
         """Get all strides."""
         return list(chain(*self._strides.values()))
 
     @property
-    def strides_dict(self) -> Dict[Optional[str], List[Stride]]:
+    def strides_dict(self) -> Dict[Optional[str], List["StrideType"]]:
         """Get strides as a dictionary mapping."""
         return self._strides
 
     @property
-    def wraps(self) -> List[Wrap]:
+    def wraps(self) -> List["WrapType"]:
         """Get all wraps."""
         return list(chain(*self._wraps.values()))
 
     @property
-    def wraps_dict(self) -> Dict[Optional[str], List[Wrap]]:
+    def wraps_dict(self) -> Dict[Optional[str], List["WrapType"]]:
         """Get wraps as a dictionary mapping."""
         return self._wraps
 

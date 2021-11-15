@@ -91,7 +91,7 @@ class State:
         for dependency_name, dependency_versions in direct_dependencies.items():
             unresolved_dependencies[dependency_name] = {}
             for dependency_version in dependency_versions:
-                dependency_tuple = dependency_version.to_tuple()
+                dependency_tuple = dependency_version.to_strict_tuple()
                 unresolved_dependencies[dependency_name][hash(dependency_tuple)] = dependency_tuple
 
         return cls(unresolved_dependencies=unresolved_dependencies)

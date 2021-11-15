@@ -90,9 +90,10 @@ class SievePrescription(UnitPrescription):
         """Run main entry-point for sieves to filter and score packages."""
         prescription_conf = self._configuration["prescription"]
         for package_version in package_versions:
+            _, locked_version, index_url = package_version.to_strict_tuple_locked()
             if (
-                (not self._specifier or package_version.locked_version in self._specifier)
-                and self._index_url_check(self._index_url, package_version.index.url)
+                (not self._specifier or locked_version in self._specifier)
+                and self._index_url_check(self._index_url, index_url)
                 and (self._develop is None or self._develop == package_version.develop)
             ):
 

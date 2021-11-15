@@ -17,6 +17,8 @@
 
 """A wrap that links to information as provided by libraries.io."""
 
+import attr
+
 from typing import TYPE_CHECKING
 from typing import Generator
 from typing import Dict
@@ -29,6 +31,7 @@ if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
 
 
+@attr.s(slots=True)
 class LibrariesIOWrap(Wrap):
     """A wrap that links to information as provided by libraries.io."""
 

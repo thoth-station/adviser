@@ -23,6 +23,7 @@ from typing import Generator
 from typing import Dict
 from typing import Any
 
+import attr
 from ..state import State
 from ..wrap import Wrap
 
@@ -30,6 +31,7 @@ if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
 
 
+@attr.s(slots=True)
 class PulpReleaseWrap(Wrap):
     """A wrap that adds link to Red Hat's Pulp instance."""
 

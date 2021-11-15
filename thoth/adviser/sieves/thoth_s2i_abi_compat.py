@@ -64,6 +64,9 @@ class ThothS2IAbiCompatibilitySieve(Sieve):
     def pre_run(self) -> None:
         """Initialize image_symbols."""
         base_image = self.context.project.runtime_environment.base_image
+        if base_image is None:
+            raise ValueError  # TODO
+
         parsed_base_image = self.get_base_image(base_image, raise_on_error=False)
         if parsed_base_image is None:
             error_msg = (
@@ -107,12 +110,10 @@ class ThothS2IAbiCompatibilitySieve(Sieve):
             return None
 
         for pkg_vers in package_versions:
+            package_tuple = pkg_vers.to_strict_tuple()
+
             package_symbols = set(
-                self.context.graph.get_python_package_required_symbols(
-                    package_name=pkg_vers.name,
-                    package_version=pkg_vers.locked_version,
-                    index_url=pkg_vers.index.url,
-                )
+                self.context.graph.get_python_package_required_symbols(*package_tuple)
             )
 
             # Shortcut if package requires no symbols
@@ -125,7 +126,6 @@ class ThothS2IAbiCompatibilitySieve(Sieve):
                 yield pkg_vers
             else:
                 # Log removed package
-                package_tuple = pkg_vers.to_tuple()
                 if package_tuple not in self._messages_logged:
                     message = f"Package {package_tuple} was removed due to missing ABI symbols in the environment"
                     _LOGGER.warning("%s - see %s", message, self._LINK)

@@ -99,13 +99,11 @@ class SolvedSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages based on build time/installation issues.."""
         for package_version in package_versions:
-            package_tuple = package_version.to_tuple()
+            package_tuple = package_version.to_strict_tuple()
 
             try:
                 has_error = self.context.graph.has_python_solver_error(
-                    package_version.name,
-                    package_version.locked_version,
-                    package_version.index.url,
+                    *package_tuple,
                     os_name=self.context.project.runtime_environment.operating_system.name,
                     os_version=self.context.project.runtime_environment.operating_system.version,
                     python_version=self.context.project.runtime_environment.python_version,

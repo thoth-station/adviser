@@ -24,7 +24,6 @@ from typing import Dict
 from typing import Generator
 from typing import TYPE_CHECKING
 
-from thoth.adviser.state import State
 from voluptuous import Any as SchemaAny
 from voluptuous import Optional
 from voluptuous import Required
@@ -33,6 +32,7 @@ from voluptuous import Schema
 from .unit import UnitPrescription
 from .schema import PRESCRIPTION_WRAP_MATCH_ENTRY_SCHEMA
 from .schema import PRESCRIPTION_WRAP_RUN_SCHEMA
+from ...state import State
 
 if TYPE_CHECKING:
     from ...pipeline_builder import PipelineBuilderContext

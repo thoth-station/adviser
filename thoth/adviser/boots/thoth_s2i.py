@@ -22,6 +22,7 @@ from typing import Generator
 from typing import Dict
 from typing import Any
 
+import attr
 from thoth.common import get_justification_link as jl
 
 from ..boot import Boot
@@ -30,6 +31,7 @@ if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
 
 
+@attr.s(slots=True)
 class ThothS2IBoot(Boot):
     """A boot that notifies about missing observations."""
 

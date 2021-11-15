@@ -38,7 +38,7 @@ from voluptuous import Schema
 from ...boot import Boot
 
 if TYPE_CHECKING:
-    from ..pipeline_builder import PipelineBuilderContext
+    from ...pipeline_builder import PipelineBuilderContext
 
 _LOGGER = logging.getLogger(__name__)
 

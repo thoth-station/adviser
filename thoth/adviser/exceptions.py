@@ -134,6 +134,8 @@ class UnresolvedDependencies(AdviserRunException):  # noqa: N818
     """An exception raised if dependencies were not resolved and cannot produce stack."""
 
     __slots__ = ["unresolved", "stack_info"]
+    unresolved: List[str]
+    stack_info: List[Dict[str, Any]]
 
     def __init__(self, *args: Any, unresolved: List[str], stack_info: List[Dict[str, Any]]) -> None:
         """Capture unresolved dependencies in this exception."""
@@ -159,6 +161,7 @@ class CannotProduceStack(AdviserRunException):  # noqa: N818
     """Raised if there was not produced any result."""
 
     __slots__ = ["stack_info"]
+    stack_info: List[Dict[str, Any]]
 
     def __init__(self, *args: Any, stack_info: List[Dict[str, Any]]) -> None:
         """Instantiate the exception."""

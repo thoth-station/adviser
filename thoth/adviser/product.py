@@ -70,14 +70,16 @@ class Product:
 
         package_versions_locked = []
         for package_tuple in state.resolved_dependencies.values():
-            package_version: PackageVersion = context.get_package_version(package_tuple, graceful=False)
+            package_version = context.get_package_version(package_tuple, graceful=False)
+            if not package_version:
+                raise ValueError  # TODO
 
             # Fill package hashes before instantiating the final product.
             if not package_version.hashes:
                 # We can re-use already existing package-version - in that case it already keeps hashes from
                 # a previous product instantiation.
-                hashes = context.graph.get_python_package_hashes_sha256(*package_tuple)
-                package_version.hashes = ["sha256:" + h for h in hashes]
+                for h in context.graph.get_python_package_hashes_sha256(*package_tuple):
+                    package_version.hashes.append("sha256:" + h)
 
                 if not package_version.hashes:
                     log_once(_LOGGER, cls._LOG_HASHES, package_tuple, "No hashes found for package %r", package_tuple)
@@ -169,8 +171,11 @@ class Product:
         )
 
     @staticmethod
-    def _construct_dependency_graph(context: Context, pipfile_lock: PipfileLock) -> Dict[str, Any]:
+    def _construct_dependency_graph(context: Context, pipfile_lock: Optional[PipfileLock]) -> Dict[str, Any]:
         """Construct dependency graph for the given Pipfile.lock."""
+        if not pipfile_lock:
+            return {}
+
         nodes: List[str] = []
         nodes_idx: Dict[Tuple[str, str, str], int] = {}
         for package_version in pipfile_lock.packages.packages.values():

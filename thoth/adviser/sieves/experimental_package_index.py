@@ -73,9 +73,9 @@ class PackageIndexConfigurationSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Cut-off pre-releases if project does not explicitly allows them."""
         for package_version in package_versions:
-            if package_version.index.url != self.configuration["index_url"]:
-                package_tuple = package_version.to_tuple()
+            package_tuple = package_version.to_strict_tuple_locked()
 
+            if package_tuple[2] != self.configuration["index_url"]:
                 if package_tuple not in self.packages_seen:
                     self.packages_seen.add(package_tuple)
                     msg = (

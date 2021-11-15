@@ -78,10 +78,12 @@ class CveSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages with a CVE."""
         for package_version in package_versions:
+            package_tuple = package_version.to_strict_tuple_locked()
+
             try:
                 cve_records = self.context.graph.get_python_cve_records_all(
-                    package_name=package_version.name,
-                    package_version=package_version.locked_version,
+                    package_name=package_tuple[0],
+                    package_version=package_tuple[1],
                 )
             except NotFoundError as exc:
                 _LOGGER.warning("Package %r in version %r not found: %r", exc)
@@ -91,14 +93,13 @@ class CveSieve(Sieve):
                 yield package_version
                 continue
 
-            package_version_tuple = package_version.to_tuple()
-            _LOGGER.debug("Found a CVEs for %r: %r", package_version_tuple, cve_records)
+            _LOGGER.debug("Found a CVEs for %r: %r", package_tuple, cve_records)
 
-            if package_version_tuple not in self._messages_logged:
-                self._messages_logged.add(package_version_tuple)
+            if package_tuple not in self._messages_logged:
+                self._messages_logged.add(package_tuple)
                 for cve_record in cve_records:
                     message = (
-                        f"Skipping including package {package_version_tuple!r} as a CVE "
+                        f"Skipping including package {package_tuple!r} as a CVE "
                         f"{cve_record['cve_id']!r} was found"
                     )
                     _LOGGER.warning(message)

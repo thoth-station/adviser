@@ -67,12 +67,12 @@ class LegacyVersionSieve(Sieve):
         """Cut-off legacy versions from the resolution process."""
         for package_version in package_versions:
             if package_version.semantic_version.is_legacy_version:
-                package_tuple = package_version.to_tuple()
+                package_tuple = package_version.to_strict_tuple_locked()
                 if package_tuple not in self._messages_logged:
                     self._messages_logged.add(package_tuple)
                     _LOGGER.warning(
                         "Removing package %s as the version identifier is a legacy version string",
-                        package_version.to_tuple(),
+                        package_tuple,
                     )
                 continue
 

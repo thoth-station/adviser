@@ -38,10 +38,11 @@ from voluptuous import Required
 
 import attr
 
-from thoth.adviser.cpu_db import CPUDatabase
-from thoth.adviser.exceptions import EagerStopPipeline
-from thoth.adviser.exceptions import NotAcceptable
-from thoth.adviser.state import State
+from ...cpu_db import CPUDatabase
+from ...exceptions import EagerStopPipeline
+from ...exceptions import NotAcceptable
+from ...state import State
+
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
@@ -53,18 +54,21 @@ if TYPE_CHECKING:
 
 
 _LOGGER = logging.getLogger(__name__)
+_VALUE_LIST_ITEM_TYPE = Union[Optional[str], Optional[int], None]
+_VALUE_LIST_TYPE = List[_VALUE_LIST_ITEM_TYPE]
 
 
 class _ValueList:
     """A class that overrides `in` to transparently handle included and excluded values."""
 
     __slots__ = ["_list"]
+    _list: Union[_VALUE_LIST_TYPE, Dict[str, _VALUE_LIST_TYPE]]
 
-    def __init__(self, obj: Union[List[object], Dict[str, List[object]]]) -> None:
+    def __init__(self, obj: Union[_VALUE_LIST_TYPE, Dict[str, _VALUE_LIST_TYPE]]) -> None:
         """Initialize self."""
         self._list = obj
 
-    def __contains__(self, item: str) -> bool:
+    def contains(self, item: _VALUE_LIST_ITEM_TYPE) -> bool:
         """Override default in behavior based on the YAML definition."""
         if isinstance(self._list, list):
             return self._list.__contains__(item)
@@ -77,6 +81,8 @@ class _ValueListBaseImage:
 
     # Image name mapped to image tag; the "_not" flag specifies if images were declared as part of "not".
     __slots__ = ["_images", "_not"]
+    _images: Dict[Optional[str], Set[str]]
+    _not: bool
 
     def __init__(self, obj: Union[List[Optional[str]], Dict[str, List[Optional[str]]]]) -> None:
         """Initialize self."""
@@ -110,7 +116,7 @@ class _ValueListBaseImage:
             tag = image[1]
             tag_exp_set.add(tag)
 
-    def __contains__(self, item: Optional[str]) -> bool:
+    def contains(self, item: Optional[str]) -> bool:
         """Check if the given item (base image) is in the provided listing."""
         if item is None:
             # Match `None` image in the image listing.
@@ -336,7 +342,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             if (
                 allowed_recommendation_types is not None
                 and builder_context.recommendation_type is not None
-                and builder_context.recommendation_type.name.lower() not in _ValueList(allowed_recommendation_types)
+                and not _ValueList(allowed_recommendation_types).contains(builder_context.recommendation_type.name.lower())
             ):
                 _LOGGER.debug(
                     "%s: Not registering for adviser pipeline with recommendation type %s",
@@ -359,7 +365,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             if (
                 allowed_decision_types is not None
                 and builder_context.decision_type is not None
-                and builder_context.decision_type.name.lower() not in _ValueList(allowed_decision_types)
+                and not _ValueList(allowed_decision_types).contains(builder_context.decision_type.name.lower())
             ):
                 _LOGGER.debug(
                     "%s: Not registering for dependency monkey pipeline with decision type %s",
@@ -445,15 +451,15 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             cpu_models = hardware_dict.get("cpu_models")
             cpu_flags = hardware_dict.get("cpu_flags") or []
             gpu_models = hardware_dict.get("gpu_models")
-            if cpu_families is not None and hw_used.cpu_family not in _ValueList(cpu_families):
+            if cpu_families is not None and not _ValueList(cpu_families).contains(hw_used.cpu_family):
                 _LOGGER.debug("%s: Not matching CPU family used (using %r)", unit_name, hw_used.cpu_family)
                 return False
 
-            if cpu_models is not None and hw_used.cpu_model not in _ValueList(cpu_models):
+            if cpu_models is not None and not _ValueList(cpu_models).contains(hw_used.cpu_model):
                 _LOGGER.debug("%s: Not matching CPU model used (using %r)", unit_name, hw_used.cpu_model)
                 return False
 
-            if gpu_models is not None and hw_used.gpu_model not in _ValueList(gpu_models):
+            if gpu_models is not None and not _ValueList(gpu_models).contains(hw_used.gpu_model):
                 _LOGGER.debug("%s: Not matching GPU model used (using %r)", unit_name, hw_used.gpu_model)
                 return False
 
@@ -523,7 +529,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             return False
 
         platforms = runtime_environment_dict.get("platforms")
-        if platforms is not None and runtime_used.platform not in _ValueList(platforms):
+        if platforms is not None and not _ValueList(platforms).contains(runtime_used.platform):
             _LOGGER.debug("%s: Not matching platform used (using %r)", unit_name, runtime_used.platform)
             return False
 
@@ -568,7 +574,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             return False
 
         base_images = runtime_environment_dict.get("base_images")
-        if base_images is not None and runtime_used.base_image not in _ValueListBaseImage(base_images):
+        if base_images is not None and _ValueListBaseImage(base_images).contains(runtime_used.base_image):
             _LOGGER.debug("%s: Not matching base image used (using %r)", unit_name, runtime_used.base_image)
             return False
 
@@ -1009,7 +1015,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
         package_version_from = state_prescription.get("package_version_from") or []
         # XXX: we explicitly do not consider runtime environment as we expect to have it only one here.
         dependents = {
-            i[0] for i in self.context.dependents.get(package_version.name, {}).get(package_version.to_tuple(), set())
+            i[0] for i in self.context.dependents.get(package_version.name, {}).get(package_version.to_strict_tuple(), set())
         }
 
         for resolved_dependency in package_version_from:

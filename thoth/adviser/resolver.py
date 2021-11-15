@@ -20,15 +20,16 @@
 import os
 import time
 import math
-from typing import Generator
-from typing import Dict
-from typing import Tuple
 from typing import Any
-from typing import Optional
-from typing import List
-from typing import Union
-from typing import Set
+from typing import Dict
+from typing import FrozenSet
+from typing import Generator
 from typing import Iterator
+from typing import List
+from typing import Optional
+from typing import Set
+from typing import Tuple
+from typing import Union
 from typing import TYPE_CHECKING
 import logging
 from itertools import chain
@@ -41,7 +42,7 @@ import attr
 from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 from thoth.python import Project
-from thoth.storages import GraphDatabase
+from thoth.storages.graph.postgres import GraphDatabase
 from thoth.storages.exceptions import NotFoundError
 
 from .beam import Beam
@@ -167,13 +168,13 @@ class Resolver:
         type=Optional[int],
         kw_only=True,
         default=DEFAULT_BEAM_WIDTH,
-        converter=_beam_width,  # type: ignore
+        converter=_beam_width,
     )
     limit_latest_versions = attr.ib(
         type=Optional[int],
         kw_only=True,
         default=DEFAULT_LIMIT_LATEST_VERSIONS,
-        converter=_limit_latest_versions,  # type: ignore
+        converter=_limit_latest_versions,
     )
 
     prescription = attr.ib(type=Optional["Prescription"], default=None, kw_only=True)
@@ -314,7 +315,7 @@ class Resolver:
         log_level: int = logging.DEBUG,
     ) -> Optional[State]:
         """Run steps and generate a new state."""
-        package_version_tuple = package_version.to_tuple()
+        package_version_tuple = package_version.to_strict_tuple_locked()
 
         multi_package_resolution = False
         if package_version.name in state.resolved_dependencies:
@@ -513,7 +514,11 @@ class Resolver:
         were installed. Pipfile.lock does not need to state the python index
         used when installing dependencies.
         """
-        sources = list(self.project.pipfile_lock.meta.sources.values())
+        pipfile_lock = self.project.pipfile_lock
+        if not pipfile_lock:
+            return None
+
+        sources = list(pipfile_lock.meta.sources.values())
         source_urls = {source.url for source in sources}
 
         enabled_indexes = set(self.graph.get_python_package_index_urls_all(enabled=True))
@@ -793,7 +798,7 @@ class Resolver:
 
     def _run_pseudonym_units(self, state: State, package_tuple: Tuple[str, str, str]) -> None:
         """Run pseudonym units the given package tuple."""
-        package_version: PackageVersion = self.context.get_package_version(package_tuple)
+        package_version: PackageVersion = self.context.get_package_version_strict(package_tuple)
         for unit in self.pipeline.pseudonyms_dict.get(package_tuple[0], []):
             _LOGGER.debug("Running pseudonym %r", unit.name)
             unit.unit_run = True
@@ -857,13 +862,13 @@ class Resolver:
         # Obtain extras for the given package. Extras are non-empty only for direct dependencies. If indirect
         # dependencies use extras, they don't need to be explicitly stated as solvers mark "hard" dependency on
         # the given package.
-        package_version: PackageVersion = self.context.get_package_version(package_tuple, graceful=False)
+        package_version: PackageVersion = self.context.get_package_version_strict(package_tuple)
 
         state.remove_unresolved_dependency(package_tuple)
 
-        extras = _NO_EXTRAS
+        extras: FrozenSet[Union[str, None]] = _NO_EXTRAS
         if package_version.extras:
-            extras = frozenset(list(package_version.extras) + [None])
+            extras = frozenset(set(package_version.extras) | {None})
 
         try:
             dependencies = self.graph.get_depends_on(
@@ -950,7 +955,7 @@ class Resolver:
         """
         _LOGGER.debug("Expanding state with dependencies based on packages solved in software environments")
 
-        package_tuple = package_version.to_tuple()
+        package_tuple = package_version.to_strict_tuple_locked()
         all_dependencies: Dict[str, List[Tuple[str, str, str]]] = {}
         newly_added: List[Tuple[str, str, str]] = []
         for dependency_name, dependency_version in dependencies:
@@ -1087,8 +1092,8 @@ class Resolver:
                 all_dependencies[dependency_name] = [resolved_dependency]
                 continue
 
-            package_versions = [self.context.get_package_version(d) for d in dependency_tuples]
-            package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)  # type: ignore
+            package_versions = [self.context.get_package_version_strict(d) for d in dependency_tuples]
+            package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
             try:
                 package_versions = list(self._run_sieves(package_versions))
             except SkipPackage as exc:
@@ -1261,7 +1266,10 @@ class Resolver:
                     self.context.limit,
                 )
 
-                max_score = final_state.score if max_score is None else max(max_score, final_state.score)
+                if max_score is None:
+                    max_score = final_state.score
+                else:
+                    max_score = max(max_score, final_state.score)
 
                 if (
                     self.context.iteration - last_iteration_logged > self.log_iteration

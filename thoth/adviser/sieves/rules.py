@@ -70,20 +70,17 @@ class SolverRulesSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages that have rules assigned."""
         for package_version in package_versions:
-            package_tuple = package_version.to_tuple()
+            package_tuple = package_version.to_strict_tuple_locked()
 
             solver_rules = (
                 # Rules specific to index.
                 self.context.graph.get_python_package_version_solver_rules_all(
-                    package_version.name,
-                    package_version.locked_version,
-                    package_version.index.url,
+                    *package_tuple,
                 )
                 +
                 # Rules agnostic to index.
                 self.context.graph.get_python_package_version_solver_rules_all(
-                    package_version.name,
-                    package_version.locked_version,
+                    package_tuple[0], package_tuple[1],
                 )
             )
 

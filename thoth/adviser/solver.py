@@ -23,6 +23,7 @@ no need to perform resolving by actually installing Python packages (as this
 version resolution is dynamic in case of Python).
 """
 
+import logging
 from typing import List
 from typing import Dict
 from typing import Generator
@@ -34,15 +35,16 @@ from packaging.requirements import Requirement
 from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
 from thoth.python import Source
-from thoth.storages import GraphDatabase
-from thoth.solver.python.base import DependencyParser
-from thoth.solver.python.base import ReleasesFetcher
-from thoth.solver.python.base import Solver
+from thoth.storages.graph.postgres import GraphDatabase
 from thoth.solver.python import PythonDependencyParser
+from thoth.solver.exceptions import SolverException
+from thoth.solver.exceptions import NoReleasesFound
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True)
-class GraphReleasesFetcher(ReleasesFetcher):  # type: ignore
+class GraphReleasesFetcher:
     """Fetch releases for packages from the graph database."""
 
     graph = attr.ib(type=GraphDatabase, kw_only=True)
@@ -83,7 +85,7 @@ class GraphReleasesFetcher(ReleasesFetcher):  # type: ignore
 
 
 @attr.s(slots=True)
-class PackageVersionDependencyParser(DependencyParser):  # type: ignore
+class PackageVersionDependencyParser:
     """Parse an instance of PackageVersion to Dependency object needed by solver."""
 
     def parse(self, dependencies: List[PackageVersion]) -> Generator[Requirement, None, None]:
@@ -95,11 +97,38 @@ class PackageVersionDependencyParser(DependencyParser):  # type: ignore
 
 
 @attr.s(slots=True)
-class PythonGraphSolver(Solver):  # type: ignore
+class PythonGraphSolver:
     """Solve Python dependencies based on data available in the graph database."""
 
     dependency_parser = attr.ib(type=PackageVersionDependencyParser, kw_only=True)
     releases_fetcher = attr.ib(type=GraphReleasesFetcher, kw_only=True)
+
+    def solve(self, dependencies: List[PackageVersion], graceful: bool = True) -> Dict[str, List[Tuple[str, str]]]:
+        """Solve `dependencies` against a repository."""
+        solved: Dict[str, List[Tuple[str, str]]] = {}
+        for dep in self.dependency_parser.parse(dependencies):
+            _LOGGER.debug("Fetching releases for: %r", dep)
+
+            name, releases = self.releases_fetcher.fetch_releases(dep.name)
+
+            if name in solved:
+                raise SolverException("Dependency: {} is listed multiple times".format(name))
+
+            if not releases:
+                if graceful:
+                    _LOGGER.info("No releases found for package %r", dep.name)
+                    continue
+                else:
+                    raise NoReleasesFound("No releases found for package {!r}".format(dep.name))
+
+            solved[name] = []
+            for release in releases:
+                if release[0] in dep.specifier:
+                    solved[name].append(release)
+
+            _LOGGER.debug("  matching: %s", solved[name])
+
+        return solved
 
 
 @attr.s(slots=True)

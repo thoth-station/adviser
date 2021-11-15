@@ -39,7 +39,7 @@ from ...step import Step
 
 
 if TYPE_CHECKING:
-    from ..pipeline_builder import PipelineBuilderContext
+    from ...pipeline_builder import PipelineBuilderContext
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -85,11 +85,13 @@ class SetScoreStep(Step):
         self, _: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Score the given package."""
+        package_tuple = package_version.to_strict_tuple_locked()
+
         if (
             self.configuration["package_version"] is not None
-            and package_version.locked_version != self.configuration["package_version"]
+            and package_tuple[1] != self.configuration["package_version"]
         ) or (
-            self.configuration["index_url"] is not None and package_version.index.url != self.configuration["index_url"]
+            self.configuration["index_url"] is not None and package_tuple[2] != self.configuration["index_url"]
         ):
             return None
 

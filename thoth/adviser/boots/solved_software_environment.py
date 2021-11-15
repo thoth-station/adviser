@@ -53,10 +53,14 @@ class SolvedSoftwareEnvironmentBoot(Boot):
 
     def run(self) -> None:
         """Check for version clash in packages."""
+        python_version = self.context.project.runtime_environment.python_version
+        if python_version is None:
+            raise ValueError
+
         if self.context.graph.solved_software_environment_exists(
             os_name=self.context.project.runtime_environment.operating_system.name,
             os_version=self.context.project.runtime_environment.operating_system.version,
-            python_version=self.context.project.runtime_environment.python_version,
+            python_version=python_version,
         ):
             return
 

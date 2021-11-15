@@ -32,11 +32,11 @@ from voluptuous import Schema
 from voluptuous import Required
 from thoth.python import PackageVersion
 
-from thoth.adviser.state import State
 from packaging.specifiers import SpecifierSet
 from .unit import UnitPrescription
 from .schema import PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA
 from .schema import PRESCRIPTION_STEP_RUN_SCHEMA
+from ...state import State
 
 if TYPE_CHECKING:
     from ...pipeline_builder import PipelineBuilderContext
@@ -125,10 +125,11 @@ class StepPrescription(UnitPrescription):
         self, state: State, package_version: PackageVersion
     ) -> Optional[Tuple[Optional[float], Optional[List[Dict[str, str]]]]]:
         """Run main entry-point for steps to filter and score packages."""
-        if not self._index_url_check(self._index_url, package_version.index.url):
+        _, locked_version, index_url = package_version.to_strict_tuple_locked()
+        if not self._index_url_check(self._index_url, index_url):
             return None
 
-        if self._specifier and package_version.locked_version not in self._specifier:
+        if self._specifier and locked_version not in self._specifier:
             return None
 
         if self._develop is not None and package_version.develop != self._develop:

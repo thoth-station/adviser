@@ -19,21 +19,20 @@
 
 from typing import Union
 
-from .pseudonym import Pseudonym
 from .boot import Boot
+from .prescription.v1.boot import BootPrescription as BootPrescriptionV1
+from .prescription.v1.pseudonym import PseudonymPrescription as PseudonymPrescriptionV1
+from .prescription.v1.sieve import SievePrescription as SievePrescriptionV1
+from .prescription.v1.step import StepPrescription as StepPrescriptionV1
+from .prescription.v1.stride import StridePrescription as StridePrescriptionV1
+from .prescription.v1.unit import UnitPrescription as UnitPrescriptionV1
+from .prescription.v1.wrap import WrapPrescription as WrapPrescriptionV1
+from .pseudonym import Pseudonym
 from .sieve import Sieve
 from .step import Step
 from .stride import Stride
-from .wrap import Wrap
 from .unit import Unit
-
-from thoth.adviser.prescription.v1.boot import BootPrescription as BootPrescriptionV1
-from thoth.adviser.prescription.v1.pseudonym import PseudonymPrescription as PseudonymPrescriptionV1
-from thoth.adviser.prescription.v1.sieve import SievePrescription as SievePrescriptionV1
-from thoth.adviser.prescription.v1.step import StepPrescription as StepPrescriptionV1
-from thoth.adviser.prescription.v1.stride import StridePrescription as StridePrescriptionV1
-from thoth.adviser.prescription.v1.unit import UnitPrescription as UnitPrescriptionV1
-from thoth.adviser.prescription.v1.wrap import WrapPrescription as WrapPrescriptionV1
+from .wrap import Wrap
 
 
 UnitType = Union[Unit, UnitPrescriptionV1]

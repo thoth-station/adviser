@@ -68,15 +68,16 @@ class FilterIndexSieve(Sieve):
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
         """Filter out packages based on Python package index configured for the given package."""
         for package_version in package_versions:
-            if package_version.name != self.configuration["package_name"]:
+            package_tuple = package_version.to_strict_tuple_locked()
+            if package_tuple[0] != self.configuration["package_name"]:
                 yield package_version
 
-            if package_version.index.url not in self.configuration["index_url"]:
+            if package_tuple[2] not in self.configuration["index_url"]:
                 _LOGGER.warning(
                     "Removing package %r in version %r as index used %r does not conform to any supplied %r",
-                    package_version.name,
-                    package_version.version,
-                    package_version.index.url,
+                    package_tuple[0],
+                    package_tuple[1],
+                    package_tuple[2],
                     self.configuration["index_url"],
                 )
                 continue
