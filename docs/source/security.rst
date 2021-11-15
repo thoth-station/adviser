@@ -80,7 +80,7 @@ security scanners. Quay scans container images for security vulnerabilities.
 Information about vulnerabilities in container images is automatically
 aggregated by Thoth's background data aggregation logic for container images
 provided by Thoth team. By using these container images, users get fine-grained
-control on vulnerabilities present also on container image level.
+control on vulnerabilities present on the container image level in addition to their software stacks.
 
 Using security advises in OpenShift S2I
 #######################################
