@@ -188,9 +188,14 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
     }
 )
 
+
+_METADATA_SCHEMA = Schema({Required(str): object})
+
+
 _UNIT_SCHEMA_BASE_DICT = {
     Required("name"): _NONEMPTY_STRING,
     Required("should_include"): PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA,
+    Optional("metadata"): _METADATA_SCHEMA,
 }
 
 
@@ -648,5 +653,6 @@ PRESCRIPTION_UNITS_SCHEMA = Schema(
 PRESCRIPTION_SCHEMA = Schema(
     {
         Required("units"): PRESCRIPTION_UNITS_SCHEMA,
+        Optional("metadata"): _METADATA_SCHEMA,
     }
 )

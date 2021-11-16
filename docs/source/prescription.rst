@@ -138,6 +138,8 @@ unit's base type:
     steps: []
     strides: []
     wraps: []
+  metadata:
+    <key>: <value>
 
 Each unit, regardless of its type, has the following schema:
 
@@ -145,6 +147,8 @@ Each unit, regardless of its type, has the following schema:
 
   name: '<unit_name>'
   type: '<unit_type>'
+  metadata:
+    <key>: <value>
   should_include:
     <should_include_section>
   match:
@@ -172,6 +176,15 @@ Each prescription pipeline unit can be of a base type ``boot``, ``pseudonym``,
 types. The derived types provide certain additional functionality in opposite
 to the base types. See corresponding prescription pipeline unit documentation
 for available types.
+
+``metadata``
+############
+
+This field keeps metadata associated with the given prescription in a form of
+``key: value`` pairs - ``key`` is of type string and ``value`` is any JSON
+serializable object. These metadata are not used during the resolution process
+and can be used by tools that integrate with prescriptions. This applies for
+prescription unit metadata as well as for metadata stored on YAML file level.
 
 ``should_include``
 ##################
