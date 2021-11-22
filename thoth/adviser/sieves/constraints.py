@@ -108,7 +108,8 @@ class ConstraintsSieve(Sieve):
     def pre_run(self) -> None:
         """Initialize this pipeline unit before any resolution run."""
         self.packages_seen.clear()
-        self.specifier_set = SpecifierSet(self.configuration.get("specifier") or "")
+        specifier = self.configuration.get("specifier")
+        self.specifier_set = SpecifierSet(specifier if specifier not in ("*", None) else "")
         # Explicitly turn on pre-releases here, as pre-releases are handled by a different pipeline unit.
         self.specifier_set.prereleases = True
         super().pre_run()
