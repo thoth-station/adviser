@@ -45,9 +45,9 @@ from thoth.adviser.step import Step
 from thoth.adviser.sieve import Sieve
 from thoth.common import RuntimeEnvironment
 from thoth.python import PackageVersion
-from thoth.python import PipfileLock
 from thoth.python import Source
 from thoth.python import Project
+from thoth.python import PipfileLock
 from thoth.storages import GraphDatabase
 from thoth.storages.exceptions import NotFoundError
 
@@ -2006,6 +2006,19 @@ class TestResolver(AdviserTestCase):
 
         assert resolver.beam.size == 0
 
+    def test_maybe_score_user_lock_file_hash_differ(self, resolver: Resolver) -> None:
+        """Test not scoring user stack lock file if lockfile hash is wrong."""
+        resolver._init_context()
+        assert "pandas" not in resolver.project.pipfile.packages.packages
+        resolver.project.pipfile.add_requirement("pandas==1.3.4")
+
+        assert resolver.beam.size == 0
+
+        resolver.should_receive("_prepare_user_lock_file").and_return(None).times(0)
+        resolver._maybe_score_user_lock_file()
+
+        assert resolver.beam.size == 0
+
     def test_maybe_score_user_lock_file_sieves_removal(self, resolver: Resolver) -> None:
         """Test scoring user stack lock file when sieves removed a package."""
         resolver._init_context()
@@ -2449,6 +2462,7 @@ class TestResolver(AdviserTestCase):
                 PackageVersion(name="tensorflow", version="==2.2.0", index=pypi, develop=False),
             ],
         )
+        resolver.project.pipfile_lock.meta.set_hash(resolver.project.pipfile.hash())
 
         assert "functools32" not in (pv.name for pv in resolver.project.iter_dependencies(with_devel=True))
         assert "functools32" in (pv.name for pv in resolver.project.iter_dependencies_locked(with_devel=True))
@@ -2484,6 +2498,7 @@ class TestResolver(AdviserTestCase):
                 PackageVersion(name="functools32", version="==3.2.3-1", index=pypi, develop=False),
             ],
         )
+        resolver.project.pipfile_lock.meta.set_hash(resolver.project.pipfile.hash())
 
         assert "functools32" in (pv.name for pv in resolver.project.iter_dependencies(with_devel=True))
         assert "functools32" in (pv.name for pv in resolver.project.iter_dependencies_locked(with_devel=True))

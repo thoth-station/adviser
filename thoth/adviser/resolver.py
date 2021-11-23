@@ -578,6 +578,14 @@ class Resolver:
             _LOGGER.info("Cannot score user's stack - no user's stack provided - see %s", jl("user_stack"))
             return None
 
+        if self.project.pipfile.hash() != self.project.pipfile_lock.meta.hash:
+            _LOGGER.warning(
+                "Skipping user's stack scoring - Pipfile hash does not correspond to the hash stated in "
+                "the lock file: was Pipfile adjusted - see %s",
+                jl("user_stack"),
+            )
+            return None
+
         self._prepare_user_lock_file(with_devel=True)
 
         skipped_packages: List[PackageVersion] = []
