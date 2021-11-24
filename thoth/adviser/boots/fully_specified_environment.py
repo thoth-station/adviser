@@ -52,10 +52,12 @@ class FullySpecifiedEnvironment(Boot):
     def run(self) -> None:
         """Check for version clash in packages."""
         if not self.context.project.runtime_environment.is_fully_specified():
-            msg = f"Software environment supplied is not fully specified, OS name "
-            f"is {self.context.project.runtime_environment.operating_system.name!r} "
-            f"in version {self.context.project.runtime_environment.operating_system.version!r} "
-            f"using Python {self.context.project.runtime_environment.python_version!r}"
+            msg = (
+                f"Software environment supplied is not fully specified, OS name "
+                f"is {self.context.project.runtime_environment.operating_system.name!r} "
+                f"in version {self.context.project.runtime_environment.operating_system.version!r} "
+                f"using Python {self.context.project.runtime_environment.python_version!r}"
+            )
 
             self.context.stack_info.append({"message": msg, "type": "ERROR", "link": jl("fully_specified_env")})
 
