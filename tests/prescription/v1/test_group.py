@@ -68,7 +68,9 @@ run:
         PRESCRIPTION_GROUP_STEP_SCHEMA(prescription)
         GroupStepPrescription.set_prescription(prescription)
 
-        assert list(GroupStepPrescription.should_include(builder_context)) == [
+        configurations = list(GroupStepPrescription.should_include(builder_context))
+
+        assert configurations == [
             {
                 "match": {
                     "package_version": {
@@ -175,6 +177,9 @@ run:
             },
         ]
 
+        for conf in configurations:
+            GroupStepPrescription.CONFIGURATION_SCHEMA(conf)
+
     def test_should_include_groups(self, builder_context: PipelineBuilderContext) -> None:
         """Test calculating configuration for the given prescription unit, multiple groups."""
         prescription_str = f"""\
@@ -212,7 +217,9 @@ run:
         PRESCRIPTION_GROUP_STEP_SCHEMA(prescription)
         GroupStepPrescription.set_prescription(prescription)
 
-        assert list(GroupStepPrescription.should_include(builder_context)) == [
+        configurations = list(GroupStepPrescription.should_include(builder_context))
+
+        assert configurations == [
             {
                 "match": {
                     "package_version": {
@@ -296,3 +303,6 @@ run:
                 },
             },
         ]
+
+        for conf in configurations:
+            GroupStepPrescription.CONFIGURATION_SCHEMA(conf)

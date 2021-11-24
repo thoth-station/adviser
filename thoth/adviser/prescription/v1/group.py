@@ -24,11 +24,13 @@ from typing import Generator
 from typing import Optional
 import logging
 
-from voluptuous import Schema
+from voluptuous import All
+from voluptuous import Length
 from voluptuous import Required
+from voluptuous import Schema
 
 from packaging.specifiers import SpecifierSet
-from .schema import PRESCRIPTION_GROUP_STEP_MATCH_SCHEMA
+from .schema import PACKAGE_VERSION_REQUIRED_NAME_SCHEMA
 from .schema import PRESCRIPTION_GROUP_STEP_RUN_SCHEMA
 from .step import StepPrescription
 
@@ -48,7 +50,12 @@ class GroupStepPrescription(StepPrescription):
     CONFIGURATION_SCHEMA: Schema = Schema(
         {
             Required("package_name"): str,
-            Required("match"): PRESCRIPTION_GROUP_STEP_MATCH_SCHEMA,
+            Required("match"): {
+                Required("package_version"): PACKAGE_VERSION_REQUIRED_NAME_SCHEMA,
+                Required("state"): Schema(
+                    {Required("resolved_dependencies"): All([PACKAGE_VERSION_REQUIRED_NAME_SCHEMA], Length(min=1))}
+                ),
+            },
             Required("multi_package_resolution"): True,  # Required to match multiple packages.
             Required("run"): PRESCRIPTION_GROUP_STEP_RUN_SCHEMA,
             Required("prescription"): Schema({"run": bool}),
