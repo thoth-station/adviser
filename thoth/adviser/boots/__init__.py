@@ -18,13 +18,14 @@
 """Boot units implemented in adviser."""
 
 from .cve_timestamp import CveTimestampBoot
+from .environment_info import EnvironmentInfoBoot
 from .fully_specified_environment import FullySpecifiedEnvironment
 from .gpu import GPUBoot
 from .labels import LabelsBoot
 from .pipfile_hash import PipfileHashBoot
+from .platform import PlatformBoot
 from .prescription_release import PrescriptionReleaseBoot
 from .python_version import PythonVersionBoot
-from .environment_info import EnvironmentInfoBoot
 from .rhel_version import RHELVersionBoot
 from .solved_software_environment import SolvedSoftwareEnvironmentBoot
 from .solvers_configured import SolversConfiguredBoot
@@ -40,6 +41,7 @@ from .ubi import UbiBoot
 # can be mentioned here.
 __all__ = [
     # "MemTraceBoot",
+    "PlatformBoot",
     "CveTimestampBoot",
     "LabelsBoot",
     "PipfileHashBoot",  # Should be placed before any changes to the input.
