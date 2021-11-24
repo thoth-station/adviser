@@ -254,6 +254,7 @@ black = true
             os_name="fedora",
             os_version="31",
             python_version="3.7",
+            marker_evaluation_result=True,
         ).and_return("python_version >= '3.7'").once()
 
         assert "THOTH_ADVISER_METADATA" not in os.environ
@@ -466,6 +467,7 @@ black = true
             os_name="fedora",
             os_version="31",
             python_version="3.7",
+            marker_evaluation_result=True,
         ).and_return("python_version >= '3.7'").and_return("python_version >= '3' or 1").twice()
 
         product = Product.from_final_state(context=context, state=state)
@@ -623,6 +625,7 @@ black = true
             os_name="fedora",
             os_version="31",
             python_version="3.7",
+            marker_evaluation_result=True,
         ).and_return("python_version >= '3.7'").once()
 
         product = Product.from_final_state(context=context, state=state)
@@ -795,6 +798,7 @@ black = true
             os_name="fedora",
             os_version="31",
             python_version="3.7",
+            marker_evaluation_result=True,
         ).and_return("python_version >= '3.8'").once()
 
         context.graph.should_receive("get_python_environment_marker").with_args(
@@ -806,6 +810,7 @@ black = true
             os_name="fedora",
             os_version="31",
             python_version="3.7",
+            marker_evaluation_result=True,
         ).and_return(None).once()
 
         product = Product.from_final_state(context=context, state=state)
