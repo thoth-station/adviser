@@ -72,6 +72,7 @@ prometheus_registry = CollectorRegistry()
 
 _THOTH_DEPLOYMENT_NAME = os.getenv("THOTH_DEPLOYMENT_NAME")
 _THOTH_METRICS_PUSHGATEWAY_URL = os.getenv("PROMETHEUS_PUSHGATEWAY_URL")
+_DEFAULT_PLATFORM = "linux-x86_64"
 
 
 _METRIC_INFO = Gauge(
@@ -151,10 +152,14 @@ def _instantiate_project(
         except json.decoder.JSONDecodeError:
             constraints_instance = Constraints.from_string(constraints_content)
 
+    runtime_environment = runtime_environment or RuntimeEnvironment.from_dict({})
+    if not runtime_environment.platform:
+        runtime_environment.platform = _DEFAULT_PLATFORM
+
     project = Project(
         pipfile=pipfile,
         pipfile_lock=pipfile_lock,
-        runtime_environment=runtime_environment or RuntimeEnvironment.from_dict({}),
+        runtime_environment=runtime_environment,
         constraints=constraints_instance or Constraints(),
     )
 
