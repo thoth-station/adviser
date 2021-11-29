@@ -8,7 +8,7 @@ Predictor based on Temporal Difference learning (TD-learning)
   Check :ref:`high level predictor docs <predictor>` for predictor basics.
 
 See `Wikipedia for a brief intro to Temporal Difference learning
-<https://en.wikipedia.org/wiki/Monte_Carlo_tree_search>`__.
+<https://en.wikipedia.org/wiki/Temporal_difference_learning>`__.
 
 Also check :ref:`Monte Carlo Tree Search <mcts>` for additional details..
 
