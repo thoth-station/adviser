@@ -1,4 +1,32 @@
 
+## Release 0.48.0 (2021-11-29T21:32:10)
+* Take environment markers that match the given runtime environment
+* Fix link to temporal difference learning on Wikipedia
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Fix reporting fully specified environment
+* Fix configuration schema for group step
+* Add a boot that checks if users use supported platform
+* Set default platform if None is explicitly provided
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Do not score user's stack if Pipfile was adjusted
+* Allow constraints without version identifier
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* add kebechet to crossroads in docs
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Remove platform boot
+* Fix history cleaning
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Update docs/source/security.rst
+* Introduce metadata in prescriptions
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Remove unused termial function
+* Document Quay security on container images
+* Move recommendation type information more to the top
+* Implement group step prescription
+
 ## Release 0.47.0 (2021-11-08T11:12:21)
 * Provide information about last CVE update to users
 * :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
