@@ -73,6 +73,28 @@ class TestConstraintsSieve(AdviserUnitTestCase):
         )
         assert list(self.UNIT_TESTED.should_include(builder_context)) == []
 
+    def test_include_version(self, builder_context: PipelineBuilderContext, context: "Context") -> None:
+        """Test not including and running this pipeline unit if version is not provided in constraints."""
+        builder_context.project.runtime_environment.python_version = "3.9"
+        builder_context.project.constraints = Constraints.from_file(
+            str(self.data_dir / "constraints" / "constraints_1.txt")
+        )
+        config = list(self.UNIT_TESTED.should_include(builder_context))
+
+        assert len(config) == 1
+        assert config == [{"package_name": "numpy", "specifier": "*"}]
+
+        unit = self.UNIT_TESTED()
+        unit.update_configuration(config[0])
+
+        package_version_1 = PackageVersion(
+            name="numpy", version="==0.0.1", index=Source("https://pypi.org/simple"), develop=True
+        )
+
+        with unit.assigned_context(context):
+            unit.pre_run()
+            assert list(unit.run((pv for pv in (package_version_1,)))) == [package_version_1]
+
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
         builder_context.project.constraints = Constraints.from_file(
