@@ -99,6 +99,13 @@ class Product:
                 # rather clone it and used a cloned version not to clash with environment markers.
                 environment_markers = []
                 for dependent_tuple in dependents_tuples:
+                    # The `marker_evaluation_result=True` part will make sure the right environment
+                    # marker is picked if there are multiple dependencies considered. See for example
+                    # pandas==1.3.4:
+                    #   "numpy (>=1.19.2) ; platform_machine == "aarch64" and python_version < "3.10"
+                    #   "numpy (>=1.20.0) ; platform_machine == "arm64" and python_version < "3.10"
+                    #   "numpy (>=1.21.0) ; python_version >= "3.10"
+                    # We pick the first matching, which is fine.
                     try:
                         marker = context.graph.get_python_environment_marker(
                             *dependent_tuple[0],
@@ -107,6 +114,7 @@ class Product:
                             os_name=dependent_tuple[1],
                             os_version=dependent_tuple[2],
                             python_version=dependent_tuple[3],
+                            marker_evaluation_result=True,
                         )
                     except NotFoundError:
                         # This can happen if we do resolution that is agnostic to runtime
