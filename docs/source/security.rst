@@ -38,6 +38,16 @@ known vulnerabilities in Python packages.
         <iframe src="https://www.youtube.com/embed/R2i2lF4Ll4g" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
     </div>
 
+Vulnerability Static Analysis for Containers based on Quay Clair
+################################################################
+
+When using container images provided by Thoth team, users get additional
+guidance on the container image level with respect to vulnerabilities. `Quay
+Clair <https://quay.github.io/clair/>`__ is used to obtain vulnerability
+related reports. These reports are automatically synced into Thoth's knowledge
+base `using prescriptions and are available to users who consume Thoth advisories
+<https://github.com/thoth-station/prescriptions/tree/master/prescriptions/_containers>`__.
+
 Bandit
 ######
 
