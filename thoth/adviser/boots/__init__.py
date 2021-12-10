@@ -31,6 +31,7 @@ from .solved_software_environment import SolvedSoftwareEnvironmentBoot
 from .solvers_configured import SolversConfiguredBoot
 from .thoth_s2i import ThothS2IBoot
 from .thoth_s2i_info import ThothS2IInfoBoot
+from .thoth_search import ThothSearchBoot
 from .ubi import UbiBoot
 
 # from ._debug import MemTraceBoot
@@ -41,6 +42,7 @@ from .ubi import UbiBoot
 # can be mentioned here.
 __all__ = [
     # "MemTraceBoot",
+    "ThothSearchBoot",
     "PlatformBoot",
     "CveTimestampBoot",
     "LabelsBoot",
