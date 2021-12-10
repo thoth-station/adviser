@@ -33,6 +33,7 @@ from .thoth_s2i import ThothS2IBoot
 from .thoth_s2i_info import ThothS2IInfoBoot
 from .thoth_search import ThothSearchBoot
 from .ubi import UbiBoot
+from .version_check import VersionCheckBoot
 
 # from ._debug import MemTraceBoot
 
@@ -47,6 +48,7 @@ __all__ = [
     "CveTimestampBoot",
     "LabelsBoot",
     "PipfileHashBoot",  # Should be placed before any changes to the input.
+    "VersionCheckBoot",
     "GPUBoot",  # Should be placed before any GPU specific pipeline unit.
     "ThothS2IBoot",
     "ThothS2IInfoBoot",
