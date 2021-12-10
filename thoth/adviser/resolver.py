@@ -684,6 +684,7 @@ class Resolver:
                         "message": error_msg,
                         "type": "ERROR",
                         "link": jl("solve_direct"),
+                        "package_name": package_version.name,
                     }
                 )
                 _LOGGER.warning("%s - see %s", error_msg, jl("solve_direct"))
