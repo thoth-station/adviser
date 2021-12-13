@@ -71,4 +71,4 @@ class PlatformBoot(Boot):
                 "link": self._JUSTIFICATION_LINK,
             }
         )
-        raise NotAcceptable("%s - see %s", msg, self._JUSTIFICATION_LINK)
+        raise NotAcceptable(f"{msg} - see {self._JUSTIFICATION_LINK}")
