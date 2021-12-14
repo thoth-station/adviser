@@ -16,6 +16,12 @@ recommendations, there are multiple ways on how to integrate:
 Pre-requirements for your project
 =================================
 
+.. code-block:: console
+
+  See `thoth-station/cli-examples repository
+  <https://github.com/thoth-station/cli-examples/>`__ as an example on how to
+  structure your project and use Thoth.
+
 To let Thoth manage your Python application, your application has to use
 `Pipenv <https://pipenv.readthedocs.io/>`__ to manage virtual environment and
 application dependencies. Pipenv's two main files, ``Pipfile`` and
