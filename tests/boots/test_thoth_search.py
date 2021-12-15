@@ -22,7 +22,7 @@ import random
 from thoth.adviser.boots import ThothSearchBoot
 from thoth.adviser.context import Context
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
-from .base import AdviserUnitTestCase
+from ..base import AdviserUnitTestCase
 
 
 class TestThothSearchBoot(AdviserUnitTestCase):
