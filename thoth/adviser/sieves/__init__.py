@@ -17,8 +17,8 @@
 
 """Implementation of sieves used in adviser pipeline."""
 
-from .cve import CveSieve
 from .constraints import ConstraintsSieve
+from .cve import CveSieve
 from .experimental_filter_conf_index import FilterConfiguredIndexSieve
 from .experimental_package_index import PackageIndexConfigurationSieve
 from .experimental_prereleases import SelectiveCutPreReleasesSieve
@@ -28,6 +28,8 @@ from .legacy_version import LegacyVersionSieve
 from .locked import CutLockedSieve
 from .package_combinations import PackageCombinationsSieve
 from .prereleases import CutPreReleasesSieve
+from ._pulp import NoPulpIndexLabelSieve
+from ._pulp import PulpIndexLabelSieve
 from .rules import SolverRulesSieve
 from .solved import SolvedSieve
 from .tensorflow import TensorFlowAPISieve
@@ -43,6 +45,8 @@ __all__ = [
     "PackageUpdateSieve",
     "LegacyVersionSieve",
     "CutPreReleasesSieve",
+    "PulpIndexLabelSieve",
+    "NoPulpIndexLabelSieve",
     "ConstraintsSieve",
     "SelectiveCutPreReleasesSieve",
     "FilterConfiguredIndexSieve",
