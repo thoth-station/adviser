@@ -32,7 +32,7 @@ from thoth.python import Project
 from ..base import AdviserUnitTestCase
 
 
-class TestSelctiveCutPreReleasesSieve(AdviserUnitTestCase):
+class TestSelectiveCutPreReleasesSieve(AdviserUnitTestCase):
     """Test removing pre-releases based on Pipfile configuration in Thoth section."""
 
     UNIT_TESTED = SelectiveCutPreReleasesSieve
