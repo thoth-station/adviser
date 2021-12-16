@@ -1,4 +1,26 @@
 
+## Release 0.49.0 (2021-12-16T12:06:52)
+* Update thoth/adviser/sieves/_pulp/no_index_label.py
+* Use plural as Pulp hosts multiple indexes
+* Use "disabled" as off is boolean in YAML
+* Allow filtering Python packages hosted on Pulp
+* Provide a link to Thoth Search UI for each Python package resolved
+* Fix typo in class name
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Warn users if they provide too lax version range specifiers
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Provide a way to link to Thoth search UI with results
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Add a link to thoth-station/cli-examples to docs
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Fix error message produced
+* Propagate information about package name when not solved
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Update pyproject.toml to use Python 3.8
+* Document Quay Clair as a source of vulnerabilities for containers
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Document Quay Clair as a source of vulnerabilities for containers
+
 ## Release 0.48.0 (2021-11-29T21:32:10)
 * Take environment markers that match the given runtime environment
 * Fix link to temporal difference learning on Wikipedia
