@@ -56,8 +56,8 @@ __all__ = [
     "PythonVersionBoot",
     "EnvironmentInfoBoot",
     "SolvedSoftwareEnvironmentBoot",
-    "SolversConfiguredBoot",  # Should be placed after SolvedSoftwareEnvironmentBoot.
     "RHELVersionBoot",
+    "SolversConfiguredBoot",  # Should be placed after SolvedSoftwareEnvironmentBoot and RHELVersionBoot
     "PrescriptionReleaseBoot",
     "FullySpecifiedEnvironment",
     "SolvedSoftwareEnvironmentBoot",
