@@ -36,7 +36,7 @@ class TestPulpIndexLabelSieve(AdviserUnitTestCase):
     def test_verify_multiple_should_include(self) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
         builder_context = PipelineBuilderContext(
-            recommendation_type=RecommendationType.LATEST, labels={"pulp-index": "solely"}
+            recommendation_type=RecommendationType.LATEST, labels={"opf-pulp-indexes": "solely"}
         )
         self.verify_multiple_should_include(builder_context)
 
