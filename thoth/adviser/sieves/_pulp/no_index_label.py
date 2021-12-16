@@ -37,7 +37,7 @@ class NoPulpIndexLabelSieve(PulpIndexLabelSieve):
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[Any, Any], None, None]:
-        """Include this wrap in adviser, if label pulp-index=off is used."""
+        """Include this wrap in adviser, if label pulp-index=disabled is used."""
         if not builder_context.is_included(cls) and builder_context.labels.get("opf-pulp-indexes") == "disabled":
             yield {}
             return None
