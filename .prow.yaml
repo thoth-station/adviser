@@ -14,10 +14,10 @@ presubmits:
           resources:
             requests:
               memory: "500Mi"
-              cpu: "300m"
+              cpu: "750m"
             limits:
               memory: "1Gi"
-              cpu: "300m"
+              cpu: "750m"
 
   - name: thoth-pytest-py38
     decorate: true
