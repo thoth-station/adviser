@@ -76,6 +76,7 @@ class EnvironmentInfoBoot(Boot):
                     f"{runtime_environment.operating_system.name!r} "
                     f"in version {runtime_environment.operating_system.version!r}",
                     "link": self._JUSTIFICATION_LINK_ENV,
+                    "type": "INFO",
                 },
                 {
                     "message": f"Resolving for Python version {self.context.project.python_version!r}",

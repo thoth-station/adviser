@@ -83,6 +83,7 @@ class TestEnvironmentInfoBoot(AdviserUnitTestCase):
                     {
                         "link": jl("env"),
                         "message": "Resolving for operating system 'rhel' in version '9'",
+                        "type": "INFO",
                     },
                     {
                         "link": jl("env"),
@@ -140,6 +141,7 @@ class TestEnvironmentInfoBoot(AdviserUnitTestCase):
                     {
                         "link": jl("env"),
                         "message": "Resolving for operating system None in version None",
+                        "type": "INFO",
                     },
                     {
                         "link": jl("env"),
