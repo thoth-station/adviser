@@ -212,9 +212,9 @@ demo repo so the configuration is:
             changelog_file: true
 
 Kebechet cares about the managers you add under the manager section. You will
-find how to define the manager config under each of the manager readme -
+find how to define the manager config under each of the manager documentation -
 `kebechet/managers
-<https://github.com/thoth-station/kebechet/tree/master/kebechet/managers>`__.
+<https://thoth-station.ninja/docs/developers/kebechet/managers.html>`__.
 
 Now that you are done with the setup of which managers you want to be run on
 your project, you are done with the major part.  We would next install the
