@@ -39,8 +39,8 @@ _LOGGER = logging.getLogger(__name__)
 class GPUBoot(Boot):
     """A boot to check if GPU specific recommendations should be done."""
 
-    _MESSAGE_NO_GPU = "CUDA version provided but no GPU model available, turning off GPU specific recommendations"
-    _MESSAGE_NO_CUDA = "GPU model provided but no CUDA version available, turning off GPU specific recommendations"
+    _MESSAGE_NO_GPU = "CUDA version provided but no GPU model available"
+    _MESSAGE_NO_CUDA = "GPU model provided but no CUDA version available"
     _JUSTIFICATION_LINK = jl("no_gpu")
 
     @classmethod
@@ -70,7 +70,6 @@ class GPUBoot(Boot):
                     "link": self._JUSTIFICATION_LINK,
                 }
             )
-            self.context.project.runtime_environment.cuda_version = None
         elif (
             not self.context.project.runtime_environment.cuda_version
             and self.context.project.runtime_environment.hardware.gpu_model
@@ -83,4 +82,3 @@ class GPUBoot(Boot):
                     "link": self._JUSTIFICATION_LINK,
                 }
             )
-            self.context.project.runtime_environment.hardware.gpu_model = None
