@@ -1,4 +1,21 @@
 
+## Release 0.50.0 (2022-01-12T11:28:54)
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Add missing labels to the report
+* Use HTTPS instead of Git in pre-commit
+* Adjust the default link to Thoth search
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Remove boot that notifies about no GPU supplied
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Update the link to Kebechet managers documentation
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Update TensorFlow API database to include v2.8.0 symbols
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Add missing message type to environment info
+* Place EOL warning boot after RHELVersionBoot
+* Increase Prow resources
+
 ## Release 0.49.0 (2021-12-16T12:06:52)
 * Update thoth/adviser/sieves/_pulp/no_index_label.py
 * Use plural as Pulp hosts multiple indexes
