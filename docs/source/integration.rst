@@ -3,6 +3,12 @@
 Integrating with Thoth
 ----------------------
 
+.. note::
+
+  `Check the following Tutorial
+  <https://redhat-scholars.github.io/managing-vulnerabilities-with-thoth/>`__ to
+  get hands-on experience on how to use Thoth and what Thoth can provide to you.
+
 Project Thoth can give advises to your software stacks. To consume Thoth's
 recommendations, there are multiple ways on how to integrate:
 
