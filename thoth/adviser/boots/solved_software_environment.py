@@ -17,7 +17,9 @@
 
 """A boot to check for solved software environment before running any resolution."""
 
+from distutils.command.config import config
 import logging
+import os
 from typing import Generator
 from typing import Dict
 from typing import Any
@@ -25,6 +27,7 @@ from typing import TYPE_CHECKING
 
 import attr
 from thoth.common import get_justification_link as jl
+from thoth.common import OpenShift
 
 from ..boot import Boot
 from ..exceptions import NotAcceptable
@@ -33,7 +36,8 @@ if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
 
 _LOGGER = logging.getLogger(__name__)
-
+_THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = os.getenv('THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS')
+_OPENSHIFT = OpenShift()
 
 @attr.s(slots=True)
 class SolvedSoftwareEnvironmentBoot(Boot):
@@ -78,7 +82,18 @@ class SolvedSoftwareEnvironmentBoot(Boot):
         _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_LINK)
         _LOGGER.warning("Available configurations:")
 
-        configurations = self.context.graph.get_solved_python_package_versions_software_environment_all()
+        solvers = _THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS.split(" ")
+        configurations = []
+        for solver in solvers:
+            item = _OPENSHIFT.parse_python_solver_name(solver)
+            configurations.append(item)
+
+            if item["os_name"] == "rhel":
+                # Duplicate entry as we can also guide on the same UBI environment. UBI and RHEL are binary compatible.
+                other_item = dict(item)
+                other_item["os_name"] = "ubi"
+                configurations.append(other_item)
+
         _LOGGER.warning("{:<16} {:<16} {:<8}".format("OS name", "OS version", "Python version"))
         for conf in sorted(
             configurations,
