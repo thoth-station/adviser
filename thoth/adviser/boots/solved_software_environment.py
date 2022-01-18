@@ -84,7 +84,7 @@ class SolvedSoftwareEnvironmentBoot(Boot):
         solvers = _THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS.split(" ")
         configurations = []
         for solver in solvers:
-            item = item = OpenShift.parse_python_solver_name(solver.strip())
+            item = OpenShift.parse_python_solver_name(solver.strip())
             configurations.append(item)
 
             if item["os_name"] == "rhel":
