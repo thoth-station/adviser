@@ -35,8 +35,7 @@ if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
 
 _LOGGER = logging.getLogger(__name__)
-_THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = os.getenv("THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS")
-_OPENSHIFT = OpenShift()
+_THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = os.getenv("THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS", "")
 
 
 @attr.s(slots=True)
@@ -85,7 +84,7 @@ class SolvedSoftwareEnvironmentBoot(Boot):
         solvers = _THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS.split(" ")
         configurations = []
         for solver in solvers:
-            item = _OPENSHIFT.parse_python_solver_name(solver)
+            item = item = OpenShift.parse_python_solver_name(solver.strip())
             configurations.append(item)
 
             if item["os_name"] == "rhel":
