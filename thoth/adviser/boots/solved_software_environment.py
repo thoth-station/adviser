@@ -36,8 +36,9 @@ if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
 
 _LOGGER = logging.getLogger(__name__)
-_THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = os.getenv('THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS')
+_THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = os.getenv("THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS")
 _OPENSHIFT = OpenShift()
+
 
 @attr.s(slots=True)
 class SolvedSoftwareEnvironmentBoot(Boot):
