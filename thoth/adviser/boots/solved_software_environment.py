@@ -17,7 +17,6 @@
 
 """A boot to check for solved software environment before running any resolution."""
 
-from distutils.command.config import config
 import logging
 import os
 from typing import Generator
