@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING
 from typing import Generator
 from typing import Dict
 from typing import Any
+from urllib.parse import quote
 
 import attr
 from ..state import State
@@ -31,7 +32,9 @@ if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
 
 _THOTH_SEARCH_PACKAGE_URL = os.getenv(
-    "THOTH_SEARCH_PACKAGE_URL", "https://thoth-station.ninja/thoth-search/package/{package_name}/{package_version}"
+    "THOTH_SEARCH_PACKAGE_URL",
+    "https://thoth-station.ninja/thoth-search/package/{package_name}/"
+    "{package_version}/{index_url}/{os_name}/{os_version}/{python_version}",
 )
 
 
@@ -53,12 +56,18 @@ class ThothSearchPackageWrap(Wrap):
 
     def run(self, state: State) -> None:
         """Add a link to Thoth Search UI for each resolved package."""
+        runtime_environment = self.context.project.runtime_environment
         for package_version_tuple in state.resolved_dependencies.values():
             state.justification.append(
                 {
                     "type": "INFO",
                     "link": self._search_package_url.format(
-                        package_name=package_version_tuple[0], package_version=package_version_tuple[1]
+                        package_name=quote(package_version_tuple[0]),
+                        package_version=quote(package_version_tuple[1], safe=""),
+                        index_url=quote(package_version_tuple[2], safe=""),
+                        os_name=quote(runtime_environment.operating_system.name),
+                        os_version=quote(runtime_environment.operating_system.version),
+                        python_version=quote(runtime_environment.python_version),
                     ),
                     "message": f"Browse Thoth Search UI for '{package_version_tuple[0]}=={package_version_tuple[1]}'",
                     "package_name": package_version_tuple[0],

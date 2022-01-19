@@ -36,7 +36,14 @@ class TestThothSearchPackageWrap(AdviserUnitTestCase):
 
     def test_run(self, context: Context, state: State) -> None:
         """Test propagating a link to Thoth Search UI."""
-        search_package_url = "https://thoth-station.ninja/some/nice/url/{package_name}/summary/{package_version}/link"
+        search_package_url = (
+            "https://thoth-station.ninja/some/nice/url/pkg/{package_name}/ver/{package_version}"
+            "/idx/{index_url}/os/{os_name}/os_ver/{os_version}/py/{python_version}/summary"
+        )
+
+        context.project.runtime_environment.operating_system.name = "fedora"
+        context.project.runtime_environment.operating_system.version = "35"
+        context.project.runtime_environment.python_version = "3.10"
 
         state.justification.clear()
         state.resolved_dependencies.clear()
@@ -49,13 +56,15 @@ class TestThothSearchPackageWrap(AdviserUnitTestCase):
 
         assert state.justification == [
             {
-                "link": "https://thoth-station.ninja/some/nice/url/flask/summary/2.0.2/link",
+                "link": "https://thoth-station.ninja/some/nice/url/pkg/flask/ver"
+                "/2.0.2/idx/https%3A%2F%2Fpypi.org%2Fsimple/os/fedora/os_ver/35/py/3.10/summary",
                 "message": "Browse Thoth Search UI for 'flask==2.0.2'",
                 "package_name": "flask",
                 "type": "INFO",
             },
             {
-                "link": "https://thoth-station.ninja/some/nice/url/thamos/summary/1.21.1/link",
+                "link": "https://thoth-station.ninja/some/nice/url/pkg/thamos/ver"
+                "/1.21.1/idx/https%3A%2F%2Fthoth-station.ninja%2Fsimple/os/fedora/os_ver/35/py/3.10/summary",
                 "message": "Browse Thoth Search UI for 'thamos==1.21.1'",
                 "package_name": "thamos",
                 "type": "INFO",
