@@ -35,7 +35,6 @@ if TYPE_CHECKING:
     from ..pipeline_builder import PipelineBuilderContext
 
 _LOGGER = logging.getLogger(__name__)
-_THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = os.getenv("THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS", "")
 
 
 @attr.s(slots=True)
@@ -43,6 +42,7 @@ class SolvedSoftwareEnvironmentBoot(Boot):
     """A boot to check for solved software environment before running any resolution."""
 
     _JUSTIFICATION_LINK = jl("solved_sw_env")
+    _THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = os.getenv("THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS", "")
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
@@ -81,7 +81,7 @@ class SolvedSoftwareEnvironmentBoot(Boot):
         _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_LINK)
         _LOGGER.warning("Available configurations:")
 
-        solvers = _THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS.split(" ")
+        solvers = self._THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS.split(" ")
         configurations = []
         for solver in solvers:
             item = OpenShift.parse_python_solver_name(solver.strip())

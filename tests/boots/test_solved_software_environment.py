@@ -61,13 +61,17 @@ class TestSolvedSoftwareEnvironmentBoot(AdviserUnitTestCase):
         context.project.runtime_environment.operating_system.name = "fedora"
         context.project.runtime_environment.operating_system.version = "32"
         context.project.runtime_environment.python_version = "3.8"
-        assert {
+        context.graph.should_receive("solved_software_environment_exists").with_args(
+            os_name="fedora", os_version="32", python_version="3.8"
+        ).and_return(True).once()
+
+        assert [{
             "message": f"Consider using {context.project.runtime_environment.operating_system.name} "
             f"in version {context.project.runtime_environment.operating_system.version} "
             f"with Python {context.project.runtime_environment.python_version}",
             "type": "ERROR",
             "link": jl("solved_sw_env"),
-        } in context.stack_info
+        }] == context.stack_info
 
         unit = SolvedSoftwareEnvironmentBoot()
         with unit.assigned_context(context):
@@ -78,13 +82,25 @@ class TestSolvedSoftwareEnvironmentBoot(AdviserUnitTestCase):
         context.project.runtime_environment.operating_system.name = "fedora"
         context.project.runtime_environment.operating_system.version = "32"
         context.project.runtime_environment.python_version = "3.8"
-        assert {
+        context.graph.should_receive("solved_software_environment_exists").with_args(
+            os_name="fedora", os_version="32", python_version="3.8"
+        ).and_return(False).once()
+        context.graph.should_receive(
+            "get_solved_python_package_versions_software_environment_all"
+        ).with_args().and_return(
+            [
+                {"os_name": "rhel", "os_version": "9.0", "python_version": "3.8"},
+                {"os_name": "fedora", "os_version": "31", "python_version": "3.7"},
+            ]
+        ).once()
+
+        assert [{
             "message": f"Consider using {context.project.runtime_environment.operating_system.name} "
             f"in version {context.project.runtime_environment.operating_system.version} "
             f"with Python {context.project.runtime_environment.python_version}",
             "type": "ERROR",
             "link": jl("solved_sw_env"),
-        } not in context.stack_info
+        }] != context.stack_info
 
         unit = SolvedSoftwareEnvironmentBoot()
         with pytest.raises(NotAcceptable):
