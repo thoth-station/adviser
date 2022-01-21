@@ -33,7 +33,7 @@ class TestSolvedSoftwareEnvironmentBoot(AdviserUnitTestCase):
     """Test solved software environment boot."""
 
     UNIT_TESTED = SolvedSoftwareEnvironmentBoot
-    SolvedSoftwareEnvironmentBoot._THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = "solver-fedora-32-py38"
+    SolvedSoftwareEnvironmentBoot._THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = "\nsolver-fedora-32-py38\n"
 
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
