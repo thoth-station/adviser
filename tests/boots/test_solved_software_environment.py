@@ -33,7 +33,6 @@ class TestSolvedSoftwareEnvironmentBoot(AdviserUnitTestCase):
     """Test solved software environment boot."""
 
     UNIT_TESTED = SolvedSoftwareEnvironmentBoot
-    SolvedSoftwareEnvironmentBoot._THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = "\nsolver-fedora-32-py38\n"
 
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
@@ -66,9 +65,13 @@ class TestSolvedSoftwareEnvironmentBoot(AdviserUnitTestCase):
             os_name="fedora", os_version="32", python_version="3.8"
         ).and_return(True).once()
 
+        assert not context.stack_info
+
         unit = SolvedSoftwareEnvironmentBoot()
         with unit.assigned_context(context):
             assert unit.run() is None
+
+        assert not context.stack_info, "No stack information should be supplied"
 
     def test_run_error(self, context: Context) -> None:
         """Test raising no exception raised if the given software environment is not solved."""
@@ -79,17 +82,27 @@ class TestSolvedSoftwareEnvironmentBoot(AdviserUnitTestCase):
             os_name="fedora", os_version="32", python_version="3.8"
         ).and_return(False).once()
 
-        assert [
+        assert not context.stack_info
+
+        solvers_configured = SolvedSoftwareEnvironmentBoot._THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS
+        try:
+            SolvedSoftwareEnvironmentBoot._THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = "\nsolver-ubi-8-py39\n"
+            unit = SolvedSoftwareEnvironmentBoot()
+            with pytest.raises(NotAcceptable):
+                with unit.assigned_context(context):
+                    unit.run()
+        finally:
+            SolvedSoftwareEnvironmentBoot._THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = solvers_configured
+
+        assert context.stack_info == [
             {
-                "message": f"Consider using {context.project.runtime_environment.operating_system.name} "
-                f"in version {context.project.runtime_environment.operating_system.version} "
-                f"with Python {context.project.runtime_environment.python_version}",
+                "type": "ERROR",
+                "message": "No observations found for 'fedora' in version '32' using Python '3.8'",
+                "link": jl("solved_sw_env"),
+            },
+            {
+                "message": "Consider using 'ubi' in version '8' with Python 3.9",
                 "type": "ERROR",
                 "link": jl("solved_sw_env"),
-            }
-        ] != context.stack_info
-
-        unit = SolvedSoftwareEnvironmentBoot()
-        with pytest.raises(NotAcceptable):
-            with unit.assigned_context(context):
-                unit.run()
+            },
+        ]
