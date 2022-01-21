@@ -81,10 +81,14 @@ class SolvedSoftwareEnvironmentBoot(Boot):
         _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_LINK)
         _LOGGER.warning("Available configurations:")
 
-        solvers = self._THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS.split()
         configurations = []
+        solvers = self._THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS.split()
         for solver in solvers:
-            item = OpenShift.parse_python_solver_name(solver.strip())
+            solver = solver.strip()
+            if not solver:
+                continue
+
+            item = OpenShift.parse_python_solver_name(solver)
             configurations.append(item)
 
             if item["os_name"] == "rhel":
