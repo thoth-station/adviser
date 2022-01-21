@@ -26,11 +26,14 @@ from thoth.adviser.exceptions import NotAcceptable
 from thoth.adviser.pipeline_builder import PipelineBuilderContext
 from ..base import AdviserUnitTestCase
 
+from thoth.common import get_justification_link as jl
+
 
 class TestSolvedSoftwareEnvironmentBoot(AdviserUnitTestCase):
     """Test solved software environment boot."""
 
     UNIT_TESTED = SolvedSoftwareEnvironmentBoot
+    SolvedSoftwareEnvironmentBoot._THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS = "solver-fedora-32-py38"
 
     def test_verify_multiple_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Verify multiple should_include calls do not loop endlessly."""
@@ -75,14 +78,16 @@ class TestSolvedSoftwareEnvironmentBoot(AdviserUnitTestCase):
         context.graph.should_receive("solved_software_environment_exists").with_args(
             os_name="fedora", os_version="32", python_version="3.8"
         ).and_return(False).once()
-        context.graph.should_receive(
-            "get_solved_python_package_versions_software_environment_all"
-        ).with_args().and_return(
-            [
-                {"os_name": "rhel", "os_version": "9.0", "python_version": "3.8"},
-                {"os_name": "fedora", "os_version": "31", "python_version": "3.7"},
-            ]
-        ).once()
+
+        assert [
+            {
+                "message": f"Consider using {context.project.runtime_environment.operating_system.name} "
+                f"in version {context.project.runtime_environment.operating_system.version} "
+                f"with Python {context.project.runtime_environment.python_version}",
+                "type": "ERROR",
+                "link": jl("solved_sw_env"),
+            }
+        ] != context.stack_info
 
         unit = SolvedSoftwareEnvironmentBoot()
         with pytest.raises(NotAcceptable):
