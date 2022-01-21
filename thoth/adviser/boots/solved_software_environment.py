@@ -81,7 +81,7 @@ class SolvedSoftwareEnvironmentBoot(Boot):
         _LOGGER.warning("%s - %s", msg, self._JUSTIFICATION_LINK)
         _LOGGER.warning("Available configurations:")
 
-        solvers = self._THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS.split(" ")
+        solvers = self._THOTH_ADVISER_DEPLOYMENT_CONFIGURED_SOLVERS.split()
         configurations = []
         for solver in solvers:
             item = OpenShift.parse_python_solver_name(solver.strip())
