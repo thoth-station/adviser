@@ -58,6 +58,10 @@ This namespace is separated for "infrastructure" related bits.
   <https://github.com/thoth-station/investigator>`__ - exposing calculated
   metrics from messages seen in the system
 
+* `pulp-metrics-exporter <https://github.com/thoth-station/pulp-metrics-exporter>`__ -
+  exposing metrics for the `Operate First Pulp instance
+  <https://www.operate-first.cloud/community-handbook/pulp/usage.md/>`__
+
 Frontend Namespace
 ##################
 
@@ -99,6 +103,10 @@ itself for more info. You can also find more info in the :ref:`integration
   <https://github.com/thoth-station/pulp-pypi-sync-job>`__ - a periodic
   job responsible for registering Python package indexes available on
   `pulp-python <https://docs.pulpproject.org/pulp_python/index.html>`__
+
+* `document-sync-job
+  <https://github.com/thoth-station/document-sync-job>`__ - a periodic
+  job responsible for distributing computed data across deployments
 
 Middletier Namespace
 ####################
