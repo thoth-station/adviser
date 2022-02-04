@@ -143,6 +143,38 @@ using a colon:
   $ cd adviser/
   $ PYTHONPATH=../python:../common pipenv run ./thoth-adviser --help
 
+Running components locally
+==========================
+
+To improve developer's effectivity, all the components can be run locally. If a
+component talks to a remote Ceph, it is possible to instrument the component
+so that it talks to Ceph based on the configuration supplied. Similarly, if a
+component talks to the database, it is possible to instrument the component to
+talk to the desired database instance. This way, developers can test their
+changes locally and, once changes are done, the code can be pushed to
+deployments.
+
+If a component uses Ceph, export variables that are required for a Ceph
+connection. See the relevant section in `thoth-station/storages README file
+<https://github.com/thoth-station/storages#accessing-data-on-ceph>`__.
+
+If a component uses PostgreSQL, it will try to connect to a local PostgreSQL
+instance by default. Follow instructions in `thoth-station/storages README file
+<https://github.com/thoth-station/storages#running-postgresql-locally>`__ for
+more info on how to setup a local PostgreSQL instance from a database dump.
+
+The following command will use Ceph based on the supplied configuration, connect
+to a local PostgreSQL instance (if any is used) and will use local version of
+thoth-common to support cross-library features development mentioned above:
+
+.. code-block:: console
+
+  PYTHONPATH=../common THOTH_CEPH_BUCKET_PREFIX=data THOTH_S3_ENDPOINT_URL='https://s3.redhat.com' THOTH_CEPH_KEY_ID=AAAAAAAAAAAAAAAAAAAA THOTH_CEPH_SECRET_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX THOTH_CEPH_BUCKET=thoth THOTH_DEPLOYMENT_NAME=ocp4-stage python3 ./app.py
+
+.. note::
+
+  You can use ``.env`` file together with Pipenv. See `docs for more info <https://docs.pipenv.org/advanced/#automatic-loading-of-env>`__. Some of the repositories have ``.env.template`` ready for use.
+
 Debugging application and logging
 =================================
 
