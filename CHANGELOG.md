@@ -1,4 +1,30 @@
 
+## Release 0.51.0 (2022-02-09T21:24:41)
+* Fix index URL link in tests
+* Fix logging issues based on testsuite
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Update docs/source/provenance_checks.rst
+* Document provenance-check on lockfile hash
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Document how to run Thoth components locally
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Update entries in the architecture docs
+* Adjust tests when checking for solvers configured
+* Skip empty lines in solvers configmap
+* Split at new line
+* Fix test_run and test_run_error
+* Post-review changes
+* Get environments from solvers configmap
+* Remove unused .thothTemplate.yaml
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Respect also runtime environment when linking packages in Search
+* Enable TLS verification
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* Link tutorial from docs
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+
 ## Release 0.50.0 (2022-01-12T11:28:54)
 * :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
 * Add missing labels to the report
