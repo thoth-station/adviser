@@ -291,6 +291,7 @@ class Resolver:
                         log_level,
                         "Sieve %r removed packages %r: %s",
                         sieve.name,
+                        package_versions[0].name,
                         exc,
                     )
                     result = []  # type: ignore
