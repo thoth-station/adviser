@@ -52,7 +52,7 @@ class TestFilterIndexSieve(AdviserUnitTestCase):
         unit.update_configuration(
             {
                 "package_name": "tensorflow",
-                "index_url": ["https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/"],
+                "index_url": ["https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple"],
             }
         )
         unit.pre_run()
@@ -63,14 +63,14 @@ class TestFilterIndexSieve(AdviserUnitTestCase):
         package_version = PackageVersion(
             name="tensorflow",
             version="==2.1.0",
-            index=Source("https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/"),
+            index=Source("https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple"),
             develop=False,
         )
         unit = FilterIndexSieve()
         unit.update_configuration(
             {
                 "package_name": "tensorflow",
-                "index_url": ["https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/"],
+                "index_url": ["https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple"],
             }
         )
         unit.pre_run()
@@ -90,7 +90,7 @@ class TestFilterIndexSieve(AdviserUnitTestCase):
                 "package_name": "tensorboard",
                 "index_url": [
                     "https://pypi.org/simple",
-                    "https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple/",
+                    "https://tensorflow.pypi.thoth-station.ninja/index/manylinux2010/AVX2/simple",
                 ],
             }
         )
