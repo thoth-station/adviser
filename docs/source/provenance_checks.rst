@@ -13,6 +13,7 @@ following issues:
 3. ``WARNING``/``DIFFERENT-ARTIFACTS-ON-SOURCES`` - there are present different artifacts on the package source indexes and configuration does not state explicitly which package source index should be used for installing package - this warning recommends explictly stating package source index to guarantee the expected artifacts are used
 4. ``ERROR``/``MISSING-PACKAGE`` - the given package was not found on package source index (the configured one or any of other package source indexes available)
 5. ``ERROR``/``INVALID-ARTIFACT-HASH`` - the artifact hash that is used for the downloaded package was not found on the package source index - possibly the artifact has changed over time (dangerous) or was removed from the package source index
+6. ``ERROR``/``INVALID-LOCK-HASH`` - the lockfile hash does not correspond to the hash computed, this generally means that requirements were adjusted and the lockfile no longer corresponds to the requirements file used
 
 The provenance check is done against computed hashes present in the
 Pipfile.lock respecting package source index configuration.
