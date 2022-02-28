@@ -17,6 +17,7 @@
 
 """The main resolving algorithm working on top of states."""
 
+import gc
 import os
 import time
 import math
@@ -30,6 +31,7 @@ from typing import Union
 from typing import Set
 from typing import Iterator
 from typing import TYPE_CHECKING
+import resource
 import logging
 from itertools import chain
 import contextlib
@@ -153,6 +155,10 @@ class Resolver:
     DEFAULT_BEAM_WIDTH = -1
     DEFAULT_LIMIT_LATEST_VERSIONS = -1
 
+    _MEM_OPTIMIZER_ITERATION = int(os.getenv("THOTH_ADVISER_MEM_OPTIMIZER_ITERATION", 1000))
+    _MEM_OPTIMIZER_LIMIT = int(os.getenv("THOTH_ADVISER_MEM_OPTIMIZER_LIMIT", 0))
+    _MEM_OPTIMIZER_DROP_COUNT = int(os.getenv("THOTH_ADVISER_MEM_OPTIMIZER_DROP_COUNT", 50))
+
     pipeline = attr.ib(type=PipelineConfig, kw_only=True)
     project = attr.ib(type=Project, kw_only=True)
     library_usage = attr.ib(type=Dict[str, Any], kw_only=True, converter=_library_usage)
@@ -237,6 +243,19 @@ class Resolver:
         self._log_sieved.clear()
         self._log_step_not_acceptable.clear()
         self._log_no_intersected.clear()
+
+    def _maybe_memory_optimizer(self) -> None:
+        """Optimize memory if reaching limits."""
+        limit = self._MEM_OPTIMIZER_LIMIT
+        if limit > 0:
+            _LOGGER.debug("Running memory optimizer")
+            usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+            while usage >= limit and self.beam.size > self._MEM_OPTIMIZER_DROP_COUNT:
+                # Randomly drop some states from the beam.
+                for _ in range(self._MEM_OPTIMIZER_DROP_COUNT):
+                    self.beam.remove(self.beam.get_random())
+
+                gc.collect()
 
     def _init_context(self) -> None:
         """Initialize context instance."""
@@ -1229,6 +1248,9 @@ class Resolver:
                     if self.beam.keep_history:
                         self._history.append(None)
                         self._history_max.append(self._history_max[-1] if self._history_max else None)
+
+                if self.context.iteration % self._MEM_OPTIMIZER_ITERATION == 0:
+                    self._maybe_memory_optimizer()
 
         if self.stop_resolving:
             _LOGGER.warning(
