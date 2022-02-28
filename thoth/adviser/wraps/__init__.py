@@ -20,8 +20,9 @@
 from .libraries_io import LibrariesIOWrap
 from .pulp_release import PulpReleaseWrap
 from .pypi_release import PyPIReleaseWrap
-from .trove_classifiers import TroveClassifiersWrap
+from .pytorch_release import PyTorchReleaseWrap
 from .thoth_search_package import ThothSearchPackageWrap
+from .trove_classifiers import TroveClassifiersWrap
 
 
 # Relative ordering of units is relevant, as the order specifies order
@@ -29,6 +30,7 @@ from .thoth_search_package import ThothSearchPackageWrap
 # can be mentioned here.
 __all__ = [
     "PyPIReleaseWrap",
+    "PyTorchReleaseWrap",
     "PulpReleaseWrap",
     "LibrariesIOWrap",
     "TroveClassifiersWrap",
