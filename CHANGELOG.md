@@ -1,4 +1,8 @@
 
+## Release 0.52.0 (2022-02-28T20:39:13)
+* Implement memory optimizer for resolver
+* Notify when using PyTorch index
+
 ## Release 0.51.1 (2022-02-24T18:28:45)
 * Obtian the very first secure software stack
 
