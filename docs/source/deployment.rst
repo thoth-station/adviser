@@ -64,6 +64,23 @@ expensive sub-process leaving the main process untouched. The main process has
 a capability of `detecting the OOM kill of the sub-process and construct
 corresponding report <https://thoth-station.ninja/j/oom.html>`__.
 
+Memory optimizer
+################
+
+Adviser's implementation has a built-in memory optimizer that is run to make
+sure memory limits are respected. The optimizer is run periodically during the
+resolution and frees some of the partially resolved states from adviser's beam.
+This makes sure the memory consumption is reduced and adviser can continue to
+browse some of the resolution paths, possibly leading to a solution (mind the
+resolver implementation is stochastic). The memory optimizer can be configured
+with the following environment variables:
+
+* ``THOTH_ADVISER_MEM_OPTIMIZER_LIMIT`` - memory limit configured (in kilobytes)
+
+* ``THOTH_ADVISER_MEM_OPTIMIZER_ITERATION`` - number of iterations stating how often the memory optimizer should be run
+
+* ``THOTH_ADVISER_MEM_OPTIMIZER_DROP_COUNT`` - number of partially resolved states to be freed in a round
+
 Tweaking limit
 ##############
 
