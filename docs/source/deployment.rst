@@ -81,6 +81,12 @@ with the following environment variables:
 
 * ``THOTH_ADVISER_MEM_OPTIMIZER_DROP_COUNT`` - number of partially resolved states to be freed in a round
 
+Note that adviser can suddenly do a memory consumption bump when it is
+aggregating results as some pipeline units are called after the actual
+resolution process (wraps). That's why it might be a good idea to keep some
+memory for the process to aggregate resolutions for users - do not match the
+memory optimizer limit with OpenShift/Kubernetes memory limits.
+
 Tweaking limit
 ##############
 
