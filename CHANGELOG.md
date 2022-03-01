@@ -1,4 +1,8 @@
 
+## Release 0.52.1 (2022-03-01T19:41:28)
+* Document memory optimizer
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+
 ## Release 0.52.0 (2022-02-28T20:39:13)
 * Implement memory optimizer for resolver
 * Notify when using PyTorch index
