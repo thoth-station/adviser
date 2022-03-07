@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 _THOTH_SEARCH_PACKAGE_URL = os.getenv(
     "THOTH_SEARCH_PACKAGE_URL",
-    "https://thoth-station.ninja/thoth-search/package/{package_name}/"
+    "https://thoth-station.ninja/search/package/{package_name}/"
     "{package_version}/{index_url}/{os_name}/{os_version}/{python_version}",
 )
 
