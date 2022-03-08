@@ -1,4 +1,8 @@
 
+## Release 0.52.3 (2022-03-08T13:17:01)
+* update AICoE-CI image version
+* :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+
 ## Release 0.52.2 (2022-03-07T21:26:44)
 * Add a note about memory optimizer limit
 * :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
