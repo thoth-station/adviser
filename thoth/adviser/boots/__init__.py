@@ -58,5 +58,4 @@ __all__ = [
     "SolversConfiguredBoot",  # Should be placed after SolvedSoftwareEnvironmentBoot and RHELVersionBoot
     "PrescriptionReleaseBoot",
     "FullySpecifiedEnvironment",
-    "SolvedSoftwareEnvironmentBoot",
 ]
