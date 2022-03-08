@@ -56,11 +56,11 @@ class RHELVersionBoot(Boot):
         """Discard any minor release in RHEL."""
         os_name = self.context.project.runtime_environment.operating_system.name
         os_version = self.context.project.runtime_environment.operating_system.version
-        if os_name == "rhel" and os_version is not None:
+        if os_name in ("rhel", "ubi") and os_version is not None:
             version_parts = os_version.split(".", maxsplit=1)
             if len(version_parts) > 1:
                 _LOGGER.info(
-                    "RHEL major releases guarantee ABI compatibility across minor releases; "
+                    "RHEL and UBI major releases guarantee ABI compatibility across minor releases; "
                     "discarding minor release information and using RHEL version %r - see %s",
                     version_parts[0],
                     jl("rhel_version"),
