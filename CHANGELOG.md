@@ -1,4 +1,8 @@
 
+## Release 0.52.4 (2022-03-09T11:28:45)
+* Normalize operating system version when checking solvers configured
+* SolvedSoftwareEnvironmentBoot is mentioned twice in boot listing
+
 ## Release 0.52.3 (2022-03-08T13:17:01)
 * update AICoE-CI image version
 * :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
