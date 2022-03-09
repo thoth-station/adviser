@@ -25,9 +25,10 @@ from typing import Generator
 from typing import TYPE_CHECKING
 
 import attr
-from thoth.common import get_justification_link as jl
-from thoth.common import OpenShift
 from thoth.common.exceptions import SolverNameParseError
+from thoth.common import get_justification_link as jl
+from thoth.common import normalize_os_version
+from thoth.common import OpenShift
 
 from ..boot import Boot
 
@@ -53,7 +54,10 @@ class SolversConfiguredBoot(Boot):
 
         runtime_environment = (
             builder_context.project.runtime_environment.operating_system.name,
-            builder_context.project.runtime_environment.operating_system.version,
+            normalize_os_version(
+                builder_context.project.runtime_environment.operating_system.name,
+                builder_context.project.runtime_environment.operating_system.version,
+            ),
             builder_context.project.python_version,
         )
         for solver_name in cls._SOLVERS_CONFIGURED.splitlines():
