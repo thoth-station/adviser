@@ -1,24 +1,27 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-labels: "kind/bug, needs-triage"
+labels: kind/bug
 ---
+## Bug description
+<!-- A clear and concise description of what the bug is. -->
 
-**Describe the bug**
-A clear and concise description of what the bug is.
-
-**To Reproduce**
+### Steps to Reproduce
 Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
 4. See error
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+### Actual behavior
+<!-- If applicable, add screenshots to help explain your problem. -->
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+### Expected behavior
+<!-- A clear and concise description of what you expected to happen. -->
 
-**Additional context**
-Add any other context about the problem here.
+### Environment information
+<!-- Please include names and versions of the components involved.
+If appropriate, include relevant parts of their configuration. -->
+
+### Additional context
+<!-- Add any additional context information about the problem here. -->
