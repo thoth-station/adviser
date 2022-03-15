@@ -1,4 +1,7 @@
 
+## Release 0.53.0 (2022-03-15T08:29:40)
+* Change link to Thoth Search for a package
+
 ## Release 0.52.4 (2022-03-09T11:28:45)
 * Normalize operating system version when checking solvers configured
 * SolvedSoftwareEnvironmentBoot is mentioned twice in boot listing
