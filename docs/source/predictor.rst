@@ -49,7 +49,7 @@ To implement a predictor, you need to derive from :class:`Predictor
 
       def run(self, context: Context, beam: Beam) -> Tuple[State, str]:
           """Main entry-point for predictor implementation."""
-          state = next(context.iter_states())
+          state = next(beam.iter_states())
           return state, next(iter(state.unresolved_dependencies))
 
 The main method - ``run`` - accepts two parameters - :class:`context
