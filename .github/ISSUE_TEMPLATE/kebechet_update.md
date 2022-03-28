@@ -1,10 +1,7 @@
 ---
-name: Kebechet update
-about: Manually trigger update of dependencies
+name: Update dependencies
+about: Check Pipfiles and update dependencies
 title: Kebechet update
-labels: bot
+assignees: sesheta
+labels: "bot, priority/critical-urgent"
 ---
-
-Hey, Kebechet!
-
-Update my dependencies, please.
