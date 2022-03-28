@@ -101,12 +101,7 @@ These reports are gathered by a job triggered by `Argo Workflows
 Besides that, results are gathered, parsed and observations are feeded into the
 knowledge database where these observations are used by Thoth’s recommendation
 engine to recommend high quality software stacks based on gathered
-observations.  If a user wants to perform an inspection on a pinned down
-software stack without running the Dependency Monkey job to generate software
-stacks, the thoth-adviser  CLI can be utilized.  `Thoth-adviser
-<https://github.com/thoth-station/adviser>`__ provides submit-amun subcommand
-to trigger Amun API to run the inspection job and build (or use REST exposed by
-OpenAPI UI to trigger inspection run directly from a web browser).
+observations.
 
 .. raw:: html
 
