@@ -22,6 +22,7 @@ managers:
         - goern
         - fridex
         - harshad16
+        - mayaCostantini
       assignees:
         - sesheta
       labels: [bot]
