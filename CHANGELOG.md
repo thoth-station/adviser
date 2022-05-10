@@ -1,4 +1,20 @@
 
+## Release 0.54.0 (2022-05-10T13:13:06)
+* e6ac14ef :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* d303c8ec :ship: Bump up base image initialized in CI.
+* 98527579 Add API symbols for TensorFlow 2.9.0
+* 062c4ad5 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* 6fe9fca3 Remove pacospace and saisankargochhayat, thanks for your contributions!
+* 3514e262 Add my username to approvers and maintainers
+* b7c5f18b :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* f4351aaf :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* 0726c6fe Fix pre-commit config
+* 8f2cd768 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* 18f42299 Remove documentation on submit-amun CLI subcommand
+* c99cdbc4 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* 55e3ec64 Fix context to beam in predictor docs
+* 73a741f7 Update the GitHub issue templates
+
 ## Release 0.53.0 (2022-03-15T08:29:40)
 * Change link to Thoth Search for a package
 
