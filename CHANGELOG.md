@@ -1,4 +1,7 @@
 
+## Release 0.55.0 (2022-05-19T10:08:50)
+* 5af208e2 Add video about allocation CPU and memory resources
+
 ## Release 0.54.0 (2022-05-10T13:13:06)
 * e6ac14ef :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
 * d303c8ec :ship: Bump up base image initialized in CI.
