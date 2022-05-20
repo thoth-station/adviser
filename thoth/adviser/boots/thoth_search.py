@@ -33,7 +33,9 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-_THOTH_SEARCH_URL = os.getenv("THOTH_SEARCH_ADVISER_URL", "https://thoth-station.ninja/search/{document_id}/summary")
+_THOTH_SEARCH_URL = os.getenv(
+    "THOTH_SEARCH_ADVISER_URL", "https://thoth-station.ninja/search/advise/{document_id}/summary"
+)
 _DOCUMENT_ID = os.getenv("THOTH_DOCUMENT_ID", "UNKNOWN")
 
 
