@@ -55,7 +55,7 @@ class AdaptiveSimulatedAnnealing(Predictor):
     def _temperature_function(self, t0: float, context: Context) -> float:
         """Temperature function used to compute new temperature."""
         k = (context.accepted_final_states_count + math.log(context.iteration + 1)) / context.limit
-        temperature = t0 * self.temperature_coefficient ** k
+        temperature = t0 * self.temperature_coefficient**k
         _LOGGER.debug(
             "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, beam size= %d, k=%f) = %g",
             context.iteration,

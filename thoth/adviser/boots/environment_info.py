@@ -89,14 +89,14 @@ class EnvironmentInfoBoot(Boot):
                     "type": "INFO",
                 },
                 {
-                    "message": f"Using constraints provided"
+                    "message": "Using constraints provided"
                     if self.context.project.constraints.package_versions
                     else "No constraints supplied to the resolution process",
                     "link": self._JUSTIFICATION_LINK_ENV,
                     "type": "INFO",
                 },
                 {
-                    "message": f"Using supplied static source code analysis"
+                    "message": "Using supplied static source code analysis"
                     if self.context.library_usage
                     else "No static source code analysis supplied",
                     "link": self._JUSTIFICATION_LINK_ENV,

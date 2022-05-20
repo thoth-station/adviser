@@ -216,7 +216,7 @@ run:
 
     def test_run_package_version_not_solved(self, context: Context, state: State) -> None:
         """Test running the prescription based on the dependency not solved."""
-        prescription_str = f"""
+        prescription_str = """
 name: AddPackageStep
 type: step.AddPackage
 should_include:
@@ -313,7 +313,7 @@ run:
 
     def test_run_package_version_index_url_not_enabled(self, context: Context, state: State) -> None:
         """Test running the prescription based on the dependency introduced when index_url is not enabled."""
-        prescription_str = f"""
+        prescription_str = """
 name: AddPackageStep
 type: step.AddPackage
 should_include:
@@ -413,7 +413,7 @@ run:
 
     def test_run_package_version_index_url_not_known(self, context: Context, state: State) -> None:
         """Test running the prescription based on the dependency introduced when index_url is not known."""
-        prescription_str = f"""
+        prescription_str = """
 name: AddPackageStep
 type: step.AddPackage
 should_include:
@@ -513,7 +513,7 @@ run:
 
     def test_run_package_version_already_resolved(self, context: Context, state: State) -> None:
         """Test running the prescription when the given package is already in the resolved state."""
-        prescription_str = f"""
+        prescription_str = """
 name: AddPackageStep
 type: step.AddPackage
 should_include:
@@ -614,7 +614,7 @@ run:
 
     def test_run_package_version_already_resolved_same_name(self, context: Context, state: State) -> None:
         """Test running the prescription when the given package is already in the resolved state (same name)."""
-        prescription_str = f"""
+        prescription_str = """
 name: AddPackageStep
 type: step.AddPackage
 should_include:
@@ -716,7 +716,7 @@ run:
 
     def test_run_package_version_add_package_multi(self, context: Context, state: State) -> None:
         """Test running the unit multiple times with stack info and justification reported once."""
-        prescription_str = f"""
+        prescription_str = """
 name: AddPackageStep
 type: step.AddPackage
 should_include:

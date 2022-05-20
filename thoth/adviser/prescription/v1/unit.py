@@ -596,7 +596,7 @@ class UnitPrescription(Unit, metaclass=abc.ABCMeta):
             if not symbols_present:
                 if builder_context.iteration == 0:
                     _LOGGER.warning(
-                        f"%s: No symbols found for runtime environment %r", unit_name, runtime_used.base_image
+                        "%s: No symbols found for runtime environment %r", unit_name, runtime_used.base_image
                     )
                 return False
 

@@ -51,7 +51,7 @@ class Predictor:
     @classmethod
     def obtain_default_configuration(cls, config_option_name: str) -> Any:
         """Get the default value assigned to the given configuration option of a predictor instance."""
-        return getattr(cls.__attrs_attrs__, config_option_name).default  # type: ignore
+        return getattr(cls.__attrs_attrs__, config_option_name).default
 
     @classmethod
     @contextmanager

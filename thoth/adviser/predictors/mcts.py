@@ -51,7 +51,7 @@ class MCTS(TemporalDifference):
         # This function, in comparision to TD/SA, does not need to take into account iteration as it
         # works on accepted states.
         k = context.accepted_final_states_count / context.limit
-        temperature = t0 * 0.99 ** k
+        temperature = t0 * 0.99**k
         _LOGGER.debug(
             "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, beam size= %d, k=%f) = %g",
             context.iteration,

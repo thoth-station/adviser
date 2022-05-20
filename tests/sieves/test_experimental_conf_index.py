@@ -147,7 +147,7 @@ tensorflow = "*"
         """Test NOT removing dependencies based on index configured."""
         pv = PackageVersion(
             name="tensorflow",
-            version=f"==2.4.1",
+            version="==2.4.1",
             index=Source("https://pypi.org/simple"),
             develop=False,
         )
@@ -165,7 +165,7 @@ tensorflow = "*"
         """Test removing dependencies based on index configured."""
         pv = PackageVersion(
             name="tensorflow",
-            version=f"==2.4.1",
+            version="==2.4.1",
             index=Source("https://pypi.org/simple"),
             develop=False,
         )

@@ -34,7 +34,7 @@ class TestGroupStepPrescription(AdviserUnitPrescriptionTestCase):
 
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test calculating configuration for the given prescription unit."""
-        prescription_str = f"""\
+        prescription_str = """\
 name: GroupStep
 type: step.Group
 should_include:
@@ -182,7 +182,7 @@ run:
 
     def test_should_include_groups(self, builder_context: PipelineBuilderContext) -> None:
         """Test calculating configuration for the given prescription unit, multiple groups."""
-        prescription_str = f"""\
+        prescription_str = """\
 name: GroupStep
 type: step.Group
 should_include:

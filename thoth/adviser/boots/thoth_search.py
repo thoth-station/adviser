@@ -59,7 +59,7 @@ class ThothSearchBoot(Boot):
         self.context.stack_info.append(
             {
                 "type": "INFO",
-                "message": f"Results can be browsed in Thoth search",
+                "message": "Results can be browsed in Thoth search",
                 "link": self._search_url.format(document_id=self._document_id),
             }
         )

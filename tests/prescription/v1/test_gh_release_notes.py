@@ -308,7 +308,7 @@ run:
 
     def test_instantiate_multiple(self) -> None:
         """Test instantiating multiple GitHub release notes wraps from a single prescription."""
-        prescription_str = f"""
+        prescription_str = """
 name: GHReleaseNotes
 type: wrap.GHReleaseNotes
 should_include:
