@@ -38,7 +38,8 @@ _LOGGER = logging.getLogger(__name__)
 class LabelsBoot(Boot):
     """A boot to notify about labels used during the resolution."""
 
-    _JUSTIFICATION_LINK = jl("labels")
+    _JUSTIFICATION_LINK_LABELS = jl("labels")
+    _JUSTIFICATION_LINK_ALLOW_CVE = jl("allow_cve")
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
@@ -53,12 +54,24 @@ class LabelsBoot(Boot):
     def run(self) -> None:
         """Notify about labels used during the resolution process.."""
         for key, value in self.context.labels.items():
-            msg = f"Considering label {key}={value} in the resolution process"
-            _LOGGER.info("%s - see %s", msg, self._JUSTIFICATION_LINK)
-            self.context.stack_info.append(
-                {
-                    "message": msg,
-                    "type": "INFO",
-                    "link": self._JUSTIFICATION_LINK,
-                }
-            )
+            if key != "allow-cve":
+                msg = f"Considering label {key}={value} in the resolution process"
+                _LOGGER.info("%s - see %s", msg, self._JUSTIFICATION_LINK_LABELS)
+                self.context.stack_info.append(
+                    {
+                        "message": msg,
+                        "type": "INFO",
+                        "link": self._JUSTIFICATION_LINK_LABELS,
+                    }
+                )
+            else:
+                for allow_cve in value.split(","):
+                    msg = f"Allowing CVE {allow_cve.upper()!r} to be present in the application"
+                    _LOGGER.warning("%s - see %s", msg, self._JUSTIFICATION_LINK_ALLOW_CVE)
+                    self.context.stack_info.append(
+                        {
+                            "message": msg,
+                            "type": "WARNING",
+                            "link": self._JUSTIFICATION_LINK_ALLOW_CVE,
+                        }
+                    )

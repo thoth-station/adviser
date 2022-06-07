@@ -24,7 +24,9 @@ import re
 from typing import Any
 from typing import Dict
 from typing import Generator
+from typing import List
 from typing import Optional
+from typing import Set
 from typing import Tuple
 from typing import Union
 from contextlib import contextmanager
@@ -33,6 +35,7 @@ import attr
 from voluptuous import Schema
 from voluptuous import Required
 from voluptuous import Any as SchemaAny
+from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
 from .context import Context
@@ -236,6 +239,18 @@ class Unit(metaclass=abc.ABCMeta):
             thoth_s2i_image_version = thoth_s2i_image_version[1:]
 
         return thoth_s2i_image_name, thoth_s2i_image_version
+
+    @staticmethod
+    def _construct_allow_cves(allow_cves: Set[str], labels: Dict[str, str]) -> None:
+        """Check what CVEs should be skipped based on labels supplied to the resolution process."""
+        allow_cves.clear()
+        allow_cve_label = labels.get("allow-cve")
+        if not allow_cve_label:
+            return
+
+        for item in allow_cve_label.split(","):
+            cve_id = item.upper()
+            allow_cves.add(cve_id)
 
     def pre_run(self) -> None:  # noqa: D401
         """Called before running any pipeline unit with context already assigned.

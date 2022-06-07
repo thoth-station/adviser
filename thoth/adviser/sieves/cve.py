@@ -55,6 +55,8 @@ class CveSieve(Sieve):
     _JUSTIFICATION_LINK = jl("cve")
 
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
+    _messages_logged_allow_cve = attr.ib(type=Set[Tuple[str, Tuple[str, str, str]]], factory=set, init=False)
+    _allow_cves = attr.ib(type=Set[str], factory=set, init=False)
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
@@ -73,6 +75,8 @@ class CveSieve(Sieve):
     def pre_run(self) -> None:
         """Initialize this pipeline unit before running."""
         self._messages_logged.clear()
+        self._messages_logged_allow_cve.clear()
+        self._construct_allow_cves(self._allow_cves, self.context.labels)
         super().pre_run()
 
     def run(self, package_versions: Generator[PackageVersion, None, None]) -> Generator[PackageVersion, None, None]:
@@ -87,16 +91,30 @@ class CveSieve(Sieve):
                 _LOGGER.warning("Package %r in version %r not found: %r", exc)
                 continue
 
-            if not cve_records:
+            allow_cves_matched = [cve_record for cve_record in cve_records if cve_record["cve_id"] in self._allow_cves]
+            disallowed_cves = [cve_record for cve_record in cve_records if cve_record["cve_id"] not in self._allow_cves]
+
+            package_version_tuple = package_version.to_tuple()
+
+            if not disallowed_cves:
+                for allow_cve in allow_cves_matched:
+                    messages_logged_allow_cve_key = (allow_cve["cve_id"], package_version_tuple)
+                    if messages_logged_allow_cve_key not in self._messages_logged_allow_cve:
+                        self._messages_logged_allow_cve.add(messages_logged_allow_cve_key)
+                        _LOGGER.warning(
+                            "Allowing CVE %r found for package %r based on 'allow-cve' label supplied",
+                            allow_cve["cve_id"],
+                            package_version_tuple,
+                        )
+
                 yield package_version
                 continue
 
-            package_version_tuple = package_version.to_tuple()
             _LOGGER.debug("Found a CVEs for %r: %r", package_version_tuple, cve_records)
 
             if package_version_tuple not in self._messages_logged:
                 self._messages_logged.add(package_version_tuple)
-                for cve_record in cve_records:
+                for cve_record in disallowed_cves:
                     message = (
                         f"Skipping including package {package_version_tuple!r} as a CVE "
                         f"{cve_record['cve_id']!r} was found"
