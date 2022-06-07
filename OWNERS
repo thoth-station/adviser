@@ -1,9 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
+  - codificat
   - fridex
-  - sesheta
   - kpostoffice
   - mayacostantini
+  - sesheta
 reviewers:
+  - codificat
+  - mayacostantini
   - harshad16
