@@ -1,4 +1,10 @@
 
+## Release 0.56.0 (2022-06-10T11:47:52)
+* 1986ca5e Implement allowing certain CVEs being present in the application stack
+* b21d3345 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* d22afbd9 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* 836d3893 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+
 ## Release 0.55.0 (2022-05-19T10:08:50)
 * 5af208e2 Add video about allocation CPU and memory resources
 
