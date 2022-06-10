@@ -110,3 +110,15 @@ class TestUnit(AdviserTestCase):
     def test_get_aicoe_configuration(self, package_version, expected) -> None:
         """Check parsing of AICoE specific configuration encoded in the URL."""
         assert Unit.get_aicoe_configuration(package_version) == expected
+
+    def test_construct_allow_cves(self) -> None:
+        """Test constructing allowed CVEs in the application."""
+        allow_cves = {"foo", "bar"}
+
+        Unit._construct_allow_cves(allow_cves, {})
+        assert allow_cves == set()
+
+        allow_cves = {"foo", "bar"}
+
+        Unit._construct_allow_cves(allow_cves, {"key": "value", "allow-cve": "pysec-2014-10,PYSEC-2014-22"})
+        assert allow_cves == {"PYSEC-2014-10", "PYSEC-2014-22"}

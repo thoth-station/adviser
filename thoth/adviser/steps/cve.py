@@ -61,6 +61,7 @@ class CvePenalizationStep(Step):
     _JUSTIFICATION_LINK_NO_CVE = jl("no_cve")
 
     _messages_logged = attr.ib(type=Set[Tuple[str, str, str]], factory=set, init=False)
+    _allow_cves = attr.ib(type=Set[str], factory=set, init=False)
 
     @classmethod
     def should_include(cls, builder_context: "PipelineBuilderContext") -> Generator[Dict[str, Any], None, None]:
@@ -84,6 +85,7 @@ class CvePenalizationStep(Step):
     def pre_run(self) -> None:
         """Initialize this pipeline unit before running."""
         self._messages_logged.clear()
+        self._construct_allow_cves(self._allow_cves, self.context.labels)
         super().pre_run()
 
     def run(self, _: State, package_version: PackageVersion) -> Optional[Tuple[float, List[Dict[str, str]]]]:
@@ -99,7 +101,7 @@ class CvePenalizationStep(Step):
 
         if cve_records:
             package_version_tuple = package_version.to_tuple()
-            _LOGGER.debug("Found a CVEs for %r: %r", package_version_tuple, cve_records)
+            _LOGGER.debug("Found CVEs for %r: %r", package_version_tuple, cve_records)
 
             justification = []
             for cve_record in cve_records:
@@ -115,8 +117,11 @@ class CvePenalizationStep(Step):
                 )
 
             if self.context.recommendation_type not in (RecommendationType.LATEST, RecommendationType.TESTING):
-                # Penalize only if not latest/testing.
-                penalization = len(cve_records) * self.configuration["cve_penalization"]
+                # Penalize only if not latest/testing and based on `allow-cve' label supplied.
+                penalized_cves = [
+                    cve_record for cve_record in cve_records if cve_record["cve_id"] not in self._allow_cves
+                ]
+                penalization = len(penalized_cves) * self.configuration["cve_penalization"]
                 return max(penalization, -1.0), justification
 
             return 0.0, justification

@@ -52,7 +52,7 @@ class TestLabelsBoot(AdviserUnitTestCase):
 
     def test_run(self, context: Context) -> None:
         """Test if the given software environment is solved."""
-        context.labels = {"foo": "bar", "baz": "qux"}
+        context.labels = {"foo": "bar", "baz": "qux", "allow-cve": "pysec-2014-10,PYSEC-2014-22"}
 
         assert not context.stack_info
 
@@ -63,4 +63,14 @@ class TestLabelsBoot(AdviserUnitTestCase):
         assert context.stack_info == [
             {"link": jl("labels"), "message": "Considering label foo=bar in the resolution process", "type": "INFO"},
             {"link": jl("labels"), "message": "Considering label baz=qux in the resolution process", "type": "INFO"},
+            {
+                "link": jl("allow_cve"),
+                "message": "Allowing CVE 'PYSEC-2014-10' to be present in the application",
+                "type": "WARNING",
+            },
+            {
+                "link": jl("allow_cve"),
+                "message": "Allowing CVE 'PYSEC-2014-22' to be present in the application",
+                "type": "WARNING",
+            },
         ]

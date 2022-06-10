@@ -114,3 +114,29 @@ class TestCveSieve(AdviserUnitTestCase):
             }
         ]
         assert self.verify_justification_schema(context.stack_info)
+
+    def test_cve_sieve_allow_cve(self, context: Context) -> None:
+        """Make sure a CVE filtering allows allow-cve configuration."""
+        context.graph.should_receive("get_python_cve_records_all").with_args(
+            package_name="flask", package_version="0.12.0"
+        ).and_return([self._FLASK_CVE])
+
+        pv = PackageVersion(
+            name="flask",
+            version="==0.12.0",
+            index=Source("https://pypi.org/simple"),
+            develop=False,
+        )
+
+        assert not context.stack_info
+
+        context.recommendation_type = RecommendationType.SECURITY
+
+        context.labels["allow-cve"] = self._FLASK_CVE["cve_id"]
+        with self.UNIT_TESTED.assigned_context(context):
+            unit = self.UNIT_TESTED()
+            unit.pre_run()
+            result = list(unit.run((p for p in (pv,))))
+
+        assert result == [pv]
+        assert context.stack_info == []
