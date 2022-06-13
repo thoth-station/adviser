@@ -1369,8 +1369,8 @@ class Resolver:
 
             if len(states) == 0:
                 msg = (
-                    f"Resolver did not find any stack that would satisfy requirements and stack "
-                    f"characteristics given the time allocated"
+                    "Resolver did not find any stack that would satisfy requirements and stack "
+                    "characteristics given the time allocated"
                 )
                 link = jl("no_stack")
                 self.context.stack_info.append(
