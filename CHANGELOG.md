@@ -1,4 +1,9 @@
 
+## Release 0.56.1 (2022-06-13T09:33:57)
+* 0e0e4159 Fix URL to the search results
+* 3f220a6a Address pre-commit complaints
+* eaa2b970 Update pre-commit configuration
+
 ## Release 0.56.0 (2022-06-10T11:47:52)
 * 1986ca5e Implement allowing certain CVEs being present in the application stack
 * b21d3345 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
