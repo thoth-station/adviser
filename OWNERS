@@ -2,11 +2,13 @@
 
 approvers:
   - codificat
+  - harshad16
   - fridex
+  - goern
   - kpostoffice
   - mayacostantini
   - sesheta
 reviewers:
   - codificat
-  - mayacostantini
   - harshad16
+  - mayacostantini
