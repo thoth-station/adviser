@@ -66,7 +66,7 @@ Frontend Namespace
 ##################
 
 The ``thoth-frontend`` is used as a management namespace. Services running in
-this namespace have usually assigned a service account for running and managing
+this namespace usually have a service account assigned for running and managing
 pods that are available inside other namespaces.
 
 A user can interact with the user-facing API that is the key interaction point
