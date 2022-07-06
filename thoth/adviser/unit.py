@@ -24,7 +24,6 @@ import re
 from typing import Any
 from typing import Dict
 from typing import Generator
-from typing import List
 from typing import Optional
 from typing import Set
 from typing import Tuple
@@ -35,7 +34,6 @@ import attr
 from voluptuous import Schema
 from voluptuous import Required
 from voluptuous import Any as SchemaAny
-from thoth.common import get_justification_link as jl
 from thoth.python import PackageVersion
 
 from .context import Context
