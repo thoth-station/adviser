@@ -1,0 +1,10 @@
+[flake8]
+ignore =
+    E2,
+    W5
+select =
+    E,
+    W,
+    F,
+    N
+max-line-length=120
