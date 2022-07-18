@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A base class for implementing sieves."""
+"""A base class for implementing pipeline configuration."""
 
 from itertools import chain
 from typing import Any
