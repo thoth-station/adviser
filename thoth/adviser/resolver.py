@@ -673,7 +673,8 @@ class Resolver:
         resolved_direct_dependencies: Dict[str, List[PackageVersion]] = self.solver.solve(
             sorted(
                 self.project.iter_dependencies(with_devel=with_devel),
-                key=lambda p: p.name,
+                key=lambda p: p.name,  # type: ignore[no-any-return]
+                # https://github.com/python/mypy/issues/9656#issuecomment-718284938
             ),
             graceful=True,
         )
@@ -763,7 +764,8 @@ class Resolver:
             for direct_dependency in package_versions:
                 self.context.register_package_version(direct_dependency)
 
-            package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
+            package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)  # type: ignore[no-any-return]
+            # https://github.com/python/mypy/issues/9656#issuecomment-718284938
             try:
                 package_versions = list(self._run_sieves(package_versions))
             except SkipPackage as exc:
@@ -1280,7 +1282,7 @@ class Resolver:
         self.pipeline.call_pre_run()
 
         start_time = time.monotonic()
-        max_score = None
+        max_score = float("-inf")
         last_iteration_logged = 0
         try:
             for final_state in self._do_resolve_states_raw(
@@ -1293,7 +1295,7 @@ class Resolver:
                     self.context.limit,
                 )
 
-                max_score = final_state.score if max_score is None else max(max_score, final_state.score)
+                max_score = max(max_score, final_state.score)
 
                 if (
                     self.context.iteration - last_iteration_logged > self.log_iteration
