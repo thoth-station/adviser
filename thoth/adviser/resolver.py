@@ -173,13 +173,13 @@ class Resolver:
         type=Optional[int],
         kw_only=True,
         default=DEFAULT_BEAM_WIDTH,
-        converter=_beam_width,  # type: ignore
+        converter=_beam_width,
     )
     limit_latest_versions = attr.ib(
         type=Optional[int],
         kw_only=True,
         default=DEFAULT_LIMIT_LATEST_VERSIONS,
-        converter=_limit_latest_versions,  # type: ignore
+        converter=_limit_latest_versions,
     )
 
     prescription = attr.ib(type=Optional["Prescription"], default=None, kw_only=True)
