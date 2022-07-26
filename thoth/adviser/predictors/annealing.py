@@ -21,6 +21,7 @@ from typing import Any
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import cast
 from typing import TYPE_CHECKING
 import logging
 import random
@@ -55,7 +56,9 @@ class AdaptiveSimulatedAnnealing(Predictor):
     def _temperature_function(self, t0: float, context: Context) -> float:
         """Temperature function used to compute new temperature."""
         k = (context.accepted_final_states_count + math.log(context.iteration + 1)) / context.limit
-        temperature = t0 * self.temperature_coefficient**k
+        temperature = t0 * cast(
+            float, self.temperature_coefficient**k
+        )  # https://github.com/python/typeshed/issues/285
         _LOGGER.debug(
             "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, beam size= %d, k=%f) = %g",
             context.iteration,
