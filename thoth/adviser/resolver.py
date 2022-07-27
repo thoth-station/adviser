@@ -1302,15 +1302,18 @@ class Resolver:
                     or self.context.accepted_final_states_count == 1
                 ):
                     _LOGGER.info(
-                        "Pipeline performed %d moves in the dependency graph and generated %d software stacks out "
-                        "of %d requested (pipeline pace %.02f stacks/second); top rated software stack in beam "
-                        "has a score of %.2f; top rated software stack found so far has a score of %.2f",
-                        self.context.iteration,
-                        self.context.accepted_final_states_count,
-                        self.context.limit,
-                        self.context.accepted_final_states_count / (time.monotonic() - start_time),
-                        self.beam.max().score if self.beam.size > 0 else float("nan"),
-                        float("nan") if max_score is None else max_score,
+                        f"Pipeline performed {self.context.iteration} moves in the dependency graph and generated"
+                        f"{self.context.accepted_final_states_count} software stacks out of "
+                        f"{self.context.limit} requested (pipeline pace "
+                        f"{(self.context.accepted_final_states_count / (time.monotonic() - start_time)):.02f}"
+                        f" stacks/second)"
+                        + (
+                            f";"
+                            f"top rated software stack in beam has a score of {self.beam.max().score:.2f}; "
+                            f"top rated software stack found so far has a score of {max_score:.2f}"
+                            if self.beam.size > 0
+                            else ""
+                        )
                     )
                     last_iteration_logged = self.context.iteration
 
