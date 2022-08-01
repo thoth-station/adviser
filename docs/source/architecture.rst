@@ -132,9 +132,9 @@ non-responsive).
   observations such as whether the given package is installable into the given
   environment and if it is present on a Python package index
 
-* `graph-sync-job <https://github.com/thoth-station/graph-sync-job>`__ - a job
-  responsible for syncing data in a JSON format persisted on Ceph to the Thoth's
-  knowledge graph database
+* `graph-sync-job <https://github.com/thoth-station/graph-sync-job>`__ [1]_ - a
+  job responsible for syncing data in a JSON format persisted on Ceph to the
+  Thoth's knowledge graph database
 
 * `prescriptions-refresh-job
   <https://github.com/thoth-station/prescriptions-refresh-job>`__ - a periodic
@@ -169,9 +169,9 @@ created in this namespace to compute results.
   implementation now lies in the `adviser repo
   <https://github.com/thoth-station/adviser>`__
 
-* `graph-sync-job <https://github.com/thoth-station/graph-sync-job>`__ - a job
-  responsible for syncing data in a JSON format persisted on Ceph to the Thoth's
-  knowledge graph database
+* `graph-sync-job <https://github.com/thoth-station/graph-sync-job>`__ [1]_ - a
+  job responsible for syncing data in a JSON format persisted on Ceph to the
+  Thoth's knowledge graph database
 
 All the components are scheduled using `Argo workflows
 <https://argoproj.github.io/argo-workflows/>`__. Additional logic used during
@@ -205,6 +205,11 @@ A separate namespace for database related deployments.
 * `graph-metrics-exporter
   <https://github.com/thoth-station/graph-metrics-exporter/>`__ - a periodic
   job that exports metrics out of the main database asynchronously
+
+
+.. [1] graph-sync-job runs in several namespaces, as its purpose it to sync the
+   result of other components (executing in differents namespaces) to the
+   postgres database
 
 Grafana dashboards
 ##################
