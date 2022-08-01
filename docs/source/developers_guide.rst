@@ -52,7 +52,7 @@ the transitive ones):
 
 .. code-block:: console
 
-  $ thamos install --dev
+  $ pipenv install --dev
 
   # Alternatively you can use Thamos CLI:
   $ thamos install --dev
