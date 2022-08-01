@@ -193,7 +193,7 @@ calling :func:`Beam.plot <thoth.adviser.beam.Beam.plot>`. The figure below
 shows beam history during resolution of 1000 TensorFlow software stacks by
 sampling the state space using :ref:`adaptive simulated annealing <annealing>`.
 CVE penalization was the only :ref:`pipeline step <steps>` used during
-the resolution process, resolver did approximately 2500 resolution rounds to
+the resolution process, resolver did approximately 25000 resolution rounds to
 score 1000 software stacks (``limit`` parameter to adviser).
 
 
