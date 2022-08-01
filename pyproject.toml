@@ -17,3 +17,6 @@ exclude = '''
   | dist
 )/
 '''
+
+[tool.check-manifest]
+ignore = ['.flake8']
