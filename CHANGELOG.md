@@ -1,3 +1,17 @@
+## Release 0.56.1 (2022-08-02T14:33:57)
+* d4681eeb Docs typo
+* 4b8825b8 Moves flake8 config into a dedicated file
+* 769f81d0 docs: Precision regarding graph-sync-job
+* 8a80ac6d Fix docstring
+* b87b66bd :ship: Bump up base image initialized in CI.
+* a46420dc Fix a typo
+* 331c12a6 Doc rewording
+* cb4d814d Update pre-commit versions and fix flake8 complaints
+* 91b700e8 Remove the maintainers section from .thoth.yaml
+* 42a6bb6f :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* 0e0e4159 Fix URL to the search results
+* 3f220a6a Address pre-commit complaints
+* eaa2b970 Update pre-commit configuration
 
 ## Release 0.56.0 (2022-06-10T11:47:52)
 * 1986ca5e Implement allowing certain CVEs being present in the application stack
