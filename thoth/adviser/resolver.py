@@ -80,6 +80,7 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 _NO_EXTRAS = frozenset([None])
+_DOCUMENT_ID = os.getenv("THOTH_DOCUMENT_ID", "UNKNOWN")
 
 
 def _beam_width(value: Any) -> Optional[int]:
@@ -1349,7 +1350,7 @@ class Resolver:
             for state in self._do_resolve_states(with_devel=with_devel, user_stack_scoring=user_stack_scoring):
                 # Always run wraps as raw products are computed.
                 self._run_wraps(state, sort=True)
-                yield Product.from_final_state(context=self.context, state=state)
+                yield Product.from_final_state(context=self.context, state=state, base_project=self.project)
 
     def resolve(self, *, with_devel: bool = True, user_stack_scoring: bool = True) -> Report:
         """Resolve software stacks and return resolver report."""
@@ -1385,16 +1386,28 @@ class Resolver:
             for item in states:
                 self._run_wraps(item[1], sort=True)
 
+            products = [
+                Product.from_final_state(context=self.context, state=s[1], base_project=self.project)
+                for s in sorted(states, key=lambda s: s[0], reverse=True)
+            ]
+
+            stack_info_count = len(self.context.stack_info) - 1
+
+            report_metadata = {
+                "metadata": {
+                    "advise_id": _DOCUMENT_ID,
+                    "stack_info_count": stack_info_count,
+                }
+            }
+
             report = Report(
-                products=[
-                    Product.from_final_state(context=self.context, state=s[1])
-                    for s in sorted(states, key=lambda s: s[0], reverse=True)
-                ],
+                products=products,
                 pipeline=self.pipeline,
                 resolver_iterations=self.context.iteration,
                 accepted_final_states_count=self.context.accepted_final_states_count,
                 discarded_final_states_count=self.context.discarded_final_states_count,
                 stack_info=self.context.stack_info,
+                report_metadata=report_metadata,
             )
 
             self.predictor.post_run_report(report)

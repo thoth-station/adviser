@@ -40,6 +40,7 @@ class Report:
 
     products = attr.ib(type=List[Product], kw_only=True)
     pipeline = attr.ib(type=PipelineConfig, kw_only=True)
+    report_metadata = attr.ib(type=dict, kw_only=True)
     resolver_iterations = attr.ib(type=int, kw_only=True, default=0)
     accepted_final_states_count = attr.ib(type=int, kw_only=True, default=0)
     discarded_final_states_count = attr.ib(type=int, kw_only=True, default=0)
@@ -71,4 +72,5 @@ class Report:
             "resolver_iterations": self.resolver_iterations,
             "accepted_final_states_count": self.accepted_final_states_count,
             "discarded_final_states_count": self.discarded_final_states_count,
+            "report_metadata": self.report_metadata,
         }

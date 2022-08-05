@@ -58,13 +58,14 @@ class Product:
     # This project is "advised project" and does not need to be exactly the same as the one stated in context.
     project = attr.ib(type=Project, kw_only=True)
     score = attr.ib(type=float, kw_only=True)
+    product_metadata = attr.ib(type=dict, kw_only=True)
     justification = attr.ib(type=List[Dict[str, str]], kw_only=True)
     advised_runtime_environment = attr.ib(type=Optional[RuntimeEnvironment], default=None, kw_only=True)
     advised_manifest_changes = attr.ib(type=List[List[Dict[str, Any]]], kw_only=True, default=attr.Factory(list))
     _context = attr.ib(type=Context, kw_only=True)
 
     @classmethod
-    def from_final_state(cls, *, context: Context, state: State) -> "Product":
+    def from_final_state(cls, *, context: Context, state: State, base_project: Project) -> "Product":
         """Instantiate advised stack from final state produced by adviser's pipeline."""
         assert state.is_final(), "Instantiating product from a non-final state"
 
@@ -167,6 +168,15 @@ class Product:
         if not justification:
             justification.append(cls._NO_OBSERVATION_JUSTIFICATION)
 
+        advised_packages = set(advised_project.pipfile.packages.packages)
+        base_project_packages = set(base_project.pipfile.packages.packages)
+
+        product_metadata = {
+            "added_dependencies_count": len(advised_packages - base_project_packages),
+            "removed_dependencies_count": len(base_project_packages - advised_packages),
+            "justifications_count": len(justification),
+        }
+
         return cls(
             project=advised_project,
             score=state.score,
@@ -174,6 +184,7 @@ class Product:
             advised_runtime_environment=state.advised_runtime_environment,
             advised_manifest_changes=state.advised_manifest_changes,
             context=context,
+            product_metadata=product_metadata,
         )
 
     @staticmethod
