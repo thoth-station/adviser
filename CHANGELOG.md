@@ -1,3 +1,7 @@
+
+## Release 0.56.2 (2022-08-23T04:48:55)
+* c7769224 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* c199bc36 :snail: fix the dependency issue by pinning down hypothesis
 ## Release 0.56.1 (2022-08-02T14:33:57)
 * d4681eeb Docs typo
 * 4b8825b8 Moves flake8 config into a dedicated file
