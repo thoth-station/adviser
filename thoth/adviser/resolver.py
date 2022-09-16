@@ -1330,7 +1330,7 @@ class Resolver:
             self.context.accepted_final_states_count / duration,
         )
 
-        if self.beam.size > 0:
+        if max_score != float("-inf"):
             _LOGGER.info("The highest rated software stack resolved has a score of %0.2f", max_score)
 
         _LOGGER.info(
