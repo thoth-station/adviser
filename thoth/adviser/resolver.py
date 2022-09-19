@@ -173,13 +173,13 @@ class Resolver:
         type=Optional[int],
         kw_only=True,
         default=DEFAULT_BEAM_WIDTH,
-        converter=_beam_width,  # type: ignore
+        converter=_beam_width,
     )
     limit_latest_versions = attr.ib(
         type=Optional[int],
         kw_only=True,
         default=DEFAULT_LIMIT_LATEST_VERSIONS,
-        converter=_limit_latest_versions,  # type: ignore
+        converter=_limit_latest_versions,
     )
 
     prescription = attr.ib(type=Optional["Prescription"], default=None, kw_only=True)
@@ -673,7 +673,8 @@ class Resolver:
         resolved_direct_dependencies: Dict[str, List[PackageVersion]] = self.solver.solve(
             sorted(
                 self.project.iter_dependencies(with_devel=with_devel),
-                key=lambda p: p.name,
+                key=lambda p: p.name,  # type: ignore[no-any-return]
+                # https://github.com/python/mypy/issues/9656#issuecomment-718284938
             ),
             graceful=True,
         )
@@ -763,7 +764,8 @@ class Resolver:
             for direct_dependency in package_versions:
                 self.context.register_package_version(direct_dependency)
 
-            package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)
+            package_versions.sort(key=lambda pv: pv.semantic_version, reverse=True)  # type: ignore[no-any-return]
+            # https://github.com/python/mypy/issues/9656#issuecomment-718284938
             try:
                 package_versions = list(self._run_sieves(package_versions))
             except SkipPackage as exc:
@@ -1280,7 +1282,7 @@ class Resolver:
         self.pipeline.call_pre_run()
 
         start_time = time.monotonic()
-        max_score = None
+        max_score = float("-inf")
         last_iteration_logged = 0
         try:
             for final_state in self._do_resolve_states_raw(
@@ -1293,7 +1295,7 @@ class Resolver:
                     self.context.limit,
                 )
 
-                max_score = final_state.score if max_score is None else max(max_score, final_state.score)
+                max_score = max(max_score, final_state.score)
 
                 if (
                     self.context.iteration - last_iteration_logged > self.log_iteration
@@ -1301,15 +1303,15 @@ class Resolver:
                 ):
                     _LOGGER.info(
                         "Pipeline performed %d moves in the dependency graph and generated %d software stacks out "
-                        "of %d requested (pipeline pace %.02f stacks/second); top rated software stack in beam "
-                        "has a score of %.2f; top rated software stack found so far has a score of %.2f",
+                        "of %d requested (pipeline pace %.02f stacks/second)",
                         self.context.iteration,
                         self.context.accepted_final_states_count,
                         self.context.limit,
                         self.context.accepted_final_states_count / (time.monotonic() - start_time),
-                        self.beam.max().score if self.beam.size > 0 else float("nan"),
-                        float("nan") if max_score is None else max_score,
                     )
+                    if self.beam.size > 0:
+                        _LOGGER.info("top rated software stack in beam has a score of %.2f", self.beam.max().score)
+                    _LOGGER.info("top rated software stack found so far has a score of %.2f", max_score)
                     last_iteration_logged = self.context.iteration
 
                 yield final_state
@@ -1328,7 +1330,7 @@ class Resolver:
             self.context.accepted_final_states_count / duration,
         )
 
-        if max_score is not None:
+        if max_score != float("-inf"):
             _LOGGER.info("The highest rated software stack resolved has a score of %0.2f", max_score)
 
         _LOGGER.info(

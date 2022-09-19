@@ -21,6 +21,7 @@ import attr
 
 from typing import Optional
 from typing import Tuple
+from typing import cast
 import logging
 import math
 import os
@@ -51,7 +52,7 @@ class MCTS(TemporalDifference):
         # This function, in comparision to TD/SA, does not need to take into account iteration as it
         # works on accepted states.
         k = context.accepted_final_states_count / context.limit
-        temperature = t0 * 0.99**k
+        temperature = t0 * cast(float, 0.99**k)  # https://github.com/python/typeshed/issues/285
         _LOGGER.debug(
             "New temperature for (iteration=%d, t0=%g, accepted final states=%d, limit=%d, beam size= %d, k=%f) = %g",
             context.iteration,
