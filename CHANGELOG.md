@@ -1,4 +1,16 @@
 
+## Release 0.56.3 (2022-09-21T19:50:12)
+* dd06c06c :ship: Bump up base image initialized in CI.
+* b24dc235 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* 03e4bf21 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* c14ef49d Use max_score value as logging condition
+* 670a24f3 Use printf-style for logging
+* 7eb3ed1d Don't log depend when beam is empty instead of undefined max_score
+* 2c3b09d7 Refactor resolver logging for empty beam case
+* 7afc79fc Fix float type inference on pow
+* 8a131df6 Fix mypy
+* d4fc2048 Update mypy pre-commit hooks config
+
 ## Release 0.56.2 (2022-08-23T04:48:55)
 * c7769224 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
 * c199bc36 :snail: fix the dependency issue by pinning down hypothesis
