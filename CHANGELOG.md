@@ -1,4 +1,12 @@
 
+## Release 0.56.4 (2022-12-05T09:02:36)
+* 489a624e :ship: Bump up base image initialized in CI.
+* 42fa173d Update pre-commit configuration
+* fb76cf52 ':arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment'
+* 7bbd7d42 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* 4e86bf2e :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+* 78061f99 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
+
 ## Release 0.56.3 (2022-09-21T19:50:12)
 * dd06c06c :ship: Bump up base image initialized in CI.
 * b24dc235 :arrow_up: Automatic update of dependencies by Kebechet for the rhel8 environment
