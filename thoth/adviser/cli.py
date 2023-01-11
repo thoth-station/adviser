@@ -29,6 +29,7 @@ from functools import partial
 from typing import Any
 from typing import Callable
 from typing import Dict
+from typing import List
 from typing import Optional
 from typing import Tuple
 
@@ -955,8 +956,18 @@ def dependency_monkey(
     click_ctx.exit(int(exit_code != 0))
 
 
+class _LogErrorCounter(logging.Handler):
+    def __init__(self):
+        super(_LogErrorCounter, self).__init__()
+        self.count = 0
+
+    def emit(self, record):
+        if record.levelno == logging.ERROR:
+            self.count += 1
+
+
 @cli.command("validate-prescriptions")
-@click.argument("prescriptions", nargs=1, metavar="PRESCRIPTION_DIR")
+@click.argument("prescriptions", nargs=-1, metavar="PRESCRIPTION_DIR", type=click.Path(exists=True))
 @click.option(
     "--show-unit-names",
     envvar="THOTH_ADVISER_VALIDATE_PRESCRIPTION_SHOW_UNIT_NAMES",
@@ -973,11 +984,23 @@ def dependency_monkey(
     required=False,
     help="Serialize validated prescriptions into an output pickle file.",
 )
-def validate_prescription(prescriptions: str, show_unit_names: bool, output: str) -> None:
+@click.option("--pre-commit", envvar="PRE_COMMIT_MODE", type=bool, metavar="PRECOMMIT", required=False, default=False)
+def validate_prescription(prescriptions: List[str], show_unit_names: bool, output: str, pre_commit: bool) -> None:
     """Validate the given prescription."""
+    if pre_commit:
+        _LOGGER.setLevel(logging.ERROR)
+        count_handler = _LogErrorCounter()
+        _LOGGER.addHandler(count_handler)
     _LOGGER.info("Validating prescriptions in %r", prescriptions)
-    prescription = Prescription.validate(prescriptions)
+    prescription = Prescription.validate(prescriptions, not pre_commit)
     _LOGGER.info("Prescriptions %r validated successfully", prescriptions)
+
+    if pre_commit:
+        if count_handler.count != 0:
+            print(f"{count_handler.count} errors in prescriptions files")
+            exit(1)
+        else:
+            exit(0)
 
     result = {
         "prescriptions": [{"name": p[0], "release": p[1]} for p in prescription.prescriptions],
