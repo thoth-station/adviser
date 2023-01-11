@@ -1,0 +1,10 @@
+- id: validate-prescriptions
+  name: Validating prescriptions
+  description: Validates Thoth prescriptions file
+  language: python
+  entry: thoth-adviser validate-prescriptions --pre-commit yes
+  types:
+    - file
+    - non-executable
+    - text
+    - yaml
