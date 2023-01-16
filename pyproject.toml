@@ -1,5 +1,50 @@
+[project]
+name = "thoth-adviser"
+description = "Package and package stack adviser for the Thoth project"
+license = {file = "LICENSE"}
+authors = [
+ {name = "Fridolin Pokorny", email = "fridolin@redhat.com"}
+]
+keywords = [
+    "python",
+    "dependency",
+    "pypi",
+    "dependencies",
+    "tool",
+    "library",
+    "thoth",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.7",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+]
+
+dynamic = ["version", "dependencies"]
+readme = "README.rst"
+
+[project.scripts]
+thoth-adviser = "thoth.adviser.cli:cli"
+
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools", "wheel", "setuptools-pipfile"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools-pipfile]
+
+[tool.setupotools.package-data]
+thoth.adviser = ["py.typed", "*.json", "*.yaml"]
+
+[tool.setuptools.dynamic]
+version = {attr = "thoth.adviser.__version__"}
+
+[project.urls]
+Documentation = "https://github.com/thoth-station/adviser"
+Source = "https://github.com/thoth-station/adviser"
 
 [tool.black]
 line-length = 120
@@ -17,6 +62,20 @@ exclude = '''
   | dist
 )/
 '''
+
+[tool.pytest.ini_options]
+addopts = [
+        "--timeout=120",
+        "--cov=./thoth",
+        "--mypy",
+        "--capture=no",
+        "--verbose",
+        "-l",
+        "-s",
+        "-vv",
+        "--hypothesis-show-statistics",
+        "tests/",
+]
 
 [tool.check-manifest]
 ignore = ['.flake8']
