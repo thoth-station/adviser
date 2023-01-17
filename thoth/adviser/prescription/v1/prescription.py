@@ -30,10 +30,13 @@ from typing import List
 from typing import Tuple
 from typing import Dict
 from typing import Generator
+from typing import Iterable
 from typing import Optional
 from typing import Type
 from typing import TYPE_CHECKING
 
+from voluptuous.humanize import humanize_error
+import voluptuous
 import attr
 
 from ...exceptions import InternalError
@@ -109,11 +112,11 @@ class Prescription:
         return False
 
     @classmethod
-    def validate(cls, prescriptions: str) -> "Prescription":
+    def validate(cls, prescriptions: Iterable[str], any_error_fatal: bool = True) -> "Prescription":
         """Validate the given prescription."""
         _LOGGER.debug("Validating prescriptions schema")
 
-        prescription_instance = cls.load(prescriptions)
+        prescription_instance = cls.load(prescriptions, any_error_fatal)
 
         # Verify semantics of prescription.
         any_error = False
@@ -195,12 +198,8 @@ class Prescription:
         """
         try:
             PRESCRIPTION_SCHEMA(prescription)
-        except Exception as exc:
-            _LOGGER.exception(
-                "Failed to validate schema for prescription: %s",
-                str(exc),
-            )
-            raise PrescriptionSchemaError(str(exc))
+        except voluptuous.error.Invalid as exc:
+            raise PrescriptionSchemaError(humanize_error(prescription, exc))
 
         boots_dict = prescription_instance.boots_dict if prescription_instance is not None else OrderedDict()
         for boot_spec in prescription["units"].get("boots") or []:
@@ -279,7 +278,7 @@ class Prescription:
         )
 
     @classmethod
-    def load(cls, *prescriptions: str) -> "Prescription":
+    def load(cls, prescriptions: Iterable[str], any_error_fatal: bool = True) -> "Prescription":
         """Load prescription from files or from their YAML representation."""
         queue = deque([(p, cls._PRESCRIPTION_DEFAULT_NAME, cls._PRESCRIPTION_DEFAULT_RELEASE) for p in prescriptions])
         prescription_instance = Prescription()
@@ -298,9 +297,12 @@ class Prescription:
                                 prescription_name=prescription_name,
                                 prescription_release=prescription_release,
                             )
-                        except Exception:
-                            _LOGGER.error("Failed to load prescription from %r", prescription)
-                            raise
+                        except Exception as e:
+                            if any_error_fatal:
+                                _LOGGER.error("Failed to load prescription from %r", prescription)
+                                raise
+                            else:
+                                _LOGGER.error("%s is invalid:\n%s", prescription, str(e))
                 elif prescription.endswith(".pickle"):
                     _LOGGER.debug("Loading prescriptions from %r", prescription)
                     with open(prescription, "rb") as fp:
