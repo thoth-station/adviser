@@ -195,11 +195,13 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
 _METADATA_SCHEMA = Schema({Required(str): object})
 
 
-_UNIT_SCHEMA_BASE_DICT = {
-    Required("name"): _NONEMPTY_STRING,
-    Required("should_include"): PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA,
-    Optional("metadata"): _METADATA_SCHEMA,
-}
+_BASE_UNIT_SCHEMA = Schema(
+    {
+        Required("name"): _NONEMPTY_STRING,
+        Required("should_include"): PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA,
+        Optional("metadata"): _METADATA_SCHEMA,
+    }
+)
 
 
 def _justification_link(v: str) -> None:
@@ -240,15 +242,17 @@ JUSTIFICATION_SCHEMA = Schema(
 )
 
 
-_UNIT_RUN_SCHEMA_BASE_DICT = {
-    Optional("stack_info"): [STACK_INFO_SCHEMA],
-    Optional("log"): Schema(
-        {
-            Required("message"): _NONEMPTY_STRING,
-            Required("type"): Any("WARNING", "INFO", "ERROR"),
-        }
-    ),
-}
+_UNIT_RUN_SCHEMA_BASE = Schema(
+    {
+        Optional("stack_info"): [STACK_INFO_SCHEMA],
+        Optional("log"): Schema(
+            {
+                Required("message"): _NONEMPTY_STRING,
+                Required("type"): Any("WARNING", "INFO", "ERROR"),
+            }
+        ),
+    }
+)
 
 
 def _locked_version(v: object) -> None:
@@ -291,22 +295,20 @@ PACKAGE_VERSION_REQUIRED_NAME_SCHEMA = Schema(
 
 PRESCRIPTION_BOOT_MATCH_ENTRY_SCHEMA = Schema({"package_name": Optional(_NONEMPTY_STRING)})
 
-PRESCRIPTION_BOOT_RUN_SCHEMA = Schema(
+PRESCRIPTION_BOOT_RUN_SCHEMA = _UNIT_RUN_SCHEMA_BASE.extend(
     {
         Optional("not_acceptable"): _NONEMPTY_STRING,
         Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
-        **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )
 
-PRESCRIPTION_BOOT_SCHEMA = Schema(
+PRESCRIPTION_BOOT_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {
         Optional("match"): Any(
             All([PRESCRIPTION_BOOT_MATCH_ENTRY_SCHEMA], Length(min=1)), PRESCRIPTION_BOOT_MATCH_ENTRY_SCHEMA
         ),
         Required("run"): PRESCRIPTION_BOOT_RUN_SCHEMA,
         Required("type"): "boot",
-        **_UNIT_SCHEMA_BASE_DICT,
     }
 )
 
@@ -322,7 +324,7 @@ def _version_yield_vs_locked(pseudonym: typing.Dict[str, typing.Any]) -> None:
         raise ValueError("'yield_matched_version' together " "with 'locked_version' leads to undefined behavior")
 
 
-PRESCRIPTION_PSEUDONYM_RUN_SCHEMA = Schema(
+PRESCRIPTION_PSEUDONYM_RUN_SCHEMA = _UNIT_RUN_SCHEMA_BASE.extend(
     {
         Required("yield"): Schema(
             All(
@@ -333,11 +335,10 @@ PRESCRIPTION_PSEUDONYM_RUN_SCHEMA = Schema(
                 _version_yield_vs_locked,
             )
         ),
-        **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )
 
-PRESCRIPTION_PSEUDONYM_SCHEMA = Schema(
+PRESCRIPTION_PSEUDONYM_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {
         Required("match"): Any(
             All([PRESCRIPTION_PSEUDONYM_MATCH_ENTRY_SCHEMA], Length(min=1)),
@@ -345,7 +346,6 @@ PRESCRIPTION_PSEUDONYM_SCHEMA = Schema(
         ),
         Required("run"): PRESCRIPTION_PSEUDONYM_RUN_SCHEMA,
         Required("type"): "pseudonym",
-        **_UNIT_SCHEMA_BASE_DICT,
     }
 )
 
@@ -355,21 +355,15 @@ PRESCRIPTION_PSEUDONYM_SCHEMA = Schema(
 
 PRESCRIPTION_SIEVE_MATCH_ENTRY_SCHEMA = Schema({"package_version": PACKAGE_VERSION_SCHEMA})
 
-PRESCRIPTION_SIEVE_RUN_SCHEMA = Schema(
-    {
-        **_UNIT_RUN_SCHEMA_BASE_DICT,
-    }
-)
+PRESCRIPTION_SIEVE_RUN_SCHEMA = _UNIT_RUN_SCHEMA_BASE
 
-
-PRESCRIPTION_SIEVE_SCHEMA = Schema(
+PRESCRIPTION_SIEVE_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {
         Required("match"): Any(
             All([PRESCRIPTION_SIEVE_MATCH_ENTRY_SCHEMA], Length(min=1)), PRESCRIPTION_SIEVE_MATCH_ENTRY_SCHEMA
         ),
         Optional("run"): PRESCRIPTION_SIEVE_RUN_SCHEMA,
         Required("type"): "sieve",
-        **_UNIT_SCHEMA_BASE_DICT,
     }
 )
 
@@ -377,11 +371,7 @@ PRESCRIPTION_SIEVE_SCHEMA = Schema(
 # Skip package sieve.
 #
 
-PRESCRIPTION_SKIP_PACKAGE_SIEVE_RUN_ENTRY_SCHEMA = Schema(
-    {
-        **_UNIT_RUN_SCHEMA_BASE_DICT,
-    }
-)
+PRESCRIPTION_SKIP_PACKAGE_SIEVE_RUN_ENTRY_SCHEMA = _UNIT_RUN_SCHEMA_BASE
 
 PRESCRIPTION_SKIP_PACKAGE_SIEVE_MATCH_ENTRY_SCHEMA = Schema(
     {
@@ -389,7 +379,7 @@ PRESCRIPTION_SKIP_PACKAGE_SIEVE_MATCH_ENTRY_SCHEMA = Schema(
     }
 )
 
-PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA = Schema(
+PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {
         Required("match"): Any(
             All([PRESCRIPTION_SKIP_PACKAGE_SIEVE_MATCH_ENTRY_SCHEMA], Length(min=1)),
@@ -397,7 +387,6 @@ PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA = Schema(
         ),
         Required("type"): "sieve.SkipPackage",
         Optional("run"): PRESCRIPTION_SKIP_PACKAGE_SIEVE_RUN_ENTRY_SCHEMA,
-        **_UNIT_SCHEMA_BASE_DICT,
     }
 )
 
@@ -418,15 +407,14 @@ PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA = Schema(
     }
 )
 
-PRESCRIPTION_STEP_RUN_SCHEMA = Schema(
-    All(
+PRESCRIPTION_STEP_RUN_SCHEMA = All(
+    _UNIT_RUN_SCHEMA_BASE.extend(
         {
             Exclusive("score", "score+eager"): Optional(float),
             Exclusive("justification", "justi+not_acceptable"): All([JUSTIFICATION_SCHEMA], Length(min=1)),
             Exclusive("not_acceptable", "justi+not_acceptable"): _NONEMPTY_STRING,
             Exclusive("eager_stop_pipeline", "score+eager"): _NONEMPTY_STRING,
             Optional("multi_package_resolution"): bool,
-            **_UNIT_RUN_SCHEMA_BASE_DICT,
         },
         {
             Extra: object,
@@ -438,14 +426,13 @@ PRESCRIPTION_STEP_RUN_SCHEMA = Schema(
     )
 )
 
-PRESCRIPTION_STEP_SCHEMA = Schema(
+PRESCRIPTION_STEP_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {
         Required("match"): Any(
             All([PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA], Length(min=1)), PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA
         ),
         Required("run"): PRESCRIPTION_STEP_RUN_SCHEMA,
         Required("type"): "step",
-        **_UNIT_SCHEMA_BASE_DICT,
     }
 )
 
@@ -457,22 +444,20 @@ PRESCRIPTION_STEP_SCHEMA = Schema(
 PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA = PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA
 
 
-PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA = Schema(
+PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA = _UNIT_RUN_SCHEMA_BASE.extend(
     {
         Optional("multi_package_resolution"): bool,
-        **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )
 
 
-PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA = Schema(
+PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {
         Required("match"): Any(
             PRESCRIPTION_SKIP_PACKAGE_STEP_MATCH_ENTRY_SCHEMA,
         ),
         Optional("run"): PRESCRIPTION_SKIP_PACKAGE_STEP_RUN_SCHEMA,
         Required("type"): "step.SkipPackage",
-        **_UNIT_SCHEMA_BASE_DICT,
     }
 )
 
@@ -484,7 +469,7 @@ PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA = Schema(
 PRESCRIPTION_ADD_PACKAGE_STEP_MATCH_ENTRY_SCHEMA = PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA
 
 
-PRESCRIPTION_ADD_PACKAGE_STEP_RUN_SCHEMA = Schema(
+PRESCRIPTION_ADD_PACKAGE_STEP_RUN_SCHEMA = _UNIT_RUN_SCHEMA_BASE.extend(
     {
         Optional("multi_package_resolution"): bool,
         Required("package_version"): Schema(
@@ -495,12 +480,11 @@ PRESCRIPTION_ADD_PACKAGE_STEP_RUN_SCHEMA = Schema(
                 Required("develop"): bool,
             }
         ),
-        **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )
 
 
-PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA = Schema(
+PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {
         Required("match"): Any(
             All([PRESCRIPTION_ADD_PACKAGE_STEP_MATCH_ENTRY_SCHEMA], Length(min=1)),
@@ -508,7 +492,6 @@ PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA = Schema(
         ),
         Required("run"): PRESCRIPTION_ADD_PACKAGE_STEP_RUN_SCHEMA,
         Required("type"): "step.AddPackage",
-        **_UNIT_SCHEMA_BASE_DICT,
     }
 )
 
@@ -517,13 +500,12 @@ PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA = Schema(
 # Group step unit.
 #
 
-PRESCRIPTION_GROUP_STEP_RUN_SCHEMA = Schema(
+PRESCRIPTION_GROUP_STEP_RUN_SCHEMA = _UNIT_RUN_SCHEMA_BASE.extend(
     {
         Optional("score"): Optional(float),
         Optional("justification"): All([JUSTIFICATION_SCHEMA], Length(min=1)),
         Optional("not_acceptable"): _NONEMPTY_STRING,
         Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
-        **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )
 
@@ -533,7 +515,7 @@ PRESCRIPTION_GROUP_STEP_MATCH_SCHEMA = Schema(
 )
 
 
-PRESCRIPTION_GROUP_STEP_SCHEMA = Schema(
+PRESCRIPTION_GROUP_STEP_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {
         Required("match"): Any(
             All([PRESCRIPTION_GROUP_STEP_MATCH_SCHEMA], Length(min=1)),
@@ -541,7 +523,6 @@ PRESCRIPTION_GROUP_STEP_SCHEMA = Schema(
         ),
         Required("run"): PRESCRIPTION_GROUP_STEP_RUN_SCHEMA,
         Required("type"): "step.Group",
-        **_UNIT_SCHEMA_BASE_DICT,
     }
 )
 
@@ -554,22 +535,20 @@ PRESCRIPTION_STRIDE_MATCH_ENTRY_SCHEMA = Schema(
     {Required("state"): Schema({Required("resolved_dependencies"): [PACKAGE_VERSION_SCHEMA]})}
 )
 
-PRESCRIPTION_STRIDE_RUN_SCHEMA = Schema(
+PRESCRIPTION_STRIDE_RUN_SCHEMA = _UNIT_RUN_SCHEMA_BASE.extend(
     {
         Optional("not_acceptable"): _NONEMPTY_STRING,
         Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
-        **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )
 
-PRESCRIPTION_STRIDE_SCHEMA = Schema(
+PRESCRIPTION_STRIDE_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {
         Required("match"): Any(
             All([PRESCRIPTION_STRIDE_MATCH_ENTRY_SCHEMA], Length(min=1)), PRESCRIPTION_STRIDE_MATCH_ENTRY_SCHEMA
         ),
         Required("run"): PRESCRIPTION_STRIDE_RUN_SCHEMA,
         Required("type"): "stride",
-        **_UNIT_SCHEMA_BASE_DICT,
     }
 )
 
@@ -581,22 +560,20 @@ PRESCRIPTION_WRAP_MATCH_ENTRY_SCHEMA = Schema(
     {Optional("state"): Schema({Required("resolved_dependencies"): [PACKAGE_VERSION_SCHEMA]})}
 )
 
-PRESCRIPTION_WRAP_RUN_SCHEMA = Schema(
+PRESCRIPTION_WRAP_RUN_SCHEMA = _UNIT_RUN_SCHEMA_BASE.extend(
     {
         Optional("justification"): All([JUSTIFICATION_SCHEMA], Length(min=1)),
         Optional("advised_manifest_changes"): object,
-        **_UNIT_RUN_SCHEMA_BASE_DICT,
     }
 )
 
-PRESCRIPTION_WRAP_SCHEMA = Schema(
+PRESCRIPTION_WRAP_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {
         Required("run"): PRESCRIPTION_WRAP_RUN_SCHEMA,
         Required("type"): "wrap",
         Optional("match"): Any(
             All([PRESCRIPTION_WRAP_MATCH_ENTRY_SCHEMA], Length(min=1)), PRESCRIPTION_WRAP_MATCH_ENTRY_SCHEMA
         ),
-        **_UNIT_SCHEMA_BASE_DICT,
     }
 )
 
@@ -632,7 +609,7 @@ PRESCRIPTION_GH_RELEASE_NOTES_WRAP_RUN_ENTRIES_SCHEMA = Schema(
 )
 
 
-PRESCRIPTION_GH_RELEASE_NOTES_WRAP_SCHEMA = Schema(
+PRESCRIPTION_GH_RELEASE_NOTES_WRAP_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {
         Required("type"): "wrap.GHReleaseNotes",
         Required("match"): Any(
@@ -640,7 +617,6 @@ PRESCRIPTION_GH_RELEASE_NOTES_WRAP_SCHEMA = Schema(
             PRESCRIPTION_GH_RELEASE_NOTES_WRAP_MATCH_ENTRY_SCHEMA,
         ),
         Required("run"): PRESCRIPTION_GH_RELEASE_NOTES_WRAP_RUN_ENTRIES_SCHEMA,
-        **_UNIT_SCHEMA_BASE_DICT,
     }
 )
 
