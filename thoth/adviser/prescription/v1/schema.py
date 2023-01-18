@@ -254,6 +254,13 @@ _UNIT_RUN_SCHEMA_BASE = Schema(
     }
 )
 
+_UNIT_RUN_NOT_ACCEPT = _UNIT_RUN_SCHEMA_BASE.extend(
+    {
+        Exclusive("not_acceptable", "not_accept+eager"): _NONEMPTY_STRING,
+        Exclusive("eager_stop_pipeline", "not_accept+eager"): _NONEMPTY_STRING,
+    }
+)
+
 
 def _locked_version(v: object) -> None:
     """Validate locked version."""
@@ -295,12 +302,7 @@ PACKAGE_VERSION_REQUIRED_NAME_SCHEMA = Schema(
 
 PRESCRIPTION_BOOT_MATCH_ENTRY_SCHEMA = Schema({"package_name": Optional(_NONEMPTY_STRING)})
 
-PRESCRIPTION_BOOT_RUN_SCHEMA = _UNIT_RUN_SCHEMA_BASE.extend(
-    {
-        Optional("not_acceptable"): _NONEMPTY_STRING,
-        Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
-    }
-)
+PRESCRIPTION_BOOT_RUN_SCHEMA = _UNIT_RUN_NOT_ACCEPT
 
 PRESCRIPTION_BOOT_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {
@@ -408,7 +410,7 @@ PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA = Schema(
 )
 
 PRESCRIPTION_STEP_RUN_SCHEMA = All(
-    _UNIT_RUN_SCHEMA_BASE.extend(
+    _UNIT_RUN_NOT_ACCEPT.extend(
         {
             Exclusive("score", "score+eager"): Optional(float),
             Exclusive("justification", "justi+not_acceptable"): All([JUSTIFICATION_SCHEMA], Length(min=1)),
@@ -500,12 +502,10 @@ PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA = _BASE_UNIT_SCHEMA.extend(
 # Group step unit.
 #
 
-PRESCRIPTION_GROUP_STEP_RUN_SCHEMA = _UNIT_RUN_SCHEMA_BASE.extend(
+PRESCRIPTION_GROUP_STEP_RUN_SCHEMA = _UNIT_RUN_NOT_ACCEPT.extend(
     {
         Optional("score"): Optional(float),
         Optional("justification"): All([JUSTIFICATION_SCHEMA], Length(min=1)),
-        Optional("not_acceptable"): _NONEMPTY_STRING,
-        Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
     }
 )
 
@@ -535,12 +535,7 @@ PRESCRIPTION_STRIDE_MATCH_ENTRY_SCHEMA = Schema(
     {Required("state"): Schema({Required("resolved_dependencies"): [PACKAGE_VERSION_SCHEMA]})}
 )
 
-PRESCRIPTION_STRIDE_RUN_SCHEMA = _UNIT_RUN_SCHEMA_BASE.extend(
-    {
-        Optional("not_acceptable"): _NONEMPTY_STRING,
-        Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
-    }
-)
+PRESCRIPTION_STRIDE_RUN_SCHEMA = _UNIT_RUN_NOT_ACCEPT
 
 PRESCRIPTION_STRIDE_SCHEMA = _BASE_UNIT_SCHEMA.extend(
     {

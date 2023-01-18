@@ -98,34 +98,12 @@ class Prescription:
             self.wraps_dict.values(),
         )
 
-    @staticmethod
-    def _validate_run_base(unit: Dict[str, Any]) -> bool:
-        """Validate run for a pipeline unit."""
-        if unit.get("run", {}).get("eager_stop_pipeline") and unit.get("run", {}).get("not_acceptable"):
-            _LOGGER.error(
-                "Error in unit %s (%s): Using 'eager_stop_pipeline' and 'not_acceptable' at the same "
-                "time has undefined behavior",
-                unit["name"],
-                unit["type"],
-            )
-
-        return False
-
     @classmethod
     def validate(cls, prescriptions: Iterable[str], any_error_fatal: bool = True) -> "Prescription":
         """Validate the given prescription."""
         _LOGGER.debug("Validating prescriptions schema")
 
         prescription_instance = cls.load(prescriptions, any_error_fatal)
-
-        # Verify semantics of prescription.
-        any_error = False
-
-        for unit in prescription_instance.units:
-            any_error = any_error or cls._validate_run_base(unit)
-
-        if any_error:
-            raise PrescriptionSchemaError("Failed to validate prescription units, see logs reported for more info")
 
         # Drop any metadata associated to save space.
         for unit in prescription_instance.units:
