@@ -124,21 +124,6 @@ class Prescription:
         for unit in prescription_instance.units:
             any_error = any_error or cls._validate_run_base(unit)
 
-        for wrap in prescription_instance.wraps_dict.values():
-            wrap_run = wrap["run"]
-            msg = f"Error in unit {wrap['name']} ({wrap['type']})"
-
-            if wrap_run.get("eager_stop_pipeline") and wrap_run.get("justification"):
-                _LOGGER.error(
-                    "%s: Using 'eager_stop_pipeline' together with 'justification' leads to undefined behavior", msg
-                )
-                any_error = True
-
-            if wrap_run.get("not_acceptable") and wrap_run.get("justification"):
-                _LOGGER.error(
-                    "%s: Using 'not_acceptable' together with 'justification' leads to undefined behavior", msg
-                )
-
         if any_error:
             raise PrescriptionSchemaError("Failed to validate prescription units, see logs reported for more info")
 
