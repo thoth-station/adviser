@@ -19,6 +19,7 @@
 
 import re
 from urllib.parse import urlparse
+import typing
 
 from voluptuous import All
 from voluptuous import Any
@@ -313,13 +314,22 @@ PRESCRIPTION_BOOT_SCHEMA = Schema(
 
 PRESCRIPTION_PSEUDONYM_MATCH_ENTRY_SCHEMA = Schema({"package_version": PACKAGE_VERSION_REQUIRED_NAME_SCHEMA})
 
+
+def _version_yield_vs_locked(pseudonym: typing.Dict[str, typing.Any]) -> None:
+    if pseudonym.get("yield_matched_version") and pseudonym["package_version"].get("locked_version"):
+        raise ValueError("'yield_matched_version' together " "with 'locked_version' leads to undefined behavior")
+
+
 PRESCRIPTION_PSEUDONYM_RUN_SCHEMA = Schema(
     {
         Required("yield"): Schema(
-            {
-                Optional("yield_matched_version"): bool,
-                "package_version": PACKAGE_VERSION_LOCKED_SCHEMA,
-            }
+            All(
+                {
+                    Optional("yield_matched_version"): bool,
+                    "package_version": PACKAGE_VERSION_LOCKED_SCHEMA,
+                },
+                _version_yield_vs_locked,
+            )
         ),
         **_UNIT_RUN_SCHEMA_BASE_DICT,
     }

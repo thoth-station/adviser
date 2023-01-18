@@ -124,18 +124,6 @@ class Prescription:
         for unit in prescription_instance.units:
             any_error = any_error or cls._validate_run_base(unit)
 
-        for pseudonym in prescription_instance.pseudonyms_dict.values():
-            if pseudonym["run"]["yield"].get("yield_matched_version") and pseudonym["run"]["yield"][
-                "package_version"
-            ].get("locked_version"):
-                _LOGGER.error(
-                    "Error in unit %s (%s): Using 'yield_matched_version' together "
-                    "with 'locked_version' leads to undefined behavior",
-                    pseudonym["name"],
-                    pseudonym["type"],
-                )
-                any_error = True
-
         for step in prescription_instance.steps_dict.values():
             step_run = step["run"]
             msg = f"Error in unit {step['name']} ({step['type']})"
