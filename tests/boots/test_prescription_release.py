@@ -35,7 +35,7 @@ class TestPrescriptionReleaseBoot(AdviserUnitTestCase):
         """Verify multiple should_include calls do not loop endlessly."""
         builder_context.recommendation_type = RecommendationType.LATEST
         prescription_path = str(self.data_dir / "prescriptions")
-        builder_context.prescription = Prescription.load(prescription_path)
+        builder_context.prescription = Prescription.load([prescription_path])
         self.verify_multiple_should_include(builder_context)
 
     def test_no_include(self, builder_context: PipelineBuilderContext) -> None:
@@ -46,7 +46,7 @@ class TestPrescriptionReleaseBoot(AdviserUnitTestCase):
     def test_should_include(self, builder_context: PipelineBuilderContext) -> None:
         """Test including this pipeline unit."""
         prescription_path = str(self.data_dir / "prescriptions")
-        builder_context.prescription = Prescription.load(prescription_path)
+        builder_context.prescription = Prescription.load([prescription_path])
         assert list(self.UNIT_TESTED.should_include(builder_context)) == [{}]
 
     def test_run(self, context: Context) -> None:
@@ -54,7 +54,7 @@ class TestPrescriptionReleaseBoot(AdviserUnitTestCase):
         assert not context.stack_info
 
         prescription_path = str(self.data_dir / "prescriptions")
-        context.prescription = Prescription.load(prescription_path)
+        context.prescription = Prescription.load([prescription_path])
 
         unit = self.UNIT_TESTED()
         unit.pre_run()
