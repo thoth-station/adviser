@@ -124,29 +124,6 @@ class Prescription:
         for unit in prescription_instance.units:
             any_error = any_error or cls._validate_run_base(unit)
 
-        for step in prescription_instance.steps_dict.values():
-            step_run = step["run"]
-            msg = f"Error in unit {step['name']} ({step['type']})"
-
-            if step_run.get("eager_stop_pipeline") and step_run.get("justification"):
-                _LOGGER.error(
-                    "%s: Using 'eager_stop_pipeline' together with 'justification' leads to undefined behavior", msg
-                )
-                any_error = True
-
-            if step_run.get("not_acceptable") and step_run.get("justification"):
-                _LOGGER.error(
-                    "%s: Using 'not_acceptable' together with 'justification' leads to undefined behavior", msg
-                )
-
-            if step_run.get("eager_stop_pipeline") and step_run.get("score") is not None:
-                _LOGGER.error("%s: Using 'eager_stop_pipeline' together with 'score' leads to undefined behavior", msg)
-                any_error = True
-
-            if step_run.get("not_acceptable") and step_run.get("score") is not None:
-                _LOGGER.error("%s: Using 'not_acceptable' together with 'score' leads to undefined behavior", msg)
-                any_error = True
-
         for wrap in prescription_instance.wraps_dict.values():
             wrap_run = wrap["run"]
             msg = f"Error in unit {wrap['name']} ({wrap['type']})"

@@ -26,6 +26,8 @@ from voluptuous import Any
 from voluptuous import Invalid
 from voluptuous import Length
 from voluptuous import Optional
+from voluptuous import Exclusive
+from voluptuous import Extra
 from voluptuous import Range
 from voluptuous import Required
 from voluptuous import Schema
@@ -417,14 +419,23 @@ PRESCRIPTION_STEP_MATCH_ENTRY_SCHEMA = Schema(
 )
 
 PRESCRIPTION_STEP_RUN_SCHEMA = Schema(
-    {
-        Optional("score"): Optional(float),
-        Optional("justification"): All([JUSTIFICATION_SCHEMA], Length(min=1)),
-        Optional("not_acceptable"): _NONEMPTY_STRING,
-        Optional("eager_stop_pipeline"): _NONEMPTY_STRING,
-        Optional("multi_package_resolution"): bool,
-        **_UNIT_RUN_SCHEMA_BASE_DICT,
-    }
+    All(
+        {
+            Exclusive("score", "score+eager"): Optional(float),
+            Exclusive("justification", "justi+not_acceptable"): All([JUSTIFICATION_SCHEMA], Length(min=1)),
+            Exclusive("not_acceptable", "justi+not_acceptable"): _NONEMPTY_STRING,
+            Exclusive("eager_stop_pipeline", "score+eager"): _NONEMPTY_STRING,
+            Optional("multi_package_resolution"): bool,
+            **_UNIT_RUN_SCHEMA_BASE_DICT,
+        },
+        {
+            Extra: object,
+            Exclusive("eager_stop_pipeline", "justi+eager"): object,
+            Exclusive("justification", "justi+eager"): object,
+            Exclusive("score", "score+not_acceptable"): object,
+            Exclusive("not_acceptable", "score+not_acceptable"): object,
+        },
+    )
 )
 
 PRESCRIPTION_STEP_SCHEMA = Schema(
