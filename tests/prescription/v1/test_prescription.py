@@ -33,7 +33,7 @@ class TestPrescription(AdviserTestCase):
     def test_load(self) -> None:
         """Test loading prescription."""
         prescription_path = str(self.data_dir / "prescriptions")
-        instance = Prescription.load(prescription_path)
+        instance = Prescription.load([prescription_path])
         assert instance is not None
         assert list(instance.boots_dict) == ["thoth.BootUnit"]
         assert list(instance.pseudonyms_dict) == ["thoth.PseudonymUnit"]
