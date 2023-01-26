@@ -6,9 +6,11 @@ approvers:
   - fridex
   - goern
   - kpostoffice
-  - mayacostantini
   - sesheta
+
 reviewers:
   - codificat
   - harshad16
-  - mayacostantini
+
+emeritus_approvers:
+  - mayaCostantini
