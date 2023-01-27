@@ -2,7 +2,6 @@ exclude liveness.py
 exclude *.md
 exclude *.sh
 exclude thoth-adviser
-exclude *.toml
 exclude *.yaml
 exclude tests/wraps/pytorch/test_mkl_threads.txt
 exclude thoth/adviser/wraps/pytorch/mkl_threads.txt
@@ -37,3 +36,4 @@ recursive-include tests *.yaml
 recursive-include workflows *.yaml
 recursive-include thoth *.json
 include OWNERS_ALIASES
+recursive-include thoth *.typed
