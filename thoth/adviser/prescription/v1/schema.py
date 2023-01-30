@@ -619,27 +619,42 @@ PRESCRIPTION_GH_RELEASE_NOTES_WRAP_SCHEMA = _BASE_UNIT_SCHEMA.extend(
 # Prescription.
 #
 
-PRESCRIPTION_UNITS_SCHEMA = Schema(
-    {
-        Optional("boots"): [PRESCRIPTION_BOOT_SCHEMA],
-        Optional("sieves"): [Any(PRESCRIPTION_SIEVE_SCHEMA, PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA)],
-        Optional("steps"): [
-            Any(
-                PRESCRIPTION_STEP_SCHEMA,
-                PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA,
-                PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA,
-                PRESCRIPTION_GROUP_STEP_SCHEMA,
-            )
-        ],
-        Optional("pseudonyms"): [PRESCRIPTION_PSEUDONYM_SCHEMA],
-        Optional("strides"): [PRESCRIPTION_STRIDE_SCHEMA],
-        Optional("wraps"): [
-            Any(
-                PRESCRIPTION_WRAP_SCHEMA,
-                PRESCRIPTION_GH_RELEASE_NOTES_WRAP_SCHEMA,
-            )
-        ],
-    }
+
+def _unique_by_name(units: typing.Dict[str, Any]) -> typing.Dict[str, Any]:
+    for _type, _list in units.items():
+        _units = set()
+        for unit in _list:
+            if unit["name"] in _units:
+                raise ValueError(f"{_type[:-1].capitalize()} with name {unit['name']} is already present")
+            else:
+                _units.add(unit["name"])
+        return units
+
+
+PRESCRIPTION_UNITS_SCHEMA = All(
+    Schema(
+        {
+            Optional("boots"): [PRESCRIPTION_BOOT_SCHEMA],
+            Optional("sieves"): [Any(PRESCRIPTION_SIEVE_SCHEMA, PRESCRIPTION_SKIP_PACKAGE_SIEVE_SCHEMA)],
+            Optional("steps"): [
+                Any(
+                    PRESCRIPTION_STEP_SCHEMA,
+                    PRESCRIPTION_SKIP_PACKAGE_STEP_SCHEMA,
+                    PRESCRIPTION_ADD_PACKAGE_STEP_SCHEMA,
+                    PRESCRIPTION_GROUP_STEP_SCHEMA,
+                )
+            ],
+            Optional("pseudonyms"): [PRESCRIPTION_PSEUDONYM_SCHEMA],
+            Optional("strides"): [PRESCRIPTION_STRIDE_SCHEMA],
+            Optional("wraps"): [
+                Any(
+                    PRESCRIPTION_WRAP_SCHEMA,
+                    PRESCRIPTION_GH_RELEASE_NOTES_WRAP_SCHEMA,
+                )
+            ],
+        }
+    ),
+    _unique_by_name,
 )
 
 PRESCRIPTION_SCHEMA = Schema(

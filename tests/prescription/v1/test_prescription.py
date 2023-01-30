@@ -21,7 +21,6 @@ import pytest
 import yaml
 
 from thoth.adviser.exceptions import PrescriptionSchemaError
-from thoth.adviser.exceptions import PrescriptionDuplicateUnitNameError
 from thoth.adviser.prescription import Prescription
 
 from ...base import AdviserTestCase
@@ -69,7 +68,7 @@ class TestPrescription(AdviserTestCase):
             },
         }
 
-        with pytest.raises(PrescriptionDuplicateUnitNameError):
+        with pytest.raises(PrescriptionSchemaError):
             Prescription.from_dict(prescription, prescription_name="thoth", prescription_release="2021.06.15")
 
     def test_yaml_cloader(self) -> None:

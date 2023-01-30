@@ -23,7 +23,7 @@ import pickle
 import yaml
 from itertools import chain
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from collections import deque
 from typing import Any
 from typing import List
@@ -40,7 +40,6 @@ import voluptuous
 import attr
 
 from ...exceptions import InternalError
-from ...exceptions import PrescriptionDuplicateUnitNameError
 from ...exceptions import PrescriptionSchemaError
 from .add_package_step import AddPackageStepPrescription
 from .boot import BootPrescription
@@ -129,69 +128,43 @@ class Prescription:
         except voluptuous.error.Invalid as exc:
             raise PrescriptionSchemaError(humanize_error(prescription, exc))
 
-        boots_dict = prescription_instance.boots_dict if prescription_instance is not None else OrderedDict()
-        for boot_spec in prescription["units"].get("boots") or []:
-            name = f"{prescription_name}.{boot_spec['name']}"
-            boot_spec["name"] = name
-            if name in boots_dict:
-                raise PrescriptionDuplicateUnitNameError(f"Boot with name {name!r} is already present")
-            boots_dict[boot_spec["name"]] = boot_spec
+        unit_types = set(prescription["units"].keys())
+        prescriptions = []
+        if prescription_instance:
 
-        pseudonyms_dict = prescription_instance.pseudonyms_dict if prescription_instance else OrderedDict()
-        for pseudonym_spec in prescription["units"].get("pseudonyms") or []:
-            name = f"{prescription_name}.{pseudonym_spec['name']}"
-            pseudonym_spec["name"] = name
-            if name in pseudonyms_dict:
-                raise PrescriptionDuplicateUnitNameError(f"Pseudonym with name {name!r} is already present")
-            pseudonyms_dict[pseudonym_spec["name"]] = pseudonym_spec
-
-        sieves_dict = prescription_instance.sieves_dict if prescription_instance else OrderedDict()
-        for sieve_spec in prescription["units"].get("sieves") or []:
-            name = f"{prescription_name}.{sieve_spec['name']}"
-            sieve_spec["name"] = name
-            if name in sieves_dict:
-                raise PrescriptionDuplicateUnitNameError(f"Sieve with name {name!r} is already present")
-            sieves_dict[sieve_spec["name"]] = sieve_spec
-
-        steps_dict = prescription_instance.steps_dict if prescription_instance else OrderedDict()
-        for step_spec in prescription["units"].get("steps") or []:
-            name = f"{prescription_name}.{step_spec['name']}"
-            step_spec["name"] = name
-            if name in steps_dict:
-                raise PrescriptionDuplicateUnitNameError(f"Step with name {name!r} is already present")
-            steps_dict[step_spec["name"]] = step_spec
-
-        strides_dict = prescription_instance.strides_dict if prescription_instance else OrderedDict()
-        for stride_spec in prescription["units"].get("strides") or []:
-            name = f"{prescription_name}.{stride_spec['name']}"
-            stride_spec["name"] = name
-            if name in strides_dict:
-                raise PrescriptionDuplicateUnitNameError(f"Stride with name {name!r} is already present")
-            strides_dict[stride_spec["name"]] = stride_spec
-
-        wraps_dict = prescription_instance.wraps_dict if prescription_instance else OrderedDict()
-        for wrap_spec in prescription["units"].get("wraps") or []:
-            name = f"{prescription_name}.{wrap_spec['name']}"
-            wrap_spec["name"] = name
-            if name in wraps_dict:
-                raise PrescriptionDuplicateUnitNameError(f"Wrap with name {name!r} is already present")
-            wraps_dict[wrap_spec["name"]] = wrap_spec
+            unit_types.update(
+                unit_name[: -len("_dict")]
+                for unit_name in dir(prescription_instance)
+                if (unit_name.endswith("s_dict") and getattr(prescription_instance, unit_name))
+            )
+            prescription["units"] = defaultdict(list, prescription["units"])
+            for unit_type in unit_types:
+                prescription["units"][unit_type] += [
+                    {"name": name[len(prescription_name) + 1 :], **v}
+                    # Slice off f"{prescription_name}."
+                    for name, v in getattr(prescription_instance, f"{unit_type}_dict").items()
+                ]
 
         if prescription_instance:
             # Adjust release info at the end once successful.
             prescription_meta = (prescription_name, prescription_release)
             if prescription_meta not in prescription_instance.prescriptions:
                 prescription_instance.prescriptions.append(prescription_meta)
-            return prescription_instance
+            prescriptions = prescription_instance.prescriptions
+        else:
+            prescriptions = [prescription_meta]
 
         return cls(
-            boots_dict=boots_dict,
-            pseudonyms_dict=pseudonyms_dict,
-            sieves_dict=sieves_dict,
-            steps_dict=steps_dict,
-            strides_dict=strides_dict,
-            wraps_dict=wraps_dict,
-            prescriptions=[(prescription_name, prescription_release)],
+            **{
+                f"{unit_type}_dict": {
+                    f"{prescription_name}.{values['name']}": dict(
+                        values, **{"name": f"{prescription_name}.{values['name']}"}
+                    )
+                    for values in prescription["units"][unit_type]
+                }
+                for unit_type in prescription["units"].keys()
+            },
+            prescriptions=prescriptions,
         )
 
     def is_empty(self) -> bool:
