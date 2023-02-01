@@ -18,7 +18,6 @@
 """JSON schema for pipeline unit prescription in version v1."""
 
 import re
-from urllib.parse import urlparse
 import typing
 
 from voluptuous import All
@@ -30,6 +29,7 @@ from voluptuous import Exclusive
 from voluptuous import Extra
 from voluptuous import Range
 from voluptuous import Required
+from voluptuous import Url
 from voluptuous import Schema
 
 from thoth.python import PackageVersion
@@ -52,7 +52,7 @@ def _with_not(entity: object) -> Schema:
     return Schema(Any(entity, Schema({"not": entity})))
 
 
-def _specifier_set(v: object) -> None:
+def _specifier_set(v: object) -> object:
     """Validate a specifier set."""
     if not isinstance(v, str):
         raise Invalid(f"Value {v!r} is not valid version specifier (example: '<1.0,>=0.5')")
@@ -60,9 +60,10 @@ def _specifier_set(v: object) -> None:
         SpecifierSet(v)
     except InvalidSpecifier as exc:
         raise Invalid(str(exc))
+    return v
 
 
-def _python_package_name(n: object) -> None:
+def _python_package_name(n: object) -> object:
     """Validate Python package name."""
     if not isinstance(n, str):
         raise Invalid(f"Value {n!r} is not a valid package name")
@@ -74,6 +75,7 @@ def _python_package_name(n: object) -> None:
     else:
         if normalized != n:
             raise Invalid(f"Python package name {n!r} is not in a normalized form, normalized: {normalized!r}")
+    return n
 
 
 _RPM_PACKAGE_VERSION_SCHEMA = Schema(
@@ -134,7 +136,7 @@ PRESCRIPTION_UNIT_SHOULD_INCLUDE_RUNTIME_ENVIRONMENTS_SCHEMA = Schema(
 )
 
 
-def _library_usage(v: object) -> None:
+def _library_usage(v: object) -> object:
     if not isinstance(v, dict):
         raise Invalid(f"Expected a dictionary describing library usage, got: {v}")
 
@@ -150,9 +152,10 @@ def _library_usage(v: object) -> None:
 
         # A list of library calls.
         _NONEMPTY_LIST_OF_NONEMPTY_STRINGS(v)
+    return v
 
 
-def _labels(v: object) -> None:
+def _labels(v: object) -> object:
     if not isinstance(v, dict):
         raise Invalid(f"Expected a dictionary describing labels, got {v}")
 
@@ -161,6 +164,7 @@ def _labels(v: object) -> None:
             raise Invalid(f"Expected a non-empty string for label value, got {type(val)} instead: {val!r}")
 
         _NONEMPTY_STRING(val)
+    return v
 
 
 PRESCRIPTION_UNIT_SHOULD_INCLUDE_SCHEMA = Schema(
@@ -204,20 +208,13 @@ _BASE_UNIT_SCHEMA = Schema(
 )
 
 
-def _justification_link(v: str) -> None:
-    """Validate justification link."""
-    if v.startswith(("https://", "http://")):
-        try:
-            urlparse(v)
-        except Exception as exc:
-            raise Invalid(f"Failed to validate URL: {str(exc)}")
-    else:
-        matched = re.fullmatch(r"[a-z0-9_-]+", v)
-        if not matched:
-            raise Invalid(f"Failed to validate base justification link {v!r}")
+def _match(v: str) -> str:
+    if not re.fullmatch(r"[a-z0-9_-]+", v):
+        raise Invalid(f"Failed to validate base justification link {v!r}")
+    return v
 
-    return None
 
+_justification_link = Schema(Any(Url(), _match))
 
 STACK_INFO_SCHEMA = Schema(
     {
@@ -262,10 +259,11 @@ _UNIT_RUN_NOT_ACCEPT = _UNIT_RUN_SCHEMA_BASE.extend(
 )
 
 
-def _locked_version(v: object) -> None:
+def _locked_version(v: object) -> object:
     """Validate locked version."""
     if v is not None and (not isinstance(v, str) or not v.startswith("==") and not v.startswith("===")):
         raise Invalid(f"Value {v!r} is not valid locked version (example: '==1.0.0')")
+    return v
 
 
 PACKAGE_VERSION_LOCKED_SCHEMA = Schema(
@@ -321,9 +319,10 @@ PRESCRIPTION_BOOT_SCHEMA = _BASE_UNIT_SCHEMA.extend(
 PRESCRIPTION_PSEUDONYM_MATCH_ENTRY_SCHEMA = Schema({"package_version": PACKAGE_VERSION_REQUIRED_NAME_SCHEMA})
 
 
-def _version_yield_vs_locked(pseudonym: typing.Dict[str, typing.Any]) -> None:
+def _version_yield_vs_locked(pseudonym: typing.Dict[str, typing.Any]) -> typing.Dict[str, typing.Any]:
     if pseudonym.get("yield_matched_version") and pseudonym["package_version"].get("locked_version"):
-        raise ValueError("'yield_matched_version' together " "with 'locked_version' leads to undefined behavior")
+        raise Invalid("'yield_matched_version' together " "with 'locked_version' leads to undefined behavior")
+    return pseudonym
 
 
 PRESCRIPTION_PSEUDONYM_RUN_SCHEMA = _UNIT_RUN_SCHEMA_BASE.extend(
@@ -625,10 +624,10 @@ def _unique_by_name(units: typing.Dict[str, Any]) -> typing.Dict[str, Any]:
         _units = set()
         for unit in _list:
             if unit["name"] in _units:
-                raise ValueError(f"{_type[:-1].capitalize()} with name {unit['name']} is already present")
+                raise Invalid(f"{_type[:-1].capitalize()} with name {unit['name']} is already present")
             else:
                 _units.add(unit["name"])
-        return units
+    return units
 
 
 PRESCRIPTION_UNITS_SCHEMA = All(
