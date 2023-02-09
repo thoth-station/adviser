@@ -19,10 +19,11 @@
 
 import re
 import typing
+from collections import Counter
 
 from voluptuous import All
 from voluptuous import Any
-from voluptuous import Invalid
+from voluptuous import Invalid, MultipleInvalid
 from voluptuous import Length
 from voluptuous import Optional
 from voluptuous import Exclusive
@@ -621,12 +622,15 @@ PRESCRIPTION_GH_RELEASE_NOTES_WRAP_SCHEMA = _BASE_UNIT_SCHEMA.extend(
 
 def _unique_by_name(units: typing.Dict[str, Any]) -> typing.Dict[str, Any]:
     for _type, _list in units.items():
-        _units = set()
-        for unit in _list:
-            if unit["name"] in _units:
-                raise Invalid(f"{_type[:-1].capitalize()} with name {unit['name']} is already present")
-            else:
-                _units.add(unit["name"])
+        unit_names = [unit["name"] for unit in _list]
+        if len(set(unit_names)) != len(unit_names):
+            raise MultipleInvalid(
+                [
+                    Invalid(f"{_type[:-1].capitalize()} with name {unit_name} is already present")
+                    for unit_name in Counter(unit_names).keys()
+                    if Counter(unit_names)[unit_name] > 1
+                ]
+            )
     return units
 
 
