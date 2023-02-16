@@ -11,7 +11,6 @@ runtime_environments:
     recommendation_type: latest
 
 managers:
-  - name: pipfile-requirements
   - name: update
     configuration:
       labels: [bot]
