@@ -1,38 +1,23 @@
 presubmits:
-  - name: pre-commit
-    decorate: true
-    skip_report: false
-    always_run: true
-    context: aicoe-ci/prow/pre-commit
-    spec:
-      containers:
-        - image: quay.io/thoth-station/thoth-precommit-py38:v0.14.3
-          command:
-            - "pre-commit"
-            - "run"
-            - "--all-files"
-          resources:
-            requests:
-              memory: "500Mi"
-              cpu: "750m"
-            limits:
-              memory: "1Gi"
-              cpu: "750m"
-
-  - name: thoth-pytest-py38
-    decorate: true
-    skip_report: false
-    always_run: true
-    context: aicoe-ci/prow/pytest
-    spec:
-      containers:
-        - image: quay.io/thoth-station/thoth-pytest-py38:v0.14.3
-          command:
-             - "run-pytest"
-          resources:
-            requests:
-              memory: "1Gi"
-              cpu: "500m"
-            limits:
-              memory: "1Gi"
-              cpu: "1"
+- always_run: true
+  context: op1st/prow/pre-commit
+  decorate: true
+  name: pre-commit
+  skip_report: false
+  spec:
+    containers:
+    - command:
+      - pre-commit
+      - run
+      - --all-files
+      image: quay.io/thoth-station/thoth-precommit-py38:v0.15.0
+- always_run: true
+  context: op1st/prow/pytest
+  decorate: true
+  name: thoth-pytest-py38
+  skip_report: false
+  spec:
+    containers:
+    - command:
+      - run-pytest
+      image: quay.io/thoth-station/thoth-pytest-py38:v0.15.0
